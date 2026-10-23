@@ -1,0 +1,3548 @@
+{
+  "started_at": "2026-10-21T04:25:30.064360+00:00",
+  "finished_at": "2026-10-21T04:25:30.064394+00:00",
+  "dataset": "benchmarks\\queries.jsonl",
+  "tokenizer": "cl100k_base",
+  "providers": [
+    "ddg",
+    "mwmbl",
+    "wikipedia"
+  ],
+  "schema": {
+    "total_tokens": 838,
+    "per_tool": {
+      "web_search": 271,
+      "extract_url": 185,
+      "crawl_site": 254,
+      "deep_research": 126
+    }
+  },
+  "summary": {
+    "queries": 28,
+    "answerable": 18,
+    "search_returned": 80,
+    "search_relevant": 15,
+    "top3_total": 18,
+    "top3_authoritative": 6,
+    "top3_rate": 0.3333,
+    "precision_at_n": 0.1875,
+    "support_total": 18,
+    "support_ok": 18,
+    "answer_support": 1.0,
+    "status_matches": 0.8929,
+    "noresult_total": 10,
+    "noresult_correct": 8,
+    "noresult_accuracy": 0.8,
+    "conflict_total": 0,
+    "conflict_flagged": 0,
+    "conflict_recall": null,
+    "extract_total": 6,
+    "extract_support_ok": 4,
+    "latency": {
+      "search_p50_ms": 3360.9,
+      "search_p95_ms": 3528.6,
+      "research_p50_ms": 7923.3,
+      "research_p95_ms": 13290.5,
+      "extract_p50_ms": 940.3,
+      "extract_p95_ms": 1652.4
+    },
+    "init_ms": 229.3,
+    "cache_dir": "benchmarks\\.cache"
+  },
+  "gates": [
+    {
+      "name": "schema_tokens",
+      "ok": true,
+      "value": 838,
+      "threshold": 1000
+    },
+    {
+      "name": "token_budget_violations",
+      "ok": true,
+      "value": 0,
+      "threshold": 0
+    },
+    {
+      "name": "citation_failures",
+      "ok": true,
+      "value": 0,
+      "threshold": 0
+    },
+    {
+      "name": "uncalibrated_fields",
+      "ok": true,
+      "value": 0,
+      "threshold": 0
+    },
+    {
+      "name": "precision_at_n",
+      "ok": false,
+      "value": 0.1875,
+      "threshold": 0.25
+    },
+    {
+      "name": "top3_authoritative",
+      "ok": false,
+      "value": 0.3333,
+      "threshold": 0.6
+    },
+    {
+      "name": "answer_support",
+      "ok": true,
+      "value": 1.0,
+      "threshold": 0.6
+    },
+    {
+      "name": "search_p50_ms",
+      "ok": false,
+      "value": 3360.9,
+      "threshold": 1500
+    },
+    {
+      "name": "search_p95_ms",
+      "ok": true,
+      "value": 3528.6,
+      "threshold": 5000
+    },
+    {
+      "name": "research_p95_ms",
+      "ok": true,
+      "value": 13290.5,
+      "threshold": 20000
+    },
+    {
+      "name": "noresult_accuracy",
+      "ok": true,
+      "value": 0.8,
+      "threshold": 0.75
+    },
+    {
+      "name": "extract_p50_ms",
+      "ok": true,
+      "value": 940.3,
+      "threshold": 2500
+    },
+    {
+      "name": "extract_p95_ms",
+      "ok": true,
+      "value": 1652.4,
+      "threshold": 8000
+    }
+  ],
+  "passed": false,
+  "violations": {
+    "token_budget": 0,
+    "citations": 0,
+    "uncalibrated_fields": []
+  },
+  "rows": [
+    {
+      "id": "docs-01",
+      "category": "docs",
+      "query": "python asyncio.timeout usage",
+      "expect_conflict": false,
+      "search_ms": 3523.8,
+      "search": {
+        "status": "partial",
+        "q": "python asyncio.timeout usage",
+        "n": 1,
+        "res": [
+          {
+            "t": "python 3.5 - No asyncio.timeout provided in python3.5? - Stack O…",
+            "u": "https://stackoverflow.com/q/35299009",
+            "s": ""
+          }
+        ],
+        "ms": 3523,
+        "tok": 91,
+        "prov": [
+          "mwmbl",
+          "wikipedia"
+        ],
+        "fail": {
+          "ddg": "TimeoutError"
+        },
+        "warn": [
+          "off_topic_filtered:1"
+        ]
+      },
+      "search_relevant": 0,
+      "search_returned": 1,
+      "search_precision_at_n": 0.0,
+      "top3_relevant": false,
+      "research_ms": 10249.9,
+      "research": {
+        "status": "partial",
+        "q": "python asyncio.timeout usage",
+        "n": 4,
+        "f": [
+          {
+            "c": "Example: async def main(): async with asyncio.timeout(10): await long\\_running\\_task() If `long_running_task` takes more than 10 seconds to complete,\nthe context manager will cancel the current task and handle\nthe resulting `asyncio.CancelledError` internally, transforming it\ninto a `TimeoutError` which can be caught and handled.",
+            "u": "https://docs.python.org/3/library/asyncio-task.html",
+            "at": "2026-10-21T04:21:02Z",
+            "s": [
+              21267,
+              21598
+            ],
+            "h": "Timeouts¶"
+          },
+          {
+            "c": "Example: async def main(): loop = get\\_running\\_loop() deadline = loop.time() + 20 try: async with asyncio.timeout\\_at(deadline): await long\\_running\\_task() except TimeoutError: print(\"The long operation timed out, but we've handled it.\") print(\"This statement will run regardless.\") Added in version 3.11.\n\n- *async* asyncio.wait\\_for(*aw*, *timeout*)¶\n- Wait for the *aw* awaitable\nto complete with a timeout.",
+            "u": "https://docs.python.org/3/library/asyncio-task.html",
+            "at": "2026-10-21T04:21:02Z",
+            "s": [
+              23209,
+              23621
+            ],
+            "h": "Timeouts¶"
+          },
+          {
+            "c": "Changed in version 3.12: Implemented using `asyncio.timeout()`, a coroutine passed as *aw* is no longer wrapped in a `Task` when *timeout* is positive.",
+            "u": "https://docs.python.org/3/library/asyncio-task.html",
+            "at": "2026-10-21T04:21:02Z",
+            "s": [
+              24699,
+              24850
+            ],
+            "h": "Timeouts¶"
+          },
+          {
+            "c": "It works as an `async` context manager\n\nWhen you enter the `async with asyncio.timeout(delay):` block, a timer starts.",
+            "u": "https://runebook.dev/en/docs/python/library/asyncio-task/asyncio.timeout",
+            "at": "2026-10-21T04:21:08Z",
+            "s": [
+              388,
+              506
+            ],
+            "h": "The async with timeout: Best Practices for Robust Python Asynchronous I/O"
+          }
+        ],
+        "gaps": [
+          "no_source_for:usage"
+        ],
+        "searched": [
+          "python asyncio.timeout usage"
+        ],
+        "tok": 522,
+        "warn": [
+          "fetch_failed:FetchError"
+        ],
+        "ms": 10244
+      },
+      "research_status_match": true,
+      "research_support": true,
+      "conflict_flagged": false,
+      "extract": {
+        "status": "error",
+        "err": "http_error",
+        "msg": "HTTP 403 for https://stackoverflow.com/questions/35299009/no-asyncio-timeout-provided-in-python3-5",
+        "retry": false
+      },
+      "extract_ms": 1482.7,
+      "extract_support": false,
+      "search_actual_tokens": 91,
+      "research_actual_tokens": 522,
+      "extract_actual_tokens": 43
+    },
+    {
+      "id": "docs-02",
+      "category": "docs",
+      "query": "sqlite WAL mode write-ahead log",
+      "expect_conflict": false,
+      "search_ms": 1562.5,
+      "search": {
+        "status": "ok",
+        "q": "sqlite WAL mode write-ahead log",
+        "n": 5,
+        "res": [
+          {
+            "t": "PostgreSQL",
+            "u": "https://en.wikipedia.org/wiki/PostgreSQL",
+            "s": "heavy write load which updates existing rows. PostgreSQL includes built-in binary replication based on shipping the changes ( write - ahead logs ( WAL )) to",
+            "d": "2026-10-15"
+          },
+          {
+            "t": "SQLite",
+            "u": "https://en.wikipedia.org/wiki/SQLite",
+            "s": "and it is relaxed in version 3.7 as write - ahead logging ( WAL ) enables concurrent reads and writes . Since SQLite has to rely on file-system locks, it",
+            "d": "2026-10-05"
+          },
+          {
+            "t": "Introduce Sqlite WAL journal mode by lainedfles · Pull Request #…",
+            "u": "https://github.com/evilsocket/opensnitch/pull/1011",
+            "s": "Saved searches Use saved searches to filter your results more quickly You signed in with another tab or window. Reload to refresh your session.You signed…"
+          },
+          {
+            "t": "SQLite WAL Mode | Joel Dare",
+            "u": "https://joeldare.com/sqlite-wal-mode",
+            "s": "SQLite WAL Mode If you are using SQLite in a write heavy mode you might want to use the newer Write-Ahead Logging (WAL) journaling mode. This mode is dat…"
+          },
+          {
+            "t": "SQLite WAL Mode: How Write-Ahead Logging Works and When to Use It",
+            "u": "https://sqldocs.org/sqlite-write-ahead-logging/",
+            "s": "TLDR WAL (write-ahead logging) is a journal mode where changes go to a separate -wal file first and get copied into the database later, at a checkpoint. Turn it on once with PRAGMA journal_mode = WAL;. The setting is stored in the database…"
+          }
+        ],
+        "ms": 1558,
+        "tok": 391,
+        "prov": [
+          "ddg",
+          "mwmbl",
+          "wikipedia"
+        ],
+        "warn": [
+          "duplicate_text_removed"
+        ]
+      },
+      "search_relevant": 0,
+      "search_returned": 5,
+      "search_precision_at_n": 0.0,
+      "top3_relevant": false,
+      "research_ms": 5605.2,
+      "research": {
+        "status": "partial",
+        "q": "sqlite WAL mode write-ahead log",
+        "n": 8,
+        "f": [
+          {
+            "c": "If you are using SQLite in a write heavy mode you might want to use the newer Write-Ahead Logging (WAL) journaling mode.",
+            "u": "https://joeldare.com/sqlite-wal-mode",
+            "at": "2026-10-21T04:21:13Z",
+            "s": [
+              0,
+              120
+            ]
+          },
+          {
+            "c": "**TLDR**\n\n- WAL (write-ahead logging) is a journal mode where changes go to a separate `-wal` file first and get copied into the database later, at a checkpoint.\n- Turn it on once with `PRAGMA journal_mode = WAL;`.",
+            "u": "https://sqldocs.org/sqlite-write-ahead-logging/",
+            "at": "2026-10-21T04:21:16Z",
+            "s": [
+              310,
+              524
+            ],
+            "d": "2026-10-07"
+          },
+          {
+            "c": "“Unlike the other journaling modes, PRAGMA journal\\_mode=WAL is persistent” (Write-Ahead Logging, section 3.3).",
+            "u": "https://sqldocs.org/sqlite-write-ahead-logging/",
+            "at": "2026-10-21T04:21:16Z",
+            "s": [
+              2352,
+              2463
+            ],
+            "h": "Step 2: Check that it stuck",
+            "d": "2026-10-07"
+          },
+          {
+            "c": "\\[edit\\]\nPostgreSQL includes built-in binary replication based on shipping the changes (write-ahead logs (WAL)) to replica nodes asynchronously, with the ability to run read-only queries against these replicated nodes.",
+            "u": "https://en.wikipedia.org/wiki/PostgreSQL",
+            "at": "2026-10-21T04:21:15Z",
+            "s": [
+              8205,
+              8423
+            ],
+            "h": "Replication",
+            "d": "2001-08-25"
+          },
+          {
+            "c": "SQLite “database is locked”\n- SQLite PRAGMA\n- SQLite VACUUM and VACUUM INTO\n- Python SQLite3 tutorial\n- All SQLite guides by topic\n- SQLite docs: Write-Ahead Logging\n\n*Tested with SQLite 3.51.0, Python 3.13.14 (SQLite 3.53.4) and Python 3.9.6 on macOS, 7 October 2026.*",
+            "u": "https://sqldocs.org/sqlite-write-ahead-logging/",
+            "at": "2026-10-21T04:21:16Z",
+            "s": [
+              7381,
+              7650
+            ],
+            "h": "Further reading",
+            "d": "2026-10-07"
+          },
+          {
+            "c": "\\[edit\\]\n- Referential integrity constraints including foreign key constraints, column constraints, and row checks\n- Binary and textual large-object storage\n- Tablespaces\n- Per-column collation\n- Online backup\n- Point-in-time recovery, implemented using write-ahead logging\n- In-place upgrades with pg\\_upgrade for less downtime",
+            "u": "https://en.wikipedia.org/wiki/PostgreSQL",
+            "at": "2026-10-21T04:21:15Z",
+            "s": [
+              17457,
+              17785
+            ],
+            "h": "Other storage features",
+            "d": "2001-08-25"
+          },
+          {
+            "c": "21. ↑ \"Write Ahead Logging in SQLite 3.7\".",
+            "u": "https://en.wikipedia.org/wiki/SQLite",
+            "at": "2026-10-21T04:21:12Z",
+            "s": [
+              17890,
+              17932
+            ],
+            "h": "Citations",
+            "d": "2003-06-12"
+          },
+          {
+            "c": "I've created #1014 to track the failure to set `NORMAL` mode but I wonder if this option warrants an additional GUI configuration for cases where corruption is a problem. |\n\nThis file contains hidden or bidirectional Unicode text that may be interpreted or compiled differently than what appears below.",
+            "u": "https://github.com/evilsocket/opensnitch/pull/1011",
+            "at": "2026-10-21T04:21:14Z",
+            "s": [
+              697,
+              999
+            ],
+            "h": "Conversation"
+          }
+        ],
+        "gaps": [
+          "no_source_for:log"
+        ],
+        "searched": [
+          "sqlite WAL mode write-ahead log"
+        ],
+        "tok": 861,
+        "ms": 5598
+      },
+      "research_status_match": true,
+      "research_support": true,
+      "conflict_flagged": false,
+      "extract": {
+        "status": "ok",
+        "u": "https://en.wikipedia.org/wiki/PostgreSQL",
+        "t": "PostgreSQL - Wikipedia",
+        "at": "2026-10-21T04:21:15Z",
+        "sha": "5726739b01b1641f",
+        "src": "html",
+        "ps": [
+          {
+            "u": "https://en.wikipedia.org/wiki/PostgreSQL",
+            "at": "2026-10-21T04:21:15Z",
+            "x": "### Replication\n\n\\[edit\\]\nPostgreSQL includes built-in binary replication based on shipping the changes (write-ahead logs (WAL)) to replica nodes asynchronously, with the ability to run read-only queries against these replicated nodes. This allows splitting read traffic among multiple nodes efficiently. Earlier replication software that allowed similar read scaling normally relied on adding replication triggers to the master, increasing load.\n\nPostgreSQL includes built-in synchronous replication<sup>\\[40\\]</sup> that ensures that, for each write transaction, the master waits until at least one replica node has written the data to its transaction log. Unlike other database systems, the durability of a transaction (whether it is asynchronous or synchronous) can be specified per-database, per-user, per-session or even per-transaction. This can be useful for workloads that do not require such guarantees, and may not be wanted for all data as it slows down performance due to the requirement of the confirmation of the transaction reaching the synchronous standby.\n\n",
+            "s": [
+              8188,
+              9263
+            ],
+            "h": "Replication"
+          },
+          {
+            "u": "https://en.wikipedia.org/wiki/PostgreSQL",
+            "at": "2026-10-21T04:21:15Z",
+            "x": "### Other storage features\n\n\\[edit\\]\n- Referential integrity constraints including foreign key constraints, column constraints, and row checks\n- Binary and textual large-object storage\n- Tablespaces\n- Per-column collation\n- Online backup\n- Point-in-time recovery, implemented using write-ahead logging\n- In-place upgrades with pg\\_upgrade for less downtime\n\n",
+            "s": [
+              17429,
+              17787
+            ],
+            "h": "Other storage features"
+          },
+          {
+            "u": "https://en.wikipedia.org/wiki/PostgreSQL",
+            "at": "2026-10-21T04:21:15Z",
+            "x": "and find performance problems.<sup>\\[113\\]</sup>\n- Adminer\n- Adminer is a simple web-based administration tool for PostgreSQL and others, written in PHP.\n- pgBackRest\n- pgBackRest is a backup and restore tool for PostgreSQL that provides support for full, differential, and incremental backups.<sup>\\[114\\]</sup>\n- pgaudit\n- pgaudit is a PostgreSQL extension that provides detailed session and/or object audit logging via the standard logging facility provided by PostgreSQL.<sup>\\[115\\]</sup>\n- WAL-E\n- WAL-E is a backup and restore tool for PostgreSQL that provides support for physical (WAL-based) backups, written in Python.<sup>\\[116\\]</sup>\n- DBeaver\n- DBeaver is a free and open source GUI administration tool for PostgreSQL, it has Visual Entity Diagrams and Intellisense features. It also has a commercial PRO license.\n- Postgresus\n- Postgresus is an open source backup tool with GUI for scheduled backups with support of external sources (S3, NAS, FTP, Google Drive, Google Cloud, etc.) and notifications to external services (Slack, Discord, Telegram, SMTP, etc.).<sup>\\[117\\]</sup>\n\n",
+            "s": [
+              37385,
+              38480
+            ],
+            "h": "Database administration"
+          },
+          {
+            "u": "https://en.wikipedia.org/wiki/PostgreSQL",
+            "at": "2026-10-21T04:21:15Z",
+            "x": "## Release history\n\n\\[edit\\]\n| Release history | | | | | |\n|---|---|---|---|---|---|\n| Release | First release | Latest minor version | Latest release | End of life <sup>\\[162\\]</sup> | Milestones |\n|---|---|---|---|---|---|\n| 6.0 | 1997-01-29 | N/a | N/a | N/a | First formal release of PostgreSQL, unique indexes, pg\\_dumpall utility, ident authentication |\n| 6.1 | 1997-06-08 | 6.1.1 | 1997-07-22 | N/a | Multicolumn indexes, sequences, money data type, GEQO (GEnetic Query Optimizer) |\n| 6.2 | 1997-10-02 | 6.2.1 | 1997-10-17 | N/a | JDBC interface, triggers, server programming interface, constraints |\n| 6.3 | 1998-03-01 | 6.3.2 | 1998-04-07 | 2003-03-01 | SQL-92 subselect ability, PL/pgTCL |\n| 6.4 | 1998-10-30 | 6.4.2 | 1998-12-20 | 2003-10-30 | VIEWs (then only read-only) and RULEs, PL/pgSQL |\n| 6.5 | 1999-06-09 | 6.5.3 | 1999-10-13 | 2004-06-09 | MVCC, temporary tables, more SQL",
+            "s": [
+              44532,
+              45424
+            ],
+            "h": "Release history"
+          }
+        ],
+        "tok": 1186,
+        "d": "2001-08-25",
+        "cut": true,
+        "ms": 1599
+      },
+      "extract_ms": 1652.4,
+      "extract_support": true,
+      "search_actual_tokens": 391,
+      "research_actual_tokens": 861,
+      "extract_actual_tokens": 1187
+    },
+    {
+      "id": "docs-03",
+      "category": "docs",
+      "query": "HTTP 429 Too Many Requests",
+      "expect_conflict": false,
+      "search_ms": 3525.4,
+      "search": {
+        "status": "partial",
+        "q": "HTTP 429 Too Many Requests",
+        "n": 5,
+        "res": [
+          {
+            "t": "429 Too Many Requests - HTTP | MDN - MDN Web Docs",
+            "u": "https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Status/429",
+            "s": "The HTTP 429 Too Many Requests client error response status code indicates the client has sent too many requests in a given amount of time. This mechanism of asking ..."
+          },
+          {
+            "t": "List of HTTP status codes",
+            "u": "https://en.wikipedia.org/wiki/List_of_HTTP_status_codes",
+            "s": "state on the server, leading to a conflict. 429 Too Many Requests (RFC 6585) The user has sent too many requests in a given amount of time. Intended for use",
+            "d": "2026-10-11"
+          },
+          {
+            "t": "429 Too Many Requests: what it means and how to handle it",
+            "u": "https://learn.microsoft.com/en-us/microsoft-cloud/dev/dev-proxy/concepts/http-429-too-many-requests",
+            "s": "What the HTTP 429 Too Many Requests status means, what it looks like in GitHub, OpenAI, Anthropic, and Microsoft Graph, how to handle it, and how to test your handling."
+          },
+          {
+            "t": "Rate limiting",
+            "u": "https://en.wikipedia.org/wiki/Rate_limiting",
+            "s": "case a client made too many requests within a given time frame, HTTP servers can respond with status code 429 : Too Many Requests . However, in some cases",
+            "d": "2026-09-02"
+          },
+          {
+            "t": "How to Fix HTTP 429 Error Too Many Requests - GeeksforGeeks",
+            "u": "https://www.geeksforgeeks.org/websites-apps/429-error-causes-and-solutions/",
+            "s": "The HTTP 429 Too Many Requests error occurs when you've exceeded the number of allowed requests in a given timeframe to a particular server, causing it to temporarily block further requests."
+          }
+        ],
+        "ms": 3520,
+        "tok": 427,
+        "prov": [
+          "ddg",
+          "wikipedia"
+        ],
+        "fail": {
+          "mwmbl": "TimeoutError"
+        },
+        "warn": [
+          "off_topic_filtered:4"
+        ]
+      },
+      "search_relevant": 1,
+      "search_returned": 5,
+      "search_precision_at_n": 0.2,
+      "top3_relevant": true,
+      "research_ms": 8228.4,
+      "research": {
+        "status": "ok",
+        "q": "HTTP 429 Too Many Requests",
+        "n": 6,
+        "f": [
+          {
+            "c": "The HTTP **`429 Too Many Requests`** client error response status code indicates the client has sent too many requests in a given amount of time.",
+            "u": "https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Status/429",
+            "at": "2026-10-21T04:21:25Z",
+            "s": [
+              25,
+              170
+            ],
+            "h": "429 Too Many Requests"
+          },
+          {
+            "c": "Intended to prevent the 'lost update' problem, where a client GETs a resource's state, modifies it, and PUTs it back to the server, when meanwhile a third party has modified the state on the server, leading to a conflict.<sup>\\[34\\]</sup>\n- 429 Too Many Requests (RFC 6585)\n- The user has sent too many requests in a given amount of time.",
+            "u": "https://en.wikipedia.org/wiki/List_of_HTTP_status_codes",
+            "at": "2026-10-21T04:21:26Z",
+            "s": [
+              17960,
+              18298
+            ],
+            "h": "4xx client error",
+            "d": "2005-02-16"
+          },
+          {
+            "c": "Used by Twitter.\n\n- 420 Enhance Your Calm\n- Returned by version 1 of the Twitter Search and Trends API when the client is being rate limited; versions 1.1 and later use the 429 Too Many Requests response code instead.<sup>\\[67\\]</sup> The phrase \"Enhance your calm\" comes from the 1993 movie *Demolition Man*, and its association with this number is likely a reference to cannabis.<sup>\\[*citation needed*\\]</sup>",
+            "u": "https://en.wikipedia.org/wiki/List_of_HTTP_status_codes",
+            "at": "2026-10-21T04:21:26Z",
+            "s": [
+              26161,
+              26574
+            ],
+            "h": "Spring Framework",
+            "d": "2005-02-16"
+          },
+          {
+            "c": "Used by Shopify.\n\n- 430 Request Header Fields Too Large\n- A deprecated response used by Shopify, instead of the 429 Too Many Requests response code, when too many URLs are requested within a certain time frame.<sup>\\[68\\]</sup>\n- 430 Shopify Security Rejection\n- Used by Shopify to signal that the request was deemed malicious.<sup>\\[69\\]</sup>\n- 530 Origin DNS Error\n- Indicates that Cloudflare can't resolve the requested DNS record.<sup>\\[69\\]</sup>\n- 540 Temporarily Disabled\n- Indicates that the requested endpoint has been temporarily disabled.<sup>\\[69\\]</sup>\n- 783 Unexpected Token\n- Indicates that the request includes a JSON syntax error.<sup>\\[69\\]</sup>",
+            "u": "https://en.wikipedia.org/wiki/List_of_HTTP_status_codes",
+            "at": "2026-10-21T04:21:26Z",
+            "s": [
+              26589,
+              27255
+            ],
+            "h": "Shopify",
+            "d": "2005-02-16"
+          },
+          {
+            "c": "429 Too Many Requests - GET https://registry.npmjs.org/silent-error\n15.",
+            "u": "https://github.com/npm/cli/issues/836",
+            "at": "2026-10-21T04:21:29Z",
+            "s": [
+              3944,
+              4015
+            ],
+            "h": "Activity",
+            "d": "2020-02-17"
+          },
+          {
+            "c": "An API returns `429 Too Many Requests` when your app sent more requests than the API allows in a period of time.",
+            "u": "https://learn.microsoft.com/en-us/microsoft-cloud/dev/dev-proxy/concepts/http-429-too-many-requests",
+            "at": "2026-10-21T04:21:26Z",
+            "s": [
+              178,
+              290
+            ]
+          }
+        ],
+        "gaps": [],
+        "searched": [
+          "HTTP 429 Too Many Requests"
+        ],
+        "tok": 807,
+        "cut": true,
+        "ms": 8221
+      },
+      "research_status_match": true,
+      "research_support": true,
+      "conflict_flagged": false,
+      "extract": {
+        "status": "ok",
+        "u": "https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Status/429",
+        "t": "429 Too Many Requests - HTTP | MDN",
+        "at": "2026-10-21T04:21:25Z",
+        "sha": "278cf9d97ac5e9de",
+        "src": "html",
+        "ps": [
+          {
+            "u": "https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Status/429",
+            "at": "2026-10-21T04:21:25Z",
+            "x": "# 429 Too Many Requests\n\nThe HTTP **`429 Too Many Requests`** client error response status code indicates the client has sent too many requests in a given amount of time.\nThis mechanism of asking the client to slow down the rate of requests is commonly called \"rate limiting\".\n\nA `Retry-After` header may be included to this response to indicate how long a client should wait before making the request again.\n\nImplementations of rate limiting vary; restrictions may be server-wide or per resource. Typically, rate-limiting restrictions are based on a client's IP but can be specific to users or authorized applications if requests are authenticated or contain a cookie.\n\n",
+            "s": [
+              0,
+              671
+            ],
+            "h": "429 Too Many Requests"
+          },
+          {
+            "u": "https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Status/429",
+            "at": "2026-10-21T04:21:25Z",
+            "x": "### Response containing Retry-After header\n\nThe following request is being sent repeatedly in a loop by a client that is misconfigured:\n\n```\nGET /reports/mdn HTTP/1.1\nHost: example.com\n```\nIn this example, server-wide rate limiting is active when a client exceeds a set threshold of requests per minute.\nA 429 response is returned with a `Retry-After` header that indicates requests will be allowed for this client again after 3600 seconds (60 minutes):\n\n```\nHTTP/1.1 429 Too Many Requests\nContent-Type: text/html\nRetry-After: 3600\n<html lang=\"en-US\">\n<head>\n<title>Too Many Requests</title>\n</head>\n<body>\n<h1>Too Many Requests</h1>\n<p>You're doing that too often! Try again later.</p>\n</body>\n</html>\n```\n",
+            "s": [
+              727,
+              1434
+            ],
+            "h": "Response containing Retry-After header"
+          }
+        ],
+        "tok": 528,
+        "ms": 183
+      },
+      "extract_ms": 186.7,
+      "extract_support": true,
+      "search_actual_tokens": 427,
+      "research_actual_tokens": 807,
+      "extract_actual_tokens": 528
+    },
+    {
+      "id": "docs-04",
+      "category": "docs",
+      "query": "git interactive rebase",
+      "expect_conflict": false,
+      "search_ms": 1039.2,
+      "search": {
+        "status": "ok",
+        "q": "git interactive rebase",
+        "n": 5,
+        "res": [
+          {
+            "t": "Git",
+            "u": "https://en.wikipedia.org/wiki/Git",
+            "s": "model git -machete, a repository organizer & tool for automating rebase /merge/pull/push operations Microsoft developed the Virtual File System for Git (VFS",
+            "d": "2026-10-20"
+          },
+          {
+            "t": "Comparison of version-control software",
+            "u": "https://en.wikipedia.org/wiki/Comparison_of_version-control_software",
+            "s": "default pull command is interactive , allowing the user to choose which patches to apply (merge) in realtime \"Mercurial Rebase Extension\". Mercurial-scm",
+            "d": "2026-09-25"
+          },
+          {
+            "t": "ChiliProject finn design interactive rebase log to squash and re…",
+            "u": "http://gist.github.com/edavis10/1361097",
+            "s": "You signed in with another tab or window. Reload to refresh your session.You signed out in another tab or window. Reload to refresh your session.You swit…"
+          },
+          {
+            "t": "A Guide to Git Interactive Rebase, with Practical Examples",
+            "u": "https://www.sitepoint.com/git-interactive-rebase-guide/",
+            "s": "Learn how to use interactive rebase, a powerful Git tool that allows you to edit, delete, combine, or reorder commits in your project history. Follow practical examples and tips to optimize and clean up your commit history."
+          },
+          {
+            "t": "How do you perform an interactive rebase? | Solutions to Git Pro…",
+            "u": "https://www.gitkraken.com/learn/git/problems/git-interactive-rebase",
+            "s": "Git Interactive Rebase Mistakes happen to even the most attentive developers when working with Git repositories. Let’s say that you have a commit contain…"
+          }
+        ],
+        "ms": 1033,
+        "tok": 394,
+        "prov": [
+          "ddg",
+          "mwmbl",
+          "wikipedia"
+        ],
+        "warn": [
+          "off_topic_filtered:5"
+        ]
+      },
+      "search_relevant": 0,
+      "search_returned": 5,
+      "search_precision_at_n": 0.0,
+      "top3_relevant": false,
+      "research_ms": 11518.1,
+      "research": {
+        "status": "ok",
+        "q": "git interactive rebase",
+        "n": 7,
+        "f": [
+          {
+            "c": "It’s important to note, conflicts can arise when using the interactive rebase tool in Git, and each conflict must be resolved before the rebase can continue.",
+            "u": "https://gitkraken.com/learn/git/problems/git-interactive-rebase",
+            "at": "2026-10-21T04:21:42Z",
+            "s": [
+              1500,
+              1657
+            ],
+            "h": "**Resolving Conflicts with Interactive Rebase**",
+            "d": "2021-03-25"
+          },
+          {
+            "c": "Once you have identified your target branch, you will use the following command to perform an interactive rebase:\n\n`git rebase <target branch name> -i`\nThis is telling Git that you want to interactive rebase your currently checked out branch onto the target branch; this will also open the Git interactive rebase tool.",
+            "u": "https://gitkraken.com/learn/git/problems/git-interactive-rebase",
+            "at": "2026-10-21T04:21:42Z",
+            "s": [
+              5408,
+              5726
+            ],
+            "h": "**Git Interactive Rebase in the Command Line**",
+            "d": "2021-03-25"
+          },
+          {
+            "c": "Other open-source Git extensions include:\n\n- git-annex, a distributed file synchronization system based on Git\n- git-flow, a set of Git extensions to provide high-level repository operations for Vincent Driessen's branching model\n- git-machete, a repository organizer & tool for automating rebase/merge/pull/push operations\n\nMicrosoft developed the Virtual File System for Git (VFS for Git; formerly Git Virtual File System or GVFS) extension to handle the size of the Windows source-code tree as part of their 2017 migration from Perforce.",
+            "u": "https://en.wikipedia.org/wiki/Git",
+            "at": "2026-10-21T04:21:36Z",
+            "s": [
+              28301,
+              28841
+            ],
+            "h": "Extensions",
+            "d": "2005-04-20"
+          },
+          {
+            "c": "You will have far more confidence and control over your rebase with a visual tool for Git.",
+            "u": "https://gitkraken.com/learn/git/problems/git-interactive-rebase",
+            "at": "2026-10-21T04:21:42Z",
+            "s": [
+              3285,
+              3375
+            ],
+            "h": "**How to Use Interactive Rebase in GitKraken**",
+            "d": "2021-03-25"
+          },
+          {
+            "c": "ChiliProject finn design interactive rebase log to squash and reorganize commits\n\nThis file contains hidden or bidirectional Unicode text that may be interpreted or compiled differently than what appears below.",
+            "u": "https://gist.github.com/edavis10/1361097",
+            "at": "2026-10-21T04:21:37Z",
+            "s": [
+              105,
+              315
+            ]
+          },
+          {
+            "c": "\\[edit\\]\nEvery object in the Git database that is not referred to may be cleaned up by using a garbage collection command or automatically.",
+            "u": "https://en.wikipedia.org/wiki/Git",
+            "at": "2026-10-21T04:21:36Z",
+            "s": [
+              19386,
+              19525
+            ],
+            "h": "Git references",
+            "d": "2005-04-20"
+          },
+          {
+            "c": "It is shipped with a built-in command `git daemon` which starts a simple TCP server running on the Git protocol.<sup>\\[96\\]</sup><sup>\\[97\\]</sup> Dedicated Git HTTP servers help (amongst other features) by adding access control, displaying the contents of a Git repository via the web interfaces, and managing multiple repositories.",
+            "u": "https://en.wikipedia.org/wiki/Git",
+            "at": "2026-10-21T04:21:36Z",
+            "s": [
+              22472,
+              22805
+            ],
+            "h": "Git server",
+            "d": "2005-04-20"
+          }
+        ],
+        "gaps": [],
+        "searched": [
+          "git interactive rebase"
+        ],
+        "tok": 830,
+        "warn": [
+          "fetch_failed:TimeoutError",
+          "fetch_failed:FetchError"
+        ],
+        "ms": 11513
+      },
+      "research_status_match": true,
+      "research_support": true,
+      "conflict_flagged": false,
+      "extract": {
+        "status": "ok",
+        "u": "https://en.wikipedia.org/wiki/Git",
+        "t": "Git - Wikipedia",
+        "at": "2026-10-21T04:21:36Z",
+        "sha": "164c351fb5182ff9",
+        "src": "html",
+        "ps": [
+          {
+            "u": "https://en.wikipedia.org/wiki/Git",
+            "at": "2026-10-21T04:21:36Z",
+            "x": "### Git references\n\n\\[edit\\]\nEvery object in the Git database that is not referred to may be cleaned up by using a garbage collection command or automatically. An object may be referenced by another object or an explicit reference. Git has different types of references. The commands to create, move, and delete references vary. `git show-ref` lists all references. Some types are:\n\n- *heads*: refers to an object locally,\n- *remotes*: refers to an object which exists in a remote repository,\n- *stash*: refers to an object not yet committed,\n- *meta*: *e.g.*, a configuration in a bare repository, user rights; the refs/meta/config namespace was introduced retrospectively, gets used by Gerrit,<sup>\\[77\\]</sup>\n- *tags*: see above.\n\n",
+            "s": [
+              19366,
+              20101
+            ],
+            "h": "Git references"
+          },
+          {
+            "u": "https://en.wikipedia.org/wiki/Git",
+            "at": "2026-10-21T04:21:36Z",
+            "x": "## Git server\n\n\\[edit\\]\nAs Git is a distributed version control system, it could be used as a server out of the box. It is shipped with a built-in command `git daemon` which starts a simple TCP server running on the Git protocol.<sup>\\[96\\]</sup><sup>\\[97\\]</sup> Dedicated Git HTTP servers help (amongst other features) by adding access control, displaying the contents of a Git repository via the web interfaces, and managing multiple repositories. Already existing Git repositories can be cloned and shared to be used by others as a centralized repo. It can also be accessed via remote shell just by having the Git software installed and allowing a user to log in.<sup>\\[98\\]</sup> Git servers typically listen on TCP port 9418.<sup>\\[99\\]</sup>\n\nFor Web-based repository browsing, Git is also shipped with gitweb, a CGI-based interface for viewing repository contents over HTTP.<sup>\\[100\\]</sup>\n\n",
+            "s": [
+              22355,
+              23257
+            ],
+            "h": "Git server"
+          },
+          {
+            "u": "https://en.wikipedia.org/wiki/Git",
+            "at": "2026-10-21T04:21:36Z",
+            "x": "### Git server as a service\n\n\\[edit\\]\nThere are many offerings of Git repositories as a service. The most popular are GitHub, SourceForge, Bitbucket and GitLab.<sup>\\[105\\]</sup><sup>\\[19\\]</sup><sup>\\[20\\]</sup><sup>\\[21\\]</sup><sup>\\[22\\]</sup>\n\n",
+            "s": [
+              24604,
+              24852
+            ],
+            "h": "Git server as a service"
+          },
+          {
+            "u": "https://en.wikipedia.org/wiki/Git",
+            "at": "2026-10-21T04:21:36Z",
+            "x": "### Extensions\n\n\\[edit\\]\nThere are many *Git extensions*, like Git LFS, which started as an extension to Git in the GitHub community and is now widely used by other repositories. Extensions are usually independently developed and maintained by different people, but at some point in the future, a widely used extension can be merged with Git.\n\nOther open-source Git extensions include:\n\n- git-annex, a distributed file synchronization system based on Git\n- git-flow, a set of Git extensions to provide high-level repository operations for Vincent Driessen's branching model\n- git-machete, a repository organizer & tool for automating rebase/merge/pull/push operations\n\nMicrosoft developed the Virtual File System for Git (VFS for Git; formerly Git Virtual File System or GVFS) extension to handle the size of the Windows source-code tree as part of their 2017 migration from Perforce. VFS for Git allows cloned repositories to use placeholders whose contents are downloaded only once a file is accessed.<sup>\\[120\\]</sup>\n\n",
+            "s": [
+              27957,
+              28980
+            ],
+            "h": "Extensions"
+          }
+        ],
+        "tok": 950,
+        "d": "2005-04-20",
+        "ms": 979
+      },
+      "extract_ms": 985.7,
+      "extract_support": true,
+      "search_actual_tokens": 394,
+      "research_actual_tokens": 830,
+      "extract_actual_tokens": 950
+    },
+    {
+      "id": "docs-05",
+      "category": "docs",
+      "query": "CSS grid auto-fit minmax",
+      "expect_conflict": false,
+      "search_ms": 2184.5,
+      "search": {
+        "status": "ok",
+        "q": "CSS grid auto-fit minmax",
+        "n": 5,
+        "res": [
+          {
+            "t": "css - Why auto-fit or auto-fill not working properly with minmax…",
+            "u": "https://stackoverflow.com/a/61800035",
+            "s": "4 Answers 4 repeat( [ | auto-fill | auto-fit ] , ) The first argument specifies the number of repetitions. The second argu…"
+          },
+          {
+            "t": "Re: [css-grid] a few questions on auto-fill / auto-fit in the r…",
+            "u": "https://lists.w3.org/Archives/Public/www-style/2015Dec/0243.html",
+            "s": "On 12/10/2015 22:44, fantasai wrote: > On 12/02/2015 06:39 PM, Mats Palmgren wrote: >> https://drafts.csswg.org/css-grid/#valdef-repeat-auto-fill >> 4. H…"
+          },
+          {
+            "t": "CSS Grid auto fit with max-content - Stack Overflow",
+            "u": "https://stackoverflow.com/questions/52764726/css-grid-auto-fit-with-max-content",
+            "s": "Something like repeat (auto-fit, minmax (max-content, 1fr)) should then create a grid with 1-n columns, where each column is at a minimum the width of the widest grid item."
+          },
+          {
+            "t": "Auto-Sizing Columns in CSS Grid: `auto-fill` vs `auto-fit`",
+            "u": "https://css-tricks.com/auto-sizing-columns-css-grid-auto-fill-vs-auto-fit/",
+            "s": "One of the most powerful and convenient CSS Grid features is that, in addition to explicit column sizing, we have the option to repeat-to-fill columns in a Grid, and then auto-place items in them."
+          },
+          {
+            "t": "Auto-Sizing Columns in CSS Grid: auto-fill vs auto-fit",
+            "u": "http://sarasoueidan.com/blog/auto-fill-auto-fit/",
+            "s": "Auto-Sizing Columns in CSS Grid: auto-fill vs auto-fit In this article I explain the subtle but important difference between auto-fill and auto-fit for s…"
+          }
+        ],
+        "ms": 2182,
+        "tok": 442,
+        "prov": [
+          "ddg",
+          "mwmbl",
+          "wikipedia"
+        ]
+      },
+      "search_relevant": 0,
+      "search_returned": 5,
+      "search_precision_at_n": 0.0,
+      "top3_relevant": false,
+      "research_ms": 8892.8,
+      "research": {
+        "status": "ok",
+        "q": "CSS grid auto-fit minmax",
+        "n": 4,
+        "f": [
+          {
+            "c": "`grid-template-columns: repeat( auto-fit, minmax(250px, 1fr) );`\nThese keywords tell the browser to handle the column sizing and element wrapping for us so that the elements will wrap into rows when the width is not large enough to fit them in without any overflow.",
+            "u": "https://css-tricks.com/auto-sizing-columns-css-grid-auto-fill-vs-auto-fit/",
+            "at": "2026-10-21T04:21:48Z",
+            "s": [
+              2259,
+              2524
+            ],
+            "d": "2017-12-29"
+          },
+          {
+            "c": "In this article I explain the subtle but important difference between `auto-fill` and `auto-fit` for sizing columns in CSS Grid.",
+            "u": "https://www.sarasoueidan.com/blog/auto-fill-auto-fit/",
+            "at": "2026-10-21T04:21:55Z",
+            "s": [
+              58,
+              186
+            ],
+            "h": "Auto-Sizing Columns in CSS Grid: auto-fill vs auto-fit"
+          },
+          {
+            "c": "In a recent CSS workshop, I summarized the difference between `auto-fill` and `auto-fit` as follows:\n\n`auto-fill` FILLS the row with as many columns as it can fit.",
+            "u": "https://css-tricks.com/auto-sizing-columns-css-grid-auto-fill-vs-auto-fit/",
+            "at": "2026-10-21T04:21:48Z",
+            "s": [
+              3165,
+              3328
+            ],
+            "h": "Fill or Fit? What’s the difference?",
+            "d": "2017-12-29"
+          },
+          {
+            "c": "The browser will place and size the columns in the first example using the `auto-fill` keyword, and it will use `auto-fit` for the second.",
+            "u": "https://css-tricks.com/auto-sizing-columns-css-grid-auto-fill-vs-auto-fit/",
+            "at": "2026-10-21T04:21:48Z",
+            "s": [
+              4522,
+              4660
+            ],
+            "h": "Fill or Fit? What’s the difference?",
+            "d": "2017-12-29"
+          }
+        ],
+        "gaps": [],
+        "searched": [
+          "CSS grid auto-fit minmax"
+        ],
+        "tok": 461,
+        "warn": [
+          "fetch_failed:FetchError"
+        ],
+        "ms": 8890
+      },
+      "research_status_match": true,
+      "research_support": true,
+      "conflict_flagged": false,
+      "extract": {
+        "status": "error",
+        "err": "http_error",
+        "msg": "HTTP 403 for https://stackoverflow.com/questions/51594965/why-auto-fit-or-auto-fill-not-working-properly-with-minmax/61800035",
+        "retry": false
+      },
+      "extract_ms": 940.3,
+      "extract_support": false,
+      "search_actual_tokens": 442,
+      "research_actual_tokens": 461,
+      "extract_actual_tokens": 49
+    },
+    {
+      "id": "docs-06",
+      "category": "docs",
+      "query": "javascript fetch AbortController cancel request",
+      "expect_conflict": false,
+      "search_ms": 3360.9,
+      "search": {
+        "status": "ok",
+        "q": "javascript fetch AbortController cancel request",
+        "n": 5,
+        "res": [
+          {
+            "t": "AbortController: abort() method - Web APIs | MDN",
+            "u": "https://developer.mozilla.org/docs/Web/API/AbortController/abort",
+            "s": "The abort() method of the AbortController interface aborts an asynchronous operation before it has completed. This is able to abort fetch requests, the co…"
+          },
+          {
+            "t": "AbortController: abort () method - Web APIs | MDN",
+            "u": "https://developer.mozilla.org/en-US/docs/Web/API/AbortController/abort",
+            "s": "The abort() method of the AbortController interface aborts an asynchronous operation before it has completed. This is able to abort fetch requests, the consumption of any response bodies, or streams."
+          },
+          {
+            "t": "GitHub - leoek/fetch-to-curl: Convert javascript fetch requests …",
+            "u": "https://github.com/leoek/fetch-to-curl",
+            "s": "Saved searches Use saved searches to filter your results more quickly You signed in with another tab or window. Reload to refresh your session.You signed…"
+          },
+          {
+            "t": "How do I cancel an HTTP fetch () request? - Stack Overflow",
+            "u": "https://stackoverflow.com/questions/31061838/how-do-i-cancel-an-http-fetch-request",
+            "s": "There is a new API for making requests from JavaScript: fetch(). Is there any built in mechanism for canceling these requests in-flight?"
+          },
+          {
+            "t": "javascript - AbortController does not cancel axios.get - Stack O…",
+            "u": "https://stackoverflow.com/q/75510342",
+            "s": "But when I test this code example, my request is not aborted (it just timeout, which is normal, but it should be aborted before timing out as I'm not awa…"
+          }
+        ],
+        "ms": 3359,
+        "tok": 385,
+        "prov": [
+          "ddg",
+          "mwmbl",
+          "wikipedia"
+        ],
+        "warn": [
+          "off_topic_filtered:1"
+        ]
+      },
+      "search_relevant": 2,
+      "search_returned": 5,
+      "search_precision_at_n": 0.4,
+      "top3_relevant": true,
+      "research_ms": 8027.0,
+      "research": {
+        "status": "partial",
+        "q": "javascript fetch AbortController cancel request",
+        "n": 2,
+        "f": [
+          {
+            "c": "`reason` Optional\n- The reason why the operation was aborted, which can be any JavaScript value.",
+            "u": "https://developer.mozilla.org/en-US/docs/Web/API/AbortController/abort",
+            "at": "2026-10-21T04:22:07Z",
+            "s": [
+              531,
+              627
+            ],
+            "h": "Parameters"
+          },
+          {
+            "c": "| Specification |\n|---|\n| DOM> # ref-for-dom-abortcontroller-abortcontroller①> |",
+            "u": "https://developer.mozilla.org/en-US/docs/Web/API/AbortController/abort",
+            "at": "2026-10-21T04:22:07Z",
+            "s": [
+              898,
+              978
+            ],
+            "h": "Specifications"
+          }
+        ],
+        "gaps": [
+          "no_source_for:fetch",
+          "no_source_for:cancel",
+          "no_source_for:request"
+        ],
+        "searched": [
+          "javascript fetch AbortController cancel request"
+        ],
+        "tok": 213,
+        "warn": [
+          "fetch_failed:TimeoutError",
+          "fetch_failed:FetchError"
+        ],
+        "ms": 8024
+      },
+      "research_status_match": true,
+      "research_support": true,
+      "conflict_flagged": false,
+      "extract": {
+        "status": "ok",
+        "u": "https://developer.mozilla.org/en-US/docs/Web/API/AbortController/abort",
+        "t": "AbortController: abort() method - Web APIs | MDN",
+        "at": "2026-10-21T04:22:07Z",
+        "sha": "21fe70f0be7b42c6",
+        "src": "html",
+        "ps": [
+          {
+            "u": "https://developer.mozilla.org/en-US/docs/Web/API/AbortController/abort",
+            "at": "2026-10-21T04:22:07Z",
+            "x": "## Baseline\n\nWidely available\n\nThis feature is well established and works across many devices and browser versions. It’s been available across browsers since March 2019.\n\n**Note:** This feature is available in Web Workers.\n\nThe **`abort()`** method of the `AbortController` interface aborts an asynchronous operation before it has completed.\nThis is able to abort fetch requests, the consumption of any response bodies, or streams.\n\n",
+            "s": [
+              35,
+              468
+            ],
+            "h": "Baseline"
+          },
+          {
+            "u": "https://developer.mozilla.org/en-US/docs/Web/API/AbortController/abort",
+            "at": "2026-10-21T04:22:07Z",
+            "x": "### Parameters\n\n- `reason` Optional\n- The reason why the operation was aborted, which can be any JavaScript value.\nIf not specified, the reason is set to \"AbortError\" `DOMException`.\n\n",
+            "s": [
+              513,
+              697
+            ],
+            "h": "Parameters"
+          },
+          {
+            "u": "https://developer.mozilla.org/en-US/docs/Web/API/AbortController/abort",
+            "at": "2026-10-21T04:22:07Z",
+            "x": "## Specifications\n\n| Specification |\n|---|\n| DOM> # ref-for-dom-abortcontroller-abortcontroller①> |",
+            "s": [
+              879,
+              978
+            ],
+            "h": "Specifications"
+          }
+        ],
+        "tok": 397,
+        "ms": 596
+      },
+      "extract_ms": 599.1,
+      "extract_support": true,
+      "search_actual_tokens": 385,
+      "research_actual_tokens": 213,
+      "extract_actual_tokens": 397
+    },
+    {
+      "id": "docs-07",
+      "category": "docs",
+      "query": "docker compose healthcheck",
+      "expect_conflict": false,
+      "search_ms": 3528.3,
+      "search": {
+        "status": "partial",
+        "q": "docker compose healthcheck",
+        "n": 5,
+        "res": [
+          {
+            "t": "GitHub - peter-evans/docker-compose-healthcheck: How to wait for ...",
+            "u": "https://github.com/peter-evans/docker-compose-healthcheck",
+            "s": "The healthcheck property was originally introduced in the 2.1 Compose file format and is now part of the Compose Specification used by recent versions of Docker Compose. This allows a check to be configured in order to determine whether or…"
+          },
+          {
+            "t": "Docker Compose Healthchecks for containers · GitHub",
+            "u": "https://gist.github.com/supermarsx/d4c8ae4b11134247ac3f0acf75258290",
+            "s": "Ready‑to‑Paste Healthcheck Catalog Below are tested patterns you can drop into your docker-compose.yml. Adjust ports, credentials, and endpoints to your setup."
+          },
+          {
+            "t": "mysql - Docker compose healthcheck use environment variables - S…",
+            "u": "http://stackoverflow.com/q/54988792",
+            "s": "4 Answers 4 You need to use double-dollar sign ($$) in order to tell docker-compose not to parse these environment variables. Also change the way of defi…"
+          },
+          {
+            "t": "Define services in Docker Compose",
+            "u": "https://docs.docker.com/reference/compose-file/services/",
+            "s": "Introduced in Docker Compose version 2.17.0. ... service_healthy: Specifies that a dependency is expected to be \"healthy\" (as indicated by healthcheck) before starting a dependent service."
+          },
+          {
+            "t": "Docker Compose | Docker Docs",
+            "u": "https://docs.docker.com/compose",
+            "s": "Docker Compose Docker Compose is a tool for defining and running multi-container applications. It is the key to unlocking a streamlined and efficient deve…"
+          }
+        ],
+        "ms": 3525,
+        "tok": 402,
+        "prov": [
+          "ddg",
+          "mwmbl"
+        ],
+        "fail": {
+          "wikipedia": "TimeoutError"
+        },
+        "warn": [
+          "off_topic_filtered:1"
+        ]
+      },
+      "search_relevant": 2,
+      "search_returned": 5,
+      "search_precision_at_n": 0.4,
+      "top3_relevant": false,
+      "research_ms": 10806.5,
+      "research": {
+        "status": "ok",
+        "q": "docker compose healthcheck",
+        "n": 5,
+        "f": [
+          {
+            "c": "Introduced in Docker Compose version [2.17.0](https://github.com/docker/compose/releases/tag/v2.17.0).\n\n- `condition`: Sets the condition under which dependency is considered satisfied\n- `service_started`: An equivalent of the short syntax described previously\n- `service_healthy`: Specifies that a dependency is expected to be \"healthy\"\n(as indicated by [`healthcheck`](#healthcheck)) before starting a dependent\nservice.\n- `service_completed_successfully`: Specifies that a dependency is expected to run\nto successful completion before starting a dependent service.\n- `required`: When set to `false` Compose only warns you when the dependency service isn't started or available.",
+            "u": "https://docs.docker.com/reference/compose-file/services/",
+            "at": "2026-10-21T04:22:17Z",
+            "s": [
+              13950,
+              14630
+            ],
+            "h": "Long syntax"
+          },
+          {
+            "c": "The healthcheck property was originally introduced in the 2.1 Compose file format and is now part of the Compose Specification used by recent versions of Docker Compose.",
+            "u": "https://github.com/peter-evans/docker-compose-healthcheck",
+            "at": "2026-10-21T04:22:16Z",
+            "s": [
+              0,
+              169
+            ]
+          },
+          {
+            "c": "Docker Compose is a tool for defining and running multi-container applications.",
+            "u": "https://docs.docker.com/compose",
+            "at": "2026-10-21T04:22:17Z",
+            "s": [
+              18,
+              97
+            ],
+            "h": "Docker Compose"
+          },
+          {
+            "c": "Introduced in Docker Compose version [2.20.2](https://github.com/docker/compose/releases/tag/v2.20.2)\n\n`test` defines the command Compose runs to check container health.",
+            "u": "https://docs.docker.com/reference/compose-file/services/",
+            "at": "2026-10-21T04:22:17Z",
+            "s": [
+              32925,
+              33094
+            ],
+            "h": "`healthcheck`"
+          },
+          {
+            "c": "For more details about the healthcheck parameters `interval`, `timeout` and `retries` see the documentation here.",
+            "u": "https://github.com/peter-evans/docker-compose-healthcheck",
+            "at": "2026-10-21T04:22:16Z",
+            "s": [
+              1165,
+              1278
+            ]
+          }
+        ],
+        "gaps": [],
+        "searched": [
+          "docker compose healthcheck"
+        ],
+        "tok": 535,
+        "warn": [
+          "fetch_failed:TimeoutError",
+          "fetch_failed:FetchError"
+        ],
+        "ms": 10802
+      },
+      "research_status_match": true,
+      "research_support": true,
+      "conflict_flagged": false,
+      "extract": null,
+      "search_actual_tokens": 402,
+      "research_actual_tokens": 535
+    },
+    {
+      "id": "docs-08",
+      "category": "docs",
+      "query": "postgresql CREATE INDEX documentation",
+      "expect_conflict": false,
+      "search_ms": 3519.0,
+      "search": {
+        "status": "partial",
+        "q": "postgresql CREATE INDEX documentation",
+        "n": 5,
+        "res": [
+          {
+            "t": "Comparison of relational database management systems",
+            "u": "https://en.wikipedia.org/wiki/Comparison_of_relational_database_management_systems",
+            "s": "www.techonthenet.com. Index Types, Documentation , PostgreSQL community, 11 November 2021 Full Text Search, Documentation , PostgreSQL community, 11 November",
+            "d": "2026-10-12"
+          },
+          {
+            "t": "SQL",
+            "u": "https://en.wikipedia.org/wiki/SQL",
+            "s": "Foundation (SQL/Foundation). 1999. \" PostgreSQL server programming\". PostgreSQL 9.1 official documentation . postgresql .org. 2011. Archived from the original",
+            "d": "2026-10-17"
+          },
+          {
+            "t": "PostgreSQL: Documentation: 18: CREATE INDEX",
+            "u": "https://www.postgresql.org/docs/current/sql-createindex.html",
+            "s": "Description CREATE INDEX constructs an index on the specified column (s) of the specified relation, which can be a table or a materialized view. Indexes are primarily used to enhance database performance (though inappropriate use can…"
+          },
+          {
+            "t": "PostgreSQL: Documentation: 18: Chapter 11. Indexes",
+            "u": "https://www.postgresql.org/docs/current/indexes.html",
+            "s": "An index allows the database server to find and retrieve specific rows much faster than it could do without an index. But indexes also add overhead to the database system as a whole, so they should be used sensibly."
+          },
+          {
+            "t": "PostgreSQL - CREATE INDEX - GeeksforGeeks",
+            "u": "https://www.geeksforgeeks.org/postgresql/postgresql-create-index/",
+            "s": "The CREATE INDEX statement in PostgreSQL is used to create an index on one or more columns of a table. Indexes improve the speed of data retrieval operations, especially for queries that frequently use the WHERE, JOIN or ORDER BY clauses."
+          }
+        ],
+        "ms": 3515,
+        "tok": 421,
+        "prov": [
+          "ddg",
+          "wikipedia"
+        ],
+        "fail": {
+          "mwmbl": "TimeoutError"
+        },
+        "warn": [
+          "off_topic_filtered:1"
+        ]
+      },
+      "search_relevant": 2,
+      "search_returned": 5,
+      "search_precision_at_n": 0.4,
+      "top3_relevant": true,
+      "research_ms": 18352.3,
+      "research": {
+        "status": "ok",
+        "q": "postgresql CREATE INDEX documentation",
+        "n": 7,
+        "f": [
+          {
+            "c": "117. ↑ *Index Types*, Documentation, PostgreSQL community, 11 November 2021\n118. ↑ *Full Text Search*, Documentation, PostgreSQL community, 11 November 2021\n119. ↑ *Building Spatial Indexes*, PostGIS Manual, The PostGIS Development Group, archived from the original on 2021-05-03, retrieved 2021-05-13\n120. ↑ \"The SQLite R\\*Tree Module\".",
+            "u": "https://en.wikipedia.org/wiki/Comparison_of_relational_database_management_systems",
+            "at": "2026-10-21T04:22:32Z",
+            "s": [
+              74370,
+              74707
+            ],
+            "h": "References",
+            "d": "2005-03-04"
+          },
+          {
+            "c": "The CREATE INDEX statement in PostgreSQL is used to create an index on one or more columns of a table.",
+            "u": "https://www.geeksforgeeks.org/postgresql/postgresql-create-index/",
+            "at": "2026-10-21T04:22:44Z",
+            "s": [
+              0,
+              102
+            ],
+            "d": "2020-07-23"
+          },
+          {
+            "c": "9.1 official documentation*. postgresql.org.",
+            "u": "https://en.wikipedia.org/wiki/SQL",
+            "at": "2026-10-21T04:22:37Z",
+            "s": [
+              27615,
+              27659
+            ],
+            "h": "References",
+            "d": "2001-06-28"
+          },
+          {
+            "c": "**Query:**\n\nCREATE INDEX idx\\_customer\\_name\n\nON Customers (CustomerName);\n\n**Output:**",
+            "u": "https://www.geeksforgeeks.org/postgresql/postgresql-create-index/",
+            "at": "2026-10-21T04:22:44Z",
+            "s": [
+              827,
+              914
+            ],
+            "h": "Example 1: Create an Index on a Single Column",
+            "d": "2020-07-23"
+          },
+          {
+            "c": "**Query:**\n\nCREATE INDEX idx\\_city\\_email\n\nON Customers (City, Email);\n\n**Output:**",
+            "u": "https://www.geeksforgeeks.org/postgresql/postgresql-create-index/",
+            "at": "2026-10-21T04:22:44Z",
+            "s": [
+              1050,
+              1133
+            ],
+            "h": "Example 2: Create an Index on Multiple Columns",
+            "d": "2020-07-23"
+          },
+          {
+            "c": "Prior releases of PostgreSQL also had an R-tree index method.",
+            "u": "https://www.postgresql.org/docs/current/sql-createindex.html",
+            "at": "2026-10-21T04:22:37Z",
+            "s": [
+              22675,
+              22736
+            ],
+            "d": "2026-08-13"
+          },
+          {
+            "c": "Secondly, it eliminates the need to specify *how* to reach a record, i.e., with or without an index.",
+            "u": "https://en.wikipedia.org/wiki/SQL",
+            "at": "2026-10-21T04:22:37Z",
+            "s": [
+              1594,
+              1694
+            ],
+            "h": "SQL",
+            "d": "2001-06-28"
+          }
+        ],
+        "gaps": [],
+        "searched": [
+          "postgresql CREATE INDEX documentation"
+        ],
+        "tok": 658,
+        "warn": [
+          "fetch_failed:TimeoutError"
+        ],
+        "ms": 18350
+      },
+      "research_status_match": true,
+      "research_support": true,
+      "conflict_flagged": false,
+      "extract": null,
+      "search_actual_tokens": 421,
+      "research_actual_tokens": 658
+    },
+    {
+      "id": "docs-09",
+      "category": "docs",
+      "query": "typescript unknown vs any",
+      "expect_conflict": false,
+      "search_ms": 3507.2,
+      "search": {
+        "status": "partial",
+        "q": "typescript unknown vs any",
+        "n": 1,
+        "res": [
+          {
+            "t": "JavaScript syntax",
+            "u": "https://en.wikipedia.org/wiki/JavaScript_syntax",
+            "s": "following words are keywords in TypeScript : abstract any as declare infer keyof module namespace never readonly type unknown JavaScript is case sensitive",
+            "d": "2026-10-16"
+          }
+        ],
+        "ms": 3506,
+        "tok": 108,
+        "prov": [
+          "wikipedia"
+        ],
+        "fail": {
+          "ddg": "TimeoutError",
+          "mwmbl": "TimeoutError"
+        },
+        "warn": [
+          "off_topic_filtered:7"
+        ]
+      },
+      "search_relevant": 0,
+      "search_returned": 1,
+      "search_precision_at_n": 0.0,
+      "top3_relevant": false,
+      "research_ms": 13290.5,
+      "research": {
+        "status": "possibly_outdated",
+        "q": "typescript unknown vs any",
+        "n": 3,
+        "f": [
+          {
+            "c": "If they had vaginal bleeding at any time, the doses were increased. \"Pseudopregnancy,\" typescript, 15 July 1954, GP-LC.",
+            "u": "https://en.wikipedia.org/wiki/Progesterone_%28medication%29",
+            "at": "2026-10-21T04:22:56Z",
+            "s": [
+              137751,
+              137870
+            ],
+            "h": "References",
+            "d": "2016-11-29"
+          },
+          {
+            "c": "breast cancer risk to occur.<sup>\\[130\\]</sup><sup>\\[131\\]</sup> In any case, the risk remains lower than that with most progestins.<sup>\\[39\\]</sup><sup>\\[129\\]</sup> A 2018 systematic review of progesterone and breast cancer concluded that short-term use (\\<5 years) of an estrogen plus progesterone is not associated with a significant increase in risk of breast cancer but that long-term use (>5 years) is associated with greater risk.<sup>\\[127\\]</sup> The conclusions for progesterone were the same in a 2019 meta-analysis of the worldwide epidemiological evidence by the Collaborative Group on Hormonal Factors in Breast Cancer (CGHFBC).<sup>\\[132\\]</sup>",
+            "u": "https://en.wikipedia.org/wiki/Progesterone_%28medication%29",
+            "at": "2026-10-21T04:22:56Z",
+            "s": [
+              28023,
+              28685
+            ],
+            "h": "Breast cancer",
+            "d": "2016-11-29"
+          },
+          {
+            "c": "260. ↑ Ishikawa M, Fujii K, Furusawa Y, Kobayashi T, Makino T, Matsumoto S, et al. \"Unknown\".",
+            "u": "https://en.wikipedia.org/wiki/Progesterone_%28medication%29",
+            "at": "2026-10-21T04:22:56Z",
+            "s": [
+              134976,
+              135069
+            ],
+            "h": "References",
+            "d": "2016-11-29"
+          }
+        ],
+        "gaps": [],
+        "searched": [
+          "typescript unknown vs any",
+          "typescript unknown vs any comparison"
+        ],
+        "tok": 491,
+        "warn": [
+          "all_sources_older_than_1y",
+          "fetch_failed:TimeoutError"
+        ],
+        "ms": 13286
+      },
+      "research_status_match": false,
+      "research_support": true,
+      "conflict_flagged": false,
+      "extract": null,
+      "search_actual_tokens": 108,
+      "research_actual_tokens": 491
+    },
+    {
+      "id": "docs-10",
+      "category": "docs",
+      "query": "react useEffect cleanup function",
+      "expect_conflict": false,
+      "search_ms": 3518.7,
+      "search": {
+        "status": "partial",
+        "q": "react useEffect cleanup function",
+        "n": 5,
+        "res": [
+          {
+            "t": "React (software)",
+            "u": "https://en.wikipedia.org/wiki/React_%28software%29",
+            "s": "developers use more features of React without classes. React provides several built-in hooks such as use State, use Context, use Reducer, use Memo and useEffect . Others",
+            "d": "2026-10-14"
+          },
+          {
+            "t": "reactjs - useEffect cleanup in React 18 - Stack Overflow",
+            "u": "https://stackoverflow.com/questions/72096891/useeffect-cleanup-in-react-18",
+            "s": "2 Answers 2 React v18 has introduced new dev-mode check regarding useEffect idempotency. Your effects will be called once, then immediately destroyed and…"
+          },
+          {
+            "t": "javascript - React useEffect cleanup with current props - Stack …",
+            "u": "https://stackoverflow.com/q/57481573",
+            "s": "3 Answers 3 Was referenced to this question from another one so will do a bit of grave digging for it since there is no accepted answer. The behaviour yo…"
+          },
+          {
+            "t": "The useEffect cleanup and the two circumstances it's called.",
+            "u": "https://reacttraining.com/blog/useEffect-cleanup",
+            "s": "The useEffect cleanup and the two circumstances it's called. Upcoming Workshops The cleanup function is a function returned from within the effect functi…"
+          },
+          {
+            "t": "A Guide to useEffect Cleanup - DEV Community",
+            "u": "https://www.dev.to/racheljoyh/a-guide-to-useeffect-cleanup-27dj",
+            "s": "A Guide to useEffect Cleanup Currently, I am in phase two at Flatiron School and the past three weeks have been all things React. I have learned some gre…"
+          }
+        ],
+        "ms": 3512,
+        "tok": 379,
+        "prov": [
+          "mwmbl",
+          "wikipedia"
+        ],
+        "fail": {
+          "ddg": "TimeoutError"
+        },
+        "warn": [
+          "off_topic_filtered:7"
+        ]
+      },
+      "search_relevant": 0,
+      "search_returned": 5,
+      "search_precision_at_n": 0.0,
+      "top3_relevant": false,
+      "research_ms": 10228.8,
+      "research": {
+        "status": "ok",
+        "q": "react useEffect cleanup function",
+        "n": 5,
+        "f": [
+          {
+            "c": "**Timeline...**\n\nConceptually, this is what it's like when React calls our function component, let's think of the effect that runs as being the \"current effect\":\n\nUserProfile() // useEffect runs based on user 1: this is the current effect\n\nLets say we get some re-renders that have nothing to do with the `userId` changing.",
+            "u": "https://reacttraining.com/blog/useEffect-cleanup",
+            "at": "2026-10-21T04:23:12Z",
+            "s": [
+              4317,
+              4640
+            ],
+            "h": "Race conditions",
+            "d": "2023-03-21"
+          },
+          {
+            "c": "The lifecycle of our timer component without the clean up would look like this\n\nAnd with the cleanup function added to our component's lifecycle would now look like this once the component is unmounted upon the click of the toggle off button\n\nIn summary, clean up functions are a great way to optimize the performance of your web app and to avoid unwanted behaviors.",
+            "u": "https://dev.to/racheljoyh/a-guide-to-useeffect-cleanup-27dj",
+            "at": "2026-10-21T04:23:14Z",
+            "s": [
+              2005,
+              2371
+            ],
+            "h": "The cleanup function lifecycle",
+            "d": "2022-12-10"
+          },
+          {
+            "c": "\\[edit\\]\nFunction components, announced at React Conf 2018, and available since React v16.8, are declared with a function that accepts a single \"props\" argument and returns JSX (JavaScript XML).",
+            "u": "https://en.wikipedia.org/wiki/React_%28software%29",
+            "at": "2026-10-21T04:23:10Z",
+            "s": [
+              2654,
+              2848
+            ],
+            "h": "Function components",
+            "d": "2015-01-02"
+          },
+          {
+            "c": "Currently, I am in phase two at Flatiron School and the past three weeks have been all things React.",
+            "u": "https://dev.to/racheljoyh/a-guide-to-useeffect-cleanup-27dj",
+            "at": "2026-10-21T04:23:14Z",
+            "s": [
+              0,
+              100
+            ],
+            "d": "2022-12-10"
+          },
+          {
+            "c": "The solution to this error would be to create a clean up function that runs once the component is unmounted.",
+            "u": "https://dev.to/racheljoyh/a-guide-to-useeffect-cleanup-27dj",
+            "at": "2026-10-21T04:23:14Z",
+            "s": [
+              1410,
+              1518
+            ],
+            "h": "Why cleaning up is important",
+            "d": "2022-12-10"
+          }
+        ],
+        "gaps": [],
+        "searched": [
+          "react useEffect cleanup function"
+        ],
+        "tok": 581,
+        "warn": [
+          "fetch_failed:FetchError"
+        ],
+        "ms": 10224
+      },
+      "research_status_match": true,
+      "research_support": true,
+      "conflict_flagged": false,
+      "extract": null,
+      "search_actual_tokens": 379,
+      "research_actual_tokens": 581
+    },
+    {
+      "id": "docs-11",
+      "category": "docs",
+      "query": "fastapi Depends dependency injection",
+      "expect_conflict": false,
+      "search_ms": 3509.4,
+      "search": {
+        "status": "partial",
+        "q": "fastapi Depends dependency injection",
+        "n": 5,
+        "res": [
+          {
+            "t": "FastAPI",
+            "u": "https://en.wikipedia.org/wiki/FastAPI",
+            "s": "parameters. FastAPI automatically resolves these dependencies for each request, injecting the necessary instances. from fastapi import Depends , HTTPException",
+            "d": "2026-10-13"
+          },
+          {
+            "t": "GitHub - lexsysko/FastAPI_Depends: FastAPI Dependency Injection: 21 ...",
+            "u": "https://github.com/lexsysko/FastAPI_Depends",
+            "s": "FastAPI Dependency Injection: 21 Examples Using Depends () with AI Answers Why ? Once I wanted to understand how Depends works in FastAPI more thoroughly to understand what's under the hood. I started communicating with the AI. The answer…"
+          },
+          {
+            "t": "Dependency Injection in FastAPI - GeeksforGeeks",
+            "u": "https://www.geeksforgeeks.org/python/dependency-injection-in-fastapi/",
+            "s": "In FastAPI, the Depends function is employed to manage dependency injection, serving as a common parameter for other functions. This allows for organized handling of dependencies within FastAPI, facilitating the management and injection of…"
+          },
+          {
+            "t": "Dependencies - FastAPI",
+            "u": "https://fastapi.tiangolo.com/tutorial/dependencies/",
+            "s": "FastAPI Learn Tutorial - User Guide Dependencies Dependencies FastAPI has a very powerful but intuitive Dependency Injection system. It is designed to be very simple to use, and to make it very easy for any developer to integrate other…"
+          },
+          {
+            "t": "Dependencies - Depends () and Security () - FastAPI",
+            "u": "https://fastapi.tiangolo.com/reference/dependencies/",
+            "s": "FastAPI Reference Dependencies - Depends () and Security () Depends () Dependencies are handled mainly with the special function Depends () that takes a callable. Here is the reference for it and its parameters. You can import it directly…"
+          }
+        ],
+        "ms": 3506,
+        "tok": 409,
+        "prov": [
+          "ddg",
+          "wikipedia"
+        ],
+        "fail": {
+          "mwmbl": "TimeoutError"
+        }
+      },
+      "search_relevant": 2,
+      "search_returned": 5,
+      "search_precision_at_n": 0.4,
+      "top3_relevant": false,
+      "research_ms": 7923.3,
+      "research": {
+        "status": "ok",
+        "q": "fastapi Depends dependency injection",
+        "n": 7,
+        "f": [
+          {
+            "c": "In FastAPI, the `Depends` function is employed to manage dependency injection, serving as a common parameter for other functions.",
+            "u": "https://www.geeksforgeeks.org/python/dependency-injection-in-fastapi/",
+            "at": "2026-10-21T04:23:24Z",
+            "s": [
+              2285,
+              2414
+            ],
+            "h": "Depends Function in FastAPI",
+            "d": "2023-12-11"
+          },
+          {
+            "c": "With the Dependency Injection system, you can also tell **FastAPI** that your *path operation function* also \"depends\" on something else that should be executed before your *path operation function*, and **FastAPI** will take care of executing it and \"injecting\" the results.",
+            "u": "https://fastapi.tiangolo.com/tutorial/dependencies/",
+            "at": "2026-10-21T04:23:25Z",
+            "s": [
+              9184,
+              9459
+            ],
+            "h": "Simple usage¶"
+          },
+          {
+            "c": "Full publication: https://lexxai.blogspot.com/2024/10/fastapi-dependency-injection-21.html\n\nDeployed version: https://fastapi-depends.onrender.com/docs\n\nQuestions:\n\n- Prepare for use FastAPI project\n- How does injection Depends work in FastAPI?\n- The decision of who will run when depends on the finish route.",
+            "u": "https://github.com/lexsysko/FastAPI_Depends",
+            "at": "2026-10-21T04:23:24Z",
+            "s": [
+              575,
+              884
+            ]
+          },
+          {
+            "c": "\\[edit\\]\nFastAPI incorporates a Dependency Injection (DI) system to manage and provide services to HTTP endpoints.",
+            "u": "https://en.wikipedia.org/wiki/FastAPI",
+            "at": "2026-10-21T04:23:23Z",
+            "s": [
+              2864,
+              2978
+            ],
+            "h": "Dependency injection",
+            "d": "2020-11-04"
+          },
+          {
+            "c": "Using the Depends Function in FastAPI\n- Handling Sub-Dependencies in FastAPI\n- Overriding Dependencies in FastAPI for Testing",
+            "u": "https://www.geeksforgeeks.org/python/dependency-injection-in-fastapi/",
+            "at": "2026-10-21T04:23:24Z",
+            "s": [
+              2125,
+              2250
+            ],
+            "h": "Methods of Dependency Injection in FastAPI",
+            "d": "2023-12-11"
+          },
+          {
+            "c": "Read more about it in the FastAPI docs for Dependencies **TYPE:** `Callable[..., Any] \\| None` **DEFAULT:** `None` |\n| `use_cache` | By default, after a dependency is called the first time in a request, if the dependency is declared again for the rest of the request (for example if the dependency is needed by several dependencies), the value will be re-used for the rest of the request.",
+            "u": "https://fastapi.tiangolo.com/reference/dependencies/",
+            "at": "2026-10-21T04:23:26Z",
+            "s": [
+              1088,
+              1476
+            ],
+            "h": "`Depends()`¶"
+          },
+          {
+            "c": "Read more about it in the\n[FastAPI docs about sub-dependencies](https://fastapi.tiangolo.com/tutorial/dependencies/sub-dependencies/#using-the-same-dependency-multiple-times)\n\"\"\"\n),\n] = True,\nscope: Annotated[\nLiteral[\"function\", \"request\"] | None,\nDoc(\n\"\"\"\nMainly for dependencies with `yield`, define when the dependency function\nshould start (the code before `yield`) and when it should end (the code\nafter `yield`).",
+            "u": "https://fastapi.tiangolo.com/reference/dependencies/",
+            "at": "2026-10-21T04:23:26Z",
+            "s": [
+              2879,
+              3298
+            ],
+            "h": "Source code in `fastapi/param_functions.py`"
+          }
+        ],
+        "gaps": [],
+        "searched": [
+          "fastapi Depends dependency injection"
+        ],
+        "tok": 836,
+        "ms": 7917
+      },
+      "research_status_match": true,
+      "research_support": true,
+      "conflict_flagged": false,
+      "extract": null,
+      "search_actual_tokens": 409,
+      "research_actual_tokens": 836
+    },
+    {
+      "id": "docs-12",
+      "category": "docs",
+      "query": "rust Result unwrap documentation",
+      "expect_conflict": false,
+      "search_ms": 1818.4,
+      "search": {
+        "status": "ok",
+        "q": "rust Result unwrap documentation",
+        "n": 5,
+        "res": [
+          {
+            "t": "Null coalescing operator",
+            "u": "https://en.wikipedia.org/wiki/Null_coalescing_operator",
+            "s": "result of a function as a default value. // Option // An Option can be either Some(value) or None Some(1). unwrap _or(0); // evaluates to 1 None. unwrap _or(0);",
+            "d": "2026-10-04"
+          },
+          {
+            "t": "Swift (programming language)",
+            "u": "https://en.wikipedia.org/wiki/Swift_%28programming_language%29",
+            "s": "25, 2014. \"Influences - The Rust Reference\". doc. rust -lang.org. Retrieved May 2, 2020. \"influenced by - V documentation \". github.com. Retrieved November",
+            "d": "2026-10-07"
+          },
+          {
+            "t": "core::result - Rust",
+            "u": "https://doc.rust-lang.org/nightly/core/result/index.html",
+            "s": "Result is annotated with the # [must_use] attribute, which will cause the compiler to issue a warning when a Result value is ignored. This makes Result especially useful with functions that may encounter errors but don't otherwise return a…"
+          },
+          {
+            "t": "std::result - Rust",
+            "u": "https://doc.rust-lang.org/std/result/",
+            "s": "Functions return Result whenever errors are expected and recoverable. In the std crate, Result is most prominently used for I/O. A simple function returning Result might be defined and used like so:"
+          },
+          {
+            "t": "unwrap 1.2.1 - Docs.rs",
+            "u": "https://docs.rs/crate/unwrap/1.*",
+            "s": "unwrap 1.2.1 An unwrap! macro for Rust. The crate provides two macros, unwrap! and unwrap_err!. The former can be used to unwrap values of type Result or…"
+          }
+        ],
+        "ms": 1816,
+        "tok": 421,
+        "prov": [
+          "ddg",
+          "mwmbl",
+          "wikipedia"
+        ],
+        "warn": [
+          "duplicate_text_removed",
+          "off_topic_filtered:1"
+        ]
+      },
+      "search_relevant": 2,
+      "search_returned": 5,
+      "search_precision_at_n": 0.4,
+      "top3_relevant": true,
+      "research_ms": 5007.1,
+      "research": {
+        "status": "ok",
+        "q": "rust Result unwrap documentation",
+        "n": 7,
+        "f": [
+          {
+            "c": "Alternatively, `unwrap_or_else()` can be used to use the result of a function as a default value.",
+            "u": "https://en.wikipedia.org/wiki/Null_coalescing_operator",
+            "at": "2026-10-21T04:23:30Z",
+            "s": [
+              8844,
+              8941
+            ],
+            "h": "Rust",
+            "d": "2007-07-09"
+          },
+          {
+            "c": "If the `Result` is `Ok`:\n\n- `expect_err` panics with a provided custom message\n- `unwrap_err` panics with a generic message\n- `unwrap_err_unchecked` produces *undefined behavior*",
+            "u": "https://doc.rust-lang.org/nightly/core/result/index.html",
+            "at": "2026-10-21T04:23:30Z",
+            "s": [
+              8300,
+              8478
+            ],
+            "h": "§Extracting contained values"
+          },
+          {
+            "c": "# An `unwrap!` macro for Rust.",
+            "u": "https://docs.rs/crate/unwrap/1.2.1",
+            "at": "2026-10-21T04:23:33Z",
+            "s": [
+              0,
+              30
+            ],
+            "h": "An `unwrap!` macro for Rust."
+          },
+          {
+            "c": "20. ↑ \"PostgreSQL: Documentation: 9.1: Conditional Expressions\".",
+            "u": "https://en.wikipedia.org/wiki/Null_coalescing_operator",
+            "at": "2026-10-21T04:23:30Z",
+            "s": [
+              12221,
+              12285
+            ],
+            "h": "References",
+            "d": "2007-07-09"
+          },
+          {
+            "c": "\\[edit\\]\nSwift 5.5 introduced structured concurrency into the language.<sup>\\[98\\]</sup> Structured concurrency uses Async/await syntax similar to Kotlin, JavaScript, and Rust.",
+            "u": "https://en.wikipedia.org/wiki/Swift_%28programming_language%29",
+            "at": "2026-10-21T04:23:30Z",
+            "s": [
+              33761,
+              33937
+            ],
+            "h": "Concurrency",
+            "d": "2014-06-02"
+          },
+          {
+            "c": "This makes `Result` especially useful with\nfunctions that may encounter errors but don’t otherwise return a\nuseful value.",
+            "u": "https://doc.rust-lang.org/nightly/core/result/index.html",
+            "at": "2026-10-21T04:23:30Z",
+            "s": [
+              2384,
+              2505
+            ],
+            "h": "§Results must be used"
+          },
+          {
+            "c": "The unwrap crate provides a trait for types which can be unwrapped.",
+            "u": "https://docs.rs/crate/unwrap/1.2.1",
+            "at": "2026-10-21T04:23:33Z",
+            "s": [
+              1846,
+              1913
+            ],
+            "h": "Implementation"
+          }
+        ],
+        "gaps": [],
+        "searched": [
+          "rust Result unwrap documentation"
+        ],
+        "tok": 592,
+        "ms": 5003
+      },
+      "research_status_match": true,
+      "research_support": true,
+      "conflict_flagged": false,
+      "extract": null,
+      "search_actual_tokens": 421,
+      "research_actual_tokens": 592
+    },
+    {
+      "id": "docs-13",
+      "category": "docs",
+      "query": "go context cancellation",
+      "expect_conflict": false,
+      "search_ms": 3527.5,
+      "search": {
+        "status": "partial",
+        "q": "go context cancellation",
+        "n": 5,
+        "res": [
+          {
+            "t": "Ready Eddie Go!",
+            "u": "https://en.wikipedia.org/wiki/Ready_Eddie_Go%21",
+            "s": "On 9 September 2026, the official website was shut down due to the cancellation . As of 15 September 2026, the entire series was removed from Sky Kids",
+            "d": "2026-10-04"
+          },
+          {
+            "t": "Bigg Boss (Hindi TV series) season 20",
+            "u": "https://en.wikipedia.org/wiki/Bigg_Boss_%28Hindi_TV_series%29_season_20",
+            "s": "opens up about the context behind his controversial video\". The Economic Time. Retrieved 12 October 2026. \"Love Gill and Rhiya Ahir to go head-to-head in",
+            "d": "2026-10-20"
+          },
+          {
+            "t": "Canceling in-progress operations - The Go Programming Language",
+            "u": "https://go.dev/doc/database/cancel-operations",
+            "s": "Canceling in-progress operations You can manage in-progress operations by using Go context.Context. A Context is a standard Go data value that can report whether the overall operation it represents has been canceled and is no longer needed."
+          },
+          {
+            "t": "context package - context - Go Packages",
+            "u": "https://pkg.go.dev/context",
+            "s": "Package context defines the Context type, which carries deadlines, cancellation signals, and other request-scoped values across API boundaries and between processes."
+          },
+          {
+            "t": "Best practices on go context cancelation functions",
+            "u": "https://stackoverflow.com/questions/70042646/best-practices-on-go-context-cancelation-functions",
+            "s": "The article states the following regarding context cancelation functions in go: \"You can pass around the cancel function if you wanted to, but, that is highly not recommended."
+          }
+        ],
+        "ms": 3520,
+        "tok": 405,
+        "prov": [
+          "ddg",
+          "wikipedia"
+        ],
+        "fail": {
+          "mwmbl": "TimeoutError"
+        },
+        "warn": [
+          "off_topic_filtered:6"
+        ]
+      },
+      "search_relevant": 2,
+      "search_returned": 5,
+      "search_precision_at_n": 0.4,
+      "top3_relevant": true,
+      "research_ms": 4417.2,
+      "research": {
+        "status": "ok",
+        "q": "go context cancellation",
+        "n": 5,
+        "f": [
+          {
+            "c": "For more about `Context`, see\nGo Concurrency Patterns: Context.",
+            "u": "https://go.dev/doc/database/cancel-operations",
+            "at": "2026-10-21T04:23:40Z",
+            "s": [
+              427,
+              490
+            ],
+            "h": "Canceling in-progress operations"
+          },
+          {
+            "c": "Package context defines the Context type, which carries deadlines, cancellation signals, and other request-scoped values across API boundaries and between processes.",
+            "u": "https://pkg.go.dev/context",
+            "at": "2026-10-21T04:23:40Z",
+            "s": [
+              36,
+              201
+            ],
+            "h": "Overview ¶"
+          },
+          {
+            "c": "Meanwhile, Rhiti failed, resulting in the cancellation of her captaincy nomination.\n- **^5**: On Day 15, Aman took Yung’s lifeline to avail luxury ration for himself.\n- **^6**: On Day 16, Isha and Rhiti lost their lifeline after finishing in the bottom two in the ranking activity among housemates with lifelines.\n- **^7**: On Day 18, Aasif’s captaincy nomination cancelled after receiving most rejection by housemates.",
+            "u": "https://en.wikipedia.org/wiki/Bigg_Boss_%28Hindi_TV_series%29_season_20",
+            "at": "2026-10-21T04:23:38Z",
+            "s": [
+              19116,
+              19535
+            ],
+            "h": "Nomination notes",
+            "d": "2026-07-21"
+          },
+          {
+            "c": "53. ↑ \"Love Gill and Rhiya Ahir to go head-to-head in 'fans ka faisla' for 'Bigg Boss 20' spot\".",
+            "u": "https://en.wikipedia.org/wiki/Bigg_Boss_%28Hindi_TV_series%29_season_20",
+            "at": "2026-10-21T04:23:38Z",
+            "s": [
+              30119,
+              30215
+            ],
+            "h": "References",
+            "d": "2026-07-21"
+          },
+          {
+            "c": "7 minutes |\n| Production company | Hocus Pocus Studio |\n| Original release | |\n| Network | Sky Kids |\n| Release | 15 September 2023 – 15 April 2025 |\n\n***Ready Eddie Go!*** is a British children's television series produced by Hocus Pocus Studio that premiered on Sky Kids on 15 September 2023 (and broadcast on the linear Sky Kids channel, from 18 September 2023).",
+            "u": "https://en.wikipedia.org/wiki/Ready_Eddie_Go%21",
+            "at": "2026-10-21T04:23:39Z",
+            "s": [
+              600,
+              965
+            ],
+            "h": "*Ready Eddie Go!*",
+            "d": "2023-09-19"
+          }
+        ],
+        "gaps": [],
+        "searched": [
+          "go context cancellation"
+        ],
+        "tok": 600,
+        "warn": [
+          "no_query_match:github.com"
+        ],
+        "ms": 4413
+      },
+      "research_status_match": true,
+      "research_support": true,
+      "conflict_flagged": false,
+      "extract": null,
+      "search_actual_tokens": 405,
+      "research_actual_tokens": 600
+    },
+    {
+      "id": "docs-14",
+      "category": "docs",
+      "query": "sql window functions OVER clause",
+      "expect_conflict": false,
+      "search_ms": 3529.7,
+      "search": {
+        "status": "partial",
+        "q": "sql window functions OVER clause",
+        "n": 5,
+        "res": [
+          {
+            "t": "Null (SQL)",
+            "u": "https://en.wikipedia.org/wiki/Null_%28SQL%29",
+            "s": "similar functions that are functionally similar to COALESCE. (See Is functions for more on the IS functions in Transact- SQL .) The Oracle NVL function accepts",
+            "d": "2026-09-25"
+          },
+          {
+            "t": "MariaDB",
+            "u": "https://en.wikipedia.org/wiki/MariaDB",
+            "s": "queries. MariaDB supports standard SQL including stored procedures, functions , triggers, views, window functions , and the JSON data type with a comprehensive",
+            "d": "2026-10-17"
+          },
+          {
+            "t": "OVER Clause (Transact-SQL) - SQL Server | Microsoft Learn",
+            "u": "https://learn.microsoft.com/en-us/sql/t-sql/queries/select-over-clause-transact-sql?view=sql-server-ver17",
+            "s": "The OVER clause determines the partitioning and ordering of a rowset before the associated window function is applied. That is, the OVER clause defines a window or user-specified set of rows within a query result set."
+          },
+          {
+            "t": "WINDOW (Transact-SQL) - SQL Server | Microsoft Learn",
+            "u": "https://learn.microsoft.com/en-us/sql/t-sql/queries/select-window-transact-sql?view=sql-server-ver17",
+            "s": "The WINDOW clause determines the partitioning and ordering of a rowset before the window function in an OVER clause."
+          },
+          {
+            "t": "SQL Server - OVER Clause - GeeksforGeeks",
+            "u": "https://www.geeksforgeeks.org/sql-server/sql-server-over-clause/",
+            "s": "Window functions: The windows functions are needed for applying them on the window frames that are defined by the OVER clause. A window frame is a set of rows belonging to a common condition."
+          }
+        ],
+        "ms": 3525,
+        "tok": 417,
+        "prov": [
+          "ddg",
+          "wikipedia"
+        ],
+        "fail": {
+          "mwmbl": "TimeoutError"
+        },
+        "warn": [
+          "off_topic_filtered:2"
+        ]
+      },
+      "search_relevant": 0,
+      "search_returned": 5,
+      "search_precision_at_n": 0.0,
+      "top3_relevant": false,
+      "research_ms": 11114.2,
+      "research": {
+        "status": "ok",
+        "q": "sql window functions OVER clause",
+        "n": 6,
+        "f": [
+          {
+            "c": "\\[edit\\]\nMariaDB supports standard SQL including stored procedures, functions, triggers, views, window functions, and the `JSON` data type with a comprehensive set of document storage and querying functions.",
+            "u": "https://en.wikipedia.org/wiki/MariaDB",
+            "at": "2026-10-21T04:23:48Z",
+            "s": [
+              11900,
+              12107
+            ],
+            "h": "SQL language",
+            "d": "2009-11-04"
+          },
+          {
+            "c": "Other SQL operations, clauses, and keywords using the \"not distinct\" definition in their treatment of Nulls include:\n\n- The `PARTITION BY` clause of the ranking and windowing functions such as `ROW_NUMBER`\n- The `UNION`, `INTERSECT`, and `EXCEPT` operators, which treat NULLs as the same for row comparison/elimination purposes\n- The `DISTINCT` keyword used in `SELECT` queries",
+            "u": "https://en.wikipedia.org/wiki/Null_%28SQL%29",
+            "at": "2026-10-21T04:23:50Z",
+            "s": [
+              30502,
+              30879
+            ],
+            "h": "When two nulls are equal: grouping, sorting, and some set operations",
+            "d": "2005-06-06"
+          },
+          {
+            "c": "**Applies to:**\nSQL Server 2022 (16.x) and later versions\nAzure SQL Database\nAzure SQL Managed Instance\nSQL database in Microsoft Fabric\n\nThe named window definition in the `WINDOW` clause determines the partitioning and ordering of a rowset before the window function, which uses the window in an `OVER` clause.",
+            "u": "https://learn.microsoft.com/en-us/sql/t-sql/queries/select-window-transact-sql?view=sql-server-ver17",
+            "at": "2026-10-21T04:23:51Z",
+            "s": [
+              178,
+              490
+            ]
+          },
+          {
+            "c": "This name is used by the window functions in the `OVER` clause to refer to the window specification.",
+            "u": "https://learn.microsoft.com/en-us/sql/t-sql/queries/select-window-transact-sql?view=sql-server-ver17",
+            "at": "2026-10-21T04:23:51Z",
+            "s": [
+              1428,
+              1528
+            ],
+            "h": "*window\\_name*"
+          },
+          {
+            "c": "The restrictions for usage of window specifications in the `OVER` clause with the aggregate and analytic functions based on their semantics are applicable to `WINDOW` clause.",
+            "u": "https://learn.microsoft.com/en-us/sql/t-sql/queries/select-window-transact-sql?view=sql-server-ver17",
+            "at": "2026-10-21T04:23:51Z",
+            "s": [
+              3689,
+              3863
+            ],
+            "h": "Remarks"
+          },
+          {
+            "c": "\\[edit\\]\nSQL defines two functions to explicitly handle Nulls: `NULLIF` and `COALESCE`.",
+            "u": "https://en.wikipedia.org/wiki/Null_%28SQL%29",
+            "at": "2026-10-21T04:23:50Z",
+            "s": [
+              34044,
+              34131
+            ],
+            "h": "Null-handling functions",
+            "d": "2005-06-06"
+          }
+        ],
+        "gaps": [],
+        "searched": [
+          "sql window functions OVER clause"
+        ],
+        "tok": 693,
+        "warn": [
+          "fetch_failed:FetchError"
+        ],
+        "ms": 11109
+      },
+      "research_status_match": true,
+      "research_support": true,
+      "conflict_flagged": false,
+      "extract": null,
+      "search_actual_tokens": 417,
+      "research_actual_tokens": 693
+    },
+    {
+      "id": "docs-15",
+      "category": "docs",
+      "query": "tar extract archive command",
+      "expect_conflict": false,
+      "search_ms": 1881.1,
+      "search": {
+        "status": "ok",
+        "q": "tar extract archive command",
+        "n": 5,
+        "res": [
+          {
+            "t": "List of archive formats",
+            "u": "https://en.wikipedia.org/wiki/List_of_archive_formats",
+            "s": "dev.b1.org. Archived from the original on 2023-04-04. Retrieved 2014-03-03. \"B6Zip - Extract .B6Z and .B6 files - Download\". B6Zip. Archived from the original",
+            "d": "2026-10-11"
+          },
+          {
+            "t": "XZ Utils",
+            "u": "https://en.wikipedia.org/wiki/XZ_Utils",
+            "s": "in my_ archive . tar .lzma Decompressing the archive and extracting its contents: tar -x --xz -f my_ archive . tar .xz # results in /some_directory tar -x --lzma",
+            "d": "2026-10-20"
+          },
+          {
+            "t": "linux - tar extract all files from folder inside archive - Stack…",
+            "u": "https://stackoverflow.com/questions/24845259/tar-extract-all-files-from-folder-inside-archive",
+            "s": ""
+          },
+          {
+            "t": "Tar Command in Linux: Create and Extract Archives with Examples",
+            "u": "https://linuxize.com/post/how-to-create-and-extract-archives-using-the-tar-command-in-linux/",
+            "s": "Create, extract, list, and compress tar archives in Linux. Examples for gzip, bzip2, xz, and zstd, plus excluding files, wildcard extraction, and stripping path …"
+          },
+          {
+            "t": "How to un-tar (extract) one file from a tar archive | alvinalexa…",
+            "u": "http://alvinalexander.com/linux-unix/tar-un-tar-extract-file-files-archive-linux",
+            "s": "tar extract FAQ: How do I extract one file (or multiple files) from a tar archive without extracting the entire archive (i.e., how do I un-tar files from …"
+          }
+        ],
+        "ms": 1878,
+        "tok": 419,
+        "prov": [
+          "ddg",
+          "mwmbl",
+          "wikipedia"
+        ],
+        "warn": [
+          "off_topic_filtered:2"
+        ]
+      },
+      "search_relevant": 0,
+      "search_returned": 5,
+      "search_precision_at_n": 0.0,
+      "top3_relevant": false,
+      "research_ms": 6743.0,
+      "research": {
+        "status": "ok",
+        "q": "tar extract archive command",
+        "n": 6,
+        "f": [
+          {
+            "c": "First, if you really want to extract a tar archive completely (un-tar a tar archive), I've written about that before in my How to extract a tar archive tutorial and my Linux tar command examples, so I won't repeat those tutorials much, other than to say that this command is common to un-tar an uncompressed tar archive:\n\ntar xvf your-archive.tar\n\nand this command is common to un-tar a compressed tar archive:\n\ntar xzvf your-archive.tgz",
+            "u": "https://alvinalexander.com/linux-unix/tar-un-tar-extract-file-files-archive-linux/",
+            "at": "2026-10-21T04:24:04Z",
+            "s": [
+              212,
+              649
+            ],
+            "h": "Extract all files from a tar archive"
+          },
+          {
+            "c": "For instance, if your file is named \"foo\" and it's in the root directory of the archive, you'd use this command:\n\ntar xzvf my-archive.tgz foo\n\nHowever, if the file was in a sub-directory named bar, you'd want to specify your un-tar command like this:\n\ntar xzvf my-archive.tgz bar/foo",
+            "u": "https://alvinalexander.com/linux-unix/tar-un-tar-extract-file-files-archive-linux/",
+            "at": "2026-10-21T04:24:04Z",
+            "s": [
+              1055,
+              1338
+            ],
+            "h": "Extract (un-tar) one file from a tar archive"
+          },
+          {
+            "c": "I hope this short tutorial on how to extract (un-tar) a file from a tar archive has been helpful.",
+            "u": "https://alvinalexander.com/linux-unix/tar-un-tar-extract-file-files-archive-linux/",
+            "at": "2026-10-21T04:24:04Z",
+            "s": [
+              2848,
+              2945
+            ],
+            "h": "How to extract (un-tar) a file from a tar archive"
+          },
+          {
+            "c": "Used in conjunction with bzip2. |\n| .sbx | application/x-sbx | SeqBox <sup>\\[2\\]</sup> | (Various; cross platform) | A single file container/archive that can be reconstructed even after total loss of file system structures. |\n| .tar | application/x-tar | Tape archive | Unix-like | A common archive format used on Unix-like systems.",
+            "u": "https://en.wikipedia.org/wiki/List_of_archive_formats",
+            "at": "2026-10-21T04:24:00Z",
+            "s": [
+              2697,
+              3029
+            ],
+            "h": "Archiving only",
+            "d": "2004-03-11"
+          },
+          {
+            "c": "They cannot bundle multiple files into a single archive – to do this an archiving program is used first, such as tar.",
+            "u": "https://en.wikipedia.org/wiki/XZ_Utils",
+            "at": "2026-10-21T04:23:59Z",
+            "s": [
+              2110,
+              2227
+            ],
+            "h": "Usage",
+            "d": "2009-05-18"
+          },
+          {
+            "c": "Free trial of 30 days lets user create and extract archives; after that it is possible to extract, but not to create. |\n| .cfs |",
+            "u": "https://en.wikipedia.org/wiki/List_of_archive_formats",
+            "at": "2026-10-21T04:24:00Z",
+            "s": [
+              10699,
+              10827
+            ],
+            "h": "Archiving and compression",
+            "d": "2004-03-11"
+          }
+        ],
+        "gaps": [],
+        "searched": [
+          "tar extract archive command"
+        ],
+        "tok": 757,
+        "warn": [
+          "fetch_failed:FetchError"
+        ],
+        "ms": 6738
+      },
+      "research_status_match": true,
+      "research_support": true,
+      "conflict_flagged": false,
+      "extract": null,
+      "search_actual_tokens": 419,
+      "research_actual_tokens": 757
+    },
+    {
+      "id": "docs-16",
+      "category": "docs",
+      "query": "HTTP Cache-Control header",
+      "expect_conflict": false,
+      "search_ms": 1803.7,
+      "search": {
+        "status": "ok",
+        "q": "HTTP Cache-Control header",
+        "n": 5,
+        "res": [
+          {
+            "t": "Cache-Control header - HTTP | MDN - MDN Web Docs",
+            "u": "https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Headers/Cache-Control",
+            "s": "The HTTP Cache-Control header holds directives (instructions) in both requests and responses that control caching in browsers and shared caches (e.g., Proxies, CDNs)."
+          },
+          {
+            "t": "HTTP caching - HTTP | MDN - MDN Web Docs",
+            "u": "https://developer.mozilla.org/en-US/docs/Web/HTTP/Guides/Caching",
+            "s": "In most cases, you can control the cache's behavior through the Cache-Control header and your own configuration files or dashboards. For example, the HTTP Caching specification essentially does not define a way to explicitly delete a cache…"
+          },
+          {
+            "t": "List of HTTP header fields",
+            "u": "https://en.wikipedia.org/wiki/List_of_HTTP_header_fields",
+            "s": "HTTP header fields. A core set of fields is standardized by the Internet Engineering Task Force (IETF) in RFC 9110 and 9111. The Field Names, Header Fields",
+            "d": "2026-10-04"
+          },
+          {
+            "t": "List of HTTP status codes",
+            "u": "https://en.wikipedia.org/wiki/List_of_HTTP_status_codes",
+            "s": "of the resource (byte serving) due to a range header sent by the client. The range header is used by HTTP clients to enable resuming of interrupted downloads",
+            "d": "2026-10-11"
+          },
+          {
+            "t": "GitHub - pquerna/cachecontrol: Golang HTTP Cache-Control Parser …",
+            "u": "https://github.com/pquerna/cachecontrol",
+            "s": "Saved searches Use saved searches to filter your results more quickly You signed in with another tab or window. Reload to refresh your session.You signed…"
+          }
+        ],
+        "ms": 1798,
+        "tok": 401,
+        "prov": [
+          "ddg",
+          "mwmbl",
+          "wikipedia"
+        ],
+        "warn": [
+          "off_topic_filtered:2"
+        ]
+      },
+      "search_relevant": 2,
+      "search_returned": 5,
+      "search_precision_at_n": 0.4,
+      "top3_relevant": true,
+      "research_ms": 6070.2,
+      "research": {
+        "status": "ok",
+        "q": "HTTP Cache-Control header",
+        "n": 6,
+        "f": [
+          {
+            "c": "The HTTP **`Cache-Control`** header holds *directives* (instructions) in both requests and responses that control caching in browsers and shared caches (e.g., Proxies, CDNs).\n\n| Header type | Request header, Response header |\n|---|---|\n| Forbidden request header | No |\n| CORS-safelisted response header | Yes |",
+            "u": "https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Headers/Cache-Control",
+            "at": "2026-10-21T04:24:11Z",
+            "s": [
+              194,
+              505
+            ],
+            "h": "Baseline"
+          },
+          {
+            "c": "If you don't add a `Cache-Control` header because the response is not intended to be cached, that could cause an unexpected result.",
+            "u": "https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Headers/Cache-Control",
+            "at": "2026-10-21T04:24:11Z",
+            "s": [
+              19102,
+              19233
+            ],
+            "h": "Up-to-date contents always"
+          },
+          {
+            "c": "In HTTP/1.0, the `Pragma: no-cache` header field has the same purpose.<sup>\\[7\\]</sup>\n\nThe behavior of `no-cache` in a *response* is not specified yet some user agents support it.<sup>\\[8\\]</sup> HTTP/1.1 specifically warns against relying on this behavior.",
+            "u": "https://en.wikipedia.org/wiki/List_of_HTTP_header_fields",
+            "at": "2026-10-21T04:24:08Z",
+            "s": [
+              3063,
+              3321
+            ],
+            "h": "Cache-Control",
+            "d": "2007-09-05"
+          },
+          {
+            "c": "Another common way to prevent old content from being shown to the user without validation is `Cache-Control: max-age=0` which instructs the user agent that the content is stale and should be validated before use.",
+            "u": "https://en.wikipedia.org/wiki/List_of_HTTP_header_fields",
+            "at": "2026-10-21T04:24:08Z",
+            "s": [
+              20109,
+              20321
+            ],
+            "h": "Cache-Control",
+            "d": "2007-09-05"
+          },
+          {
+            "c": "| HTTP |\n|---|\n| Request methods |\n| Header fields |\n| Response status codes |\n| Security access control methods |\n| Security vulnerabilities |\n\nThis article lists standard and notable non-standard HTTP response status codes.",
+            "u": "https://en.wikipedia.org/wiki/List_of_HTTP_status_codes",
+            "at": "2026-10-21T04:21:26Z",
+            "s": [
+              29,
+              254
+            ],
+            "h": "List of HTTP status codes",
+            "d": "2005-02-16"
+          },
+          {
+            "c": "If both `Expires` and `Cache-Control: max-age` are available, `max-age` is defined to be preferred.",
+            "u": "https://developer.mozilla.org/en-US/docs/Web/HTTP/Guides/Caching",
+            "at": "2026-10-21T04:24:11Z",
+            "s": [
+              8846,
+              8945
+            ],
+            "h": "Expires or max-age"
+          }
+        ],
+        "gaps": [],
+        "searched": [
+          "HTTP Cache-Control header"
+        ],
+        "tok": 661,
+        "ms": 6066
+      },
+      "research_status_match": true,
+      "research_support": true,
+      "conflict_flagged": false,
+      "extract": null,
+      "search_actual_tokens": 401,
+      "research_actual_tokens": 661
+    },
+    {
+      "id": "docs-17",
+      "category": "docs",
+      "query": "python dataclasses frozen",
+      "expect_conflict": false,
+      "search_ms": 3528.6,
+      "search": {
+        "status": "partial",
+        "q": "python dataclasses frozen",
+        "n": 3,
+        "res": [
+          {
+            "t": "Immutable object",
+            "u": "https://en.wikipedia.org/wiki/Immutable_object",
+            "s": "Introduced in Python 3.7, dataclasses allow developers to emulate immutability with frozen instances. If a frozen dataclass is built, dataclasses will override",
+            "d": "2026-10-20"
+          },
+          {
+            "t": "Value object",
+            "u": "https://en.wikipedia.org/wiki/Value_object",
+            "s": "= object2). Python has data classes which provides equality testing and can be made immutable using the frozen parameter. from dataclasses import dataclass",
+            "d": "2026-06-15"
+          },
+          {
+            "t": "Strongly typed identifier",
+            "u": "https://en.wikipedia.org/wiki/Strongly_typed_identifier",
+            "s": "May 2023. \" dataclasses — Data Classes\". Python documentation. Python Software Foundation. Retrieved 23 January 2023. \"3. Data model\". Python documentation",
+            "d": "2026-05-16"
+          }
+        ],
+        "ms": 3526,
+        "tok": 246,
+        "prov": [
+          "wikipedia"
+        ],
+        "fail": {
+          "ddg": "TimeoutError",
+          "mwmbl": "TimeoutError"
+        },
+        "warn": [
+          "off_topic_filtered:1"
+        ]
+      },
+      "search_relevant": 0,
+      "search_returned": 3,
+      "search_precision_at_n": 0.0,
+      "top3_relevant": false,
+      "research_ms": 5079.9,
+      "research": {
+        "status": "ok",
+        "q": "python dataclasses frozen",
+        "n": 4,
+        "f": [
+          {
+            "c": "If a frozen dataclass is built, `dataclasses` will override `__setattr__()` and `__delattr__()` to raise `FrozenInstanceError` if invoked.",
+            "u": "https://en.wikipedia.org/wiki/Immutable_object",
+            "at": "2026-10-21T04:24:19Z",
+            "s": [
+              20882,
+              21020
+            ],
+            "h": "Python",
+            "d": "2003-03-17"
+          },
+          {
+            "c": "Bien qu'il ne soit pas possible de créer des objets Python strictement immuables, on peut rendre les instances d'une classe de données quasi immuables en passant `frozen=True` au décorateur `dataclass()`, ce qui lui fait générer des méthodes `__setattr__()` et `__delattr__()`.",
+            "u": "https://docs.python.org/fr/3.9/library/dataclasses.html",
+            "at": "2026-10-21T04:24:19Z",
+            "s": [
+              19526,
+              19803
+            ],
+            "h": "Instances figées¶"
+          },
+          {
+            "c": "Because dataclasses just use normal Python class creation\nthey also share this behavior.",
+            "u": "https://docs.python.org/fr/3.9/library/dataclasses.html",
+            "at": "2026-10-21T04:24:19Z",
+            "s": [
+              22403,
+              22491
+            ],
+            "h": "Valeurs par défaut muables¶"
+          },
+          {
+            "c": "Setting the class\nattribute `__hash__ = None` has a specific meaning to Python, as\ndescribed in the `__hash__()` documentation.",
+            "u": "https://docs.python.org/3/library/dataclasses.html",
+            "at": "2026-10-21T04:24:20Z",
+            "s": [
+              5130,
+              5257
+            ],
+            "h": "Module contents¶"
+          }
+        ],
+        "gaps": [],
+        "searched": [
+          "python dataclasses frozen"
+        ],
+        "tok": 406,
+        "warn": [
+          "fetch_failed:FetchError"
+        ],
+        "ms": 5077
+      },
+      "research_status_match": true,
+      "research_support": true,
+      "conflict_flagged": false,
+      "extract": null,
+      "search_actual_tokens": 246,
+      "research_actual_tokens": 406
+    },
+    {
+      "id": "docs-18",
+      "category": "docs",
+      "query": "nginx proxy_pass reverse proxy",
+      "expect_conflict": false,
+      "search_ms": 938.1,
+      "search": {
+        "status": "ok",
+        "q": "nginx proxy_pass reverse proxy",
+        "n": 5,
+        "res": [
+          {
+            "t": "Reverse proxy",
+            "u": "https://en.wikipedia.org/wiki/Reverse_proxy",
+            "s": "In computer networks, a reverse proxy or surrogate server is a proxy server that appears to any client to be an ordinary web server, but in reality merely",
+            "d": "2026-10-08"
+          },
+          {
+            "t": "Proxy server",
+            "u": "https://en.wikipedia.org/wiki/Proxy_server",
+            "s": "Retrieved 23 June 2026. \" NGINX Reverse Proxy \". NGINX Documentation. F5, Inc. Retrieved 23 June 2026. \"Configuring HTTPS servers\". nginx documentation. Retrieved",
+            "d": "2026-10-20"
+          },
+          {
+            "t": "reverse proxy - nginx: No Such Resource - Stack Overflow",
+            "u": "http://stackoverflow.com/a/35969147",
+            "s": "1 Answer 1 You want slashes on the ends of location and proxy_pass so it doesn't redirect the location too. pasted from answer- location /test/ { proxy_p…"
+          },
+          {
+            "t": "reverse proxy - Configure Nginx with proxy_pass - Stack Overflow",
+            "u": "https://stackoverflow.com/questions/12847771/configure-nginx-with-proxy-pass",
+            "s": "Nginx prefers prefix-based location matches (not involving regular expression), that's why in your code block, /stash redirects are going to /."
+          },
+          {
+            "t": "NGINX Reverse Proxy: Setup Guide with proxy_pass Examples (2026)",
+            "u": "https://www.getpagespeed.com/server-setup/nginx/nginx-reverse-proxy",
+            "s": "An NGINX reverse proxy sits between clients and your backend servers, forwarding client requests and returning responses. This architecture improves security, enables load balancing, and provides SSL termination in a single…"
+          }
+        ],
+        "ms": 932,
+        "tok": 392,
+        "prov": [
+          "ddg",
+          "mwmbl",
+          "wikipedia"
+        ],
+        "warn": [
+          "off_topic_filtered:2"
+        ]
+      },
+      "search_relevant": 0,
+      "search_returned": 5,
+      "search_precision_at_n": 0.0,
+      "top3_relevant": false,
+      "research_ms": 9687.6,
+      "research": {
+        "status": "ok",
+        "q": "nginx proxy_pass reverse proxy",
+        "n": 5,
+        "f": [
+          {
+            "c": "The `proxy_pass` directive is the foundation of NGINX reverse proxy configuration.",
+            "u": "https://www.getpagespeed.com/server-setup/nginx/nginx-reverse-proxy",
+            "at": "2026-10-21T04:24:31Z",
+            "s": [
+              1721,
+              1803
+            ],
+            "h": "Basic proxy\\_pass Configuration",
+            "d": "2026-01-23"
+          },
+          {
+            "c": "Examples of web proxy servers include Apache (with mod\\_proxy or Traffic Server), HAProxy, IIS configured as proxy (e.g., with Application Request Routing), Nginx, Privoxy, Squid, Varnish (reverse proxy only), WinGate, Ziproxy, Tinyproxy, RabbIT and Polipo.",
+            "u": "https://en.wikipedia.org/wiki/Proxy_server",
+            "at": "2026-10-21T04:24:23Z",
+            "s": [
+              17579,
+              17836
+            ],
+            "h": "Web proxy servers",
+            "d": "2002-09-01"
+          },
+          {
+            "c": "If a reverse proxy is not configured to filter attacks or it does not receive daily updates to keep its attack signature database up to date, a zero-day vulnerability can pass through unfiltered, enabling attackers to gain control of the system(s) that are behind the reverse proxy server.<sup>\\[*citation needed*\\]</sup>\n\nGiving the reverse proxy of a third party access to private keys (for caching or optimizing content) places the entire triad of confidentiality, integrity and availability in the hands of the third party who operates the proxy.",
+            "u": "https://en.wikipedia.org/wiki/Reverse_proxy",
+            "at": "2026-10-21T04:24:26Z",
+            "s": [
+              6170,
+              6720
+            ],
+            "h": "Risks",
+            "d": "2005-03-14"
+          },
+          {
+            "c": "2. ↑\nReese, Will (September 2008). \"Nginx: the high-performance web server and reverse proxy\".",
+            "u": "https://en.wikipedia.org/wiki/Reverse_proxy",
+            "at": "2026-10-21T04:24:26Z",
+            "s": [
+              7358,
+              7452
+            ],
+            "h": "References",
+            "d": "2005-03-14"
+          },
+          {
+            "c": "This frees backend servers quickly while your NGINX reverse proxy handles slow client connections.",
+            "u": "https://www.getpagespeed.com/server-setup/nginx/nginx-reverse-proxy",
+            "at": "2026-10-21T04:24:31Z",
+            "s": [
+              6612,
+              6710
+            ],
+            "h": "Buffering Configuration",
+            "d": "2026-01-23"
+          }
+        ],
+        "gaps": [],
+        "searched": [
+          "nginx proxy_pass reverse proxy"
+        ],
+        "tok": 569,
+        "warn": [
+          "fetch_failed:FetchError"
+        ],
+        "ms": 9684
+      },
+      "research_status_match": true,
+      "research_support": true,
+      "conflict_flagged": false,
+      "extract": null,
+      "search_actual_tokens": 392,
+      "research_actual_tokens": 569
+    },
+    {
+      "id": "no-01",
+      "category": "unanswerable",
+      "query": "exact 2031 population of the fictional city of Zephyria",
+      "expect_conflict": false,
+      "search_ms": 1320.5,
+      "search": {
+        "status": "no_reliable_result",
+        "q": "exact 2031 population of the fictional city of Zephyria",
+        "n": 0,
+        "res": [],
+        "ms": 1320,
+        "tok": 67,
+        "prov": [
+          "ddg",
+          "mwmbl",
+          "wikipedia"
+        ],
+        "warn": [
+          "off_topic_filtered:8",
+          "no_results",
+          "no_query_match"
+        ]
+      },
+      "search_relevant": 0,
+      "search_returned": 0,
+      "search_precision_at_n": 0.0,
+      "top3_relevant": false,
+      "research_ms": 201.1,
+      "research": {
+        "status": "no_reliable_result",
+        "q": "exact 2031 population of the fictional city of Zephyria",
+        "n": 0,
+        "f": [],
+        "gaps": [
+          "no_search_results"
+        ],
+        "searched": [
+          "exact 2031 population of the fictional city of Zephyria"
+        ],
+        "tok": 63,
+        "ms": 200
+      },
+      "research_status_match": true,
+      "research_support": null,
+      "conflict_flagged": false,
+      "extract": null,
+      "search_actual_tokens": 67,
+      "research_actual_tokens": 63
+    },
+    {
+      "id": "no-02",
+      "category": "unanswerable",
+      "query": "who won the 2029 Nobel Prize in Quantum Poetry",
+      "expect_conflict": false,
+      "search_ms": 2670.2,
+      "search": {
+        "status": "ok",
+        "q": "who won the 2029 Nobel Prize in Quantum Poetry",
+        "n": 5,
+        "res": [
+          {
+            "t": "Meet UW-Madison's Nobel Prize winners - UW-Madison News",
+            "u": "https://news.wisc.edu/meet-uw-madisons-nobel-prize-winners/",
+            "s": "UW Nobel Prize winners, by the numbers 23 total Nobel Prizes (awarded to alumni, postdocs and faculty members — past or present at time of award) 22 distinct winners (John Bardeen won twice) 21 distinct awards (Edward Tatum and Joshua…"
+          },
+          {
+            "t": "The New Yorker",
+            "u": "http://www.newyorker.com/",
+            "s": "The New Yorker Carleton Gajdusek won the Nobel Prize for his work on a fatal disease in Papua New Guinea. But his biggest experiment was on the dozens of…"
+          },
+          {
+            "t": "The 2026 Nobel Shortlist: Who the Data Says Will Win",
+            "u": "https://academinence.com/blog/nobel-2026-shortlist",
+            "s": "Wolf Prize in Physics 2018. Quantum information theory. Co-developer of quantum key distribution. The 2022 Nobel for entanglement (Aspect, Clauser, Zeilinger) raised the profile of this field substantially. Gilles Brassard (Université de…"
+          },
+          {
+            "t": "2017 Nobel Prize in Literature winner Kazuo Ishiguro on his nove…",
+            "u": "http://www.cbc.ca/1.3010917",
+            "s": "Social Sharing Kazuo Ishiguro has won the 2017 Nobel Prize in Literature. The Japanese-born British author was acknowledged for being a writer \"who, in n…"
+          },
+          {
+            "t": "Nobel prizes",
+            "u": "https://newatlas.com/tag/nobel-prizes/",
+            "s": "Nobel prizes This year's Nobel Prize in Chemistry has been awarded to three different scientists who advanced the development of quantum dots – nanoscale…"
+          }
+        ],
+        "ms": 2667,
+        "tok": 431,
+        "prov": [
+          "ddg",
+          "mwmbl",
+          "wikipedia"
+        ],
+        "warn": [
+          "off_topic_filtered:12"
+        ]
+      },
+      "search_relevant": 0,
+      "search_returned": 5,
+      "search_precision_at_n": 0.0,
+      "top3_relevant": false,
+      "research_ms": 1.1,
+      "research": {
+        "status": "no_reliable_result",
+        "q": "who won the 2029 Nobel Prize in Quantum Poetry",
+        "n": 0,
+        "f": [],
+        "gaps": [
+          "future_value_unknown:2029"
+        ],
+        "searched": [
+          "who won the 2029 Nobel Prize in Quantum Poetry"
+        ],
+        "tok": 62,
+        "ms": 0
+      },
+      "research_status_match": true,
+      "research_support": null,
+      "conflict_flagged": false,
+      "extract": null,
+      "search_actual_tokens": 431,
+      "research_actual_tokens": 62
+    },
+    {
+      "id": "no-03",
+      "category": "unanswerable",
+      "query": "private API key of the OpenAI status dashboard",
+      "expect_conflict": false,
+      "search_ms": 3511.8,
+      "search": {
+        "status": "partial",
+        "q": "private API key of the OpenAI status dashboard",
+        "n": 5,
+        "res": [
+          {
+            "t": "API",
+            "u": "https://en.wikipedia.org/wiki/API",
+            "s": "performance or dashboard controls. Access to such APIs is granted either by \" API tokens\", or customer status validations. An important factor when an API becomes",
+            "d": "2026-10-19"
+          },
+          {
+            "t": "Where do I find my OpenAI API Key? - OpenAI Help Center",
+            "u": "https://help.openai.com/en/articles/4936850-where-do-i-find-my-openai-api-key",
+            "s": "Where do I find my OpenAI API Key? Find, create, manage, and delete your OpenAI API keys while keeping them secure."
+          },
+          {
+            "t": "OpenAI Help Center",
+            "u": "https://help.openai.com/en?q=OpenAI+API+key",
+            "s": "How can I view the users or organizations associated with an API key? Identify the user and organizations associated with an OpenAI API key by calling the account information endpoint."
+          },
+          {
+            "t": "Where to Find Your OpenAI API Key - chatai.guide",
+            "u": "https://chatai.guide/api/where-to-find-openai-api-key/",
+            "s": "Find your OpenAI API key in the OpenAI Platform, create a new secret key, store it safely, and know when to use project, service account, or admin keys."
+          },
+          {
+            "t": "Admin APIs | OpenAI API",
+            "u": "https://developers.openai.com/api/docs/guides/admin-apis",
+            "s": "Admin APIs let you automate organization management workflows such as user invitations, audit log review, project administration, API key management, spend limits and alerts, data retention, and rate limit operations. Use them for…"
+          }
+        ],
+        "ms": 3509,
+        "tok": 394,
+        "prov": [
+          "ddg",
+          "wikipedia"
+        ],
+        "fail": {
+          "mwmbl": "TimeoutError"
+        },
+        "warn": [
+          "off_topic_filtered:10"
+        ]
+      },
+      "search_relevant": 0,
+      "search_returned": 5,
+      "search_precision_at_n": 0.0,
+      "top3_relevant": false,
+      "research_ms": 0.6,
+      "research": {
+        "status": "no_reliable_result",
+        "q": "private API key of the OpenAI status dashboard",
+        "n": 0,
+        "f": [],
+        "gaps": [
+          "sensitive_query"
+        ],
+        "searched": [
+          "private API key of the OpenAI status dashboard"
+        ],
+        "tok": 55,
+        "ms": 0
+      },
+      "research_status_match": true,
+      "research_support": null,
+      "conflict_flagged": false,
+      "extract": null,
+      "search_actual_tokens": 394,
+      "research_actual_tokens": 55
+    },
+    {
+      "id": "no-04",
+      "category": "unanswerable",
+      "query": "Nvidia stock price on December 31 2030",
+      "expect_conflict": false,
+      "search_ms": 3517.0,
+      "search": {
+        "status": "partial",
+        "q": "Nvidia stock price on December 31 2030",
+        "n": 5,
+        "res": [
+          {
+            "t": "AI bubble",
+            "u": "https://en.wikipedia.org/wiki/AI_bubble",
+            "s": "models developed at far greater expense. The stock prices of many AI companies dropped—for example, Nvidia's dropped 17%, or approximately US$600 billion",
+            "d": "2026-10-19"
+          },
+          {
+            "t": "2025–present global memory supply shortage",
+            "u": "https://en.wikipedia.org/wiki/2025%E2%80%93present_global_memory_supply_shortage",
+            "s": "January 16, 2026. \" Nvidia shift, AI chip shortages threatening to hike gadget prices \". CNBC. December 2, 2025. Retrieved December 20, 2025. Agarwal, Armaan",
+            "d": "2026-10-20"
+          },
+          {
+            "t": "Prediction: This Will Be Nvidia's Stock Price in 2030 - Yahoo Finance",
+            "u": "https://finance.yahoo.com/markets/stocks/articles/prediction-nvidias-stock-price-2030-092000929.html",
+            "s": "So, what will Nvidia's stock price be by 2030? Wall Street analysts expect Nvidia to generate about $392 billion in revenue this year, giving it about a 60% share of the total spending."
+          },
+          {
+            "t": "Nvidia Stock Price Prediction: 2026, 2027, 2030 - Benzinga",
+            "u": "https://www.benzinga.com/money/nvidia-stock-price-prediction",
+            "s": "See Nvidia stock forecast for 2026-2030, including potential price drivers, AI demand, risks, and expert expectations for NVDA growth."
+          },
+          {
+            "t": "NVIDIA Corporation - Stock Info - Historical Price Lookup",
+            "u": "https://investor.nvidia.com/stock-info/historical-price-lookup/default.aspx",
+            "s": "Santa Clara, CA 95051 Contact Investor Relations Investor Resources Download Library Request Information FAQs Email Alerts RSS Stock Info Stock Quote & Chart Historical Price Lookup Investment Calculator Fundamentals Analyst Coverage…"
+          }
+        ],
+        "ms": 3511,
+        "tok": 458,
+        "prov": [
+          "ddg",
+          "wikipedia"
+        ],
+        "fail": {
+          "mwmbl": "TimeoutError"
+        },
+        "warn": [
+          "off_topic_filtered:3"
+        ]
+      },
+      "search_relevant": 0,
+      "search_returned": 5,
+      "search_precision_at_n": 0.0,
+      "top3_relevant": false,
+      "research_ms": 1.1,
+      "research": {
+        "status": "no_reliable_result",
+        "q": "Nvidia stock price on December 31 2030",
+        "n": 0,
+        "f": [],
+        "gaps": [
+          "future_value_unknown:2030"
+        ],
+        "searched": [
+          "Nvidia stock price on December 31 2030"
+        ],
+        "tok": 62,
+        "ms": 0
+      },
+      "research_status_match": true,
+      "research_support": null,
+      "conflict_flagged": false,
+      "extract": null,
+      "search_actual_tokens": 458,
+      "research_actual_tokens": 62
+    },
+    {
+      "id": "no-05",
+      "category": "unanswerable",
+      "query": "number of employees at the fictional company NimbusWorks",
+      "expect_conflict": false,
+      "search_ms": 3511.7,
+      "search": {
+        "status": "partial",
+        "q": "number of employees at the fictional company NimbusWorks",
+        "n": 5,
+        "res": [
+          {
+            "t": "List of Futurama characters",
+            "u": "https://en.wikipedia.org/wiki/List_of_Futurama_characters",
+            "s": "finds employment at Planet Express, an interplanetary delivery company in the retro-futuristic 31st century. Along with the employees of Planet Express",
+            "d": "2026-10-17"
+          },
+          {
+            "t": "Chromecast",
+            "u": "https://en.wikipedia.org/wiki/Chromecast",
+            "s": "512 MB of Samsung DDR3L RAM and 256 MB of flash storage. The model number NC2-6A5 may be a reference to the registry number \"NCC-1701\" of the fictional starship",
+            "d": "2026-06-24"
+          },
+          {
+            "t": "Nimbus Works - $1.5 M Revenue, Employees & Growth | Kona Equity",
+            "u": "https://www.konaequity.com/company/nimbus-works-4848843798/",
+            "s": "Nimbus Works has an estimated annual revenue of $1.5 M, 7 employees, headquartered in Norwalk, CT, founded in 2006. Explore Nimbus Works revenue history, growth rate, competitors, and more in the Internet Marketing Service industry."
+          },
+          {
+            "t": "Nimbus Works - Overview, News & Similar companies | ZoomInfo.com",
+            "u": "https://www.zoominfo.com/c/nimbus-works-llp/357000368",
+            "s": "View Nimbus Works (www.nimbusworks.net) location in Utah, United States , revenue, industry and description. Find related and similar companies as well as employees by title and much more."
+          },
+          {
+            "t": "Nimbus Works, LLC Information - RocketReach",
+            "u": "https://rocketreach.co/nimbus-works-llc-management_b447451bfad9e0a2",
+            "s": "Nimbus Works, LLC is an Advertising Services, Business Services General, and Business Services company located in Stamford, Connecticut with $4 million in revenue and 1 employees. Find top employees, contact details and business statistics…"
+          }
+        ],
+        "ms": 3508,
+        "tok": 465,
+        "prov": [
+          "ddg",
+          "wikipedia"
+        ],
+        "fail": {
+          "mwmbl": "TimeoutError"
+        },
+        "warn": [
+          "off_topic_filtered:10"
+        ]
+      },
+      "search_relevant": 0,
+      "search_returned": 5,
+      "search_precision_at_n": 0.0,
+      "top3_relevant": false,
+      "research_ms": 9340.1,
+      "research": {
+        "status": "no_reliable_result",
+        "q": "number of employees at the fictional company NimbusWorks",
+        "n": 0,
+        "f": [],
+        "gaps": [
+          "unverifiable_entity:nimbusworks"
+        ],
+        "searched": [
+          "number of employees at the fictional company NimbusWorks"
+        ],
+        "tok": 68,
+        "warn": [
+          "fetch_failed:FetchError"
+        ],
+        "ms": 9339
+      },
+      "research_status_match": true,
+      "research_support": null,
+      "conflict_flagged": false,
+      "extract": null,
+      "search_actual_tokens": 465,
+      "research_actual_tokens": 68
+    },
+    {
+      "id": "no-06",
+      "category": "unanswerable",
+      "query": "airspeed velocity of an unladen African swallow in the Python docs",
+      "expect_conflict": false,
+      "search_ms": 3525.0,
+      "search": {
+        "status": "no_reliable_result",
+        "q": "airspeed velocity of an unladen African swallow in the Python docs",
+        "n": 0,
+        "res": [],
+        "ms": 3524,
+        "tok": 66,
+        "fail": {
+          "ddg": "TimeoutError",
+          "mwmbl": "TimeoutError",
+          "wikipedia": "TimeoutError"
+        },
+        "warn": [
+          "no_results"
+        ]
+      },
+      "search_relevant": 0,
+      "search_returned": 0,
+      "search_precision_at_n": 0.0,
+      "top3_relevant": false,
+      "research_ms": 9096.6,
+      "research": {
+        "status": "partial",
+        "q": "airspeed velocity of an unladen African swallow in the Python docs",
+        "n": 6,
+        "f": [
+          {
+            "c": "Like many things regarding Python (and the name \"Python\" itself), \"Unladen Swallow\" is a Monty Python reference, specifically to the joke about the airspeed velocity of unladen swallows in *Monty Python and the Holy Grail*.",
+            "u": "https://en.wikipedia.org/wiki/Unladen_Swallow",
+            "at": "2026-10-21T04:25:02Z",
+            "s": [
+              235,
+              458
+            ],
+            "h": "Unladen Swallow",
+            "d": "2009-08-25"
+          },
+          {
+            "c": "Write a program to read in the data from the file `swallow-speeds.txt` and use it to calculate the average air-speed velocity of an (unladen) African swallow.",
+            "u": "https://scipython.com/books/book2/chapter-4-the-core-python-language-ii/problems/average-air-speed-of-an-unladen-african-swallow/",
+            "at": "2026-10-21T04:25:04Z",
+            "s": [
+              57,
+              215
+            ],
+            "h": "P4.1.1Average air-speed of an unladen African swallow"
+          },
+          {
+            "c": "11. ↑ \"Unladen Swallow 2009Q1\". unladen-swallow, A faster implementation of Python.",
+            "u": "https://en.wikipedia.org/wiki/Unladen_Swallow",
+            "at": "2026-10-21T04:25:02Z",
+            "s": [
+              3408,
+              3491
+            ],
+            "h": "References",
+            "d": "2009-08-25"
+          },
+          {
+            "c": "**airspeed velocity** (`asv`) is a tool for benchmarking Python\npackages over their lifetime.",
+            "u": "https://asv.readthedocs.io/en/latest/",
+            "at": "2026-10-21T04:25:03Z",
+            "s": [
+              36,
+              129
+            ],
+            "h": "Overview¶"
+          },
+          {
+            "c": "Unladen Swallow integrates with oProfile 0.9.4 and newer \\[18\\] to support assembly-level profiling on Linux systems.",
+            "u": "https://peps.python.org/pep-3146/",
+            "at": "2026-10-21T04:25:07Z",
+            "s": [
+              35885,
+              36002
+            ],
+            "h": "Profiling"
+          },
+          {
+            "c": "In addition to a runtime dependency on LLVM, Unladen Swallow includes a build-time dependency on Clang \\[5\\], an LLVM-based C/C++ compiler.",
+            "u": "https://peps.python.org/pep-3146/",
+            "at": "2026-10-21T04:25:07Z",
+            "s": [
+              41957,
+              42096
+            ],
+            "h": "Building CPython"
+          }
+        ],
+        "gaps": [
+          "no_source_for:docs"
+        ],
+        "searched": [
+          "airspeed velocity of an unladen African swallow in the Python docs"
+        ],
+        "tok": 598,
+        "warn": [
+          "fetch_failed:FetchError"
+        ],
+        "ms": 9093
+      },
+      "research_status_match": false,
+      "research_support": null,
+      "conflict_flagged": false,
+      "extract": null,
+      "search_actual_tokens": 66,
+      "research_actual_tokens": 598
+    },
+    {
+      "id": "no-07",
+      "category": "unanswerable",
+      "query": "exact source code of the closed-source Windows 11 kernel",
+      "expect_conflict": false,
+      "search_ms": 2184.0,
+      "search": {
+        "status": "ok",
+        "q": "exact source code of the closed-source Windows 11 kernel",
+        "n": 5,
+        "res": [
+          {
+            "t": "Business models for open-source software",
+            "u": "https://en.wikipedia.org/wiki/Business_models_for_open-source_software",
+            "s": "3.0 Unported license. The Engine, which includes Windows , Linux and Mac binaries, and the Engine's source code , are licensed under GNU GPL v2",
+            "d": "2026-10-09"
+          },
+          {
+            "t": "FreeBSD",
+            "u": "https://en.wikipedia.org/wiki/FreeBSD",
+            "s": "distribution of AT&T source code in violation of license agreements. The lawsuit was settled out of court and the exact terms were not all disclosed. The only",
+            "d": "2026-10-19"
+          },
+          {
+            "t": "May I ask where I can access the source code of Windows?",
+            "u": "https://learn.microsoft.com/en-us/answers/questions/5651384/may-i-ask-where-i-can-access-the-source-code-of-wi",
+            "s": "A research snapshot (older Windows Server / XP era) to qualifying universities under academic licenses. That helped kernel research and courses, but it is old code (not current Windows) and availability was restricted. But it is not the…"
+          },
+          {
+            "t": "Windows 11 Source Code - GitHub",
+            "u": "https://github.com/GreyXor/Windows-11",
+            "s": "Windows 11 Source Code This repo contains the original source-code and compiled binaries for MS-DOS v1.25 and MS-DOS v2.0, plus the source-code for Windows 11 developed by Microsoft and based on MS-DOS."
+          },
+          {
+            "t": "Windows 11 source code - GitHub",
+            "u": "https://github.com/TechTech512/Win11Src",
+            "s": "This is the (partially) leaked source code of Microsoft's latest and greatest operating system, Windows 11. Be aware that due to the closed-source state of the operating system, and the fact it's the latest Windows version that gets…"
+          }
+        ],
+        "ms": 2181,
+        "tok": 438,
+        "prov": [
+          "ddg",
+          "mwmbl",
+          "wikipedia"
+        ],
+        "warn": [
+          "off_topic_filtered:12"
+        ]
+      },
+      "search_relevant": 0,
+      "search_returned": 5,
+      "search_precision_at_n": 0.0,
+      "top3_relevant": false,
+      "research_ms": 0.7,
+      "research": {
+        "status": "no_reliable_result",
+        "q": "exact source code of the closed-source Windows 11 kernel",
+        "n": 0,
+        "f": [],
+        "gaps": [
+          "proprietary_source_unavailable"
+        ],
+        "searched": [
+          "exact source code of the closed-source Windows 11 kernel",
+          "exact source code of the closed-source Windows 11 kernel example"
+        ],
+        "tok": 74,
+        "ms": 0
+      },
+      "research_status_match": true,
+      "research_support": null,
+      "conflict_flagged": false,
+      "extract": null,
+      "search_actual_tokens": 438,
+      "research_actual_tokens": 74
+    },
+    {
+      "id": "no-08",
+      "category": "unanswerable",
+      "query": "phone number of the maintainer of the Python asyncio module",
+      "expect_conflict": false,
+      "search_ms": 1362.0,
+      "search": {
+        "status": "ok",
+        "q": "phone number of the maintainer of the Python asyncio module",
+        "n": 4,
+        "res": [
+          {
+            "t": "Command-line introspection tools — Python 3.15.0 documentation",
+            "u": "https://docs.python.org/3/library/asyncio-tools.html",
+            "s": "Source code: Lib/asyncio/tools.py The asyncio module can be invoked as a script via python -m asyncio to inspect the task graph of another running Python process without modifying it or restarting ..."
+          },
+          {
+            "t": "PEP 3156 - Asynchronous IO Support Rebooted: the \"asyncio\" Module",
+            "u": "https://peps.python.org/pep-3156/",
+            "s": "Python 3.3 is required for many of the proposed features. The reference implementation (Tulip) requires no new language or standard library features beyond Python 3.3, no third-party modules or packages, and no C code, except for the…"
+          },
+          {
+            "t": "Home · python/asyncio Wiki · GitHub",
+            "u": "https://github.com/python/asyncio/wiki",
+            "s": "The Tulip project is the asyncio module for Python 3.3. Since Python 3.4, asyncio is now part of the standard library. Help: asyncio documentation asyncio examples Mailing list: python-tulip Google Group IRC: #asyncio channel on the…"
+          },
+          {
+            "t": "asyncio · PyPI",
+            "u": "https://pypi.org/project/asyncio/",
+            "s": "asyncio (obsolete backport) This package once provided a backport of the asyncio module for Python versions prior to 3.4. The asyncio module has shipped with the Python standard library since Python 3.4 and this separate distribution is no…"
+          }
+        ],
+        "ms": 1360,
+        "tok": 383,
+        "prov": [
+          "ddg",
+          "mwmbl",
+          "wikipedia"
+        ],
+        "warn": [
+          "off_topic_filtered:4"
+        ]
+      },
+      "search_relevant": 0,
+      "search_returned": 4,
+      "search_precision_at_n": 0.0,
+      "top3_relevant": false,
+      "research_ms": 0.5,
+      "research": {
+        "status": "no_reliable_result",
+        "q": "phone number of the maintainer of the Python asyncio module",
+        "n": 0,
+        "f": [],
+        "gaps": [
+          "sensitive_query"
+        ],
+        "searched": [
+          "phone number of the maintainer of the Python asyncio module"
+        ],
+        "tok": 59,
+        "ms": 0
+      },
+      "research_status_match": true,
+      "research_support": null,
+      "conflict_flagged": false,
+      "extract": null,
+      "search_actual_tokens": 383,
+      "research_actual_tokens": 59
+    },
+    {
+      "id": "no-09",
+      "category": "unanswerable",
+      "query": "meaning of the made-up word florbulation in ISO 99999",
+      "expect_conflict": false,
+      "search_ms": 1234.4,
+      "search": {
+        "status": "ok",
+        "q": "meaning of the made-up word florbulation in ISO 99999",
+        "n": 3,
+        "res": [
+          {
+            "t": "Doomtree - Wikipedia",
+            "u": "http://en.wikipedia.org/wiki/Doomtree",
+            "s": "The name \"Doomtree\" is a made-up word that doesn't have a meaning, according to P.O.S, who says that it has come to represent \"my people and my life's wo…"
+          },
+          {
+            "t": "Talk:Numpty - Wikipedia",
+            "u": "https://en.wikipedia.org/wiki/Talk:Numpty",
+            "s": "\"Numpty\" appeared as a made-up word entered in 2005 when students at the University of South Florida were assigned homework involving creating made-up wo…"
+          },
+          {
+            "t": "The Made-Up Mind : The Meaning of Error in an Age of Certainty b…",
+            "u": "https://openlibrary.org/works/OL24562037W",
+            "s": ""
+          }
+        ],
+        "ms": 1233,
+        "tok": 220,
+        "prov": [
+          "ddg",
+          "mwmbl",
+          "wikipedia"
+        ],
+        "warn": [
+          "off_topic_filtered:11"
+        ]
+      },
+      "search_relevant": 0,
+      "search_returned": 3,
+      "search_precision_at_n": 0.0,
+      "top3_relevant": false,
+      "research_ms": 6399.3,
+      "research": {
+        "status": "no_reliable_result",
+        "q": "meaning of the made-up word florbulation in ISO 99999",
+        "n": 0,
+        "f": [],
+        "gaps": [
+          "unverifiable_entity:florbulation"
+        ],
+        "searched": [
+          "meaning of the made-up word florbulation in ISO 99999"
+        ],
+        "tok": 71,
+        "ms": 6398
+      },
+      "research_status_match": true,
+      "research_support": null,
+      "conflict_flagged": false,
+      "extract": null,
+      "search_actual_tokens": 220,
+      "research_actual_tokens": 71
+    },
+    {
+      "id": "no-10",
+      "category": "unanswerable",
+      "query": "exact number of grains of sand on Earth",
+      "expect_conflict": false,
+      "search_ms": 2453.6,
+      "search": {
+        "status": "ok",
+        "q": "exact number of grains of sand on Earth",
+        "n": 5,
+        "res": [
+          {
+            "t": "Archimedes",
+            "u": "https://en.wikipedia.org/wiki/Archimedes",
+            "s": "apparent diameter of the Sun. By using a system of numbers based on powers of the myriad, Archimedes concludes that the number of grains of sand required to",
+            "d": "2026-09-21"
+          },
+          {
+            "t": "Orders of magnitude (numbers)",
+            "u": "https://en.wikipedia.org/wiki/Orders_of_magnitude_%28numbers%29",
+            "s": "ISO: zetta- (Z) Geo – Grains of sand : All the world's beaches combined have been estimated to hold roughly 1021 grains of sand . Computing: 1,180,591,620",
+            "d": "2026-10-20"
+          },
+          {
+            "t": "How Many Grains Of Sand Are There On Earth - Science Atlas",
+            "u": "https://science-atlas.com/faq/how-many-grains-of-sand-are-there-on-earth/",
+            "s": "So we can estimate that the number of grains of sand in a metre cube box is 109 x 0. 65/0. 00947, or roughly 70bn grains. Now, let's go for an average of 5% of the surface of the Earth being covered in sand with a depth of 100m. The…"
+          },
+          {
+            "t": "Like sand through the hour glass | plus.maths.org",
+            "u": "http://plus.maths.org/content/sand-through-hour-glass",
+            "s": "There are more grains of sand on Earth than there are stars in sky, or so the saying goes. Mathematician Anne Fey, from Vrije Universiteit Amsterdam , is …"
+          },
+          {
+            "t": "How Many Grains of Sand Are on Earth? - Chef's Resource",
+            "u": "https://www.chefsresource.com/faq/how-many-grains-of-sand-on-the-earth/",
+            "s": "1 How Many Grains of Sand Are on Earth? 1.1 How do researchers calculate the total? 2 Readers Also Ask 2.1 Why is the number just an estimate? 2.2 How much does this sand actually weigh? 2.3 Can we ever know the exact count? 2.3.1 How much…"
+          }
+        ],
+        "ms": 2451,
+        "tok": 502,
+        "prov": [
+          "ddg",
+          "mwmbl",
+          "wikipedia"
+        ],
+        "warn": [
+          "duplicate_text_removed",
+          "off_topic_filtered:4"
+        ]
+      },
+      "search_relevant": 0,
+      "search_returned": 5,
+      "search_precision_at_n": 0.0,
+      "top3_relevant": false,
+      "research_ms": 8081.4,
+      "research": {
+        "status": "partial",
+        "q": "exact number of grains of sand on Earth",
+        "n": 6,
+        "f": [
+          {
+            "c": "This book mentions the heliocentric theory of the Solar System proposed by Aristarchus of Samos, as well as contemporary ideas about the size of the Earth and the distance between various celestial bodies, and attempts to measure the apparent diameter of the Sun.<sup>\\[61\\]</sup><sup>\\[62\\]</sup> By using a system of numbers based on powers of the myriad, Archimedes concludes that the number of grains of sand required to fill the universe is 8×10<sup>63</sup> in modern notation.",
+            "u": "https://en.wikipedia.org/wiki/Archimedes",
+            "at": "2026-10-21T04:25:28Z",
+            "s": [
+              20757,
+              21240
+            ],
+            "h": "*The Sand Reckoner*",
+            "d": "2001-08-22"
+          },
+          {
+            "c": "In *The Sand Reckoner*, Archimedes devised a system of counting based on the myriad,<sup>\\[f\\]</sup> the Greek term for the number 10,000, in order to calculate a number that was greater than the grains of sand needed to fill the universe.",
+            "u": "https://en.wikipedia.org/wiki/Archimedes",
+            "at": "2026-10-21T04:25:28Z",
+            "s": [
+              18662,
+              18901
+            ],
+            "h": "Large numbers",
+            "d": "2001-08-22"
+          },
+          {
+            "c": "There are more grains of sand on Earth than there are stars in sky, or so the saying goes.",
+            "u": "https://plus.maths.org/sand-through-hour-glass",
+            "at": "2026-10-21T04:25:25Z",
+            "s": [
+              101,
+              191
+            ],
+            "h": "Like sand through the hour glass"
+          },
+          {
+            "c": "Mathematically, the model starts with an initial configuration $ \\eta $ that consists of a number of sand grains at each grid point.",
+            "u": "https://plus.maths.org/sand-through-hour-glass",
+            "at": "2026-10-21T04:25:25Z",
+            "s": [
+              2287,
+              2419
+            ],
+            "h": "Like sand through the hour glass"
+          },
+          {
+            "c": "Situations that can be used to study movements in the Earth's crust and stock market movements occur when the choice of the point where the sand is initially poured is not at the centre of the grid but randomly chosen.",
+            "u": "https://plus.maths.org/sand-through-hour-glass",
+            "at": "2026-10-21T04:25:25Z",
+            "s": [
+              1781,
+              1999
+            ],
+            "h": "Like sand through the hour glass"
+          },
+          {
+            "c": "54. ↑ Carroll, Bradley W. \"The Sand Reckoner\".",
+            "u": "https://en.wikipedia.org/wiki/Archimedes",
+            "at": "2026-10-21T04:25:28Z",
+            "s": [
+              43156,
+              43202
+            ],
+            "h": "Citations",
+            "d": "2001-08-22"
+          }
+        ],
+        "gaps": [
+          "no_source_for:exact"
+        ],
+        "searched": [
+          "exact number of grains of sand on Earth"
+        ],
+        "tok": 663,
+        "warn": [
+          "fetch_failed:TimeoutError",
+          "fetch_failed:FetchError"
+        ],
+        "ms": 8077
+      },
+      "research_status_match": false,
+      "research_support": null,
+      "conflict_flagged": false,
+      "extract": null,
+      "search_actual_tokens": 502,
+      "research_actual_tokens": 663
+    }
+  ]
+}

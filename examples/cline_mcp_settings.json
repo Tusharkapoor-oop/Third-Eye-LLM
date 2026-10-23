@@ -1,0 +1,15 @@
+{
+  "mcpServers": {
+    "webintel": {
+      "command": "python",
+      "args": ["-m", "src.server.mcp_server"],
+      "cwd": "C:\\Users\\ACER\\Downloads\\Broswer for ai agnets",
+      "disabled": false,
+      "autoApprove": [
+        "web_search",
+        "extract_url",
+        "web_map"
+      ]
+    }
+  }
+}

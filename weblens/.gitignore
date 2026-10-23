@@ -1,0 +1,14 @@
+.venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.ruff_cache/
+.env
+*.egg-info/
+dist/
+build/
+bench/
+benchmarks/.cache/
+benchmarks/.cache_*/
+benchmarks/.cold-cache/
+benchmarks/.importtime.txt

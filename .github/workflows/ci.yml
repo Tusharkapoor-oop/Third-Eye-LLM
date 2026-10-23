@@ -1,0 +1,40 @@
+name: CI
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+
+jobs:
+  test:
+    runs-on: windows-latest
+    strategy:
+      matrix:
+        python-version: ["3.11", "3.12", "3.13"]
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e .
+          pip install pytest pytest-asyncio
+
+      - name: Run unit & security tests (Offline mode)
+        env:
+          WEBINTEL_LIVE_TESTS: "0"
+        run: |
+          pytest tests/test_security.py tests/test_extract.py tests/test_search_engine.py tests/test_cache.py -v
+
+      - name: Measure tool schema token overhead
+        run: |
+          python -c "from src.server.token_counter import measure_tool_schema_tokens; res = measure_tool_schema_tokens(); assert res['total_o200k'] < 1000, f'Too many schema tokens: {res}'"

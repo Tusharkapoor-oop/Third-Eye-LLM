@@ -1,0 +1,50 @@
+name: WebLens CI
+
+on:
+  push:
+    paths:
+      - "weblens/**"
+      - ".github/workflows/weblens-ci.yml"
+  pull_request:
+    paths:
+      - "weblens/**"
+      - ".github/workflows/weblens-ci.yml"
+  workflow_dispatch:
+
+jobs:
+  test:
+    name: ${{ matrix.os }} / Python ${{ matrix.python }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+        python: ["3.11", "3.13"]
+
+    defaults:
+      run:
+        working-directory: weblens
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+          cache-dependency-glob: "weblens/uv.lock"
+
+      - name: Set up Python
+        run: uv python install ${{ matrix.python }}
+
+      - name: Install locked dependencies
+        run: uv sync --frozen --extra dev --python ${{ matrix.python }}
+
+      - name: Lint
+        run: uv run ruff check src tests benchmarks
+
+      - name: Test (offline; live providers are not called)
+        run: uv run pytest -q
+
+      - name: Measure tools/list schema tokens
+        run: uv run weblens tokens --pretty

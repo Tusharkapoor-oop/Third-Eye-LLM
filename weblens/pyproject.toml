@@ -1,0 +1,68 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "weblens"
+version = "0.1.0"
+description = "Local-first, evidence-first web intelligence engine for AI agents (MCP)"
+readme = "README.md"
+requires-python = ">=3.11"
+license = { text = "MIT" }
+authors = [{ name = "WebLens" }]
+
+dependencies = [
+  "mcp>=2.3.0,<3",
+  "httpx>=0.28.1,<1",
+  "httpcore>=1.0.9,<2",
+  "h2>=4,<5",
+  "lxml>=6.1,<7",
+  "cssselect>=1.6,<2",
+  "trafilatura>=2.3,<3",
+  "pymupdf>=1.28,<2",
+  "tiktoken>=0.14,<1",
+  "pydantic>=2.13,<3",
+  "pydantic-settings>=2.6,<3",
+  "uvicorn>=0.54,<1",
+  "starlette>=0.41,<2",
+]
+
+[project.optional-dependencies]
+browser = ["playwright>=1.49,<2"]
+dev = [
+  "pytest>=8.3,<10",
+  "pytest-asyncio>=0.24,<2",
+  "respx>=0.22,<1",
+  "ruff>=0.8,<1",
+  "pyright>=1.1.390",
+]
+
+[project.scripts]
+weblens = "weblens.cli:main"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/weblens"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+asyncio_mode = "auto"
+addopts = "-q"
+
+[tool.ruff]
+line-length = 120
+target-version = "py311"
+src = ["src", "tests", "benchmarks"]
+extend-exclude = ["bench"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B", "ASYNC", "S", "SIM"]
+ignore = ["S101", "S104", "S311", "B008", "SIM105", "S110", "SIM102", "SIM103"]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/*" = ["S", "ASYNC"]
+"benchmarks/*" = ["S", "T201"]
+
+[tool.pyright]
+pythonVersion = "3.11"
+typeCheckingMode = "standard"
+include = ["src"]

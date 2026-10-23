@@ -1,0 +1,77 @@
+{
+  "measured_at": "2026-10-23T04:00:27.379849+00:00",
+  "tokenizer": "cl100k_base",
+  "environment": {
+    "python": "3.14.0",
+    "platform": "Windows 11",
+    "processor": "Intel64 Family 6 Model 186 Stepping 2, GenuineIntel"
+  },
+  "method": {
+    "process_runs": 3,
+    "cache_dir": "benchmarks/.cold-cache",
+    "notes": "Fresh interpreter per sample; OS file cache is warm. The network search uses Wikipedia only for a stable single-provider sample. Search envelopes are not cached; repeated searches still use the HTTP response cache."
+  },
+  "import_module_ms": {
+    "median": 471.3,
+    "min": 467.5,
+    "max": 494.0,
+    "samples": [
+      467.5,
+      471.3,
+      494.0
+    ]
+  },
+  "service_and_mcp_ready_ms": {
+    "median": 2290.5,
+    "min": 2006.9,
+    "max": 2491.4,
+    "samples": [
+      2006.9,
+      2491.4,
+      2290.5
+    ]
+  },
+  "first_token_count_ms": {
+    "median": 320.1,
+    "min": 211.1,
+    "max": 390.6,
+    "samples": [
+      390.6,
+      320.1,
+      211.1
+    ]
+  },
+  "cache": {
+    "search_network_ms": 2121.0,
+    "search_network_status": "ok",
+    "search_network_providers": [
+      "wikipedia"
+    ],
+    "search_network_failures": null,
+    "search_network_warnings": null,
+    "repeat_search_ms": {
+      "median": 7.4,
+      "min": 6.3,
+      "max": 8.2,
+      "samples": [
+        7.4,
+        6.3,
+        8.2
+      ]
+    },
+    "repeat_search_status": "ok",
+    "extract_network_ms": 1779.0,
+    "extract_network_status": "ok",
+    "extract_cache_ms": {
+      "median": 5.3,
+      "min": 4.9,
+      "max": 6.2,
+      "samples": [
+        6.2,
+        5.3,
+        4.9
+      ]
+    },
+    "extract_cache_status": "ok"
+  }
+}

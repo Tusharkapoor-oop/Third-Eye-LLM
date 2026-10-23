@@ -1,0 +1,484 @@
+{
+  "started_at": "2026-10-20T17:27:40.964807+00:00",
+  "finished_at": "2026-10-20T17:27:40.964843+00:00",
+  "dataset": "benchmarks\\queries.jsonl",
+  "tokenizer": "cl100k_base",
+  "providers": [
+    "ddg",
+    "bing",
+    "wikipedia"
+  ],
+  "schema": {
+    "total_tokens": 838,
+    "per_tool": {
+      "web_search": 271,
+      "extract_url": 185,
+      "crawl_site": 254,
+      "deep_research": 126
+    }
+  },
+  "summary": {
+    "queries": 2,
+    "answerable": 2,
+    "search_returned": 10,
+    "search_relevant": 2,
+    "top3_total": 2,
+    "top3_authoritative": 2,
+    "top3_rate": 1.0,
+    "precision_at_n": 0.2,
+    "support_total": 2,
+    "support_ok": 2,
+    "answer_support": 1.0,
+    "status_matches": 1.0,
+    "noresult_total": 0,
+    "noresult_correct": 0,
+    "noresult_accuracy": null,
+    "conflict_total": 0,
+    "conflict_flagged": 0,
+    "conflict_recall": null,
+    "extract_total": 2,
+    "extract_support_ok": 2,
+    "latency": {
+      "search_p50_ms": 885.3,
+      "search_p95_ms": 2320.0,
+      "research_p50_ms": 2673.0,
+      "research_p95_ms": 3730.9,
+      "extract_p50_ms": 91.0,
+      "extract_p95_ms": 904.3
+    },
+    "init_ms": 127.7,
+    "cache_dir": "benchmarks\\.cache"
+  },
+  "gates": [
+    {
+      "name": "schema_tokens",
+      "ok": true,
+      "value": 838,
+      "threshold": 1000
+    },
+    {
+      "name": "token_budget_violations",
+      "ok": true,
+      "value": 0,
+      "threshold": 0
+    },
+    {
+      "name": "citation_failures",
+      "ok": true,
+      "value": 0,
+      "threshold": 0
+    },
+    {
+      "name": "uncalibrated_fields",
+      "ok": true,
+      "value": 0,
+      "threshold": 0
+    },
+    {
+      "name": "precision_at_n",
+      "ok": false,
+      "value": 0.2,
+      "threshold": 0.25
+    },
+    {
+      "name": "top3_authoritative",
+      "ok": true,
+      "value": 1.0,
+      "threshold": 0.6
+    },
+    {
+      "name": "answer_support",
+      "ok": true,
+      "value": 1.0,
+      "threshold": 0.6
+    },
+    {
+      "name": "search_p50_ms",
+      "ok": true,
+      "value": 885.3,
+      "threshold": 1500
+    },
+    {
+      "name": "search_p95_ms",
+      "ok": true,
+      "value": 2320.0,
+      "threshold": 5000
+    },
+    {
+      "name": "research_p95_ms",
+      "ok": true,
+      "value": 3730.9,
+      "threshold": 20000
+    }
+  ],
+  "passed": false,
+  "violations": {
+    "token_budget": 0,
+    "citations": 0,
+    "uncalibrated_fields": []
+  },
+  "rows": [
+    {
+      "id": "docs-01",
+      "category": "docs",
+      "query": "python asyncio.timeout usage",
+      "search_ms": 885.3,
+      "search": {
+        "status": "ok",
+        "q": "python asyncio.timeout usage",
+        "n": 5,
+        "res": [
+          {
+            "t": "The async with timeout: Best Practices for Robust Python Asynchronous I/O",
+            "u": "https://runebook.dev/en/docs/python/library/asyncio-task/asyncio.timeout",
+            "s": "For older versions of Python (<3.11) or for a slightly different pattern, you can use asyncio.wait_for (). This function wraps a single awaitable and enforces a timeout."
+          },
+          {
+            "t": "Asyncio Timeout Best Practices - SuperFastPython",
+            "u": "https://superfastpython.com/asyncio-timeout-best-practices",
+            "s": "Start with a shorter timeout, and if a timeout occurs, progressively increase the timeout for subsequent retries. What to Do On Timeout (How to Handle TimeoutError)? When a timeout occurs in an asyncio application, it's essential to…"
+          },
+          {
+            "t": "asyncio — Asynchronous I/O — Python 3.15.0 documentation",
+            "u": "https://docs.python.org/3/library/asyncio.html",
+            "s": "asyncio is a library to write concurrent code using the async/await syntax. asyncio is used as a foundation for multiple Python asynchronous frameworks that provide high-performance network and web-servers, database connection libraries…"
+          },
+          {
+            "t": "asyncio.timeout () To Wait and Cancel Tasks - Super Fast Python",
+            "u": "https://superfastpython.com/asyncio-timeout",
+            "s": "Takeaways You now know how to wait for coroutines and tasks using the asyncio.timeout () asynchronous context manager. If you enjoyed this tutorial, you will love my book: Python Asyncio Jump-Start. It covers everything you need to master…"
+          },
+          {
+            "t": "How to Use asyncio.timeout in Modern Python - python",
+            "u": "https://salivity.github.io/python/article/how-to-use-asyncio-timeout-in-modern-python",
+            "s": "This article covers how to implement and manage timeouts in modern asynchronous Python using the asyncio.timeout () context manager introduced in Python 3.11. You will learn the mechanics of how this context manager cancels long-running…"
+          }
+        ],
+        "ms": 880,
+        "tok": 431,
+        "prov": [
+          "ddg"
+        ]
+      },
+      "search_relevant": 1,
+      "search_returned": 5,
+      "search_precision_at_n": 0.2,
+      "top3_relevant": true,
+      "research_ms": 2673.0,
+      "research": {
+        "status": "partial",
+        "q": "python asyncio.timeout usage",
+        "n": 6,
+        "f": [
+          {
+            "c": "This article covers how to implement and manage timeouts in modern\nasynchronous Python using the `asyncio.timeout()` context\nmanager introduced in Python 3.11.",
+            "u": "https://salivity.github.io/python/article/how-to-use-asyncio-timeout-in-modern-python",
+            "at": "2026-10-20T17:27:33Z",
+            "s": [
+              47,
+              206
+            ],
+            "h": "How to Use asyncio.timeout in Modern Python"
+          },
+          {
+            "c": "In Python 3.11 and later, `asyncio.timeout()` serves as\nthe standard way to apply a deadline to one or more asynchronous\noperations.",
+            "u": "https://salivity.github.io/python/article/how-to-use-asyncio-timeout-in-modern-python",
+            "at": "2026-10-20T17:27:33Z",
+            "s": [
+              529,
+              661
+            ],
+            "h": "The Basics of asyncio.timeout()"
+          },
+          {
+            "c": "**Consistent Exception Types:** `asyncio.timeout()` raises the built-in `TimeoutError` directly, aligning with Python's unified\nexception hierarchy.",
+            "u": "https://salivity.github.io/python/article/how-to-use-asyncio-timeout-in-modern-python",
+            "at": "2026-10-20T17:27:33Z",
+            "s": [
+              4648,
+              4796
+            ],
+            "h": "Advantages Over asyncio.wait\\_for()"
+          },
+          {
+            "c": "It works as an `async` context manager\n\nWhen you enter the `async with asyncio.timeout(delay):` block, a timer starts.",
+            "u": "https://runebook.dev/en/docs/python/library/asyncio-task/asyncio.timeout",
+            "at": "2026-10-20T17:27:33Z",
+            "s": [
+              388,
+              506
+            ],
+            "h": "The async with timeout: Best Practices for Robust Python Asynchronous I/O"
+          },
+          {
+            "c": "asyncio is a library to write **concurrent** code using\nthe **async/await** syntax.\n\nasyncio is used as a foundation for multiple Python asynchronous frameworks that provide high-performance network and web-servers, database connection libraries, distributed task queues, etc.\n\nasyncio is often a perfect fit for IO-bound and high-level\n**structured** network code.",
+            "u": "https://docs.python.org/3/library/asyncio.html",
+            "at": "2026-10-20T17:27:32Z",
+            "s": [
+              33,
+              398
+            ],
+            "h": "`asyncio` — Asynchronous I/O¶"
+          },
+          {
+            "c": "Reference\n\nNote\n\nThe source code for asyncio can be found in Lib/asyncio/.",
+            "u": "https://docs.python.org/3/library/asyncio.html",
+            "at": "2026-10-20T17:27:32Z",
+            "s": [
+              2168,
+              2242
+            ],
+            "h": "`asyncio` — Asynchronous I/O¶"
+          }
+        ],
+        "gaps": [
+          "no_source_for:usage"
+        ],
+        "searched": [
+          "python asyncio.timeout usage"
+        ],
+        "tok": 621,
+        "warn": [
+          "fetch_failed:FetchError"
+        ],
+        "ms": 2667
+      },
+      "research_status_match": true,
+      "research_support": true,
+      "conflict_flagged": false,
+      "extract": {
+        "status": "ok",
+        "u": "https://runebook.dev/en/docs/python/library/asyncio-task/asyncio.timeout",
+        "t": "The async with timeout: Best Practices for Robust Python Asynchronous I/O",
+        "at": "2026-10-20T17:27:33Z",
+        "sha": "66aac51ff061d399",
+        "src": "html",
+        "ps": [
+          {
+            "u": "https://runebook.dev/en/docs/python/library/asyncio-task/asyncio.timeout",
+            "at": "2026-10-20T17:27:33Z",
+            "x": "# The async with timeout: Best Practices for Robust Python Asynchronous I/O\n\nHere's a friendly breakdown of the `asyncio.timeout()` context manager, common pitfalls, and reliable alternatives.\n\nThe `asyncio.timeout()` function provides a way to impose a time limit on an `awaitable` operation (like an asynchronous function, a task, or an I/O operation) within a specific block of code.\n\nIt works as an `async` context manager\n\nWhen you enter the `async with asyncio.timeout(delay):` block, a timer starts.\n\nIf the code inside the block finishes before the time limit (`delay`) expires, everything is normal.\n\nIf the time limit is reached while the inner code is suspended at an `await` point, the execution is cancelled, and an `asyncio.TimeoutError` is raised at that `await` point.\n\nThis example shows how to use it to limit the execution time of an operation.\n\n```\nimport asyncio\nasync def long_running_operation():\nprint(\"Operation started...\")\nawait asyncio.sleep(5) # Simulating a long I/O wait\nprint(\"Operation finished successfully!\")\nreturn \"Data Acquired\"\nasync def main():\ntry:\n# Set a timeout of 3 seconds\nasync with asyncio.timeout(3) as cm:\nresult = await long_running_operation()\nprint(f\"Result: {result}\")\nexcept asyncio.TimeoutError:\nprint(\" Operation timed out!\")\n# You can access details about the remaining time via the context manager\n# print(f\"Time remaining at timeout: {cm.when()}\")\nif __name__ == \"__main__\":\nasyncio.run(main())\n# Expected Output (since 3 < 5):\n# Operation started...\n# Operation timed out!\n```\nEven though `asyncio.timeout()` is great, a few things can",
+            "s": [
+              0,
+              1596
+            ],
+            "h": "The async with timeout: Best Practices for Robust Python Asynchronous I/O"
+          },
+          {
+            "u": "https://runebook.dev/en/docs/python/library/asyncio-task/asyncio.timeout",
+            "at": "2026-10-20T17:27:33Z",
+            "x": "Trouble\n\nIf the code inside the `async with` block is not an `awaitable` or doesn't yield control back to the event loop (i.e., it's a synchronous, \"blocking\" operation), the timeout won't be triggered. The synchronous code will run to completion, potentially freezing the whole application.\n\nWhy? `asyncio` timeouts only check the time when a coroutine is suspended using `await`. If the code is just computing locally, the event loop has no chance to interrupt it.\n\nExample of the Issue (Conceptual)\n\n```\nimport time\nasync def blocking_code_issue():\nasync with asyncio.timeout(1):\n# This is synchronous and blocks the entire event loop for 5 seconds.\n# The timeout cannot interrupt it.\nprint(\"Starting blocking work...\")\ntime.sleep(5)\nprint(\"Finished blocking work (timeout was ineffective)\")\n# The TimeoutError will only raise *after* this finishes,\n# or at the next await, which is often too late or confusing.\n```\nTo handle long-running, CPU-bound (blocking) operations, you should run them in a separate thread or process pool using `asyncio.to_thread()` (Python 3.9+) or `loop.run_in_executor()`.\n\n",
+            "s": [
+              1617,
+              2722
+            ],
+            "h": "The async with timeout: Best Practices for Robust Python Asynchronous I/O"
+          },
+          {
+            "u": "https://runebook.dev/en/docs/python/library/asyncio-task/asyncio.timeout",
+            "at": "2026-10-20T17:27:33Z",
+            "x": "Why? The `asyncio` system implements timeouts by raising a `TimeoutError` (which inherits from `CancelledError`) inside the coroutine. If the coroutine handles `CancelledError` too broadly, it effectively ignores the cancellation request.\n\nIf you need to perform cleanup or logging within a coroutine, only catch `CancelledError` (or `TimeoutError`) locally, perform the cleanup, and then re-raise the exception so the cancellation signal propagates.\n\n```\nasync def cautious_coroutine():\ntry:\nprint(\"Coroutine started.\")\nawait asyncio.sleep(4)\nexcept asyncio.CancelledError:\nprint(\" Cleanup: Cancellation signal received. Performing necessary steps...\")\n# CRUCIAL: Must re-raise the exception to propagate the timeout/cancellation!\nraise\nfinally:\nprint(\"Coroutine finished or cleaned up.\")\nreturn \"Success\"\nasync def proper_cancellation_handling():\ntry:\nasync with asyncio",
+            "s": [
+              3891,
+              4763
+            ],
+            "h": "The async with timeout: Best Practices for Robust Python Asynchronous I/O"
+          }
+        ],
+        "tok": 1168,
+        "cut": true,
+        "ms": 78
+      },
+      "extract_ms": 91.0,
+      "extract_support": true,
+      "search_actual_tokens": 431,
+      "research_actual_tokens": 621,
+      "extract_actual_tokens": 1169
+    },
+    {
+      "id": "docs-02",
+      "category": "docs",
+      "query": "sqlite WAL mode write-ahead log",
+      "search_ms": 2320.0,
+      "search": {
+        "status": "ok",
+        "q": "sqlite WAL mode write-ahead log",
+        "n": 5,
+        "res": [
+          {
+            "t": "SQLite",
+            "u": "https://en.wikipedia.org/wiki/SQLite",
+            "s": "and it is relaxed in version 3.7 as write - ahead logging ( WAL ) enables concurrent reads and writes . Since SQLite has to rely on file-system locks, it",
+            "d": "2026-10-05"
+          },
+          {
+            "t": "Write-Ahead Logging - SQLite",
+            "u": "https://sqlite.org/wal.html",
+            "s": "1. Overview The default method by which SQLite implements atomic commit and rollback is a rollback journal. Beginning with version 3.7.0 (2010-07-21), a new \"Write-Ahead Log\" option (hereafter referred to as \"WAL\") is available. There are…",
+            "d": "2010-07-21"
+          },
+          {
+            "t": "PostgreSQL",
+            "u": "https://en.wikipedia.org/wiki/PostgreSQL",
+            "s": "heavy write load which updates existing rows. PostgreSQL includes built-in binary replication based on shipping the changes ( write - ahead logs ( WAL )) to",
+            "d": "2026-10-15"
+          },
+          {
+            "t": "SQLite WAL Mode: How Write-Ahead Logging Works and When to Use It",
+            "u": "https://sqldocs.org/sqlite-write-ahead-logging",
+            "s": "TLDR WAL (write-ahead logging) is a journal mode where changes go to a separate -wal file first and get copied into the database later, at a checkpoint. Turn it on once with PRAGMA journal_mode = WAL;. The setting is stored in the database…",
+            "d": "2026-10-07"
+          },
+          {
+            "t": "Write-Ahead Logging (WAL) | sqlite/sqlite | DeepWiki",
+            "u": "https://deepwiki.com/sqlite/sqlite/3.4-write-ahead-logging-(wal)",
+            "s": "Purpose and Scope This page documents the WAL (Write-Ahead Logging) subsystem in SQLite, covering the on-disk WAL file format, the shared-memory WAL index (the -shm file), read and write transaction protocols, checkpoint operations, and…",
+            "d": "2026-05-16"
+          }
+        ],
+        "ms": 2318,
+        "tok": 451,
+        "prov": [
+          "ddg",
+          "bing",
+          "wikipedia"
+        ]
+      },
+      "search_relevant": 1,
+      "search_returned": 5,
+      "search_precision_at_n": 0.2,
+      "top3_relevant": true,
+      "research_ms": 3730.9,
+      "research": {
+        "status": "partial",
+        "q": "sqlite WAL mode write-ahead log",
+        "n": 6,
+        "f": [
+          {
+            "c": "Beginning with version 3.7.0 (2010-07-21), a new \"Write-Ahead Log\" option (hereafter referred to as \"WAL\") is available.",
+            "u": "https://sqlite.org/wal.html",
+            "at": "2026-10-20T17:27:39Z",
+            "s": [
+              96,
+              216
+            ]
+          },
+          {
+            "c": "\\[edit\\]\nPostgreSQL includes built-in binary replication based on shipping the changes (write-ahead logs (WAL)) to replica nodes asynchronously, with the ability to run read-only queries against these replicated nodes.",
+            "u": "https://en.wikipedia.org/wiki/PostgreSQL",
+            "at": "2026-10-20T17:27:37Z",
+            "s": [
+              8205,
+              8423
+            ],
+            "h": "Replication",
+            "d": "2001-08-25"
+          },
+          {
+            "c": "Another way to think about the difference between rollback and write-ahead log is that in the rollback-journal approach, there are two primitive operations, reading and writing, whereas with a write-ahead log there are now three primitive operations: reading, writing, and checkpointing.",
+            "u": "https://sqlite.org/wal.html",
+            "at": "2026-10-20T17:27:39Z",
+            "s": [
+              1518,
+              1805
+            ]
+          },
+          {
+            "c": "This is why the write-ahead log implementation will not work on a network filesystem.",
+            "u": "https://sqlite.org/wal.html",
+            "at": "2026-10-20T17:27:39Z",
+            "s": [
+              3679,
+              3764
+            ]
+          },
+          {
+            "c": "\\[edit\\]\n- Referential integrity constraints including foreign key constraints, column constraints, and row checks\n- Binary and textual large-object storage\n- Tablespaces\n- Per-column collation\n- Online backup\n- Point-in-time recovery, implemented using write-ahead logging\n- In-place upgrades with pg\\_upgrade for less downtime",
+            "u": "https://en.wikipedia.org/wiki/PostgreSQL",
+            "at": "2026-10-20T17:27:37Z",
+            "s": [
+              17457,
+              17785
+            ],
+            "h": "Other storage features",
+            "d": "2001-08-25"
+          },
+          {
+            "c": "21. ↑ \"Write Ahead Logging in SQLite 3.7\".",
+            "u": "https://en.wikipedia.org/wiki/SQLite",
+            "at": "2026-10-20T17:27:36Z",
+            "s": [
+              17890,
+              17932
+            ],
+            "h": "Citations",
+            "d": "2003-06-12"
+          }
+        ],
+        "gaps": [
+          "no_source_for:mode"
+        ],
+        "searched": [
+          "sqlite WAL mode write-ahead log"
+        ],
+        "tok": 559,
+        "warn": [
+          "fetch_failed:FetchError"
+        ],
+        "ms": 3727
+      },
+      "research_status_match": true,
+      "research_support": true,
+      "conflict_flagged": false,
+      "extract": {
+        "status": "ok",
+        "u": "https://en.wikipedia.org/wiki/SQLite",
+        "t": "SQLite - Wikipedia",
+        "at": "2026-10-20T17:27:36Z",
+        "sha": "4236e5ef92cfde31",
+        "src": "html",
+        "ps": [
+          {
+            "u": "https://en.wikipedia.org/wiki/SQLite",
+            "at": "2026-10-20T17:27:36Z",
+            "x": "# SQLite\n\n| SQLite | |\n|---|---|\n| Developer | D. Richard Hipp |\n| Release | 17 August 2000 |\n| Stable release | 3.54.1 <sup>\\[1\\]</sup> (16 October 2026) |\n| Written in | C |\n| Operating system | Cross-platform |\n| Size | 699 KiB |\n| Type | RDBMS (embedded) |\n| License | Public domain <sup>\\[2\\]</sup> |\n| Website | sqlite.org |\n| Repository | |\n\n| SQLite Database File Format | |\n|---|---|\n| Filename extension | .sqlite, .sqlite3, .db, .db3, .s3db, .sl3 |\n| Internet media type | `application/vnd.sqlite3`<sup>\\[3\\]</sup> |\n| Magic number | `53 51 4c 69 74 65 20 66 6f 72 6d 61 74 20 33 00` (zero-terminated ASCII \"SQLite format 3\") |\n| Initial release | 2004-06-18 |\n| Open format? | yes (Public Domain) |\n| Website | sqlite.org/fileformat.html |\n\n| This article is part of a series on the Structured Query Language |\n\n**SQLite** (/ˌɛsˌkjuːˌɛlˈaɪt/ \"S-Q-L-ite\",<sup>\\[4\\]</sup><sup>\\[5\\]</sup> /ˈsiːkwəˌlaɪt/ \"sequel-ite\"<sup>\\[6\\]</sup>) is a free and open-source relational database engine written in the C programming language. It is not a standalone application; rather, it is a library that software developers embed in their applications. As such, it belongs to the family of embedded databases. According to its developers, SQLite is the most widely deployed database engine, as it is used by several of the top web browsers, operating systems, mobile phones, and other embedded systems.<sup>\\[7\\]</sup>\n\n",
+            "s": [
+              0,
+              1417
+            ],
+            "h": "SQLite"
+          },
+          {
+            "u": "https://en.wikipedia.org/wiki/SQLite",
+            "at": "2026-10-20T17:27:36Z",
+            "x": "SQLite stores the entire database, consisting of definitions, tables, indices, and data, as a single cross-platform file, allowing several processes or threads to access the same database concurrently. It implements this simple design by locking the database file during writing.<sup>\\[20\\]</sup> Write access may fail with an error code, or it can be retried until a configurable timeout expires. SQLite read operations can be multitasked, though due to the serverless design, writes can only be performed sequentially. This concurrent access restriction does not apply to temporary tables, and it is relaxed in version 3.7 as write-ahead logging (WAL) enables concurrent reads and writes.<sup>\\[21\\]</sup> Since SQLite has to rely on file-system locks, it is not the preferred choice for write-intensive deployments.<sup>\\[22\\]</sup>\n\nSQLite uses PostgreSQL as a reference platform. \"What would PostgreSQL do\" is used to make sense of the SQL standard.<sup>\\[23\\]</sup><sup>\\[24\\]</sup> One major deviation is that, with the exception of primary keys, SQLite does not enforce type checking; the type of a value is dynamic and not strictly constrained by the schema (although the schema will trigger a conversion when storing, if such a conversion is potentially reversible). SQLite strives to follow Postel's rule.<sup>\\[25\\]</sup>\n\n",
+            "s": [
+              4441,
+              5776
+            ],
+            "h": "Design"
+          },
+          {
+            "u": "https://en.wikipedia.org/wiki/SQLite",
+            "at": "2026-10-20T17:27:36Z",
+            "x": "## Features\n\n\\[edit\\]\nSQLite implements most of the SQL-92 standard for SQL, but lacks some features. For example, it only partially provides triggers and cannot write to views (however, it provides INSTEAD OF triggers that provide this functionality). Its support of ALTER TABLE statements is limited.<sup>\\[26\\]</sup>\n\nSQLite uses an unusual type system for an SQL-compatible DBMS: instead of assigning a type to a column as in most SQL database systems, types are assigned to individual values; in language terms it is *dynamically typed*. Moreover, it is *weakly typed* in some of the same ways that Perl is: one can insert a string into an integer column (although SQLite will try to convert the string to an integer first, if the column's preferred type is integer). This adds flexibility to columns, especially when bound to a dynamically typed scripting language. However, the technique is not portable to other SQL products. A common criticism is that SQLite's type",
+            "s": [
+              5776,
+              6750
+            ],
+            "h": "Features"
+          }
+        ],
+        "tok": 1186,
+        "d": "2003-06-12",
+        "cut": true,
+        "ms": 870
+      },
+      "extract_ms": 904.3,
+      "extract_support": true,
+      "search_actual_tokens": 451,
+      "research_actual_tokens": 559,
+      "extract_actual_tokens": 1187
+    }
+  ]
+}

@@ -1,0 +1,51 @@
+# Environment and secrets (do NOT commit .env.example — it contains a real Tavily key)
+.env
+.env.example
+.env.local
+.env.production
+*.pem
+*.key
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+.venv/
+venv/
+env/
+pip-log.txt
+pip-delete-this-directory.txt
+
+# Virtual environments
+.venv
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Testing
+.coverage
+.pytest_cache/
+.tox/
+htmlcov/
+
+# Build
+dist/
+build/
+*.egg-info/
+.eggs/
+
+# Bench output
+benchmarks/benchmark_results.json
+
+# MCP package
+*.tgz

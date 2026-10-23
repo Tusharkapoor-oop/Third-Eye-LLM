@@ -1,0 +1,9 @@
+mcpServers:
+  - name: weblens
+    command: uv
+    args:
+      - run
+      - --directory
+      - C:/Users/ACER/Downloads/Broswer for ai agnets/weblens
+      - weblens
+      - serve
