@@ -34,6 +34,7 @@ Also included:
 - stdio MCP transport (default) and optional streamable HTTP.
 - SSRF-safe fetching with connection-time IP validation, redirect checks,
   size caps, per-host concurrency limits, and no environment proxy trust.
+- Optional Playwright browser behind a loopback egress proxy; disabled by default.
 - SQLite cache with TTLs and ETag/Last-Modified revalidation.
 - Prompt-injection warning flags on retrieved content (not a classifier).
 - Reproducible benchmark dataset (58 labelled queries), hard gates, and a
@@ -119,6 +120,8 @@ weblens extract URL [-q QUERY] [--full] [--max-tokens N]
 weblens crawl URL [--mode map|crawl] [--max-pages N] [--max-depth N] [-q QUERY]
 weblens research QUERY [--max-tokens N]
 weblens doctor [--live] [--pretty]
+weblens cache stats [--pretty]
+weblens cache purge [--all] [--pretty]
 weblens tokens [--pretty]
 ```
 
@@ -162,7 +165,7 @@ authority prior); it is not a calibrated probability.
 
 ## Configuration
 
-Copy `.env.example` to `.env` only if you need overrides. All variables use the
+Copy `.env.template` to `.env` only if you need overrides. All variables use the
 `WEBLENS_` prefix.
 
 Key defaults:
@@ -172,11 +175,18 @@ WEBLENS_SEARCH_PROVIDERS=ddg,mwmbl,wikipedia
 WEBLENS_SEARCH_MODE=fuse
 WEBLENS_ALLOW_PRIVATE_NETWORKS=false
 WEBLENS_ALLOW_BROWSER=false
+WEBLENS_CACHE_MAX_BYTES=536870912
 WEBLENS_DEFAULT_RESULTS=5
 WEBLENS_MAX_SEARCH_TOKENS=600
 WEBLENS_MAX_EXTRACT_TOKENS=1500
 WEBLENS_MAX_RESEARCH_TOKENS=2000
 ```
+
+`WEBLENS_CACHE_MAX_BYTES` caps the logical compressed payload plus metadata; `0`
+disables eviction. SQLite/WAL overhead is additional, so this is not a hard disk
+quota. Inspect the actual file size and entry count with `weblens cache stats`;
+`weblens cache purge` removes expired rows and `--all` clears the WebLens
+database without touching other files in the cache directory.
 
 Keyless providers are `ddg` (DuckDuckGo Lite HTML), `mwmbl` (public API), and
 `wikipedia` (MediaWiki API). Optional keyed providers are `brave` and `tavily`;
@@ -184,9 +194,56 @@ Keyless providers are `ddg` (DuckDuckGo Lite HTML), `mwmbl` (public API), and
 degraded HTML adapter and is not in the default chain.
 
 Per-provider deadlines are built in for the keyless path (`ddg` 3.5 s,
-`mwmbl` 2.5 s, `wikipedia` 4.0 s); `WEBLENS_PROVIDER_TIMEOUT_S` is the fallback
-for providers without a measured deadline. Fuse mode runs providers in
-parallel and records failures in `fail` instead of hiding them.
+`mwmbl` 2.5 s, `wikipedia` 4.0 s) and for the keyed providers (`tavily` and
+`brave`, 8.0 s). `WEBLENS_PROVIDER_TIMEOUT_S` is the fallback for providers
+without an explicit deadline. Fuse mode runs providers in parallel and records
+failures in `fail` instead of hiding them.
+
+### Keyed providers
+
+Put keys in `weblens/.env`, which is gitignored. Do not put a real key in
+`.env.template` or in a client configuration file.
+
+```dotenv
+# Tavily: https://app.tavily.com
+WEBLENS_TAVILY_API_KEY=<paste-tavily-key>
+# Brave: https://api.search.brave.com/app/keys
+WEBLENS_BRAVE_API_KEY=<paste-brave-key>
+```
+
+Then choose a routing order. `fallback` stops at the first provider that fills
+the result count; `fuse` queries the listed providers in parallel and merges
+them:
+
+```dotenv
+WEBLENS_SEARCH_PROVIDERS=tavily,ddg,mwmbl,wikipedia
+WEBLENS_SEARCH_MODE=fallback
+```
+
+The keyless default remains `ddg,mwmbl,wikipedia`; setting a key does not change
+the provider list. A missing key is reported as an unavailable provider, not as
+a fake result.
+
+### Optional browser
+
+The browser is disabled by default. To enable the tested Playwright path:
+
+```powershell
+uv sync --extra browser
+uv run playwright install chromium
+$env:WEBLENS_ALLOW_BROWSER="true"
+```
+
+Playwright manages its own Chromium build. A Chrome for Testing binary installed
+by another tool is not auto-detected. The browser is only used when the static
+HTML looks like a JavaScript shell; it is not a general "always render" switch.
+
+Chromium is launched behind a loopback-only egress proxy. The proxy resolves each
+HTTP request or HTTPS `CONNECT` destination once, rejects non-public answers, and
+opens the upstream socket to that validated IP; Chromium does not perform the
+page-destination lookup itself. QUIC, DNS prefetch, and non-proxied WebRTC UDP are
+disabled. The proxy is still an in-process component, not a separate network
+namespace or a security boundary, and it has not been independently audited.
 
 ## Security posture
 
@@ -203,7 +260,9 @@ Implemented controls include connection-time SSRF validation (the socket is
 opened to a validated IP, not the hostname), DNS answers that mix public and
 private addresses are rejected wholesale, redirect targets are revalidated on
 every hop, response bodies are capped while streaming, and a global/per-host
-concurrency limit bounds resource use. Retrieved text may carry `inj` flags for
+concurrency limit bounds resource use. The optional browser is launched through a
+loopback egress proxy that performs the same validate-then-connect step for HTTP
+requests and HTTPS tunnels. Retrieved text may carry `inj` flags for
 instruction-smuggling patterns, but those flags are heuristics and do not grant
 or remove permissions.
 
@@ -222,15 +281,17 @@ mcp_server.py  (four tools, compact JSON, read-only annotations)
 service.py     (budgets, error boundary, stable statuses)
    +--> search/router.py ---> ddg | mwmbl | wikipedia | brave | tavily | searxng
    +--> extract/ -----------> SafeFetcher -> trafilatura/lxml/PyMuPDF
+   |                          + optional Playwright -> loopback egress proxy
    +--> crawl/ -------------> robots.txt + sitemap/link map + page dedupe
    +--> research/engine.py --> searches -> fetches -> verbatim findings -> gaps
    v
 cache.sqlite3 (TTL + revalidation) and ~/.weblens/
 ```
 
-The service is stateless with respect to conversations. The cache is disposable
-and expires entries by TTL. There is no vector database, no LLM call, and no
-server-side memory of a user's research.
+The service is stateless with respect to conversations. The cache is disposable,
+expires entries by TTL, and evicts the oldest entries when its logical payload
+exceeds `WEBLENS_CACHE_MAX_BYTES`. There is no vector database, no LLM call, and
+no server-side memory of a user's research.
 
 Design decisions are recorded in [`docs/adr/`](docs/adr/). Protocol evidence and
 version support are in [`docs/PROTOCOL.md`](docs/PROTOCOL.md). The comparison
@@ -253,7 +314,7 @@ spans, forbidden confidence fields, retrieval quality, no-result behavior, and
 p50/p95 latency. A breach makes the command exit non-zero; it does not silently
 pass.
 
-Latest full run: `benchmarks/results/2026-10-21_final2.json` (58 queries,
+Headline keyless run: `benchmarks/results/2026-10-21_final2.json` (58 queries,
 fresh cache). It **fails three gates**: labelled-domain precision, top-3
 authoritative, and search p50. The failure is reported, not hidden.
 
@@ -276,6 +337,36 @@ but lost labelled results; a run with restored DuckDuckGo but short
 low-priority deadlines (`2026-10-21_final`) hit a provider-degradation window
 and is retained only as evidence, not as the headline. See
 [`docs/MEASUREMENTS.md`](docs/MEASUREMENTS.md) for all rows.
+
+A separate keyed run with Tavily as the only provider
+(`benchmarks/results/2026-10-23_tavily.json`) cleared both accuracy gates:
+
+| metric | Tavily | keyless final2 |
+| --- | --- | --- |
+| precision@n | 0.2618 (50/191) | 0.1461 (26/178) |
+| top-3 authoritative | 0.65 (26/40) | 0.35 (14/40) |
+| answer support | 0.9667 (29/30) | 0.7333 (22/30) |
+| no-result accuracy | 0.80 (8/10) | 0.90 (9/10) |
+| search p50 / p95 | 2872 / 5580 ms | 2512 / 4023 ms |
+| extract p50 / p95 | 275 / 1489 ms | 641 / 3214 ms |
+| research p50 / p95 | 7271 / 13693 ms | 8573 / 18637 ms |
+
+Tavily therefore improves measured accuracy but **fails both search latency
+gates** (p50 2.87 s, p95 5.58 s) and is not the default. Keyless remains the
+zero-key default; Tavily is an optional accuracy-first trade-off. The precision
+denominators differ (191 Tavily URLs vs. 178 keyless URLs), so read the raw
+counts. See
+[`docs/MEASUREMENTS.md`](docs/MEASUREMENTS.md#keyed-provider-run-tavily) for the
+method and caveats.
+
+Browser smoke test (three fresh local JavaScript-shell runs and a public HTTPS
+proxy check, Playwright Chromium):
+[`benchmarks/results/2026-10-27_browser_smoke.md`](benchmarks/results/2026-10-27_browser_smoke.md).
+The local first-extraction median was 1.76 s (range 1.70–3.41 s), each run
+rendered the JavaScript text through the egress proxy, the public HTTPS
+`CONNECT` check returned `Example Domain`, and the same local URL was refused
+under the default private-network policy. These are single-host functional
+timings, not a page-corpus latency claim.
 
 Interpretation rules:
 
@@ -300,9 +391,10 @@ startup guarantee; the run was taken when CPU load was low but disk activity was
 high, and startup remains sensitive to antivirus and disk contention.
 
 Known measured gaps are listed in [`docs/LIMITATIONS.md`](docs/LIMITATIONS.md):
-notably labelled-domain precision 0.146 and top-3 authoritative 0.35, zero
-conflict recall on the current dataset, and a keyless search p50 of 2.5 s that
-misses the 1.5 s starting target when providers are slow or rate-limited.
+the keyless headline has labelled-domain precision 0.146, top-3 authoritative
+0.35, zero conflict recall, and a search p50 of 2.5 s that misses the 1.5 s
+target. Tavily clears the accuracy gates in one run but misses both search
+latency gates, so it is optional rather than the default.
 
 ## Tests
 
@@ -314,7 +406,11 @@ uv run ruff check src tests benchmarks
 The suite covers URL normalization and redirect loops, SSRF/DNS/redirect
 defenses, search parsing and filtering, extraction and exact spans, crawl
 dedupe/robots, research guards and conflicts, token budgets, and MCP schema,
-error mapping, and stateless modern/legacy HTTP behavior.
+error mapping, and stateless modern/legacy HTTP behavior. `tests/test_browser_proxy.py`
+covers HTTP forwarding, HTTPS-style `CONNECT` tunneling, and refusal of private
+destinations. When the optional browser extra is installed,
+`tests/test_browser_optional.py` also launches Playwright Chromium against a
+local JavaScript shell; otherwise that test is skipped.
 
 CI is defined in [`.github/workflows/weblens-ci.yml`](../.github/workflows/weblens-ci.yml).
 It runs lint and the offline test suite on Ubuntu and Windows with Python 3.11
@@ -329,30 +425,45 @@ the live measurement, and it is allowed to fail.
 - No LLM synthesis. Research output is evidence, not an answer.
 - Keyless search providers are unofficial/best-effort and can throttle or
   change markup. There is no uptime or rate-limit SLA.
-- No official MCP conformance suite was run. Protocol support is tested at the
-  message level for two versions; see [`docs/PROTOCOL.md`](docs/PROTOCOL.md).
-- The browser path is optional, disabled by default, and not tested in this
-  environment because Chromium is not installed. It has a larger SSRF surface
-  than the HTTP path; see the threat model.
+- The official MCP conformance suite (0.1.16) was run against stateless HTTP on
+  2026-10-27. The meaningful tools-only core passed (`server-initialize`, `ping`,
+  `tools-list`, DNS-rebinding protection), but the active suite also reports 21
+  failures for optional capabilities and fixture tools outside its four-tool
+  surface; this is not a full-conformance claim. The Windows Node runner exits with a
+  libuv assertion after saving results. See
+  [`docs/PROTOCOL.md`](docs/PROTOCOL.md) and
+  [`benchmarks/results/2026-10-27_mcp_conformance.md`](benchmarks/results/2026-10-27_mcp_conformance.md).
+- The browser path is optional, disabled by default, and was smoke-tested with
+  Playwright Chromium on Windows. It is heuristic (it does not render every
+  JavaScript page). It now uses a loopback egress proxy that resolves and pins
+  each page destination, but the proxy is in-process and has not been
+  independently audited; do not call the browser a sandbox or "SSRF-safe." See
+  the threat model.
 - Conflict detection is conservative and only handles same-unit numeric
   contradictions with overlapping subject tokens.
-- Tavily/Brave comparison is blocked without API keys. SearXNG JSON support
-  depends on the instance. No unmeasured vendor comparison is claimed.
+- Tavily was exercised live on a 58-query run; Brave was not measured because no
+  Brave key was available. SearXNG JSON support depends on the instance. No
+  unmeasured vendor comparison is claimed.
 - The cache is not encrypted. Do not put secrets in queries or cache a private
-  intranet through a misconfiguration.
+  intranet through a misconfiguration. `WEBLENS_CACHE_MAX_BYTES` caps logical
+  payload, while SQLite/WAL overhead can make the file larger.
 
 ## Roadmap
 
-1. Measure a keyed provider (Brave or Tavily) against the same 58-query set and
-   report the Pareto trade-off in tokens, accuracy, and latency.
+1. Run Brave on the same 58-query set; Tavily cleared accuracy but missed both
+   search latency gates. Keep keyless as the zero-key default unless Brave keeps
+   the accuracy gain and meets the latency gates.
 2. Add a human relevance judgment sheet alongside the labelled-domain metric so
    "relevant but not on the labelled domain" is visible.
 3. Improve conflict detection only if it raises recall without false positives
    on the existing set.
-4. Add an optional, isolated browser path with explicit IP pinning and a
-   separate threat model.
-5. Run the official MCP conformance suite when a Windows-compatible runner is
-   available.
+4. Add independent process/network-namespace isolation and an external audit for
+   the optional browser. The in-process egress proxy now pins page destinations
+   and is tested, but it is not a sandbox; keep the browser off by default.
+5. Make the official MCP conformance run a reliable CI gate. The suite was run
+   against stateless HTTP on 2026-10-27 and the core scenarios passed, but the
+   Windows Node runner exits with a libuv assertion and optional-capability
+   scenarios are not applicable to a tools-only server.
 
 ## License
 

@@ -5,6 +5,7 @@ Failures are contained: a broken cache must never break a request.
 
 from __future__ import annotations
 
+import contextlib
 import json
 import sqlite3
 import threading
@@ -25,6 +26,7 @@ class Cache:
         self.hits = 0
         self.misses = 0
         self.errors = 0
+        self.evictions = 0
         if settings.cache_enabled:
             try:
                 self.path.parent.mkdir(parents=True, exist_ok=True)
@@ -45,6 +47,13 @@ class Cache:
                 )
                 self._conn.execute("CREATE INDEX IF NOT EXISTS idx_kv_expires ON kv(expires)")
                 self._conn.commit()
+                with self._lock:
+                    try:
+                        self._enforce_limit_locked()
+                    except sqlite3.Error:
+                        with contextlib.suppress(sqlite3.Error):
+                            self._conn.rollback()
+                        self.errors += 1
             except (sqlite3.Error, OSError):
                 self.errors += 1
                 self._conn = None
@@ -81,6 +90,43 @@ class Cache:
                 (key, str(meta.get("kind", "")), blob, json.dumps(meta), now, now + ttl),
             )
             self._conn.commit()
+            try:
+                self._enforce_limit_locked()
+            except sqlite3.Error:
+                with contextlib.suppress(sqlite3.Error):
+                    self._conn.rollback()
+                self.errors += 1
+
+    def _logical_size_locked(self) -> int:
+        if self._conn is None:
+            return 0
+        row = self._conn.execute(
+            "SELECT COALESCE(SUM(LENGTH(value) + LENGTH(meta)), 0) FROM kv"
+        ).fetchone()
+        return int(row[0]) if row else 0
+
+    def _enforce_limit_locked(self) -> int:
+        """Evict oldest entries until the logical payload is under the cap."""
+        cap = self.s.cache_max_bytes
+        if self._conn is None or cap <= 0:
+            return 0
+        total = self._logical_size_locked()
+        if total <= cap:
+            return 0
+        rows = self._conn.execute(
+            "SELECT k, LENGTH(value) + LENGTH(meta) FROM kv ORDER BY created ASC"
+        ).fetchall()
+        evicted = 0
+        for key, size in rows:
+            if total <= cap:
+                break
+            self._conn.execute("DELETE FROM kv WHERE k=?", (key,))
+            total -= int(size)
+            evicted += 1
+        if evicted:
+            self._conn.commit()
+            self.evictions += evicted
+        return evicted
 
     def _purge_sync(self) -> int:
         if self._conn is None:
@@ -90,12 +136,13 @@ class Cache:
             self._conn.commit()
             return cur.rowcount
 
-    def _clear_sync(self) -> None:
+    def _clear_sync(self) -> int:
         if self._conn is None:
-            return
+            return 0
         with self._lock:
-            self._conn.execute("DELETE FROM kv")
+            cur = self._conn.execute("DELETE FROM kv")
             self._conn.commit()
+            return cur.rowcount
 
     # -- async wrappers --------------------------------------------------
     async def get(self, key: str) -> tuple[bytes, dict[str, Any], float] | None:
@@ -144,22 +191,46 @@ class Cache:
             self.errors += 1
             return 0
 
-    async def clear(self) -> None:
+    async def clear(self) -> int:
         try:
             import anyio
 
-            await anyio.to_thread.run_sync(self._clear_sync)
+            return int(await anyio.to_thread.run_sync(self._clear_sync))
         except Exception:
             self.errors += 1
+            return 0
 
-    def stats(self) -> dict[str, int | bool]:
+    def stats(self) -> dict[str, int | float | bool]:
         total = self.hits + self.misses
+        entries = 0
+        logical_bytes = 0
+        if self._conn is not None:
+            try:
+                with self._lock:
+                    row = self._conn.execute(
+                        "SELECT COUNT(*), COALESCE(SUM(LENGTH(value) + LENGTH(meta)), 0) FROM kv"
+                    ).fetchone()
+                if row:
+                    entries, logical_bytes = int(row[0]), int(row[1])
+            except sqlite3.Error:
+                self.errors += 1
+        file_bytes = 0
+        for suffix in ("", "-wal"):
+            try:
+                file_bytes += Path(f"{self.path}{suffix}").stat().st_size
+            except OSError:
+                pass
         return {
             "enabled": self._conn is not None,
             "hits": self.hits,
             "misses": self.misses,
-            "hit_rate_pct": round(100 * self.hits / total, 1) if total else 0,
+            "hit_rate_pct": round(100 * self.hits / total, 1) if total else 0.0,
             "errors": self.errors,
+            "evictions": self.evictions,
+            "entries": entries,
+            "bytes": logical_bytes,
+            "file_bytes": file_bytes,
+            "max_bytes": self.s.cache_max_bytes,
         }
 
     def close(self) -> None:

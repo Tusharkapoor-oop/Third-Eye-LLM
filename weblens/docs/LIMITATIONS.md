@@ -44,27 +44,39 @@ The persistent ones are:
   results for many technical queries. Its API can be slow or unavailable.
 - `wikipedia` uses the MediaWiki API. It is reliable for encyclopedic topics but
   cannot answer most programming or vendor-specific questions.
-- `brave` and `tavily` adapters exist but were **not measured**: no API keys were
-  available. Their pricing, quotas, and result quality are not claimed.
+- The `tavily` adapter was exercised live on 2026-10-23 against a key in the
+  local `.env`; its measured run is recorded separately in
+  `docs/MEASUREMENTS.md`. Its pricing, quota, and long-term result quality are
+  still not claimed.
+- The `brave` adapter exists but was **not measured**: no Brave API key was
+  available. Its pricing, quotas, and result quality are not claimed.
 - `searxng` expects a self-hosted instance with JSON output enabled. Many public
   instances disable JSON; none was verified here.
 - `bing` is optional and marked degraded. Microsoft retired the official Bing
   Search APIs, and the HTML fallback returned unsafe, unrelated results during
   development. It is not in the default chain.
 
-The benchmark cannot compare against Tavily's free tier without a key. The
-comparison document marks that row as blocked, not as a win.
+The keyless and Tavily runs are separate operating points, not a controlled
+vendor bake-off. The comparison document labels Brave and SearXNG as unverified
+or blocked, not as wins.
 
 ## Extraction
 
 - HTML extraction uses trafilatura in fast mode plus lxml metadata. It strips
   navigation, scripts, and most boilerplate, but can remove content inside
   unusual layouts or keep cookie banners.
-- JavaScript-only pages need the optional Playwright browser. Chromium is not
-  installed in this environment, so the browser path is **untested** here and
-  disabled by default.
-- The browser path does not pin DNS to a validated IP; it is experimental and
-  has a larger SSRF residual risk (see the threat model).
+- JavaScript-only pages can use the optional Playwright browser. It was
+  smoke-tested on Windows with Playwright Chromium against a local JavaScript
+  shell; the latest result is in
+  `benchmarks/results/2026-10-27_browser_smoke.json`. It remains disabled by
+  default and is not part of the headline latency.
+- The browser fallback is heuristic: it runs only when the static text is short
+  and the HTML looks like a JavaScript shell. Pages that need JavaScript but do
+  not match those markers are returned with their static text.
+- Browser page traffic is routed through a loopback egress proxy that resolves
+  and validates each destination once and connects to the validated IP. The
+  proxy is in-process, not a network namespace, and has not been independently
+  audited; it reduces but does not eliminate browser-path risk.
 - PDF text extraction now uses PyMuPDF, capped at 40 pages. It only extracts an
   existing text layer; scanned PDFs are not OCRed.
 - Character spans refer to the cleaned text returned by the extractor, not the
@@ -92,12 +104,24 @@ comparison document marks that row as blocked, not as a win.
 
 ## MCP
 
-- No official MCP conformance suite was run.
+- The official `@modelcontextprotocol/conformance` 0.1.16 active suite was run
+  on 2026-10-27 against stateless HTTP. It is not a full pass: 9 checks passed,
+  21 failed, and 1 warned. The failures are scenarios for optional capabilities
+  or fixture tools outside its four-tool surface. The meaningful core scenarios
+  (`server-initialize`, `ping`, `tools-list`, `dns-rebinding-protection`) all
+  passed. The Windows Node runner exits with a libuv assertion after saving
+  results, so it is not yet a zero-exit CI gate. See
+  `benchmarks/results/2026-10-27_mcp_conformance.md`.
 - Only `tools/list` was asserted over the modern `2026-07-28` stateless HTTP
   flow. The legacy `2025-11-25` `initialize` + `tools/list` flow was asserted.
-- `2025-06-18`, `2025-03-26`, and `2024-11-05` were not directly tested.
-- The server implements tools only. It has no resources, prompts, sampling,
-  elicitation, subscriptions, progress, or OAuth.
+  The conformance run covered `2025-06-18` and `2025-11-25` scenarios only.
+- `2025-03-26` and `2024-11-05` were not directly tested.
+- Conformance did not exercise WebLens's four tool calls over HTTP; stdio,
+  OAuth, TLS, and browser-client behavior remain untested.
+- Only the four tools are populated. The SDK advertises empty `prompts` and
+  `resources` capabilities, whose list methods return `[]`; no prompt/resource
+  items, sampling, elicitation, completion, logging, progress, subscriptions, or
+  OAuth are implemented.
 - Streamable HTTP uses SSE framing (`json_response=False`). A client that only
   accepts `application/json` may not work.
 - No load test, TLS termination, CORS policy, or per-client rate limit exists.
@@ -106,10 +130,15 @@ comparison document marks that row as blocked, not as a win.
 
 - SSRF defenses are unit-tested but not independently audited. A public proxy
   or an unexpected URL-parser differential can still reach a private service.
+- The optional browser's egress proxy is also unit-tested, but it shares the
+  WebLens process and is not a sandbox. A Chromium or proxy defect could bypass
+  the destination policy; see the browser residual in the threat model.
 - Prompt-injection flags are heuristics; they are not a classifier and do not
   sanitize content. The calling model must preserve the data/instruction
   boundary.
 - The cache is unencrypted SQLite. Queries and fetched content may be sensitive.
+  `WEBLENS_CACHE_MAX_BYTES` caps logical payload, not SQLite/WAL disk use;
+  `weblens cache stats` reports both, and `weblens cache purge` deletes rows only.
 - Parser vulnerabilities in lxml, trafilatura, or PyMuPDF are handled only by
   dependency updates and the process boundary; parsing is not sandboxed.
 - Enabling private networks or the browser invalidates several default security
@@ -130,6 +159,11 @@ comparison document marks that row as blocked, not as a win.
   invocations without that flag reuse `benchmarks/.cache`, so they are warm for
   page and provider HTTP responses. Because search envelopes are not cached,
   there is no warm-search p50 to report.
+- The one Tavily run cleared the accuracy gates but measured 2.87 s p50 and
+  5.58 s p95, failing both search latency gates. Do not generalize one run into
+  a provider SLA.
+- The browser smoke test measures three fresh local-page extractions and one
+  public HTTPS proxy check; it is not a page-corpus latency claim.
 
 ## Scope
 

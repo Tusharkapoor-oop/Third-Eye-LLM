@@ -27,9 +27,16 @@ fetches:
 6. `trust_env=False` prevents environment proxies from bypassing the backend.
 7. Response sizes are capped before and during streaming.
 
-The optional browser checks hostnames, literal IPs, and ports in its request
-route handler, but it does not pin DNS to a validated IP. It is disabled by
-default and documented as having a larger residual SSRF risk.
+At the time of this decision, the optional browser checked hostnames, literal
+IPs, and ports in its request route handler, but did not pin DNS to a validated
+IP. It remained disabled by default and was documented as having a larger
+residual SSRF risk.
+
+**Update 2026-10-24:** the browser is now launched behind a loopback egress
+proxy. The proxy resolves each HTTP request and HTTPS `CONNECT` once, applies
+`DestinationPolicy`, and connects to the validated IP. Chromium does not perform
+the page destination lookup. The proxy is still in-process and unaudited, so this
+reduces the DNS-rebinding path without creating a browser sandbox.
 
 ## Alternatives considered
 
@@ -48,4 +55,5 @@ default and documented as having a larger residual SSRF risk.
   upgrades require re-running the SSRF tests.
 - All fetches pay a DNS resolution; the HTTP cache avoids most repeats.
 - IPv6-only public hosts work, but IPv4 is preferred for stability.
-- Browser DNS rebinding remains a residual risk; see `THREAT_MODEL.md`.
+- Browser DNS rebinding is reduced by the loopback egress proxy, but the proxy
+  is in-process and unaudited; see `THREAT_MODEL.md` for the residual risk.

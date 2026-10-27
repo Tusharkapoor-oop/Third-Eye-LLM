@@ -54,6 +54,9 @@ class Settings(BaseSettings):
     # --- cache ------------------------------------------------------------
     cache_dir: Path = Field(default_factory=lambda: Path.home() / ".weblens")
     cache_enabled: bool = True
+    # Logical payload cap (compressed value + metadata bytes), not SQLite file
+    # size. 0 disables eviction.
+    cache_max_bytes: int = Field(default=512 * 1024 * 1024, ge=0)
     page_cache_ttl_s: int = 86_400
     robots_cache_ttl_s: int = 3_600
 

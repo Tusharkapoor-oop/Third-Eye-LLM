@@ -47,6 +47,7 @@ packages = ["src/weblens"]
 testpaths = ["tests"]
 asyncio_mode = "auto"
 addopts = "-q"
+pythonpath = ["src"]
 
 [tool.ruff]
 line-length = 120

@@ -56,6 +56,10 @@ private address. DNS may alternate public/private answers.
 - `SafeNetworkBackend.connect_tcp` opens the socket to the validated IP, not the
   hostname. TLS SNI and the HTTP `Host` header remain the original hostname
   because httpcore derives them from the request origin.
+- The optional browser is launched behind a loopback egress proxy. For every
+  HTTP request and HTTPS `CONNECT`, it resolves once, applies the same
+  destination policy, and opens the upstream socket to the validated IP. The
+  browser does not resolve the page destination itself.
 - Only ports 80 and 443 are allowed unless private networks are explicitly
   enabled.
 - `trust_env=False` prevents `HTTP_PROXY`/`HTTPS_PROXY` environment variables
@@ -151,9 +155,11 @@ proxy; a browser page performs a drive-by request to the local server.
 bearer token or `--allow-insecure`; constant-time bearer comparison; no CORS
 headers; read-only tools; no session data in stateless mode.
 
-**Residual:** no TLS termination and no full Origin/Host validation. If exposed
-beyond loopback, put it behind a TLS reverse proxy with network ACLs. A local
-malicious process can still call a loopback server.
+**Residual:** no TLS termination. In the tested loopback configuration the SDK
+transport rejects a non-loopback `Host`/`Origin` with HTTP 421 (the official
+conformance check passed 2/2), but this is not a substitute for TLS or a reverse
+proxy with ACLs when exposed beyond loopback. A local malicious process can
+still call a loopback server.
 
 ### 7. Cache integrity and disk growth
 
@@ -163,26 +169,43 @@ presented as current, or unbounded disk use.
 **Controls:** cache keys are hashes of method/URL/body; values are compressed
 blobs in a SQLite table, not filesystem paths; TTLs and ETag/Last-Modified
 revalidation; `fetched_at` is returned with every passage; cache failures are
-contained and never fail the request.
+contained and never fail the request; `WEBLENS_CACHE_MAX_BYTES` evicts the
+oldest rows when the logical payload exceeds the cap; `weblens cache stats` and
+`weblens cache purge [--all]` operate only on the WebLens SQLite database.
 
-**Residual:** no explicit maximum cache size or encryption; a compromised local
-account can edit the database. Delete `~/.weblens/cache.sqlite3` to reset.
+**Residual:** the byte cap is logical payload, not a hard disk quota: SQLite
+pages and the WAL are extra (`file_bytes` in `cache stats`). There is no
+encryption; a compromised local account can read or edit the database. Delete
+`~/.weblens/cache.sqlite3` to reset.
 
 ### 8. Optional browser path
 
-**Threat:** Chromium resolves DNS independently of `SafeNetworkBackend`, so a
-public hostname can resolve to a private address after the hostname check; a
-page can issue subresource requests, downloads, or popups.
+**Threat:** even with request interception, Chromium can resolve DNS
+independently of `SafeNetworkBackend`, so a public hostname can resolve to a
+private address after the hostname check. A page can also issue subresource
+requests, downloads, or popups.
 
-**Controls:** disabled by default (`allow_browser=false`); no Playwright install
-in the default environment; requests are aborted for non-HTTP(S), non-web ports,
-blocked hostnames, literal private IPs, images/media/fonts/stylesheets;
-JavaScript only, service workers blocked, downloads disabled, HTTPS errors not
-ignored, navigation timeout.
+**Controls:** disabled by default (`allow_browser=false`); the Playwright extra is
+optional and is not installed by a plain `uv sync`; Chromium is launched behind a
+loopback-only egress proxy. For every HTTP request and HTTPS `CONNECT`, the proxy
+resolves the destination once, applies `DestinationPolicy`, and opens the
+upstream socket to that validated IP; Chromium does not perform the page
+destination lookup. Requests are still aborted for non-HTTP(S), non-web ports,
+blocked hostnames, literal private IPs, images/media/fonts/stylesheets. QUIC,
+DNS prefetch, and non-proxied WebRTC UDP are disabled; JavaScript only, service
+workers blocked, downloads disabled, HTTPS errors not ignored, navigation
+timeout. `tests/test_browser_proxy.py` covers forwarding, `CONNECT` tunnels, and
+private-destination refusal. The live smoke test runs three fresh local
+JavaScript-shell extractions and a public HTTPS `CONNECT` check; the private-URL
+check fails before navigation as expected.
 
-**Residual:** DNS rebinding to a private IP is still possible in the browser
-path; IP pinning is not implemented. Treat the browser as experimental and only
-enable it for trusted URLs. This is why the default is off.
+**Residual:** the proxy is an in-process Python component, not a network
+namespace or an independent sandbox, and it has not been independently audited.
+A Chromium compromise or a proxy bug could bypass these controls. While the
+browser is running, another local process that can reach the ephemeral loopback
+proxy port could use it, subject to the same destination policy. A public IP can
+still proxy to private resources. Treat the browser as experimental and leave it
+off unless you accept this residual risk.
 
 ### 9. MCP/transport abuse
 
@@ -210,6 +233,8 @@ untrusted local clients share the machine.
 | Research refusal guards | `tests/test_research.py` |
 | MCP error mapping and protocol flows | `tests/test_mcp.py` |
 | Bearer authentication and non-loopback refusal | `tests/test_http_auth.py` |
+| Browser proxy forwarding, CONNECT, private refusal | `tests/test_browser_proxy.py` |
+| Browser JavaScript rendering (optional) | `tests/test_browser_optional.py` |
 
 These tests are not a penetration test. No independent security audit was
 performed.

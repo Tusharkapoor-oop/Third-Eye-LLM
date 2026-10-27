@@ -3,9 +3,11 @@
 from __future__ import annotations
 
 import asyncio
+import contextlib
 from urllib.parse import urlsplit
 
 from ..config import Settings
+from ..net.browser_proxy import BrowserEgressProxy
 from ..net.ssrf import DestinationPolicy
 from ..urls import host_of
 
@@ -16,6 +18,7 @@ class BrowserRenderer:
         self.policy = DestinationPolicy(settings)
         self._pw = None
         self._browser = None
+        self._proxy: BrowserEgressProxy | None = None
         self._lock = asyncio.Lock()
 
     async def _ensure(self):
@@ -26,19 +29,46 @@ class BrowserRenderer:
                 return self._browser
             from playwright.async_api import async_playwright
 
-            self._pw = await async_playwright().start()
-            self._browser = await self._pw.chromium.launch(
-                headless=True,
-                args=[
-                    "--disable-dev-shm-usage",
-                    "--no-first-run",
-                    "--no-default-browser-check",
-                    "--disable-background-networking",
-                    "--disable-extensions",
-                    "--disable-sync",
-                ],
-            )
+            proxy = BrowserEgressProxy(self.s, self.policy)
+            proxy_url = await proxy.start()
+            self._proxy = proxy
+            try:
+                self._pw = await async_playwright().start()
+                self._browser = await self._pw.chromium.launch(
+                    headless=True,
+                    proxy={"server": proxy_url},
+                    args=[
+                        "--disable-dev-shm-usage",
+                        "--no-first-run",
+                        "--no-default-browser-check",
+                        "--disable-background-networking",
+                        "--disable-extensions",
+                        "--disable-sync",
+                        "--disable-quic",
+                        "--dns-prefetch-disable",
+                        "--force-webrtc-ip-handling-policy=disable_non_proxied_udp",
+                        # Chromium normally bypasses proxies for loopback; the
+                        # test path and explicitly enabled private networks need
+                        # those requests to go through the policy proxy too.
+                        "--proxy-bypass-list=<-loopback>",
+                    ],
+                )
+            except Exception:
+                self._browser = None
+                if self._pw is not None:
+                    with contextlib.suppress(Exception):
+                        await self._pw.stop()
+                    self._pw = None
+                with contextlib.suppress(Exception):
+                    await proxy.close()
+                self._proxy = None
+                raise
             return self._browser
+
+    @property
+    def proxy_requests(self) -> int:
+        """Diagnostics: requests handled by the egress proxy in this renderer."""
+        return self._proxy.requests if self._proxy is not None else 0
 
     async def render(self, url: str) -> tuple[str, str]:
         """Return (html, final_url). Raises on launch/navigation failure."""
@@ -95,3 +125,7 @@ class BrowserRenderer:
             except Exception:
                 pass
             self._pw = None
+        if self._proxy is not None:
+            with contextlib.suppress(Exception):
+                await self._proxy.close()
+            self._proxy = None

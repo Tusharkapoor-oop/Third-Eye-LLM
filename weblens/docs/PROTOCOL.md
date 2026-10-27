@@ -1,7 +1,9 @@
 # MCP protocol notes
 
 This document separates what was actually exercised from what the SDK merely
-supports. No formal conformance suite has been run; see
+supports. The official conformance suite was run on 2026-10-27 against the HTTP
+transport; its limited scope is recorded in
+[Official conformance run](#official-conformance-run) and
 [Gaps and non-claims](#gaps-and-non-claims).
 
 ## Implementation
@@ -10,8 +12,10 @@ supports. No formal conformance suite has been run; see
 - Server name: `weblens`; version comes from `weblens.__version__`.
 - Transport: stdio by default; optional Streamable HTTP at `/mcp`.
 - Tools: four (`web_search`, `extract_url`, `crawl_site`, `deep_research`).
-- No resources, prompts, sampling, elicitation, OAuth, or server-initiated
-  requests are implemented.
+- The SDK also advertises empty `prompts` and `resources` capabilities: their
+  list methods return empty arrays and there are no items to read or get.
+  Sampling, elicitation, subscriptions, completion, logging, OAuth, and
+  server-initiated requests are not implemented.
 - All tools are annotated read-only, non-destructive, idempotent, open-world.
 - Tool results are MCP `content` text containing compact JSON. Structured
   output is disabled (`structured_output=False`).
@@ -62,6 +66,48 @@ that require `Mcp-Session-Id`. Statefulness is a transport compatibility switch,
 not an application feature: WebLens has no per-conversation server state beyond
 the HTTP cache.
 
+## Official conformance run
+
+On 2026-10-27, `@modelcontextprotocol/conformance` **0.1.16** (active suite) was
+run against the stateless HTTP server on Windows 11 with Node v24.19.0.
+
+```powershell
+uv run weblens serve --http --host 127.0.0.1 --port 8765 --log-level warning
+npx --yes @modelcontextprotocol/conformance@0.1.16 server `
+  --url http://127.0.0.1:8765/mcp `
+  --output-dir "$env:TEMP\weblens-conformance-2"
+```
+
+Result: 30 scenarios, 9 passed checks, 21 failed checks, 1 warning, and 8
+scenarios fully passed. These are not a compliance score because the active
+suite is not filtered to the capabilities WebLens advertises. The 21 failures
+require optional logging/completion/resources/prompts/elicitation/sampling
+capabilities or the suite's fixture tools. `tools-call-simple-text` and
+`tools-call-error` passed only because the suite accepts an unknown-tool error
+text result; `resources-list` and `prompts-list` passed with empty lists.
+
+The meaningful core for a tools-only server passed:
+
+| Scenario | Checks | Evidence |
+| --- | --- | --- |
+| `server-initialize` | 1/1 | Valid initialization structure |
+| `ping` | 1/1 | Server responds to ping |
+| `tools-list` | 1/1 | Four tools with valid structure |
+| `dns-rebinding-protection` | 2/2 | Bad Host/Origin rejected with 421; loopback accepted |
+
+`server-sse-multiple-streams` warned that stateless HTTP has no
+`Mcp-Session-Id`; this is expected for the default transport. The runner then
+exited with a libuv assertion on Windows after saving all `checks.json` files
+(`Assertion failed: !(handle->flags & UV_HANDLE_CLOSING), file src\win\async.c,
+line 94`). The assertion is in the Node runner, not in WebLens, and prevents the
+suite from being a zero-exit CI gate on this Windows/Node combination. Exact
+results and raw checks are in
+[`benchmarks/results/2026-10-27_mcp_conformance.md`](../benchmarks/results/2026-10-27_mcp_conformance.md).
+
+This run covers the Streamable HTTP transport and the four-tool surface only. It
+does not cover stdio, the semantics of the four WebLens tool calls, OAuth, or
+client behavior.
+
 ## Error semantics
 
 There are two distinct outcomes:
@@ -100,12 +146,16 @@ not a universal "context cost".
 
 ## Gaps and non-claims
 
-- **Official conformance suite not run.** The tests assert specific message
-  flows, not full spec coverage.
+- **Official conformance suite is not a full pass.** The 2026-10-27 run covers
+  the HTTP transport and the core tools-only scenarios; the suite's optional
+  capability and fixture-tool scenarios are out of scope, and the Windows runner
+  exits with a libuv assertion after saving results. Do not call the server
+  "fully conformant."
 - Only `tools/list` is asserted for the modern stateless flow. Tool calls over
   that exact flow are exercised through the in-memory server and the CLI, but
   not separately over stateless HTTP.
-- `2025-06-18`, `2025-03-26`, and `2024-11-05` are not directly tested.
+- The 2026-10-27 conformance run covered `2025-06-18` and `2025-11-25`
+  scenarios. `2025-03-26` and `2024-11-05` are not directly tested.
 - No OAuth, resource indicators, subscriptions, progress notifications, or
   cancellation behavior is implemented or tested.
 - No browser-based MCP client (e.g., a remote web client) was tested. The HTTP
@@ -118,6 +168,11 @@ not a universal "context cost".
 ```powershell
 uv run pytest -q tests/test_mcp.py
 uv run weblens tokens --pretty
+
+# Optional: official suite (requires Node/npx)
+uv run weblens serve --http --port 8765
+npx --yes @modelcontextprotocol/conformance@0.1.16 server `
+  --url http://127.0.0.1:8765/mcp
 ```
 
 For a manual HTTP probe, start the server and send a JSON-RPC POST with

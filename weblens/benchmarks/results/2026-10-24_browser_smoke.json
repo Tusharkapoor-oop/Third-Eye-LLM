@@ -1,0 +1,82 @@
+{
+  "measured_at": "2026-10-24T03:31:41.096008+00:00",
+  "environment": {
+    "python": "3.14.0",
+    "platform": "Windows-11-10.0.26300-SP0",
+    "playwright": "1.64.0"
+  },
+  "method": {
+    "url": "local HTTP server on 127.0.0.1 (ephemeral port)",
+    "page": "HTML shell with <div id=\"app\"> and an inline script",
+    "cache": "disabled",
+    "runs": 3,
+    "note": "Each run uses a fresh WebLens instance, so every elapsed_ms includes Chromium launch and navigation."
+  },
+  "status": "ok",
+  "elapsed_ms": 2305.9,
+  "elapsed_ms_min": 2245.8,
+  "elapsed_ms_max": 3385.0,
+  "runs": [
+    {
+      "elapsed_ms": 3385.0,
+      "extract_status": "ok",
+      "warnings": [
+        "browser_rendered"
+      ],
+      "browser_rendered": true,
+      "passages": 1,
+      "tokens": 182,
+      "contains_rendered_text": true,
+      "proxy_requests": 1
+    },
+    {
+      "elapsed_ms": 2245.8,
+      "extract_status": "ok",
+      "warnings": [
+        "browser_rendered"
+      ],
+      "browser_rendered": true,
+      "passages": 1,
+      "tokens": 182,
+      "contains_rendered_text": true,
+      "proxy_requests": 1
+    },
+    {
+      "elapsed_ms": 2305.9,
+      "extract_status": "ok",
+      "warnings": [
+        "browser_rendered"
+      ],
+      "browser_rendered": true,
+      "passages": 1,
+      "tokens": 182,
+      "contains_rendered_text": true,
+      "proxy_requests": 1
+    }
+  ],
+  "extract_status": "ok",
+  "warnings": [
+    "browser_rendered"
+  ],
+  "browser_rendered": true,
+  "passages": 1,
+  "tokens": 182,
+  "contains_rendered_text": true,
+  "proxy_requests": [
+    1,
+    1,
+    1
+  ],
+  "private_url": {
+    "status": "error",
+    "err": "blocked_url",
+    "msg": "non-public destination: 127.0.0.1"
+  },
+  "https_check": {
+    "status": "ok",
+    "elapsed_ms": 4846.1,
+    "final_url": "https://example.com/",
+    "contains_example_domain": true,
+    "proxy_requests": 1
+  }
+}

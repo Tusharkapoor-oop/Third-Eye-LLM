@@ -137,6 +137,18 @@ uv run weblens tokens --pretty
 the measured `cl100k_base` schema size and whether it is within the 1,000-token
 budget.
 
+## Provider keys
+
+Put `WEBLENS_TAVILY_API_KEY` and/or `WEBLENS_BRAVE_API_KEY` in
+`weblens/.env`. The file is gitignored. The MCP command above uses
+`--directory` to make `weblens` the working directory, so the server reads that
+file; if you start the server from elsewhere, either pass `--directory` or set
+the variables in the client's environment. A key alone does not enable a
+provider: add `tavily` or `brave` to `WEBLENS_SEARCH_PROVIDERS`.
+
+Never put a real key in `examples/clients/*.json`, `.env.template`, or a shell
+script that is committed.
+
 ## Troubleshooting
 
 - **Server exits immediately:** run `uv run weblens doctor` in the same shell.

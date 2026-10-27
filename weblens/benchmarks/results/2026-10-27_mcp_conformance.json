@@ -1,0 +1,507 @@
+{
+  "suite": "@modelcontextprotocol/conformance",
+  "version": "0.1.16",
+  "date": "2026-10-27",
+  "platform": "Windows 11",
+  "node": "v24.19.0",
+  "server": "weblens 0.1.0",
+  "server_command": "uv run weblens serve --http --host 127.0.0.1 --port 8765 --log-level warning",
+  "url": "http://127.0.0.1:8765/mcp",
+  "suite_mode": "active",
+  "scenario_count": 30,
+  "check_counts": {
+    "success": 9,
+    "failure": 21,
+    "warning": 1
+  },
+  "scenario_outcomes": {
+    "success": 8,
+    "failure": 21,
+    "warning": 1
+  },
+  "meaningful_core_scenarios": [
+    "server-initialize",
+    "ping",
+    "tools-list",
+    "dns-rebinding-protection"
+  ],
+  "scenarios": [
+    {
+      "scenario": "completion-complete",
+      "outcome": "FAILURE",
+      "checks": [
+        {
+          "id": "completion-complete",
+          "name": "CompletionComplete",
+          "status": "FAILURE",
+          "errorMessage": "Failed: MCP error -32601: Method not found"
+        }
+      ]
+    },
+    {
+      "scenario": "dns-rebinding-protection",
+      "outcome": "SUCCESS",
+      "checks": [
+        {
+          "id": "localhost-host-rebinding-rejected",
+          "name": "DNSRebindingRejected",
+          "status": "SUCCESS",
+          "details": {
+            "hostHeader": "evil.example.com",
+            "originHeader": "http://evil.example.com",
+            "statusCode": 421,
+            "body": null
+          }
+        },
+        {
+          "id": "localhost-host-valid-accepted",
+          "name": "LocalhostHostAccepted",
+          "status": "SUCCESS",
+          "details": {
+            "hostHeader": "127.0.0.1:8765",
+            "originHeader": "http://127.0.0.1:8765",
+            "statusCode": 200,
+            "body": null
+          }
+        }
+      ]
+    },
+    {
+      "scenario": "elicitation-sep1034-defaults",
+      "outcome": "FAILURE",
+      "checks": [
+        {
+          "id": "elicitation-sep1034-general",
+          "name": "ElicitationSEP1034General",
+          "status": "FAILURE",
+          "errorMessage": "Server did not request elicitation from client"
+        }
+      ]
+    },
+    {
+      "scenario": "elicitation-sep1330-enums",
+      "outcome": "FAILURE",
+      "checks": [
+        {
+          "id": "elicitation-sep1330-general",
+          "name": "ElicitationSEP1330General",
+          "status": "FAILURE",
+          "errorMessage": "Server did not request elicitation from client"
+        }
+      ]
+    },
+    {
+      "scenario": "logging-set-level",
+      "outcome": "FAILURE",
+      "checks": [
+        {
+          "id": "logging-set-level",
+          "name": "LoggingSetLevel",
+          "status": "FAILURE",
+          "errorMessage": "Failed: MCP error -32601: Method not found"
+        }
+      ]
+    },
+    {
+      "scenario": "ping",
+      "outcome": "SUCCESS",
+      "checks": [
+        {
+          "id": "ping",
+          "name": "Ping",
+          "status": "SUCCESS",
+          "details": {
+            "result": {}
+          }
+        }
+      ]
+    },
+    {
+      "scenario": "prompts-get-embedded-resource",
+      "outcome": "FAILURE",
+      "checks": [
+        {
+          "id": "prompts-get-embedded-resource",
+          "name": "PromptsGetEmbeddedResource",
+          "status": "FAILURE",
+          "errorMessage": "Failed: MCP error 0: Unknown prompt: test_prompt_with_embedded_resource"
+        }
+      ]
+    },
+    {
+      "scenario": "prompts-get-simple",
+      "outcome": "FAILURE",
+      "checks": [
+        {
+          "id": "prompts-get-simple",
+          "name": "PromptsGetSimple",
+          "status": "FAILURE",
+          "errorMessage": "Failed: MCP error 0: Unknown prompt: test_simple_prompt"
+        }
+      ]
+    },
+    {
+      "scenario": "prompts-get-with-args",
+      "outcome": "FAILURE",
+      "checks": [
+        {
+          "id": "prompts-get-with-args",
+          "name": "PromptsGetWithArgs",
+          "status": "FAILURE",
+          "errorMessage": "Failed: MCP error 0: Unknown prompt: test_prompt_with_arguments"
+        }
+      ]
+    },
+    {
+      "scenario": "prompts-get-with-image",
+      "outcome": "FAILURE",
+      "checks": [
+        {
+          "id": "prompts-get-with-image",
+          "name": "PromptsGetWithImage",
+          "status": "FAILURE",
+          "errorMessage": "Failed: MCP error 0: Unknown prompt: test_prompt_with_image"
+        }
+      ]
+    },
+    {
+      "scenario": "prompts-list",
+      "outcome": "SUCCESS",
+      "checks": [
+        {
+          "id": "prompts-list",
+          "name": "PromptsList",
+          "status": "SUCCESS",
+          "details": {
+            "promptCount": 0,
+            "prompts": []
+          }
+        }
+      ]
+    },
+    {
+      "scenario": "resources-list",
+      "outcome": "SUCCESS",
+      "checks": [
+        {
+          "id": "resources-list",
+          "name": "ResourcesList",
+          "status": "SUCCESS",
+          "details": {
+            "resourceCount": 0,
+            "resources": []
+          }
+        }
+      ]
+    },
+    {
+      "scenario": "resources-read-binary",
+      "outcome": "FAILURE",
+      "checks": [
+        {
+          "id": "resources-read-binary",
+          "name": "ResourcesReadBinary",
+          "status": "FAILURE",
+          "errorMessage": "Failed: MCP error -32602: Unknown resource: test://static-binary"
+        }
+      ]
+    },
+    {
+      "scenario": "resources-read-text",
+      "outcome": "FAILURE",
+      "checks": [
+        {
+          "id": "resources-read-text",
+          "name": "ResourcesReadText",
+          "status": "FAILURE",
+          "errorMessage": "Failed: MCP error -32602: Unknown resource: test://static-text"
+        }
+      ]
+    },
+    {
+      "scenario": "resources-subscribe",
+      "outcome": "FAILURE",
+      "checks": [
+        {
+          "id": "resources-subscribe",
+          "name": "ResourcesSubscribe",
+          "status": "FAILURE",
+          "errorMessage": "Failed: MCP error -32601: Method not found"
+        }
+      ]
+    },
+    {
+      "scenario": "resources-templates-read",
+      "outcome": "FAILURE",
+      "checks": [
+        {
+          "id": "resources-templates-read",
+          "name": "ResourcesTemplateRead",
+          "status": "FAILURE",
+          "errorMessage": "Failed: MCP error -32602: Unknown resource: test://template/123/data"
+        }
+      ]
+    },
+    {
+      "scenario": "resources-unsubscribe",
+      "outcome": "FAILURE",
+      "checks": [
+        {
+          "id": "resources-unsubscribe",
+          "name": "ResourcesUnsubscribe",
+          "status": "FAILURE",
+          "errorMessage": "Failed: MCP error -32601: Method not found"
+        }
+      ]
+    },
+    {
+      "scenario": "server-initialize",
+      "outcome": "SUCCESS",
+      "checks": [
+        {
+          "id": "server-initialize",
+          "name": "ServerInitialize",
+          "status": "SUCCESS",
+          "details": {
+            "serverUrl": "http://127.0.0.1:8765/mcp",
+            "connected": true
+          }
+        }
+      ]
+    },
+    {
+      "scenario": "server-sse-multiple-streams",
+      "outcome": "WARNING",
+      "checks": [
+        {
+          "id": "server-sse-multiple-streams-session",
+          "name": "ServerSSEMultipleStreamsSession",
+          "status": "WARNING",
+          "details": {
+            "message": "Server did not provide session ID - multiple streams test may not work correctly"
+          }
+        }
+      ]
+    },
+    {
+      "scenario": "tools-call-audio",
+      "outcome": "FAILURE",
+      "checks": [
+        {
+          "id": "tools-call-audio",
+          "name": "ToolsCallAudio",
+          "status": "FAILURE",
+          "errorMessage": "No audio content found",
+          "details": {
+            "hasAudioContent": false,
+            "audioDataLength": 0
+          }
+        }
+      ]
+    },
+    {
+      "scenario": "tools-call-elicitation",
+      "outcome": "FAILURE",
+      "checks": [
+        {
+          "id": "tools-call-elicitation",
+          "name": "ToolsCallElicitation",
+          "status": "FAILURE",
+          "errorMessage": "Server did not request elicitation from client",
+          "details": {
+            "elicitationRequested": false,
+            "result": {
+              "content": [
+                {
+                  "type": "text",
+                  "text": "Unknown tool: test_elicitation"
+                }
+              ],
+              "isError": true
+            }
+          }
+        }
+      ]
+    },
+    {
+      "scenario": "tools-call-embedded-resource",
+      "outcome": "FAILURE",
+      "checks": [
+        {
+          "id": "tools-call-embedded-resource",
+          "name": "ToolsCallEmbeddedResource",
+          "status": "FAILURE",
+          "errorMessage": "No resource content found",
+          "details": {
+            "hasResourceContent": false
+          }
+        }
+      ]
+    },
+    {
+      "scenario": "tools-call-error",
+      "outcome": "SUCCESS",
+      "checks": [
+        {
+          "id": "tools-call-error",
+          "name": "ToolsCallError",
+          "status": "SUCCESS",
+          "details": {
+            "result": {
+              "content": [
+                {
+                  "type": "text",
+                  "text": "Unknown tool: test_error_handling"
+                }
+              ],
+              "isError": true
+            }
+          }
+        }
+      ]
+    },
+    {
+      "scenario": "tools-call-image",
+      "outcome": "FAILURE",
+      "checks": [
+        {
+          "id": "tools-call-image",
+          "name": "ToolsCallImage",
+          "status": "FAILURE",
+          "errorMessage": "No image content found",
+          "details": {
+            "hasData": false
+          }
+        }
+      ]
+    },
+    {
+      "scenario": "tools-call-mixed-content",
+      "outcome": "FAILURE",
+      "checks": [
+        {
+          "id": "tools-call-mixed-content",
+          "name": "ToolsCallMixedContent",
+          "status": "FAILURE",
+          "errorMessage": "Expected multiple content items; Missing image content; Missing resource content",
+          "details": {
+            "contentCount": 1,
+            "contentTypes": [
+              "text"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "scenario": "tools-call-sampling",
+      "outcome": "FAILURE",
+      "checks": [
+        {
+          "id": "tools-call-sampling",
+          "name": "ToolsCallSampling",
+          "status": "FAILURE",
+          "errorMessage": "Server did not request sampling from client",
+          "details": {
+            "samplingRequested": false,
+            "result": {
+              "content": [
+                {
+                  "type": "text",
+                  "text": "Unknown tool: test_sampling"
+                }
+              ],
+              "isError": true
+            }
+          }
+        }
+      ]
+    },
+    {
+      "scenario": "tools-call-simple-text",
+      "outcome": "SUCCESS",
+      "checks": [
+        {
+          "id": "tools-call-simple-text",
+          "name": "ToolsCallSimpleText",
+          "status": "SUCCESS",
+          "details": {
+            "result": {
+              "content": [
+                {
+                  "type": "text",
+                  "text": "Unknown tool: test_simple_text"
+                }
+              ],
+              "isError": true
+            }
+          }
+        }
+      ]
+    },
+    {
+      "scenario": "tools-call-with-logging",
+      "outcome": "FAILURE",
+      "checks": [
+        {
+          "id": "tools-call-with-logging",
+          "name": "ToolsCallWithLogging",
+          "status": "FAILURE",
+          "errorMessage": "Failed: MCP error -32601: Method not found"
+        }
+      ]
+    },
+    {
+      "scenario": "tools-call-with-progress",
+      "outcome": "FAILURE",
+      "checks": [
+        {
+          "id": "tools-call-with-progress",
+          "name": "ToolsCallWithProgress",
+          "status": "FAILURE",
+          "errorMessage": "No progress notifications received",
+          "details": {
+            "progressCount": 0,
+            "progressNotifications": [],
+            "result": {
+              "content": [
+                {
+                  "type": "text",
+                  "text": "Unknown tool: test_tool_with_progress"
+                }
+              ],
+              "isError": true
+            }
+          }
+        }
+      ]
+    },
+    {
+      "scenario": "tools-list",
+      "outcome": "SUCCESS",
+      "checks": [
+        {
+          "id": "tools-list",
+          "name": "ToolsList",
+          "status": "SUCCESS",
+          "details": {
+            "toolCount": 4,
+            "tools": [
+              "web_search",
+              "extract_url",
+              "crawl_site",
+              "deep_research"
+            ]
+          }
+        }
+      ]
+    }
+  ],
+  "notes": [
+    "The 21 failures require optional MCP capabilities or fixture tools that WebLens does not advertise.",
+    "tools-call-simple-text and tools-call-error pass only because the suite accepts an unknown-tool error text result; they do not exercise WebLens's four tools.",
+    "resources-list and prompts-list pass with empty lists; WebLens advertises only tools.",
+    "server-sse-multiple-streams was a warning because stateless HTTP has no Mcp-Session-Id.",
+    "The Node CLI exits with a Windows libuv assertion after printing results; checks.json is complete."
+  ]
+}

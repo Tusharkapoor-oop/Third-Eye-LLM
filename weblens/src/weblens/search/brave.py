@@ -13,6 +13,9 @@ _FRESH = {"day": "pd", "week": "pw", "month": "pm", "year": "py"}
 
 class BraveSearch:
     name = "brave"
+    # Match the keyed-provider transport budget. Brave's first cold request
+    # also pays TLS setup; this is a deadline, not a latency claim.
+    timeout_s = 8.0
 
     def __init__(self, fetcher: SafeFetcher, api_key: str):
         self.fetcher = fetcher

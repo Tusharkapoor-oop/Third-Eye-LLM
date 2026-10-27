@@ -1,9 +1,10 @@
 # Comparison
 
 WebLens is compared here on architecture and on measurements produced by this
-repository. Vendor quality, price, quota, and uptime are **not** measured because
-no vendor keys were available. Rows marked "not verified" must not be read as
-endorsements or as losses.
+repository. Only Tavily was exercised live; Brave, SearXNG, and the hosted
+crawl/extract services were not. Vendor quality, price, quota, and uptime are
+**not** measured as a controlled benchmark. Rows marked "not verified" must not
+be read as endorsements or as losses.
 
 ## Category matrix
 
@@ -18,16 +19,18 @@ endorsements or as losses.
 | Explicit no-result / conflict / stale states | Yes (deterministic) | Not a documented contract | No | No | No | No | No |
 | Token budget enforced on final payload | Yes, `cl100k_base` | Caller-controlled | Caller-controlled | Caller-controlled | Caller-controlled | Caller-controlled | Caller-controlled |
 | LLM synthesis | **No** (by design) | Optional answer | No | No | Optional | Optional | No |
-| Measured in this repo | Yes | Blocked (no key) | Blocked (no key) | Unverified | No | No | No |
+| Measured in this repo | Yes | Yes, one 58-query run | Blocked (no key) | Unverified | No | No | No |
 
 Notes:
 
 - Tavily's exact free-tier quota and current response schema are not asserted
-  here. The adapter targets its search API only when `WEBLENS_TAVILY_API_KEY` is
-  set; it was not exercised.
+  here. The adapter targets its search API and was exercised live on
+  2026-10-23; the raw run is in `docs/MEASUREMENTS.md`. Tavily's scoring fields
+  are deliberately discarded.
 - Brave's official API is the preferred keyed provider for reliability. The
-  adapter exists, but no key was available. Brave's HTML results page disallows
-  crawling via `robots.txt`, so WebLens does not scrape it.
+  adapter exists, but no key was available, so it was not measured. Brave's HTML
+  results page disallows crawling via `robots.txt`, so WebLens does not scrape
+  it.
 - SearXNG's JSON API is commonly disabled on public instances. A self-hosted
   instance with `format=json` enabled is required; none was verified.
 - Firecrawl and Crawl4AI are crawl/extraction tools, not search engines. They
@@ -50,6 +53,7 @@ operating points, not as a clean ablation.
 | `2026-10-21_fuse_guard` | 0.0966 (17/176) | 0.30 (12/40) | 0.8667 (26/30) | 0.90 (9/10) | 0.00 (0/8) | 2023 / 2520 | 9037 / 15429 |
 | `2026-10-21_final` (degraded network) | 0.1238 (13/105) | 0.225 (9/40) | 0.5667 (17/30) | 0.90 (9/10) | 0.00 (0/8) | 2417 / 3523 | 7792 / 15394 |
 | `2026-10-21_final2` | 0.1461 (26/178) | 0.35 (14/40) | 0.7333 (22/30) | 0.90 (9/10) | 0.00 (0/8) | 2512 / 4023 | 8573 / 18637 |
+| `2026-10-23_tavily` (Tavily only) | 0.2618 (50/191) | 0.65 (26/40) | 0.9667 (29/30) | 0.80 (8/10) | 0.00 (0/8) | 2872 / 5580 | 7271 / 13693 |
 
 Interpretation:
 
@@ -67,6 +71,11 @@ Interpretation:
   comparison: 26 of 48 non-unanswerable queries lost DuckDuckGo, 26 lost
   Wikipedia, and 31 lost Mwmbl (queries can lose more than one provider). Do not
   use it as the headline.
+- `2026-10-23_tavily` is the first run to clear both accuracy gates (precision
+  0.262, top-3 0.65, support 0.967). It fails both search latency gates
+  (p50 2.87 s, p95 5.58 s) and its no-result accuracy falls to 0.80. It is an
+  optional accuracy-first trade-off, not the default. The keyless and Tavily runs
+  are separate operating points, not a controlled vendor A/B.
 - `answer support` is term containment in verbatim findings, not an LLM or human
   correctness judgment.
 - `conflict recall` is 0/8 in every full run. This is a real gap, not a reporting
@@ -82,19 +91,20 @@ Priority order from the project brief: (1) no fake accuracy, (2) accuracy,
 | choice | tokens | accuracy evidence | latency evidence | decision |
 | --- | --- | --- | --- | --- |
 | Four compact tools, short-key JSON | 838 schema; 0 budget violations | No effect measured | Lower serialization cost, not isolated | Keep |
-| Keyless default `ddg,mwmbl,wikipedia` | No extra schema | Precision 0.146, top-3 0.35, support 0.733 in final2 | p50 2.51 s, p95 4.02 s cold | Keep, document variability |
+| Keyless default `ddg,mwmbl,wikipedia` | No extra schema | Precision 0.146, top-3 0.35, support 0.733 in final2 | p50 2.51 s, p95 4.02 s cold | Keep as zero-key default, document variability |
+| Tavily only (key required) | No extra schema | Precision 0.262, top-3 0.65, support 0.967 in one run | p50 2.87 s, p95 5.58 s | Optional accuracy-first; fails both latency gates |
 | Fuse with short deadlines | No effect | Precision 0.097, top-3 0.30, support 0.867 | p50 2.02 s, p95 2.52 s | Rejected: loses labelled results |
 | Fuse with 3.5/2.5/4.0 s deadlines | No effect | Precision 0.146, top-3 0.35, support 0.733 | p50 2.51 s, p95 4.02 s | Keep: better accuracy, p95 under 5 s |
 | Deterministic research (no LLM) | 2,000 budget | 0.733–0.933 term support; no synthesis | p95 15.4–18.6 s | Keep; synthesis not justified by measurement |
-| Browser rendering | Larger dependency | Untested (no Chromium) | Likely seconds per page | Off by default |
+| Browser rendering | Larger dependency | Smoke-tested; heuristic, not a quality claim | Seconds per first page; smoke result recorded | Off by default; loopback egress proxy pins page destinations, but process isolation/audit remains |
 | Crawl/map | Bounded 30 pages | No quality label; structural only | Not in headline latency | Keep, documented as best-effort |
 
 ## What would change the decision
 
-1. **Keyed provider measurement.** Run the same 58 queries with Brave and
-   Tavily, same budgets, fresh cache. If either raises labelled-domain precision
-   and top-3 above the gates without a p95 regression, it should become the
-   preferred provider with the keyless chain as fallback.
+1. **Brave keyed measurement.** Tavily cleared the accuracy gates but failed
+   both search latency gates. Run Brave on the same 58 queries; if it keeps the
+   accuracy gain and gets p50/p95 under 1.5/5 s, it should become the preferred
+   keyed provider. Keep the keyless chain as the zero-key fallback.
 2. **Human relevance labels.** A second label set that credits relevant content
    on any domain would separate "ranking problem" from "label-domain problem".
 3. **Conflict-focused set.** The current 8 conflicting queries are too few and
@@ -104,13 +114,21 @@ Priority order from the project brief: (1) no fake accuracy, (2) accuracy,
    after the search-envelope cache exists; provider HTTP responses are already
    cached, but a repeated search still rebuilds the envelope and ranking.
 
-## Blocked comparisons
+## Unverified or blocked comparisons
 
-- **Tavily free tier:** no `TAVILY_API_KEY`; not run.
+- **Tavily quota and pricing:** a live search run was recorded, but the
+  free-tier quota, current pricing, and long-term quality were not verified.
 - **Brave official API:** no `BRAVE_API_KEY`; not run.
 - **Public SearXNG:** no instance with verified JSON output; not run.
-- **Playwright/Chromium:** not installed; browser extraction not run.
-- **Official MCP conformance suite:** not run; see `PROTOCOL.md`.
+- **Playwright/Chromium:** smoke-tested on Windows with Playwright Chromium;
+  the browser path remains optional and routes page traffic through an
+  in-process egress proxy. DNS is resolved and pinned per connection, but the
+  proxy is not an independent sandbox and has not been audited.
+- **Official MCP conformance suite:** 0.1.16 active suite run on 2026-10-27
+  against stateless HTTP. The tools-only core scenarios passed; 21
+  optional-capability/fixture-tool scenarios failed, and the Windows Node runner
+  asserts after saving results. This is not a full-conformance claim. See
+  `PROTOCOL.md` and `benchmarks/results/2026-10-27_mcp_conformance.md`.
 
 Claims about these systems in this repository are limited to public,
 architectural facts and are marked unverified where measurement would be

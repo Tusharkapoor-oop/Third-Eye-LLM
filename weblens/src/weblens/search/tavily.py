@@ -11,6 +11,9 @@ _FRESH = {"day": "day", "week": "week", "month": "month", "year": "year"}
 
 class TavilySearch:
     name = "tavily"
+    # A cold TLS/DNS setup can exceed the generic 3.5 s fallback. The first
+    # live request measured 5.1 s; subsequent requests were sub-second.
+    timeout_s = 8.0
 
     def __init__(self, fetcher: SafeFetcher, api_key: str):
         self.fetcher = fetcher

@@ -69,6 +69,32 @@ async def _run_command(args: argparse.Namespace) -> int:
     return 1 if payload.get("status") == "error" else 0
 
 
+async def _run_cache(args: argparse.Namespace) -> int:
+    from .cache import Cache
+
+    cache = Cache(Settings())
+    try:
+        if args.cache_command == "stats":
+            payload: dict[str, Any] = {
+                "status": "ok",
+                "path": str(cache.path),
+                **cache.stats(),
+            }
+        else:
+            removed = await (cache.clear() if args.all else cache.purge())
+            payload = {
+                "status": "ok",
+                "path": str(cache.path),
+                "scope": "all" if args.all else "expired",
+                "removed": removed,
+                **cache.stats(),
+            }
+    finally:
+        cache.close()
+    _emit(payload, getattr(args, "pretty", False))
+    return 0
+
+
 async def _serve_stdio() -> None:
     from .mcp_server import build_server
 
@@ -240,6 +266,18 @@ def _build_parser() -> argparse.ArgumentParser:
     d.add_argument("--live", action="store_true", help="run one live search")
     d.add_argument("--pretty", action="store_true")
 
+    ca = sub.add_parser("cache", help="inspect or purge the local WebLens cache")
+    cs = ca.add_subparsers(dest="cache_command", required=True)
+    cst = cs.add_parser("stats", help="show cache size and hit counters")
+    cst.add_argument("--pretty", action="store_true")
+    cpu = cs.add_parser("purge", help="delete expired cache entries")
+    cpu.add_argument(
+        "--all",
+        action="store_true",
+        help="delete all entries, not only expired ones",
+    )
+    cpu.add_argument("--pretty", action="store_true")
+
     t = sub.add_parser("tokens", help="measure tools/list schema tokens")
     t.add_argument("--pretty", action="store_true")
     return p
@@ -253,6 +291,8 @@ def main(argv: list[str] | None = None) -> int:
             return _serve_http(args)
         asyncio.run(_serve_stdio())
         return 0
+    if args.command == "cache":
+        return asyncio.run(_run_cache(args))
     if args.command == "tokens":
         report = asyncio.run(_schema_report())
         _emit(report, args.pretty)

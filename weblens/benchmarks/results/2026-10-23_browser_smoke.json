@@ -1,0 +1,29 @@
+{
+  "measured_at": "2026-10-23T07:48:06.650014+00:00",
+  "environment": {
+    "python": "3.14.0",
+    "platform": "Windows-11-10.0.26300-SP0",
+    "playwright": "1.64.0"
+  },
+  "method": {
+    "url": "local HTTP server on 127.0.0.1 (ephemeral port)",
+    "page": "HTML shell with <div id=\"app\"> and an inline script",
+    "cache": "disabled",
+    "note": "First extraction includes Chromium launch and navigation."
+  },
+  "status": "ok",
+  "elapsed_ms": 3231.8,
+  "extract_status": "ok",
+  "warnings": [
+    "browser_rendered"
+  ],
+  "browser_rendered": true,
+  "passages": 1,
+  "tokens": 182,
+  "contains_rendered_text": true,
+  "private_url": {
+    "status": "error",
+    "err": "blocked_url",
+    "msg": "non-public destination: 127.0.0.1"
+  }
+}

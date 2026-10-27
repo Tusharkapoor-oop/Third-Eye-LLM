@@ -178,6 +178,14 @@ async def test_stateless_http_accepts_modern_and_legacy_requests(tmp_path):
         assert r.status_code == 200
         payload = _sse_payload(r.text)
         assert payload["result"]["protocolVersion"] == "2025-11-25"
+        caps = payload["result"]["capabilities"]
+        assert "tools" in caps
+        # The SDK exposes empty prompt/resource collections; no items are
+        # populated, and no logging/completion capability is advertised.
+        assert caps["prompts"] == {"listChanged": False}
+        assert caps["resources"] == {"subscribe": False, "listChanged": False}
+        for absent in ("logging", "completions"):
+            assert absent not in caps
 
         legacy_list = {"jsonrpc": "2.0", "id": 3, "method": "tools/list", "params": {}}
         r = await client.post("/mcp", json=legacy_list, headers=headers)

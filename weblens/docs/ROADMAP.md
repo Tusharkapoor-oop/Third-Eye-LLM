@@ -6,11 +6,12 @@ promises.
 
 ## P0 - close the measurement gaps
 
-1. **Run a keyed provider on the same dataset.** Add `BRAVE_API_KEY` or
-   `TAVILY_API_KEY`, run `benchmarks.run` against the 58 queries, and publish a
-   raw result file. Success criterion: improve labelled-domain precision and
-   top-3 while keeping search p95 under 5 s and zero budget/citation violations.
-   If neither provider wins, keep the keyless default and say so.
+1. **Run Brave on the same dataset.** Tavily was measured in
+   `benchmarks/results/2026-10-23_tavily.json`: accuracy gates cleared, both
+   search latency gates missed. Brave is the remaining keyed provider. Success
+   criterion: keep the accuracy gain while getting search p50/p95 under
+   1.5/5 s, with zero budget/citation violations. If Brave does not win, keep
+   the keyless default and Tavily as an optional accuracy-first profile.
 2. **Add human relevance labels.** A second judgment per answerable query
    (`relevant`, `partially relevant`, `irrelevant`) plus a short reason. Report
    both labelled-domain precision and human precision; do not merge them.
@@ -20,7 +21,7 @@ promises.
    then run the same 58 queries against a warm cache. Keep the cold run as the
    conservative gate.
 4. **Re-run the headline configuration.** `2026-10-21_final2` is the current
-   headline and still fails three gates. A keyed provider and repeated runs in
+   keyless headline and still fails three gates. A Brave run and repeated runs in
    different network windows are needed to separate provider variability from
    router quality.
 
@@ -57,17 +58,27 @@ promises.
 
 ## P3 - security and operations
 
-13. **Browser isolation or removal.** The optional browser path does not pin DNS
-    to a validated IP. Either run Chromium behind a network namespace or proxy
-    that enforces egress policy, or remove the browser path. Do not call it
-    SSRF-safe before then.
-14. **Cache size limit and purge command.** Add a configurable byte cap and a
-    `weblens cache purge` command that deletes only the WebLens database.
+13. **Browser process isolation and audit.** The optional browser now routes
+    page traffic through a loopback egress proxy that resolves and pins each
+    destination, with unit tests for HTTP, `CONNECT`, and private refusal. The
+    proxy is still in-process and unaudited. Add a separate low-privilege
+    browser/proxy process or a network namespace, then commission an independent
+    review. Do not call the browser "SSRF-safe" before that.
+14. **Cache size limit and purge command.** Implemented:
+    `WEBLENS_CACHE_MAX_BYTES` evicts oldest entries by logical payload size, and
+    `weblens cache stats` / `weblens cache purge [--all]` inspect and clear only
+    the WebLens SQLite rows. The cap is logical payload, not a hard disk quota;
+    SQLite/WAL overhead is reported as `file_bytes`. Tests cover eviction,
+    expiry purge, full clear, and the disabled-cache no-op.
 15. **Per-client rate limit for HTTP.** A token bucket on tool calls; useful when
     more than one local client shares one provider quota.
-16. **Official MCP conformance run.** Use the official suite where available;
-    publish the exact version and failures. Until then, keep the message-level
-    claims in `PROTOCOL.md`.
+16. **Official MCP conformance run.** The 0.1.16 active suite was run on
+    2026-10-27 and the exact results are published in `PROTOCOL.md` and
+    `benchmarks/results/2026-10-27_mcp_conformance.md`. Remaining work: make the
+    run a reliable CI gate on Windows (the Node runner asserts after saving
+    results), and decide whether to provide fixture tools or a filtered baseline
+    for the optional-capability scenarios. Keep the message-level claims; do not
+    call the server fully conformant.
 
 ## P4 - packaging and portability
 
