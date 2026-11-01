@@ -140,6 +140,7 @@ class _BearerAuth:
 
 def _serve_http(args: argparse.Namespace) -> int:
     import uvicorn
+    from starlette.responses import JSONResponse
 
     from .mcp_server import build_server
 
@@ -155,12 +156,37 @@ def _serve_http(args: argparse.Namespace) -> int:
             file=sys.stderr,
         )
         return 2
+
+    transport_security = None
+    if not loopback or args.allow_insecure:
+        from mcp.server.transport_security import TransportSecuritySettings
+
+        transport_security = TransportSecuritySettings(
+            enable_dns_rebinding_protection=False,
+            allowed_hosts=["*"],
+            allowed_origins=["*"],
+        )
+
     service = WebLens(settings)
     server = build_server(service)
     app = server.streamable_http_app(
         stateless_http=not args.stateful,
         json_response=False,
+        transport_security=transport_security,
+        host=host,
     )
+
+    async def _health(request):
+        return JSONResponse({
+            "status": "ok",
+            "service": "weblens",
+            "version": "0.1.0",
+            "mcp_endpoint": "/mcp",
+        })
+
+    app.add_route("/", _health, methods=["GET"])
+    app.add_route("/healthz", _health, methods=["GET"])
+
     if token:
         app.add_middleware(_BearerAuth, token=token)
 
