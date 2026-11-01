@@ -13,5 +13,9 @@ weblens/tests
 reports
 evidence
 benchmarks
+test-results
+docs
+tools
+*.bak
 cycle*_plan.md
 test_*.py

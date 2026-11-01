@@ -17,16 +17,16 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     curl \
     && rm -rf /var/lib/apt/lists/*
 
-# Copy pyproject and source files
-COPY pyproject.toml /app/
+# Copy pyproject, README, and source files
+COPY README.md pyproject.toml /app/
 COPY weblens/ /app/weblens/
 COPY src/ /app/src/
 
-# Install weblens and its dependencies
-RUN pip install --no-cache-dir ./weblens
+# Install weblens and root package with all dependencies
+RUN pip install --no-cache-dir ./weblens .
 
 # Expose Cloud Run port
 EXPOSE 8080
 
-# Run WebLens in HTTP MCP mode
-CMD ["python", "-m", "weblens.cli", "serve", "--http", "--host", "0.0.0.0", "--port", "8080", "--allow-insecure"]
+# Run WebLens in HTTP MCP mode, dynamically reading $PORT assigned by Cloud Run
+CMD ["sh", "-c", "python -m weblens.cli serve --http --host 0.0.0.0 --port ${PORT:-8080} --allow-insecure"]
