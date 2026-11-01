@@ -1,0 +1,48 @@
+{
+  "n_queries": 18,
+  "sample_time": "2026-11-01T17:24:53.391997+00:00",
+  "latency_ms": {
+    "weblens": {
+      "p50": 46.5,
+      "p90": 1003.04,
+      "p95": 1006.71,
+      "mean": 519.74,
+      "min": 6.44,
+      "max": 1803.31
+    },
+    "tavily": {
+      "p50": 896.58,
+      "p90": 920.53,
+      "p95": 970.04,
+      "mean": 956.94,
+      "min": 850.79,
+      "max": 1945.59
+    }
+  },
+  "quality": {
+    "weblens": {
+      "mean_precision_at_5": 0.496,
+      "answer_supported_rate": 0.167,
+      "false_confidence_count": 0,
+      "success_rate": 1.0
+    },
+    "tavily": {
+      "mean_precision_at_5": 0.367,
+      "answer_supported_rate": 0.222,
+      "false_confidence_count": 0,
+      "success_rate": 1.0
+    }
+  },
+  "tokens_and_cost": {
+    "weblens": {
+      "mean_tokens": 387.2,
+      "total_credits": 0.0,
+      "cost_usd": 0.0
+    },
+    "tavily": {
+      "mean_tokens": 1432.4,
+      "total_credits": 18.0,
+      "cost_usd": 0.09
+    }
+  }
+}

@@ -111,3 +111,7 @@ class AdvancedDeepResearch:
             "bibliography": bibliography,
         }
 
+
+# Export alias for compatibility
+DeepResearchAgent = AdvancedDeepResearch
+

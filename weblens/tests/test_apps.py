@@ -329,3 +329,52 @@ async def test_meeting_prep_public_brief(service):
         assert brief["attendees_researched"] == 1
         assert "Vice President of Engineering" in brief["attendee_profiles"][0]["public_professional_background"]
 
+
+@pytest.mark.asyncio
+async def test_persistent_research_chat(service, tmp_path):
+    from weblens.apps.research_chat import PersistentResearchChat
+
+    db_file = tmp_path / "test_research_chat.db"
+    chat = PersistentResearchChat(service, db_path=db_file)
+    chat.set_topic("Python Async Ecosystem")
+
+    mock_search = {
+        "status": "ok",
+        "res": [
+            {
+                "t": "Python 3.14 Release",
+                "u": "https://python.org/news/314",
+                "s": "Python 3.14 introduces free-threaded mode and faster startup.",
+            }
+        ],
+    }
+    mock_extract = {
+        "status": "ok",
+        "passages": [
+            {
+                "p": "Python 3.14 introduces free-threaded mode and faster startup for concurrent systems.",
+                "s": [0, 85],
+            }
+        ],
+    }
+
+    with patch.object(service, "search", new=AsyncMock(return_value=mock_search)), \
+         patch.object(service, "extract", new=AsyncMock(return_value=mock_extract)):
+        msg = await chat.send_query("What are the key highlights of Python 3.14?")
+        assert msg.role == "assistant"
+        assert len(msg.content) > 0
+        assert chat.job_status == "COMPLETED"
+
+        msgs = chat.get_messages()
+        assert len(msgs) == 2  # user + assistant
+        assert msgs[0].role == "user"
+        assert msgs[1].role == "assistant"
+
+        export = chat.export_session()
+        assert export.topic == "Python Async Ecosystem"
+        assert export.total_sources >= 1
+
+        md = chat.export_markdown()
+        assert "# Research Session: Python Async Ecosystem" in md
+
+

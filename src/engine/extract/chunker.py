@@ -17,6 +17,39 @@ from dataclasses import dataclass
 import tiktoken
 
 
+def _sub_split_paragraph(p_text: str, start_offset: int, max_chars: int = 720) -> list[tuple[str, int, int]]:
+    if len(p_text) <= max_chars:
+        return [(p_text, start_offset, start_offset + len(p_text))]
+    subs: list[tuple[str, int, int]] = []
+    pos = 0
+    end = len(p_text)
+    while end - pos > max_chars:
+        window = p_text[pos : pos + max_chars]
+        cut = max(
+            window.rfind(". "),
+            window.rfind("! "),
+            window.rfind("? "),
+            window.rfind("\n"),
+            window.rfind("; "),
+            window.rfind(" "),
+        )
+        if cut < int(max_chars * 0.50):
+            cut = max_chars
+        else:
+            cut += 1
+        chunk_str = p_text[pos : pos + cut].strip()
+        if chunk_str:
+            subs.append((chunk_str, start_offset + pos, start_offset + pos + len(chunk_str)))
+        pos += cut
+        while pos < end and p_text[pos] in " \t\n":
+            pos += 1
+    if pos < end:
+        chunk_str = p_text[pos:end].strip()
+        if chunk_str:
+            subs.append((chunk_str, start_offset + pos, start_offset + pos + len(chunk_str)))
+    return subs
+
+
 @dataclass
 class DocumentChunk:
     text: str
@@ -68,7 +101,10 @@ class DocumentChunker:
             if p_text:
                 actual_start = text.find(p_text, start)
                 actual_end = actual_start + len(p_text)
-                paragraphs.append((p_text, actual_start, actual_end))
+                if len(p_text) > self.target_tokens * 4:
+                    paragraphs.extend(_sub_split_paragraph(p_text, actual_start, max_chars=self.target_tokens * 4))
+                else:
+                    paragraphs.append((p_text, actual_start, actual_end))
 
         if not paragraphs:
             return []

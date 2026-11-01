@@ -226,10 +226,18 @@ class DeepResearchEngine:
         # Enforce total serialized token ceiling
         rep_json = json.dumps(report.to_dict(), separators=(",", ":"))
         rep_tokens = len(self.tokenizer.encode(rep_json))
-        while rep_tokens > max_tokens and len(report.facts) > 1:
+        while rep_tokens > max_tokens and report.facts:
             report.facts.pop()
             rep_json = json.dumps(report.to_dict(), separators=(",", ":"))
             rep_tokens = len(self.tokenizer.encode(rep_json))
+
+        if rep_tokens > max_tokens and len(report.summary_synthesis) > 100:
+            words = report.summary_synthesis.split()
+            while rep_tokens > max_tokens and len(words) > 10:
+                words = words[:-10]
+                report.summary_synthesis = " ".join(words) + "..."
+                rep_json = json.dumps(report.to_dict(), separators=(",", ":"))
+                rep_tokens = len(self.tokenizer.encode(rep_json))
 
         report.tokens_used = rep_tokens
         return report

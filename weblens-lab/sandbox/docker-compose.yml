@@ -1,0 +1,19 @@
+services:
+  sandbox:
+    build:
+      context: ../..
+      dockerfile: weblens-lab/sandbox/Dockerfile
+    environment:
+      - WEBLENS_CACHE_DIR=/lab/weblens-lab/sandbox/temporary/cache
+      - WEBLENS_CACHE_MAX_BYTES=134217728
+      - WEBLENS_HTTP_HOST=127.0.0.1
+      - WEBLENS_HTTP_PORT=8765
+      - TAVILY_API_KEY=${TAVILY_API_KEY:-}
+    volumes:
+      - ../temporary:/lab/weblens-lab/sandbox/temporary
+      - ../logs:/lab/weblens-lab/sandbox/logs
+      - ../reports:/lab/weblens-lab/sandbox/reports
+    cpus: 2.0
+    mem_limit: 2048m
+    security_opt:
+      - no-new-privileges:true
