@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from weblens.extract.html import extract_html, extract_meta, extract_pdf, extract_plain
+from weblens.extract.html import age_days, extract_html, extract_meta, extract_pdf, extract_plain
 from weblens.extract.passages import Passage
 from weblens.extract.service import ExtractOutcome
 from weblens.tokens import count_json_tokens
@@ -140,3 +140,11 @@ def test_extract_payload_marks_budget_exhausted_when_envelope_too_large():
     # payload says so instead of silently pretending it fit.
     if count_json_tokens(payload) > 200:
         assert "budget_exhausted" in payload.get("warn", [])
+
+
+def test_age_days_accepts_iso_and_rejects_invalid():
+    age = age_days("2020-01-01")
+    assert age is not None
+    assert age > 0
+    assert age_days(None) is None
+    assert age_days("not-a-date") is None

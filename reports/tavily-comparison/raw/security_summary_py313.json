@@ -1,0 +1,42 @@
+{
+  "campaign_id": "stage7-20261028-a4a64151",
+  "run_id": "stage7-security-25d2ce55f7",
+  "at": "2026-10-28T10:27:51.498143+00:00",
+  "counts": {
+    "FAIL": 2,
+    "PASS": 38
+  },
+  "records": 40,
+  "findings": [
+    {
+      "case_id": "REL-RETRY-001",
+      "group": "reliability",
+      "title": "503 is retried once and the recovered response is returned",
+      "status": "FAIL",
+      "expected": "two server hits, final status 200",
+      "actual": {
+        "hits": 1,
+        "initial": 0,
+        "status": "error:http_error"
+      },
+      "severity": "medium",
+      "remediation": "Add bounded retry for 429/502/503/504 in SafeFetcher or document that callers must retry."
+    },
+    {
+      "case_id": "REL-RETRY-002",
+      "group": "reliability",
+      "title": "429 is retried once and the recovered response is returned",
+      "status": "FAIL",
+      "expected": "two server hits, final status 200",
+      "actual": {
+        "hits": 1,
+        "status": "error:http_error"
+      },
+      "severity": "medium",
+      "remediation": "Honor Retry-After with a bounded retry budget; never retry indefinitely."
+    }
+  ],
+  "notes": [
+    "Superseded by a Python 3.14.0 rerun; retained for audit."
+  ]
+}

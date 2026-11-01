@@ -148,3 +148,40 @@ def test_wl_allowed_ports(wl_policy: DestinationPolicy) -> None:
 async def test_redirect_to_private_blocked() -> None:
     is_safe, reason, _ = validate_url_security("http://127.0.0.1:8080/")
     assert is_safe is False
+
+
+@pytest.mark.asyncio
+async def test_headless_browser_fallback_blocks_unsafe_url() -> None:
+    from src.engine.extract.browser_fallback import fetch_rendered_dom
+    ok, err = await fetch_rendered_dom("http://169.254.169.254/latest/meta-data/")
+    assert ok is False
+    assert "Security block" in err
+
+
+@pytest.mark.asyncio
+async def test_headless_browser_fallback_attaches_egress_proxy(monkeypatch: pytest.MonkeyPatch) -> None:
+    import subprocess
+    from unittest.mock import MagicMock
+    from src.engine.extract.browser_fallback import fetch_rendered_dom
+
+    captured_cmds: list[list[str]] = []
+
+    def mock_run(cmd, **kwargs):
+        captured_cmds.append(cmd)
+        mock_res = MagicMock()
+        mock_res.returncode = 0
+        mock_res.stdout = "<html><body>Proxied Content</body></html>"
+        mock_res.stderr = ""
+        return mock_res
+
+    monkeypatch.setattr(subprocess, "run", mock_run)
+    monkeypatch.setattr("src.engine.extract.browser_fallback.find_browser_executable", lambda: "fake-chrome.exe")
+
+    ok, html = await fetch_rendered_dom("https://example.com/safe-article")
+    assert ok is True
+    assert "Proxied Content" in html
+    assert len(captured_cmds) == 1
+    cmd = captured_cmds[0]
+    assert any(arg.startswith("--proxy-server=http://127.0.0.1:") for arg in cmd)
+    assert "--proxy-bypass-list=<-loopback>" in cmd
+

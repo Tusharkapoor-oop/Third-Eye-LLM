@@ -1,0 +1,62 @@
+{
+  "benchmark_metadata": {
+    "total_queries_evaluated": 48,
+    "total_elapsed_seconds": null,
+    "timestamp": "2026-10-24T05:35:00Z",
+    "kind": "provider_comparison_remainder"
+  },
+  "token_metrics": {
+    "per_provider": {
+      "tavily_queries": 24,
+      "tavily_success_n": 22,
+      "tavily_latency_p50_s": 3.021,
+      "tavily_latency_p95_s": 4.131,
+      "tavily_tokens_median": 1391.0,
+      "tavily_tokens_mean": 1295.0,
+      "tavily_statuses": {
+        "success": 22,
+        "no_reliable_result": 2
+      },
+      "ddgs_queries": 24,
+      "ddgs_success_n": 22,
+      "ddgs_latency_p50_s": 3.168,
+      "ddgs_latency_p95_s": 6.578,
+      "ddgs_tokens_median": 350.0,
+      "ddgs_tokens_mean": 342.9,
+      "ddgs_statuses": {
+        "success": 22,
+        "timeout": 2
+      }
+    }
+  },
+  "latency_metrics": {
+    "per_provider": {
+      "tavily_queries": 24,
+      "tavily_success_n": 22,
+      "tavily_latency_p50_s": 3.021,
+      "tavily_latency_p95_s": 4.131,
+      "tavily_tokens_median": 1391.0,
+      "tavily_tokens_mean": 1295.0,
+      "tavily_statuses": {
+        "success": 22,
+        "no_reliable_result": 2
+      },
+      "ddgs_queries": 24,
+      "ddgs_success_n": 22,
+      "ddgs_latency_p50_s": 3.168,
+      "ddgs_latency_p95_s": 6.578,
+      "ddgs_tokens_median": 350.0,
+      "ddgs_tokens_mean": 342.9,
+      "ddgs_statuses": {
+        "success": 22,
+        "timeout": 2
+      }
+    }
+  },
+  "accuracy_and_grounding_metrics": {
+    "note": "see paired_provider_stats.json for scorer-based stats"
+  },
+  "regression_gate_checks": {
+    "all_rows_recovered": true
+  }
+}

@@ -1,0 +1,286 @@
+{
+  "campaign_id": "stage7-20261028-a4a64151",
+  "created_at": "2026-10-28T03:10:00Z",
+  "status": "amended; dev search overlapped pre-registration; test split was not used for tuning",
+  "base_git_commit": "902415d49f8da502b9de0e1c78da7f5777a1d2f8",
+  "working_tree": {
+    "note": "The root worktree contains unrelated concurrent changes. Stage 7 only adds weblens/benchmarks/stage7_* and reports/tavily-comparison/.",
+    "harness_files": {
+      "weblens/benchmarks/stage7_dataset.py": "5979a71da38809263269853e4478f8f1940ed744b36136dc59150358e81fc14c",
+      "weblens/benchmarks/stage7_common.py": "b2582eff7a2b9d1685be08ee47e1259f742b926e4c7767f4582eb78344e23710",
+      "weblens/benchmarks/stage7_run.py": "fea44bc70318e26bb6a4346128244ec49ca38b19b04ea4fc8ed049a320065c13"
+    }
+  },
+  "dataset": {
+    "path": "reports/tavily-comparison/data/stage7_dataset.jsonl",
+    "sha256": "a4a64151fbdbda850a9de128bb7f83ec67f126b633aac42488c6f0b9296a9b21",
+    "rows": 108,
+    "splits": {
+      "dev": 81,
+      "test": 27
+    },
+    "categories": {
+      "docs": 28,
+      "niche_technical": 22,
+      "current_facts": 20,
+      "unanswerable": 20,
+      "conflicting": 18
+    },
+    "answerable": 70,
+    "unanswerable": 20,
+    "conflicting": 18,
+    "source_hashes": {
+      "weblens/benchmarks/queries.jsonl": "442c7bfc90acc3aef89a22d17ebf24ec8a2b6e310ed10ceab32aa0df2ca9ccba",
+      "benchmarks/eval_dataset.json": "846b4de9b38de945821ad56e5bd4fa2375af9640164b9e9c2de6bf8245e32df1"
+    },
+    "excluded_inputs": {
+      "reports/_archive/prior-run-20261027/extreme-benchmark/datasets/extreme_benchmark_10k.jsonl": "Whole-file hash d1d91fe1e7289affb0a85a0a412c6a9d47dbbde2ea5e994566dcd2aa1ba1c5ba matches the published card, but the file has only 5,528 unique query_text values for 10,000 rows, all 10,000 required_factual_claims are placeholder IDs (e.g. Claim-cat01_current_news-0), 350 query_text values contain generated system_component_N tokens, only 2 distinct acceptable_domains sets exist, and the dev/val/sealed_test partition hashes do not match the manifest. It is not valid ground truth and is not used."
+    }
+  },
+  "hypotheses": {
+    "H1_quality": "Tavily direct search has higher labelled-domain precision@5 than WebLens keyless search.",
+    "H2_support": "WebLens research has higher answer-term support than WebLens Tavily search snippets, after controlling for query set.",
+    "H3_latency": "Tavily direct search has lower search p50/p95 latency than WebLens keyless search.",
+    "H4_tokens": "WebLens keyless delivers an answer-bearing result set with fewer payload tokens than Tavily direct.",
+    "H5_security": "WebLens blocks controlled SSRF and private-network probes and never returns their content.",
+    "H6_conflict": "WebLens conflict recall remains zero on the 8 numeric conflict queries; the 10 conceptual conflict queries are reported separately."
+  },
+  "primary_comparisons": [
+    {
+      "id": "P1",
+      "systems": [
+        "direct_tavily",
+        "weblens_keyless"
+      ],
+      "metric": "precision_at_5_labelled_domain",
+      "denominator": "answerable queries returned by both systems",
+      "test": "paired bootstrap 95% CI of the mean per-query difference"
+    },
+    {
+      "id": "P2",
+      "systems": [
+        "direct_tavily",
+        "weblens_keyless"
+      ],
+      "metric": "search_evidence_support",
+      "denominator": "answerable queries returned by both systems",
+      "test": "paired bootstrap 95% CI of the mean per-query difference"
+    },
+    {
+      "id": "P3",
+      "systems": [
+        "weblens_keyless",
+        "weblens_tavily"
+      ],
+      "metric": "research_answer_term_support",
+      "denominator": "answerable queries with research payloads in both systems",
+      "test": "paired bootstrap 95% CI of the mean per-query difference"
+    },
+    {
+      "id": "P4",
+      "systems": [
+        "direct_tavily",
+        "weblens_keyless"
+      ],
+      "metric": "search_latency_p50_ms",
+      "denominator": "all successful paired queries",
+      "test": "paired bootstrap 95% CI of the mean per-query difference; p50/p90/p95/p99 reported descriptively"
+    },
+    {
+      "id": "P5",
+      "systems": [
+        "direct_tavily",
+        "weblens_keyless"
+      ],
+      "metric": "payload_tokens",
+      "denominator": "all successful paired queries",
+      "test": "paired bootstrap 95% CI of the mean per-query difference"
+    }
+  ],
+  "secondary_metrics": [
+    "precision_at_1",
+    "precision_at_3",
+    "precision_at_10",
+    "mrr_at_10",
+    "ndcg_at_5_binary_domain_labels",
+    "ndcg_at_10_binary_domain_labels",
+    "source_domain_coverage",
+    "duplicate_rate",
+    "url_validity_rate",
+    "citation_structural_error_rate",
+    "no_result_accuracy",
+    "false_confidence_rate",
+    "conflict_recall_numeric",
+    "conflict_recall_conceptual",
+    "extraction_answer_term_support",
+    "extraction_text_tokens",
+    "extraction_latency_ms",
+    "browser_vs_http_latency",
+    "browser_proxy_request_count",
+    "search_status_distribution",
+    "retry_count",
+    "cache_hit_miss",
+    "cold_start_ms",
+    "process_peak_working_set_bytes",
+    "payload_bytes",
+    "actual_payload_tokens"
+  ],
+  "definitions": {
+    "precision_at_k": "Relevant returned URLs / returned URLs at rank <= k. Relevance is strict labelled-domain membership, not human relevance.",
+    "recall_at_k": "NOT ESTIMABLE: the dataset has acceptable-domain labels but no exhaustive relevant-URL set. The report will not label domain hit rate as recall.",
+    "mrr_at_10": "1 / rank of the first labelled-domain hit, or 0.",
+    "ndcg_at_5_binary_domain_labels": "Binary gain 1 for a labelled-domain hit; ideal DCG is 1 because there is no complete graded relevance set. This is reported only as a rank-sensitive secondary metric.",
+    "search_evidence_support": "All (or any, per frozen label) expected answer terms appear in the returned title+snippet evidence. This is not answer correctness.",
+    "research_answer_term_support": "Expected answer terms appear in extracted research finding claims. No LLM judge is used.",
+    "no_result_accuracy": "Fraction of frozen unanswerable queries whose research status is no_reliable_result.",
+    "false_confidence_rate": "Fraction of unanswerable queries where research returns ok/partial with findings.",
+    "conflict_recall_numeric": "Fraction of the 8 WebLens numeric conflict queries where research sets a conflict flag.",
+    "conflict_recall_conceptual": "Fraction of the 10 root conceptual/debated queries where research sets a conflict flag.",
+    "citation_structural_error_rate": "Fraction of findings with malformed URL, missing fetched_at, bad span, or text length not equal to span length. This does not prove the quoted text is present on the live page.",
+    "cold_start_ms": "Wall time to construct WebLens(Settings) before the first search.",
+    "warm_start_ms": "Search latency after at least one completed search in the same process.",
+    "actual_payload_tokens": "cl100k_base token count of the delivered JSON payload. No model inference occurred, so this is not model usage."
+  },
+  "practical_thresholds": {
+    "precision_at_5_absolute": 0.05,
+    "support_absolute": 0.05,
+    "latency_ratio": 0.8,
+    "token_ratio": 0.8,
+    "note": "A confidence interval excluding zero is statistical evidence only. A winner is declared only when the point estimate also clears the practical threshold; otherwise the result is statistically distinguishable but not practically decisive."
+  },
+  "non_inferiority": {
+    "baseline": "direct_tavily",
+    "candidate": "weblens_keyless",
+    "metrics": {
+      "precision_at_5": -0.1,
+      "search_evidence_support": -0.1,
+      "no_result_accuracy": -0.1
+    },
+    "rule": "The candidate passes non-inferiority only if the lower bound of the paired 95% CI is above the margin. A point estimate above the margin is not enough."
+  },
+  "release_gates": {
+    "security_critical": "Every controlled SSRF, private-network, redirect, scheme, browser-proxy, injection-detection, oversized-response and auth probe must be PASS. Any FAIL blocks a release recommendation.",
+    "quality": "WebLens keyless must not be worse than Tavily direct by more than the pre-registered non-inferiority margins on precision@5, search evidence support, and no-result accuracy.",
+    "latency": "WebLens keyless search p95 must be <= 5000 ms and research p95 <= 20000 ms on this campaign. Tavily direct is measured against the same operational gates.",
+    "conflict": "Zero conflict recall is a known limitation. It may not be described as solved, and it blocks any claim of contradiction-detection parity.",
+    "security_scope": "The browser proxy is an egress control, not a security sandbox. No universal protection claim is permitted.",
+    "retry": "429/5xx retry behavior is reported as a reliability finding. It is not silently counted as a security pass."
+  },
+  "statistics": {
+    "paired_unit": "query",
+    "bootstrap_iterations": 10000,
+    "bootstrap_seed": 20261028,
+    "confidence_level": 0.95,
+    "multiple_comparisons": "No family-wise correction is applied. Secondary comparisons are exploratory and labelled as such.",
+    "missing_data": "Pairwise deletion is used only for the paired metric; every missing provider result remains in the evidence ledger and is counted in the status distribution."
+  },
+  "budget": {
+    "tavily_usage_before": {
+      "usage": 170,
+      "limit": 1000,
+      "plan": "Researcher"
+    },
+    "max_campaign_credits": 420,
+    "hard_stop_remaining_credits": 200,
+    "planned_paid_calls": {
+      "direct_search": 108,
+      "weblens_tavily_search": 108,
+      "weblens_tavily_research": 108,
+      "provider_raw_subset": 30,
+      "extraction": 10,
+      "map_crawl": 4,
+      "load": 18,
+      "max_estimated": 386
+    },
+    "note": "No paid call is made after the remaining credit count drops below 200. The 500-query target was not reached because only 108 hand-labelled queries exist; the 10,000-row synthetic corpus cannot supply honest quality labels."
+  },
+  "stopping_rules": [
+    "Stop the paid phase if usage delta exceeds 420 credits or remaining credits fall below 200.",
+    "Stop and mark INCOMPLETE if Tavily auth fails, the API is unavailable, or a provider returns malformed responses repeatedly.",
+    "Do not substitute estimated measurements for missing observations.",
+    "Do not tune WebLens, scoring rules, prompts, or provider settings after seeing dev or test results.",
+    "A security FAIL blocks release but does not erase the evidence."
+  ],
+  "sealed_test": {
+    "rows": 27,
+    "rule": "The split was assigned by the frozen builder before any provider request. Dev is run first. The test split is opened once after the dev analysis and is never used to change code or thresholds.",
+    "test_ids_sha256": "computed by the analysis script from the frozen dataset"
+  },
+  "exclusions": {
+    "quality_denominator": "Only frozen answerable rows for precision/support; only frozen unanswerable rows for abstention; only frozen conflict rows for conflict recall.",
+    "not_measured": [
+      "True recall@5/10 (no exhaustive relevance judgments)",
+      "Human-judged relevance",
+      "Tavily internal security controls",
+      "Tavily Research answer correctness (non-equivalent generated-answer endpoint)",
+      "Network bytes for WebLens (only serialized payload bytes are captured)",
+      "Browser child-process RSS/CPU",
+      "Full MCP conformance (separate documented limitation)"
+    ]
+  },
+  "reproduction": {
+    "dataset": "cd weblens && uv run python benchmarks/stage7_dataset.py",
+    "dev_search": "cd weblens && uv run python -m benchmarks.stage7_run --phase search --split dev",
+    "dev_research": "cd weblens && uv run python -m benchmarks.stage7_run --phase research --split dev",
+    "provider_raw": "cd weblens && uv run python -m benchmarks.stage7_run --phase provider_raw",
+    "extraction": "cd weblens && uv run python -m benchmarks.stage7_run --phase extraction",
+    "test_search": "cd weblens && uv run python -m benchmarks.stage7_run --phase search --split test",
+    "test_research": "cd weblens && uv run python -m benchmarks.stage7_run --phase research --split test",
+    "security": "cd weblens && uv run python -m benchmarks.stage7_security",
+    "analysis": "cd weblens && uv run python -m benchmarks.stage7_analyze",
+    "crawl_map": "cd weblens && uv run python -m benchmarks.stage7_run --phase crawl_map",
+    "load": "cd weblens && uv run python -m benchmarks.stage7_run --phase load",
+    "browser_fixture": "cd weblens && uv run python -m benchmarks.stage7_run --phase browser_fixture"
+  },
+  "amendments": [
+    {
+      "at": "2026-10-28T08:34:44Z",
+      "kind": "post-smoke harness change; no scoring or threshold change",
+      "reason": "The first smoke run exposed harness-only defects: the resume key did not include the phase tag, fixture HTML used single quotes where the JavaScript-shell detector expects double quotes, and injection flags were not captured. These were fixed before the paid dev campaign.",
+      "initial_stage7_run_sha256": "fea44bc70318e26bb6a4346128244ec49ca38b19b04ea4fc8ed049a320065c13",
+      "current_stage7_run_sha256": "514fc4de09cacf9225c8cb39d67b5677747bec658ad36be8db196d3856267785",
+      "current_stage7_common_sha256": "b2582eff7a2b9d1685be08ee47e1259f742b926e4c7767f4582eb78344e23710",
+      "current_stage7_dataset_sha256": "5979a71da38809263269853e4478f8f1940ed744b36136dc59150358e81fc14c",
+      "current_stage7_analyze_sha256": "61564ce595e2e90a45b47fdb48a7ce69679dfe878855427d79232a6673189196",
+      "current_stage7_security_sha256": "21a0cc8e7ed789fe742149c281cc759075d41e192d50c35b0b99c1d1217ed472",
+      "changes": [
+        "resume key includes phase tag",
+        "fixture quoting corrected to id=\"app\"",
+        "injection flags captured in browser evidence"
+      ],
+      "evidence_impact": "search_dev_smoke.jsonl and research_dev_smoke.jsonl were produced before this change and are preserved but excluded from headline scoring. search_dev.jsonl, search_test.jsonl, research_dev.jsonl, research_test.jsonl and later phases were produced after the change.",
+      "scoring_impact": "none: no metric, threshold, split, label, or provider configuration changed",
+      "initial_hash_mismatch": "The original harness_files hash for stage7_run.py no longer matches. The mismatch is intentional and documented here; the original hash is retained above for audit."
+    },
+    {
+      "at": "2026-10-28T10:25:24Z",
+      "kind": "usage reconciliation",
+      "reason": "The mid-campaign usage endpoint returned HTTP 429 and meta snapshots were stale. A final authenticated usage check succeeded.",
+      "account_usage_after": 551,
+      "account_limit": 1000,
+      "campaign_credits_consumed": 381,
+      "remaining_credits": 449,
+      "within_420_credit_cap": true,
+      "above_200_credit_stop": true,
+      "scoring_impact": "none"
+    }
+  ],
+  "current_harness_hashes": {
+    "weblens/benchmarks/stage7_dataset.py": "5979a71da38809263269853e4478f8f1940ed744b36136dc59150358e81fc14c",
+    "weblens/benchmarks/stage7_common.py": "b2582eff7a2b9d1685be08ee47e1259f742b926e4c7767f4582eb78344e23710",
+    "weblens/benchmarks/stage7_run.py": "514fc4de09cacf9225c8cb39d67b5677747bec658ad36be8db196d3856267785",
+    "weblens/benchmarks/stage7_analyze.py": "61564ce595e2e90a45b47fdb48a7ce69679dfe878855427d79232a6673189196",
+    "weblens/benchmarks/stage7_security.py": "21a0cc8e7ed789fe742149c281cc759075d41e192d50c35b0b99c1d1217ed472"
+  },
+  "timing_audit": {
+    "finding": "The claimed created_at is 2026-10-28T03:10:00Z, but the paid dev search meta started at 2026-10-28T03:05:15Z and the smoke search started at 2026-10-28T03:00:28Z. Therefore the rules were not fully frozen before the first paid calls.",
+    "dev_search_started_at": "2026-10-28T03:05:15.065990+00:00",
+    "dev_search_finished_at": "2026-10-28T03:10:20.708501+00:00",
+    "smoke_search_started_at": "2026-10-28T03:00:28.968508+00:00",
+    "preregistration_created_at": "2026-10-28T03:10:00Z",
+    "test_search_started_at": "2026-10-28T04:33:34.399033+00:00",
+    "final_analysis_generated_at": "2026-10-28T04:42:16.203624+00:00",
+    "conclusion": "This is a pre-registration timing violation for the dev phase. The test split was opened after dev collection, but the final analyzer artifact was generated after the test run; no evidence proves a fully clean dev-analysis-then-test sequence. The report must not describe the campaign as preregistered-before-all-evaluation.",
+    "mitigation": "All scoring definitions and thresholds in this file are retained; the test split was not used to change code, labels, provider settings, or thresholds. Any future run must write and hash the preregistration before the first paid call."
+  }
+}

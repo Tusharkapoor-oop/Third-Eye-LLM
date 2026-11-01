@@ -1,0 +1,171 @@
+{
+  "campaign_id": "stage7-20261028-a4a64151",
+  "generated_at": "2026-10-28T10:40:00Z",
+  "requested_scale": {
+    "queries": 10000,
+    "intermediate_target": 500
+  },
+  "delivered_scale": {
+    "queries": 108,
+    "dev": 81,
+    "sealed_test": 27,
+    "categories": {
+      "docs": 28,
+      "niche_technical": 22,
+      "current_facts": 20,
+      "unanswerable": 20,
+      "conflicting": 18
+    }
+  },
+  "overall_status": "PARTIAL",
+  "not_achieved": [
+    {
+      "target": "500 queries",
+      "status": "NOT ACHIEVED",
+      "reason": "only 108 hand-labelled rows; budget/time insufficient"
+    },
+    {
+      "target": "10,000 queries",
+      "status": "NOT ACHIEVED",
+      "reason": "only 108 hand-labelled rows; synthetic 10k corpus invalid"
+    },
+    {
+      "target": "full production certification",
+      "status": "NO-GO",
+      "reason": "quality, conflict, abstention, extraction, retry, and conformance gaps"
+    }
+  ],
+  "excluded_dataset": {
+    "path": "reports/_archive/prior-run-20261027/extreme-benchmark/datasets/extreme_benchmark_10k.jsonl",
+    "sha256": "d1d91fe1e7289affb0a85a0a412c6a9d47dbbde2ea5e994566dcd2aa1ba1c5ba",
+    "rows": 10000,
+    "unique_query_text": 5528,
+    "placeholder_claim_rows": 10000,
+    "system_component_rows": 350,
+    "distinct_domain_sets": 2,
+    "partition_hashes_match_manifest": false,
+    "verdict": "EXCLUDED"
+  },
+  "quality": {
+    "sealed_test": {
+      "direct_precision_at_5": 0.2706,
+      "keyless_precision_at_5": 0.0588,
+      "weblens_tavily_precision_at_5": 0.2706,
+      "direct_support": 1.0,
+      "keyless_support": 0.5294,
+      "weblens_tavily_support": 1.0,
+      "keyless_research_support": 0.5294,
+      "weblens_tavily_research_support": 0.9412,
+      "keyless_false_confidence": 0.6,
+      "weblens_tavily_false_confidence": 0.2
+    },
+    "combined": {
+      "direct_precision_at_5": 0.2571,
+      "keyless_precision_at_5": 0.1686,
+      "weblens_tavily_precision_at_5": 0.2429,
+      "direct_support": 0.9714,
+      "keyless_support": 0.6714,
+      "weblens_tavily_support": 0.9857,
+      "keyless_research_support": 0.7857,
+      "weblens_tavily_research_support": 0.9143,
+      "keyless_false_confidence": 0.45,
+      "weblens_tavily_false_confidence": 0.35
+    },
+    "conflict_recall": {
+      "numeric": {
+        "recalled": 0,
+        "total": 8
+      },
+      "conceptual": {
+        "recalled": 0,
+        "total": 10
+      },
+      "overall": {
+        "recalled": 0,
+        "total": 18,
+        "rate": 0.0
+      }
+    },
+    "extraction": {
+      "tavily_support": 1.0,
+      "weblens_full_support": 0.7,
+      "weblens_full_errors": 2,
+      "weblens_query_support": 0.7
+    }
+  },
+  "performance": {
+    "search_mean_ms": {
+      "direct_tavily": 1637.3298,
+      "weblens_keyless": 886.8134,
+      "weblens_tavily": 901.0537
+    },
+    "search_p95_ms": {
+      "direct_tavily": 2531.439,
+      "weblens_keyless": 2513.809,
+      "weblens_tavily": 2539.888
+    },
+    "load_status": {
+      "weblens_keyless": "partial",
+      "weblens_tavily": "ok"
+    },
+    "crawl_map_results": {
+      "direct_tavily": {
+        "map": 10,
+        "crawl": 3
+      },
+      "weblens_keyless": {
+        "map": 0,
+        "crawl": 0
+      }
+    },
+    "research_mean_ms_paired_answerable": {
+      "weblens_keyless": 3399.7196,
+      "weblens_tavily": 4329.0769
+    },
+    "research_mean_ms_all": {
+      "weblens_keyless": 3586.331,
+      "weblens_tavily": 4017.1568
+    }
+  },
+  "security": {
+    "records": 40,
+    "pass": 38,
+    "fail": 2,
+    "critical": 0,
+    "high": 0,
+    "medium": 2,
+    "failures": [
+      "REL-RETRY-001",
+      "REL-RETRY-002"
+    ],
+    "medium_findings": 1,
+    "medium_cases": 2
+  },
+  "cost": {
+    "plan": "Researcher",
+    "account_limit": 1000,
+    "account_usage_before": 170,
+    "account_usage_after": 551,
+    "remaining": 449,
+    "campaign_credits": 381,
+    "campaign_cap": 420,
+    "within_budget": true,
+    "usd_cost_verified": false
+  },
+  "process": {
+    "preregistration_timing_violation": true,
+    "harness_hash_amended": true,
+    "usage_endpoint_429_during_campaign": true
+  },
+  "decision": "CONDITIONAL GO for default keyless local/single-user use; NO-GO for unconditional production certification or parity claims",
+  "limitations": [
+    "small 108-query dataset",
+    "no human relevance judgments",
+    "no true recall",
+    "Windows-only",
+    "no full MCP conformance",
+    "application-level browser egress only",
+    "no independent security audit",
+    "no 500/10k campaign"
+  ]
+}

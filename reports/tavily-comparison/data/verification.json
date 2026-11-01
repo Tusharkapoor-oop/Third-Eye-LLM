@@ -1,0 +1,60 @@
+{
+  "campaign_id": "stage7-20261028-a4a64151",
+  "verified_at": "2026-11-01T13:23:26.730719+00:00",
+  "pytest": {
+    "tests": 163,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "duration_s": 7.865,
+    "timestamp": "2026-11-01T18:40:27.855216+05:30",
+    "artifact": "reports/tavily-comparison/data/pytest.xml"
+  },
+  "ruff": {
+    "command": "uv run ruff check .",
+    "result": "PASS"
+  },
+  "lock": {
+    "command": "uv lock --check",
+    "result": "PASS",
+    "packages": 75
+  },
+  "pyright": {
+    "command": "uv run pyright src/weblens/extract/html.py tests/test_extract.py",
+    "result": "FAIL",
+    "errors": 7,
+    "warnings": 0,
+    "note": "All reported errors are on pre-existing lines: html.py:328 and test_extract.py:104. The new age_days test is not flagged."
+  },
+  "security": {
+    "run_id": "stage7-security-f432267e3e",
+    "records": 40,
+    "pass": 38,
+    "fail": 2,
+    "failures": [
+      "REL-RETRY-001",
+      "REL-RETRY-002"
+    ],
+    "python": "3.14.0",
+    "superseded_run": "stage7-security-25d2ce55f7",
+    "superseded_python": "3.13.15",
+    "superseded_raw": "reports/tavily-comparison/raw/security_py313.jsonl"
+  },
+  "secret_scan": {
+    "tvly_key_pattern": 0,
+    "bearer_pattern": 0,
+    "sk_key_pattern": 0,
+    "note": "OPENAI_API_KEY appears only as code examples in retrieved web content."
+  },
+  "artifact_integrity": "reports/tavily-comparison/data/artifact-integrity.json",
+  "not_verified": [
+    "full MCP conformance",
+    "OS/container/browser sandbox isolation",
+    "independent security audit",
+    "production capacity",
+    "human relevance judgments",
+    "500/10k campaign",
+    "USD cost"
+  ],
+  "artifact_integrity_files": 60
+}

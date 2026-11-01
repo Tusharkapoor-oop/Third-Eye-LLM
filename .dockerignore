@@ -1,0 +1,17 @@
+.git
+.gitignore
+.env
+.env*
+*.key
+*.pem
+.venv
+weblens/.venv
+__pycache__
+*.pyc
+tests
+weblens/tests
+reports
+evidence
+benchmarks
+cycle*_plan.md
+test_*.py

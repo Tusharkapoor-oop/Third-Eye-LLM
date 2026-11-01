@@ -43,7 +43,8 @@ def _tool_json(payload: dict) -> str:
     return text
 
 
-def build_server(service: WebLens) -> MCPServer:
+def build_server(service: WebLens, profile: str | None = None) -> MCPServer:
+    prof = profile or getattr(service.s, "mcp_profile", "core")
     server = MCPServer(
         name="weblens",
         title="WebLens",
@@ -131,5 +132,69 @@ def build_server(service: WebLens) -> MCPServer:
         return _tool_json(
             await service.deep_research(query, max_tokens=max_tokens)
         )
+
+    if prof in ("research", "full"):
+        from .apps.company import CompanyResearcher
+        from .apps.market import MarketResearcher
+
+        company_researcher = CompanyResearcher(service)
+        market_researcher = MarketResearcher(service)
+
+        @server.tool(
+            name="company_research",
+            description="Generate structured company profile: overview, leadership, products, competitors, risks.",
+            annotations=READ_ONLY,
+            structured_output=False,
+        )
+        async def company_research(
+            company: Annotated[str, Field(description="Company name or domain")],
+        ) -> str:
+            return _tool_json(await company_researcher.research_company(company))
+
+        @server.tool(
+            name="market_research",
+            description="Factual asset analysis from regulatory disclosures and filings with strict numeric verification.",
+            annotations=READ_ONLY,
+            structured_output=False,
+        )
+        async def market_research(
+            asset: Annotated[str, Field(description="Ticker or company name")],
+            question: Annotated[str | None, Field(description="Specific filing or earnings question")] = None,
+        ) -> str:
+            return _tool_json(await market_researcher.analyze_asset(asset, question=question))
+
+    if prof == "full":
+        from .apps.crawl2rag import Crawl2RAG
+        from .apps.meeting import MeetingPrepAgent
+
+        kb = Crawl2RAG(service)
+        meeting_agent = MeetingPrepAgent(service)
+
+        @server.tool(
+            name="crawl2rag_query",
+            description="Query local Crawl2RAG knowledge base with BM25 ranking and cited passage spans.",
+            annotations=READ_ONLY,
+            structured_output=False,
+        )
+        async def crawl2rag_query(
+            question: Annotated[str, Field(description="Question for local knowledge base")],
+            top_k: Annotated[int, Field(ge=1, le=10, description="Top passages to return")] = 5,
+        ) -> str:
+            return _tool_json(await kb.query(question, top_k=top_k))
+
+        @server.tool(
+            name="meeting_prep",
+            description="Generate cited attendee background dossier strictly from verified public professional sources.",
+            annotations=READ_ONLY,
+            structured_output=False,
+        )
+        async def meeting_prep(
+            meeting_title: Annotated[str, Field(description="Meeting title or objective")],
+            attendees: Annotated[list[str], Field(description="List of attendee names")],
+            company_or_org: Annotated[str | None, Field(description="Company or organization")] = None,
+        ) -> str:
+            return _tool_json(
+                await meeting_agent.prepare_brief(meeting_title, attendees, company_or_org=company_or_org)
+            )
 
     return server

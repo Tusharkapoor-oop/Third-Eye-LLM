@@ -1,0 +1,44 @@
+{
+  "benchmark_metadata": {
+    "total_queries_evaluated": 200,
+    "total_elapsed_seconds": 2078.32,
+    "timestamp": "2026-10-24T05:22:55Z"
+  },
+  "token_metrics": {
+    "schema_tokens_o200k": 680,
+    "schema_tokens_cl100k": 655,
+    "avg_search_returned_tokens": 92.6,
+    "max_search_returned_tokens": 256,
+    "avg_extract_returned_tokens": 564.3,
+    "max_extract_returned_tokens": 1195
+  },
+  "latency_metrics": {
+    "search_latency_p50_sec": 2.164,
+    "search_latency_p95_sec": 5.709,
+    "extract_latency_p50_sec": 5.139,
+    "extract_latency_p95_sec": 10.776
+  },
+  "accuracy_and_grounding_metrics": {
+    "precision_at_5_avg": 0.807,
+    "answer_support_count": 69,
+    "answerable_queries_total": 190,
+    "answer_support_rate_pct": 36.3,
+    "citation_correctness_count": 171,
+    "citation_correctness_rate_pct": 90.0,
+    "false_confidence_count": 3,
+    "unanswerable_queries_total": 10,
+    "false_confidence_rate_pct": 30.0,
+    "no_result_correctness_count": 7,
+    "no_result_correctness_rate_pct": 70.0
+  },
+  "regression_gate_checks": {
+    "schema_tokens_under_1000": true,
+    "search_tokens_under_600": true,
+    "extract_tokens_under_1500": true,
+    "answer_support_rate_above_60pct": false,
+    "false_confidence_under_15pct": false,
+    "search_p95_within_budget": true,
+    "extract_p95_within_budget": true,
+    "zero_uncalibrated_scores": true
+  }
+}

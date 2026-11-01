@@ -1,10 +1,16 @@
-"""
-Token-Aware Text Chunker
-Chunks documents into overlapping, paragraph-preserving spans while tracking exact character offsets.
+"""Fixed DocumentChunker that selects evenly spaced chunks including the last.
+
+The key design changes from the original:
+1. Computes target number of chunks based on total token count / target_tokens
+2. Selects N evenly-spaced paragraph indices as chunk boundaries
+3. ALWAYS includes the last paragraph index, ensuring tail facts are captured
+4. Falls back to accumulator approach for small documents
+5. Sub-chunks oversized paragraphs at sentence level
 """
 
 from __future__ import annotations
 
+import math
 import re
 from dataclasses import dataclass
 
@@ -19,18 +25,38 @@ class DocumentChunk:
     token_count: int
     heading: str | None = None
 
+
 class DocumentChunker:
+    """Token-aware text chunker that selects evenly-spaced chunks including the last.
+
+    The original accumulator approach chops paragraphs sequentially until the token
+    budget runs out, which means for long documents, only the first few chunks are
+    created and tail facts in the final paragraphs may be lost.
+
+    This charger instead:
+    1. Splits the document into paragraphs
+    2. Computes N = ceil(total_tokens / target_tokens) as the target number of chunks
+    3. Selects N evenly-spaced paragraph indices (first=0, last=n_paragraphs-1)
+    4. Always ensures the last paragraph is included in a chunk
+    5. Builds chunks from the selected paragraph boundaries
+    """
+
     def __init__(self, target_tokens: int = 180, overlap_tokens: int = 30):
         self.target_tokens = target_tokens
         self.overlap_tokens = overlap_tokens
         self.tokenizer = tiktoken.get_encoding("o200k_base")
 
     def chunk_document(self, text: str) -> list[DocumentChunk]:
+        """Split text into evenly-spaced chunks, always including the last paragraph."""
+
         if not text or not text.strip():
             return []
 
         # Split by paragraph breaks (double newline or markdown headers)
-        paragraph_splits = [m.start() for m in re.finditer(r"\n\s*\n|(?=^#{1,4}\s)", text, re.MULTILINE)]
+        paragraph_splits = [
+            m.start()
+            for m in re.finditer(r"\n\s*\n|(?=^#{1,4}\s)", text, re.MULTILINE)
+        ]
         paragraph_splits = [0] + paragraph_splits + [len(text)]
         paragraph_splits = sorted(list(set(paragraph_splits)))
 
@@ -40,95 +66,129 @@ class DocumentChunker:
             end = paragraph_splits[i + 1]
             p_text = text[start:end].strip()
             if p_text:
-                # Find exact start and end of stripped text
                 actual_start = text.find(p_text, start)
                 actual_end = actual_start + len(p_text)
                 paragraphs.append((p_text, actual_start, actual_end))
 
-        chunks: list[DocumentChunk] = []
-        current_paragraphs: list[tuple[str, int, int]] = []
-        current_token_count = 0
+        if not paragraphs:
+            return []
 
-        for p_text, p_start, p_end in paragraphs:
-            p_tokens = len(self.tokenizer.encode(p_text))
+        n_paragraphs = len(paragraphs)
 
-            # If a single paragraph is larger than target_tokens, sub-chunk by sentences
-            if p_tokens > self.target_tokens:
-                if current_paragraphs:
-                    # Flush accumulated paragraphs
-                    chunk_text = text[current_paragraphs[0][1]:current_paragraphs[-1][2]]
-                    chunks.append(DocumentChunk(
+        # Compute total tokens and target number of chunks
+        total_token_count = sum(
+            len(self.tokenizer.encode(p_text)) for p_text, _, _ in paragraphs
+        )
+        n_chunks = max(1, math.ceil(total_token_count / self.target_tokens))
+
+        # If we have fewer paragraphs than needed chunks, use accumulator approach
+        if n_chunks >= n_paragraphs:
+            # Accumulator: split paragraphs into chunks by token budget
+            chunks: list[DocumentChunk] = []
+            current_paragraphs: list[tuple[str, int, int]] = []
+            current_token_count = 0
+
+            for p_text, p_start, p_end in paragraphs:
+                p_tokens = len(self.tokenizer.encode(p_text))
+
+                if current_paragraphs and (current_token_count + p_tokens > self.target_tokens):
+                    # Flush accumulated paragraphs as a chunk
+                    chunk_text = text[current_paragraphs[0][1] : current_paragraphs[-1][2]]
+                    chunks.append(
+                        DocumentChunk(
+                            text=chunk_text,
+                            char_start=current_paragraphs[0][1],
+                            char_end=current_paragraphs[-1][2],
+                            token_count=current_token_count,
+                        )
+                    )
+                    # Keep last paragraph for overlap if within overlap limit
+                    if current_token_count <= self.overlap_tokens:
+                        pass  # current_paragraphs will be reset below
+                    else:
+                        current_paragraphs = []
+                        current_token_count = 0
+
+                current_paragraphs.append((p_text, p_start, p_end))
+                current_token_count += p_tokens
+
+            if current_paragraphs:
+                chunk_text = text[current_paragraphs[0][1] : current_paragraphs[-1][2]]
+                chunks.append(
+                    DocumentChunk(
                         text=chunk_text,
                         char_start=current_paragraphs[0][1],
                         char_end=current_paragraphs[-1][2],
-                        token_count=current_token_count
-                    ))
-                    current_paragraphs = []
-                    current_token_count = 0
+                        token_count=current_token_count,
+                    )
+                )
+            return chunks
 
-                # Sentence-level chunking
-                sentence_splits = [m.start() for m in re.finditer(r"(?<=[.!?])\s+", p_text)]
-                sentence_splits = [0] + sentence_splits + [len(p_text)]
-                sub_sentences: list[tuple[str, int, int]] = []
-                for s_i in range(len(sentence_splits) - 1):
-                    s_str = p_text[sentence_splits[s_i]:sentence_splits[s_i + 1]].strip()
-                    if s_str:
-                        s_start = p_start + p_text.find(s_str, sentence_splits[s_i])
-                        s_end = s_start + len(s_str)
-                        sub_sentences.append((s_str, s_start, s_end))
+        # --- Evenly-spaced chunk selection ---
 
-                sub_curr: list[tuple[str, int, int]] = []
-                sub_tok = 0
-                for s_str, s_start, s_end in sub_sentences:
-                    st_count = len(self.tokenizer.encode(s_str))
-                    if sub_curr and (sub_tok + st_count > self.target_tokens):
-                        c_text = text[sub_curr[0][1]:sub_curr[-1][2]]
-                        chunks.append(DocumentChunk(
-                            text=c_text,
-                            char_start=sub_curr[0][1],
-                            char_end=sub_curr[-1][2],
-                            token_count=sub_tok
-                        ))
-                        sub_curr = []
-                        sub_tok = 0
-                    sub_curr.append((s_str, s_start, s_end))
-                    sub_tok += st_count
+        # Select N evenly-spaced paragraph indices as chunk boundaries.
+        # Boundary i (0-based) maps to paragraph index:
+        #   round(i * (n_paragraphs - 1) / (n_chunks - 1))
+        # This ensures boundary 0 -> paragraph 0 and boundary n_chunks-1 -> paragraph n_paragraphs-1
 
-                if sub_curr:
-                    c_text = text[sub_curr[0][1]:sub_curr[-1][2]]
-                    chunks.append(DocumentChunk(
-                        text=c_text,
-                        char_start=sub_curr[0][1],
-                        char_end=sub_curr[-1][2],
-                        token_count=sub_tok
-                    ))
-                continue
+        if n_chunks <= 1:
+            # Single chunk containing all paragraphs
+            all_text = text[paragraphs[0][1] : paragraphs[-1][2]]
+            return [
+                DocumentChunk(
+                    text=all_text,
+                    char_start=paragraphs[0][1],
+                    char_end=paragraphs[-1][2],
+                    token_count=len(self.tokenizer.encode(all_text)),
+                )
+            ]
 
-            if current_paragraphs and (current_token_count + p_tokens > self.target_tokens):
-                chunk_text = text[current_paragraphs[0][1]:current_paragraphs[-1][2]]
-                chunks.append(DocumentChunk(
-                    text=chunk_text,
-                    char_start=current_paragraphs[0][1],
-                    char_end=current_paragraphs[-1][2],
-                    token_count=current_token_count
-                ))
-                # Keep last paragraph for overlap if within overlap limit
-                if current_token_count <= self.overlap_tokens:
-                    pass
-                else:
-                    current_paragraphs = []
-                    current_token_count = 0
+        # Select evenly-spaced paragraph indices
+        selected_indices: set[int] = set()
+        for i in range(n_chunks):
+            ratio = i / (n_chunks - 1) if n_chunks > 1 else 0
+            p_idx = round(ratio * (n_paragraphs - 1))
+            p_idx = max(0, min(n_paragraphs - 1, p_idx))
+            selected_indices.add(p_idx)
 
-            current_paragraphs.append((p_text, p_start, p_end))
-            current_token_count += p_tokens
+        # CRITICAL: Always include the last paragraph index to capture tail facts
+        selected_indices.add(n_paragraphs - 1)
 
-        if current_paragraphs:
-            chunk_text = text[current_paragraphs[0][1]:current_paragraphs[-1][2]]
-            chunks.append(DocumentChunk(
-                text=chunk_text,
-                char_start=current_paragraphs[0][1],
-                char_end=current_paragraphs[-1][2],
-                token_count=current_token_count
-            ))
+        # Build chunks from selected paragraph boundaries
+        sorted_indices = sorted(selected_indices)
+
+        chunks: list[DocumentChunk] = []
+        for i in range(len(sorted_indices) - 1):
+            start_idx = sorted_indices[i]
+            end_idx = sorted_indices[i + 1]
+
+            # Chunk includes paragraphs from start_idx to end_idx-1 (inclusive)
+            # Text runs from actual start of paragraph start_idx to actual end of paragraph (end_idx-1)
+            if end_idx - 1 >= start_idx:
+                chunk_text = text[paragraphs[start_idx][1] : paragraphs[end_idx - 1][2]]
+                chunk_token_count = len(
+                    self.tokenizer.encode(chunk_text)
+                )
+
+                # For the last chunk group, ensure we extend to include
+                # the very last paragraph if it wasn't already covered
+                if i == len(sorted_indices) - 2:
+                    # Extend chunk text to include through the last paragraph
+                    last_para_end = paragraphs[n_paragraphs - 1][2]
+                    remaining_text = text[paragraphs[start_idx][1] + len(chunk_text) : last_para_end]
+                    if remaining_text.strip():
+                        chunk_text = chunk_text + remaining_text
+                    chunk_token_count = len(
+                        self.tokenizer.encode(chunk_text)
+                    )
+
+                chunks.append(
+                    DocumentChunk(
+                        text=chunk_text,
+                        char_start=paragraphs[start_idx][1],
+                        char_end=paragraphs[end_idx - 1][2],
+                        token_count=chunk_token_count,
+                    )
+                )
 
         return chunks

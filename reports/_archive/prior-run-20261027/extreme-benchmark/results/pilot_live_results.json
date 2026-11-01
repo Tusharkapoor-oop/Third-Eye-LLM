@@ -1,0 +1,104 @@
+{
+  "timestamp": "2026-10-27T22:34:00Z",
+  "search_pilot": [
+    {
+      "query": "Python asyncio gather tutorial",
+      "tavily_direct": {
+        "latency": 1.068,
+        "results": 5,
+        "tokens": 1501
+      },
+      "weblens_keyless": {
+        "latency": 1.278,
+        "results": 1,
+        "tokens": 41,
+        "providers": [
+          "wikipedia"
+        ]
+      },
+      "weblens_router": {
+        "latency": 0.018,
+        "hits": 5,
+        "providers": [
+          "ddg"
+        ]
+      }
+    },
+    {
+      "query": "speed of light in vacuum metres per second",
+      "tavily_direct": {
+        "latency": 1.072,
+        "results": 5,
+        "tokens": 1048
+      },
+      "weblens_keyless": {
+        "latency": 1.546,
+        "results": 5,
+        "tokens": 407,
+        "providers": [
+          "ddgs"
+        ]
+      },
+      "weblens_router": {
+        "latency": 0.007,
+        "hits": 5,
+        "providers": [
+          "ddg"
+        ]
+      }
+    },
+    {
+      "query": "capital of France and population",
+      "tavily_direct": {
+        "latency": 1.21,
+        "results": 5,
+        "tokens": 1475
+      },
+      "weblens_keyless": {
+        "latency": 0.331,
+        "results": 5,
+        "tokens": 153,
+        "providers": [
+          "bing"
+        ]
+      },
+      "weblens_router": {
+        "latency": 0.004,
+        "hits": 5,
+        "providers": [
+          "ddg"
+        ]
+      }
+    },
+    {
+      "query": "RFC 9110 HTTP Semantics status codes",
+      "tavily_direct": {
+        "latency": 1.435,
+        "results": 5,
+        "tokens": 1600
+      },
+      "weblens_keyless": {
+        "latency": 1.197,
+        "results": 2,
+        "tokens": 88,
+        "providers": [
+          "wikipedia"
+        ]
+      },
+      "weblens_router": {
+        "latency": 0.003,
+        "hits": 5,
+        "providers": [
+          "ddg"
+        ]
+      }
+    }
+  ],
+  "extraction_comp": {
+    "url": "https://www.python.org/about/",
+    "direct_http_latency": 0.668,
+    "extracted_passages": 2,
+    "extracted_tokens": 255,
+    "status": "success"
+  }
+}

@@ -1,0 +1,49 @@
+{
+  "dataset_version": "stage7-v1",
+  "created_at": "2026-10-28T02:55:40.638013+00:00",
+  "git_commit": "902415d49f8da502b9de0e1c78da7f5777a1d2f8",
+  "dataset_path": "reports/tavily-comparison/data/stage7_dataset.jsonl",
+  "dataset_sha256": "a4a64151fbdbda850a9de128bb7f83ec67f126b633aac42488c6f0b9296a9b21",
+  "dataset_bytes": 52776,
+  "rows": 108,
+  "splits": {
+    "dev": 81,
+    "test": 27
+  },
+  "categories": {
+    "conflicting": 18,
+    "current_facts": 20,
+    "docs": 28,
+    "niche_technical": 22,
+    "unanswerable": 20
+  },
+  "answerable": 70,
+  "unanswerable": 20,
+  "conflicting": 18,
+  "sources": {
+    "weblens/benchmarks/queries.jsonl": {
+      "sha256": "442c7bfc90acc3aef89a22d17ebf24ec8a2b6e310ed10ceab32aa0df2ca9ccba",
+      "bytes": 15793,
+      "rows": 58
+    },
+    "benchmarks/eval_dataset.json": {
+      "sha256": "846b4de9b38de945821ad56e5bd4fa2375af9640164b9e9c2de6bf8245e32df1",
+      "bytes": 16621,
+      "rows": 50
+    }
+  },
+  "split_rule": "Deterministic SHA-256 of 'stage7|<id>' within each normalized category; fixed per-category test quotas recorded in weblens/benchmarks/stage7_dataset.py.",
+  "test_quota": {
+    "current_facts": 5,
+    "docs": 7,
+    "niche_technical": 5,
+    "unanswerable": 5,
+    "conflicting": 5
+  },
+  "excluded": [
+    {
+      "path": "reports/extreme-benchmark/datasets/extreme_benchmark_10k.jsonl",
+      "reason": "Hash matches its card, but required_factual_claims are placeholder strings and query text includes generated system_component_N tokens; not valid ground truth."
+    }
+  ]
+}

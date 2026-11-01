@@ -41,6 +41,31 @@ async def fetch_rendered_dom(url: str, timeout_sec: float = 12.0) -> tuple[bool,
     if not browser_exe:
         return False, "No compatible browser (Edge/Chrome) found on host system."
 
+    proxy = None
+    proxy_flags: list[str] = []
+    try:
+        try:
+            from weblens.config import Settings
+            from weblens.net.browser_proxy import BrowserEgressProxy
+        except ImportError:
+            from src.weblens.config import Settings
+            from src.weblens.net.browser_proxy import BrowserEgressProxy
+
+        proxy = BrowserEgressProxy(Settings(search_providers="ddg", allow_private_networks=False))
+        proxy_url = await proxy.start()
+        proxy_flags = [
+            f"--proxy-server={proxy_url}",
+            "--proxy-bypass-list=<-loopback>",
+            "--disable-extensions",
+            "--disable-sync",
+            "--disable-quic",
+            "--dns-prefetch-disable",
+            "--force-webrtc-ip-handling-policy=disable_non_proxied_udp",
+        ]
+    except Exception:
+        proxy = None
+        proxy_flags = []
+
     cmd = [
         browser_exe,
         "--headless=new",
@@ -49,6 +74,7 @@ async def fetch_rendered_dom(url: str, timeout_sec: float = 12.0) -> tuple[bool,
         "--no-first-run",
         "--no-default-browser-check",
         "--disable-background-networking",
+        *proxy_flags,
         f"--timeout={int(timeout_sec * 1000)}",
         url
     ]
@@ -59,6 +85,8 @@ async def fetch_rendered_dom(url: str, timeout_sec: float = 12.0) -> tuple[bool,
                 cmd,
                 capture_output=True,
                 text=True,
+                encoding="utf-8",
+                errors="replace",
                 timeout=timeout_sec,
                 shell=False
             )
@@ -70,5 +98,10 @@ async def fetch_rendered_dom(url: str, timeout_sec: float = 12.0) -> tuple[bool,
         except Exception as e:
             return False, f"Browser execution error: {e}"
 
-    loop = asyncio.get_running_loop()
-    return await loop.run_in_executor(None, _run)
+    try:
+        loop = asyncio.get_running_loop()
+        return await loop.run_in_executor(None, _run)
+    finally:
+        if proxy is not None:
+            await proxy.close()
+

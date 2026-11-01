@@ -24,6 +24,11 @@ def is_trap_url(url: str) -> bool:
     segments = [s.lower() for s in parsed.path.split("/") if s]
     if len(segments) > 7:
         return True
+    # Check for consecutive identical segments (e.g. /tag/tag/)
+    for i in range(len(segments) - 1):
+        if segments[i] == segments[i + 1]:
+            return True
+
     # Repeating segment check (e.g. /a/b/c/a/b/c or any segment appearing 3+ times)
     if len(segments) >= 4:
         for s in segments:
@@ -31,10 +36,6 @@ def is_trap_url(url: str) -> bool:
                 # If duplicates make up a significant portion of the path
                 if len(set(segments)) <= (len(segments) + 1) // 2:
                     return True
-        # Check for consecutive identical segments /tag/tag/
-        for i in range(len(segments) - 1):
-            if segments[i] == segments[i + 1]:
-                return True
     # Infinite calendar/filter patterns
     lower_q = parsed.query.lower()
     for trap_param in ("calendar", "month=", "year=", "date=", "filter=", "sort="):
@@ -63,81 +64,86 @@ class WebsiteCrawler:
         max_pages = min(max(max_pages, 1), CONFIG.max_crawl_pages)
 
         seed_domain = get_domain(seed_url)
-        queue: deque[tuple[str, int]] = deque([(normalize_url(seed_url), 0)])
+        normalized_seed = normalize_url(seed_url)
+        queue: deque[tuple[str, int]] = deque([(normalized_seed, 0)])
         visited: set[str] = set()
+        queued: set[str] = {normalized_seed}
         crawled_pages: list[dict] = []
         skipped_count = 0
 
         semaphore = asyncio.Semaphore(2)  # Polite concurrency limit
 
-        while queue and len(crawled_pages) < max_pages:
-            current_url, depth = queue.popleft()
-
+        async def process_page(current_url: str, depth: int) -> tuple[dict | None, list[str], int]:
+            """Fetch one page and return its result plus undiscovered links."""
             if current_url in visited:
-                continue
+                return None, [], 0
             visited.add(current_url)
 
-            # Domain confinement check
             if get_domain(current_url) != seed_domain:
-                skipped_count += 1
-                continue
-
-            # Path prefix filter
+                return None, [], 1
             if allowed_paths:
                 parsed_path = urlparse(current_url).path
                 if not any(parsed_path.startswith(p) for p in allowed_paths):
-                    skipped_count += 1
-                    continue
-
-            # Trap check
+                    return None, [], 1
             if is_trap_url(current_url):
-                skipped_count += 1
-                continue
+                return None, [], 1
+            if not await self.robots_manager.can_fetch(current_url):
+                return None, [], 1
 
-            # Robots.txt compliance
-            can_fetch = await self.robots_manager.can_fetch(current_url)
-            if not can_fetch:
-                skipped_count += 1
-                continue
-
-            # Extract page content
             async with semaphore:
                 doc = await self.extractor.extract_url(
                     current_url,
                     query=None,
                     mode="passages",
-                    max_tokens=max_tokens_per_page
+                    max_tokens=max_tokens_per_page,
                 )
 
-            if doc.status == "success":
-                summary = " ".join([p.text for p in doc.passages[:2]])[:300]
-                crawled_pages.append({
-                    "url": doc.url,
-                    "title": doc.title,
-                    "depth": depth,
-                    "passages_count": len(doc.passages),
-                    "summary_snippet": summary,
-                    "tokens_used": doc.tokens_used
-                })
+            if doc.status != "success":
+                return None, [], 1
 
-                # If depth budget allows, extract links to queue
-                if depth < max_depth:
-                    try:
-                        code, html_bytes, _, _ = await safe_fetch_url(current_url)
-                        if code == 200 and html_bytes:
-                            soup = BeautifulSoup(html_bytes, "html.parser")
-                            for a in soup.find_all("a", href=True):
-                                val = a.get("href")
-                                href = val.strip() if isinstance(val, str) else (val[0].strip() if isinstance(val, list) and val else "")
-                                if not href:
-                                    continue
+            page = {
+                "url": doc.url,
+                "title": doc.title,
+                "depth": depth,
+                "passages_count": len(doc.passages),
+                "summary_snippet": " ".join(p.text for p in doc.passages[:2])[:300],
+                "tokens_used": doc.tokens_used,
+            }
+            links: list[str] = []
+            if depth < max_depth:
+                try:
+                    code, html_bytes, _, _ = await safe_fetch_url(current_url)
+                    if code == 200 and html_bytes:
+                        soup = BeautifulSoup(html_bytes, "html.parser")
+                        for a in soup.find_all("a", href=True):
+                            val = a.get("href")
+                            href = val.strip() if isinstance(val, str) else (
+                                val[0].strip() if isinstance(val, list) and val else ""
+                            )
+                            if href:
                                 next_url = normalize_url(urljoin(current_url, href))
                                 if next_url not in visited and get_domain(next_url) == seed_domain:
-                                    queue.append((next_url, depth + 1))
-                    except Exception:
-                        pass
-            else:
-                skipped_count += 1
+                                    links.append(next_url)
+                except Exception:
+                    pass
+            return page, links, 0
+
+        # Process each breadth level concurrently. The previous loop awaited
+        # every page before starting the next one, leaving the semaphore idle.
+        while queue and len(crawled_pages) < max_pages:
+            batch: list[tuple[str, int]] = []
+            remaining = max_pages - len(crawled_pages)
+            while queue and len(batch) < remaining:
+                batch.append(queue.popleft())
+            results = await asyncio.gather(*(process_page(*node) for node in batch))
+            for index, (page, links, skipped) in enumerate(results):
+                skipped_count += skipped
+                if page is not None and len(crawled_pages) < max_pages:
+                    crawled_pages.append(page)
+                for next_url in links:
+                    if next_url not in visited and next_url not in queued:
+                        queued.add(next_url)
+                        queue.append((next_url, batch[index][1] + 1))
 
         return {
             "status": "completed",

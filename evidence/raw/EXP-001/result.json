@@ -1,0 +1,32 @@
+{
+  "class": "REAL",
+  "experiment": "EXP-01",
+  "kind": "test-suite",
+  "limitations": [
+    "Root tests/ suite (second stack) was not run in this pass; its counts are NOT RUN, not passed.",
+    "A passing suite is not evidence of runtime correctness; it only counts executed tests."
+  ],
+  "rows": [
+    {
+      "collected": 0,
+      "command": "C:\\Users\\ACER\\Downloads\\Broswer for ai agnets\\.venv\\Scripts\\python.exe -m pytest tests -q -p no:cacheprovider --tb=short",
+      "cwd": "weblens",
+      "errors": 0,
+      "exit_code": 0,
+      "failed": 0,
+      "passed": 0,
+      "pythonpath": "weblens/src",
+      "skipped": 0,
+      "suite": "weblens/tests",
+      "xfailed": 0
+    }
+  ],
+  "summary": {
+    "collected": 0,
+    "errors": 0,
+    "exit_code": 0,
+    "failed": 0,
+    "passed": 0,
+    "skipped": 0
+  }
+}

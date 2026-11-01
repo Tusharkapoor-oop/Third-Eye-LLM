@@ -5,19 +5,17 @@ R1 Requirement: Schema < 1000 tokens, Search <= 600, Extract <= 1500, Research <
 """
 from __future__ import annotations
 
-import asyncio
 import json
 
 import pytest
 import tiktoken
 
 from src.engine.config import CONFIG
-from src.engine.search.aggregator import SearchAggregator
+from src.engine.crawl.crawler import WebsiteCrawler
 from src.engine.extract.extractor import DocumentExtractor
 from src.engine.research.deep_research import DeepResearchEngine
-from src.engine.crawl.crawler import WebsiteCrawler
+from src.engine.search.aggregator import SearchAggregator
 from src.server.token_counter import measure_tool_schema_tokens
-
 
 TOKENIZER = tiktoken.get_encoding("o200k_base")
 

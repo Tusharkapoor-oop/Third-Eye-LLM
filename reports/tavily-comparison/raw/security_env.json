@@ -1,0 +1,9 @@
+{
+  "python": "3.14.0 (main, Nov 19 2025, 22:43:52) [MSC v.1944 64 bit (AMD64)]",
+  "platform": "Windows-11-10.0.26300-SP0",
+  "processor": "Intel64 Family 6 Model 186 Stepping 2, GenuineIntel",
+  "cpu_count": 12,
+  "git_commit": "902415d49f8da502b9de0e1c78da7f5777a1d2f8",
+  "git_branch": "master",
+  "working_tree_dirty": true
+}

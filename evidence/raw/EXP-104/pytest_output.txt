@@ -1,0 +1,19 @@
+......................................................FF................ [ 43%]
+........................................................................ [ 87%]
+....................                                                     [100%]
+================================== FAILURES ===================================
+________ test_select_passages_without_query_reaches_tail_of_long_page _________
+tests\test_passages.py:90: in test_select_passages_without_query_reaches_tail_of_long_page
+    assert any("TAIL-MARKER-9" in p.text for p in passages)
+E   assert False
+E    +  where False = any(<generator object test_select_passages_without_query_reaches_tail_of_long_page.<locals>.<genexpr> at 0x000001C82242FAC0>)
+_________ test_select_passages_without_query_still_keeps_first_chunk __________
+tests\test_passages.py:104: in test_select_passages_without_query_still_keeps_first_chunk
+    assert any("TAIL-MARKER-9" in p.text for p in passages)
+E   assert False
+E    +  where False = any(<generator object test_select_passages_without_query_still_keeps_first_chunk.<locals>.<genexpr> at 0x000001C82242D150>)
+=========================== short test summary info ===========================
+FAILED tests/test_passages.py::test_select_passages_without_query_reaches_tail_of_long_page
+FAILED tests/test_passages.py::test_select_passages_without_query_still_keeps_first_chunk
+2 failed, 162 passed, 1 skipped in 8.44s
+

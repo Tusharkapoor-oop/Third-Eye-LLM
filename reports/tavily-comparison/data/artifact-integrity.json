@@ -1,0 +1,332 @@
+{
+  "generated_at": "2026-11-01T13:36:52.160114+00:00",
+  "campaign_id": "stage7-20261028-a4a64151",
+  "dataset": {
+    "path": "reports/tavily-comparison/data/stage7_dataset.jsonl",
+    "sha256": "a4a64151fbdbda850a9de128bb7f83ec67f126b633aac42488c6f0b9296a9b21",
+    "rows": 108
+  },
+  "preregistration": {
+    "path": "reports/tavily-comparison/PREREGISTRATION.json",
+    "sha256": "f2be5ef700cf623884ebf2c66bcc4373b91b11c82a7308603ff412d247204bf9"
+  },
+  "raw_record_counts": {
+    "browser_fixture.jsonl": 6,
+    "crawl_map.jsonl": 4,
+    "extraction.jsonl": 10,
+    "extraction_pre_fix.jsonl": 10,
+    "load.jsonl": 6,
+    "provider_raw.jsonl": 60,
+    "research_dev.jsonl": 162,
+    "research_dev_smoke.jsonl": 2,
+    "research_test.jsonl": 54,
+    "search_dev.jsonl": 243,
+    "search_dev_smoke.jsonl": 3,
+    "search_test.jsonl": 81,
+    "security.jsonl": 40,
+    "security_py313.jsonl": 40
+  },
+  "files": [
+    {
+      "path": "reports/extreme-benchmark/00-scope-and-feasibility.md",
+      "sha256": "e1e964192e817ac604e9c70ac8536f61152bdb9efa470db611395a30f05f1ef6",
+      "bytes": 4775
+    },
+    {
+      "path": "reports/extreme-benchmark/01-dataset-audit.md",
+      "sha256": "f1af8ccdea0b3e54341b54b76ee39e57e8349743a9579e85d424dea4d874380c",
+      "bytes": 4242
+    },
+    {
+      "path": "reports/extreme-benchmark/02-quality-results.md",
+      "sha256": "a94883eb5947a592474a0ea1b14a5b4439469d120b547b06f202460035dad9b1",
+      "bytes": 4350
+    },
+    {
+      "path": "reports/extreme-benchmark/03-performance-and-cost.md",
+      "sha256": "442c386789e14b0d7b1a7906df7ccc31e08f924888e99a9635425f9025dd5b08",
+      "bytes": 4510
+    },
+    {
+      "path": "reports/extreme-benchmark/04-security-and-failure-results.md",
+      "sha256": "d96da32845032bf802a7d3b3b5e7fbc9d7b588b1098b6226a12822fb2cb78014",
+      "bytes": 3912
+    },
+    {
+      "path": "reports/extreme-benchmark/05-release-decision.md",
+      "sha256": "ca6a23968d01fc44abb1c4a6a840acd650302b51384b9c87ce1ccf8d9300867d",
+      "bytes": 4350
+    },
+    {
+      "path": "reports/extreme-benchmark/README.md",
+      "sha256": "4868c5873daf45f10943e0c327165e728f24a5f22aabc02df000afe449dc2c4e",
+      "bytes": 1226
+    },
+    {
+      "path": "reports/extreme-benchmark/reproduce.md",
+      "sha256": "0b3a71421ed8b5300c15059a5577d367bf8202d63b2f9df9242472b72b1ad7ac",
+      "bytes": 1715
+    },
+    {
+      "path": "reports/extreme-benchmark/results/summary.json",
+      "sha256": "e631c9366f8b1dad7502c6d66e555a5c36f19a1c75d1cda358d390e8badf720a",
+      "bytes": 4712
+    },
+    {
+      "path": "reports/redteam/00-environment-fingerprint.json",
+      "sha256": "2067c33bf32050e1a73f4329cca54b99e0a3b483d463e98f9737039c28bfd278",
+      "bytes": 1534
+    },
+    {
+      "path": "reports/redteam/00-scope-and-threat-model.md",
+      "sha256": "fe5520dd441cd6e5793aec8652cfe52f4d3d4ba22b73df753f203c15dab258cf",
+      "bytes": 8015
+    },
+    {
+      "path": "reports/redteam/01-controlled-test-results.md",
+      "sha256": "814662eec9ac55af581364c4075e4720a13dc5e26a222a681e437a2d3bf6c75a",
+      "bytes": 2710
+    },
+    {
+      "path": "reports/redteam/README.md",
+      "sha256": "2f40ac78d013089bb6f4579dfa5b0c342d9dacf09e90b5a9e4eae9a7473d1b14",
+      "bytes": 876
+    },
+    {
+      "path": "reports/tavily-comparison/COST-AND-TOKEN-RESULTS.json",
+      "sha256": "a71566467820a3081e44b534acb94b2d90a262a8e96e8b9df4dcb08aba010115",
+      "bytes": 3005
+    },
+    {
+      "path": "reports/tavily-comparison/data/analysis.json",
+      "sha256": "0db192cc91beb0465c71abcd1c49275bb48836f5a49be8d3cc00235b31bcc544",
+      "bytes": 57115
+    },
+    {
+      "path": "reports/tavily-comparison/data/DATASET-CARD.md",
+      "sha256": "09a4c72aff23906494c69557a701fc1cd01ca22b77aa1be66c3512b640e4e3e1",
+      "bytes": 1917
+    },
+    {
+      "path": "reports/tavily-comparison/data/pytest.xml",
+      "sha256": "f1510f41e3e9e8ae73dc7ee6def9d073ed0e8abb1de9fde912b408d3b51e03a9",
+      "bytes": 21122
+    },
+    {
+      "path": "reports/tavily-comparison/data/stage7_dataset.jsonl",
+      "sha256": "a4a64151fbdbda850a9de128bb7f83ec67f126b633aac42488c6f0b9296a9b21",
+      "bytes": 52776
+    },
+    {
+      "path": "reports/tavily-comparison/data/stage7_manifest.json",
+      "sha256": "1e30fe5ba7b74c096ed5b13a7450df5cedef90439eef8cbfbd4600ae2c443491",
+      "bytes": 1554
+    },
+    {
+      "path": "reports/tavily-comparison/data/verification.json",
+      "sha256": "d1492f1243495001a12751e9d4a57628dd81a481c7d6dcddfab1b7b65b38cf3e",
+      "bytes": 1761
+    },
+    {
+      "path": "reports/tavily-comparison/EXECUTIVE-SUMMARY.md",
+      "sha256": "72d9f25089b73ba88e0ca5f8af3c124349533bf6e3f9a8949596a0c81bfdb03c",
+      "bytes": 8937
+    },
+    {
+      "path": "reports/tavily-comparison/FAILURE-ANALYSIS.md",
+      "sha256": "bb532b1132d834b9bb286a543cb58a3b19f60f0ac85093d61f25d93d5fab5751",
+      "bytes": 13962
+    },
+    {
+      "path": "reports/tavily-comparison/METHODOLOGY.md",
+      "sha256": "782ace7dac62321309d60b93471f2aa9bd60fca691ca702749cf882dfbdf6d28",
+      "bytes": 11797
+    },
+    {
+      "path": "reports/tavily-comparison/PERFORMANCE-RESULTS.json",
+      "sha256": "2c8e5df2b2f04c238fe5266171c64da2ca4e4785ea975b82f7f859f269b42509",
+      "bytes": 10637
+    },
+    {
+      "path": "reports/tavily-comparison/PREREGISTRATION.json",
+      "sha256": "f2be5ef700cf623884ebf2c66bcc4373b91b11c82a7308603ff412d247204bf9",
+      "bytes": 17147
+    },
+    {
+      "path": "reports/tavily-comparison/QUALITY-RESULTS.json",
+      "sha256": "a7cf5fc9918501ad805ba663144556b1bf700581894a493cfa230350729e963e",
+      "bytes": 49765
+    },
+    {
+      "path": "reports/tavily-comparison/raw/browser_fixture.jsonl",
+      "sha256": "69ad07e2cf794d81c5d26fc446eb6f923b90ca7f8ca19d5c19c4964f81dc8fd9",
+      "bytes": 5094
+    },
+    {
+      "path": "reports/tavily-comparison/raw/crawl_map.jsonl",
+      "sha256": "b0c5da10d6c51281883885b67c6db21459c3af892bbaa8752ba309710fcd0df6",
+      "bytes": 177715
+    },
+    {
+      "path": "reports/tavily-comparison/raw/extraction.jsonl",
+      "sha256": "8c49ff612c1075941a943d6a88d3ed19f25d92d131b07595458993b8d1488077",
+      "bytes": 588106
+    },
+    {
+      "path": "reports/tavily-comparison/raw/extraction_pre_fix.jsonl",
+      "sha256": "0dbaa196e4e65dfde1fc09446b6f9e34a0a3076f325c48ac52b77c0090366287",
+      "bytes": 581896
+    },
+    {
+      "path": "reports/tavily-comparison/raw/load.jsonl",
+      "sha256": "ed2c3b0f4b563562c05f2c8c8e9ba203cce56518af4a5ae421110e3669a7c505",
+      "bytes": 65337
+    },
+    {
+      "path": "reports/tavily-comparison/raw/meta_browser_fixture_dev.json",
+      "sha256": "9729f123d1161ba27bda22c3002ec243c5f7d838e6b2ea0015d6f0b9ecc9ab77",
+      "bytes": 2871
+    },
+    {
+      "path": "reports/tavily-comparison/raw/meta_crawl_map_dev.json",
+      "sha256": "52c82271d0db2b3e5ddd77b3c55a2fbb74e1d0656453bd6b9256d685d819b70e",
+      "bytes": 4123
+    },
+    {
+      "path": "reports/tavily-comparison/raw/meta_extraction_dev.json",
+      "sha256": "43eb719fc564adcc873a2daed6a5cb75ac8d64063a5ec518be30b45854fffdca",
+      "bytes": 4349
+    },
+    {
+      "path": "reports/tavily-comparison/raw/meta_extraction_dev_pre_fix.json",
+      "sha256": "eeca4dcea6956c2e81a04e2a9c020c0f962b4fde7c5e1a439b0c5aa10e0b73a6",
+      "bytes": 4233
+    },
+    {
+      "path": "reports/tavily-comparison/raw/meta_load_dev.json",
+      "sha256": "26a64110cc7dc1accbfa9226cbed3287ec75841b739aee1977aded1c4925c421",
+      "bytes": 4131
+    },
+    {
+      "path": "reports/tavily-comparison/raw/meta_provider_raw_dev.json",
+      "sha256": "2ff606634eaf1efe05507f259610b0b932d20a300e7f2acd153a65ea4357d5c5",
+      "bytes": 4093
+    },
+    {
+      "path": "reports/tavily-comparison/raw/meta_research_dev.json",
+      "sha256": "8fadac31ee34e106eca55bc47cc6c034e9090ea798cdfb0b248d87bc1a756aa9",
+      "bytes": 4097
+    },
+    {
+      "path": "reports/tavily-comparison/raw/meta_research_dev_smoke.json",
+      "sha256": "f7f57dcf44c4339f8c290840413ced8cbfd4745b78ffa9315876de9061866a44",
+      "bytes": 3923
+    },
+    {
+      "path": "reports/tavily-comparison/raw/meta_research_test.json",
+      "sha256": "86cd8d1904be0b95ff45d7e8892ea3980d24c11da82e7c9fc0789e653686fa27",
+      "bytes": 3731
+    },
+    {
+      "path": "reports/tavily-comparison/raw/meta_search_dev.json",
+      "sha256": "0102a4a067e52cd3e8c57da8c56b5d2257637482b6b7253b2da76aae786d3c58",
+      "bytes": 3502
+    },
+    {
+      "path": "reports/tavily-comparison/raw/meta_search_dev_smoke.json",
+      "sha256": "dbc6d96b86a147e99f8e5242caf4363706e2a0360196dcc3f7762339505ec06e",
+      "bytes": 3945
+    },
+    {
+      "path": "reports/tavily-comparison/raw/meta_search_test.json",
+      "sha256": "d5304496559771aaa5641c8ca1185271138a4ffd5e3659711d2a5be7437b036b",
+      "bytes": 3754
+    },
+    {
+      "path": "reports/tavily-comparison/raw/provider_raw.jsonl",
+      "sha256": "360a8b5626f726ce70d586ad38bd24e51911274ecb6625fbc3605d45c35c0bc9",
+      "bytes": 472373
+    },
+    {
+      "path": "reports/tavily-comparison/raw/research_dev.jsonl",
+      "sha256": "bf8fef5ba99f65219276f2ee6b1dd77ec2d6f7a4ca17c64d0c46edd547816410",
+      "bytes": 763324
+    },
+    {
+      "path": "reports/tavily-comparison/raw/research_dev_smoke.jsonl",
+      "sha256": "ae39b5fe4b6bef86ee9aebe6f0899e1bf8c1cd7fa3028270eae35ac3ac38c076",
+      "bytes": 10131
+    },
+    {
+      "path": "reports/tavily-comparison/raw/research_test.jsonl",
+      "sha256": "bb276b55796a8caee021b6d8a01c3db7d66fc8451626ffd808d949239605ce71",
+      "bytes": 185681
+    },
+    {
+      "path": "reports/tavily-comparison/raw/search_dev.jsonl",
+      "sha256": "54aab7c74416b278ba5cf590c87405556bfe44965efa6d2729bdfd2f59be8d6c",
+      "bytes": 2303477
+    },
+    {
+      "path": "reports/tavily-comparison/raw/search_dev_smoke.jsonl",
+      "sha256": "8364c5e9b61706a69dc85edebccbe6b2257ccf263ce8314b44f6cbab9ded709d",
+      "bytes": 36050
+    },
+    {
+      "path": "reports/tavily-comparison/raw/search_test.jsonl",
+      "sha256": "5176d43965e4fd55d3899965b3a65e59e6216d57b9dd8de61381e7d2dd517550",
+      "bytes": 731567
+    },
+    {
+      "path": "reports/tavily-comparison/raw/security.jsonl",
+      "sha256": "e84bfd51fd2d76d2da618398b66e90fac03b3dbfb664a906c3f4ce5384585f0b",
+      "bytes": 18605
+    },
+    {
+      "path": "reports/tavily-comparison/raw/security_env.json",
+      "sha256": "04cd9a3fea48cf3923b7530eeb24ec4121f7d7d99c5599b61d2acf9fb340dc7d",
+      "bytes": 340
+    },
+    {
+      "path": "reports/tavily-comparison/raw/security_py313.jsonl",
+      "sha256": "83b8aacc63985093da8d2a2d65948c6569715a751d515eb508f734849139adcf",
+      "bytes": 12245
+    },
+    {
+      "path": "reports/tavily-comparison/raw/security_summary.json",
+      "sha256": "2d29dae45b3ace8e74dab4fb728949c02f85dd934465a94dbb4c5266653287d1",
+      "bytes": 1891
+    },
+    {
+      "path": "reports/tavily-comparison/raw/security_summary_py313.json",
+      "sha256": "0c07177c899ed4d91e7c5a143da49fdd0c1b0b403eb0e46a1effd4730e639d33",
+      "bytes": 1262
+    },
+    {
+      "path": "reports/tavily-comparison/raw/usage_final.json",
+      "sha256": "f3b86bae432356aaeb5ae1166ca3a66ba81a180c55e554ef4490c8dec5c2f0ed",
+      "bytes": 1072
+    },
+    {
+      "path": "reports/tavily-comparison/README.md",
+      "sha256": "6ed5fca956ce18b1412ce6a048cf227737455379d4bc15ca5ded78476cf001f6",
+      "bytes": 2036
+    },
+    {
+      "path": "reports/tavily-comparison/REPRODUCE.md",
+      "sha256": "7094b99b6b554ccd9f6eec4773af8075f8df4eeaa9d1e5f52e8f9af2bd07cffc",
+      "bytes": 6511
+    },
+    {
+      "path": "reports/tavily-comparison/SECURITY-RESULTS.json",
+      "sha256": "50f4bc4cb223d0f5be332c43d14d72534d80d419a3e361b56da08cdbfc755e1b",
+      "bytes": 32831
+    },
+    {
+      "path": "reports/tavily-comparison/VERIFICATION.md",
+      "sha256": "f1dbaf8ba09c5cad8c44f8a34b8fc48ce8aba7e00c78c519d0f17319ce61a6be",
+      "bytes": 4315
+    }
+  ],
+  "note": "Hashes cover current report artifacts only. Archived prior-run files are intentionally excluded and are not evidence. Work cache files are excluded."
+}

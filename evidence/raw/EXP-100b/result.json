@@ -1,0 +1,26 @@
+{
+  "class": "SIMULATED",
+  "experiment": "EXP-100",
+  "kind": "heldout-dataset",
+  "limitations": [
+    "Synthetic pages, SIMULATED class; they test passage selection, not live-web extraction.",
+    "Generated after diagnosing the dev fixture; the dev fixture is not in this set."
+  ],
+  "rows": [
+    {
+      "dataset": "cycle1 held-out long pages",
+      "generated_by": "evidence/cycles/1/make_heldout.py",
+      "records": 30,
+      "sha256": "707bec990f68bf27ed006917e8df312993606baf5fb786f3349785b7353294ab",
+      "used_by": [
+        "EXP-101",
+        "EXP-102"
+      ],
+      "version": "cycle1-heldout-v1"
+    }
+  ],
+  "summary": {
+    "records": 30,
+    "sha256": "707bec990f68bf27ed006917e8df312993606baf5fb786f3349785b7353294ab"
+  }
+}

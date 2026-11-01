@@ -1,0 +1,95 @@
+{
+  "campaign_id": "stage7-20261028-a4a64151",
+  "phase": "extraction",
+  "split": "dev",
+  "started_at": "2026-10-28T04:29:24.471598+00:00",
+  "finished_at": "2026-10-28T04:31:15.631001+00:00",
+  "status": "complete",
+  "counts": {
+    "tavily_extract_ok": 10,
+    "weblens_full_ok": 8,
+    "weblens_query_ok": 6,
+    "weblens_full_error": 2,
+    "weblens_query_error": 2,
+    "weblens_query_no_reliable_result": 1,
+    "weblens_query_possibly_outdated": 1
+  },
+  "environment": {
+    "python": "3.14.0 (main, Nov 19 2025, 22:43:52) [MSC v.1944 64 bit (AMD64)]",
+    "platform": "Windows-11-10.0.26300-SP0",
+    "processor": "Intel64 Family 6 Model 186 Stepping 2, GenuineIntel",
+    "cpu_count": 12,
+    "tokenizer": "cl100k_base",
+    "weblens_version": "0.1.0",
+    "git": {
+      "commit": "902415d49f8da502b9de0e1c78da7f5777a1d2f8",
+      "branch": "master",
+      "porcelain": "M benchmarks/run_benchmarks.py\n M pyproject.toml\n M src/engine/crawl/crawler.py\n M src/engine/extract/browser_fallback.py\n M src/engine/research/deep_research.py\n M src/engine/search/aggregator.py\n M src/engine/search/bing_provider.py\n M src/engine/search/brave_provider.py\n M src/engine/search/ddg_html_provider.py\n M src/engine/search/wiki_provider.py\n M src/engine/security.py\n M src/weblens/crawl/__init__.py\n M src/weblens/extract/__init__.py\n M src/weblens/extract/passages.py\n M src/weblens/net/__init__.py\n M src/weblens/net/client.py\n M src/weblens/net/ssrf.py\n M src/weblens/research/engine.py\n M src/weblens/search/base.py\n M src/weblens/search/router.py\n M src/weblens/security/__init__.py\n M src/weblens/security/injection.py\n M src/weblens/urls.py\n M tests/test_both_stack_comparison.py\n M tests/test_crawler_traps.py\n M tests/test_edge_fuzz.py\n M tests/test_failure_injection.py\n M tests/test_injection_sanitization.py\n M tests/test_load_stress.py\n M tests/test_mcp_stress.py\n M tests/test_ssrf_penetration.py\n M tests/test_token_boundaries.py\n M uv.lock\n M weblens/src/weblens/extract/html.py\n M weblens/src/weblens/net/__init__.py\n M weblens/src/weblens/net/client.py\n M weblens/tests/test_cache.py\n M weblens/tests/test_extract.py\n?? benchmarks/benchmark_harness.py\n?? benchmarks/check_pair_coverage.py\n?? benchmarks/eval_dataset_expanded.json\n?? benchmarks/merge_provider_stats.py\n?? benchmarks/tavily_paired_subset.json\n?? benchmarks/tavily_paired_subset_rest.json\n?? benchmarks/tavily_remainder_subset.json\n?? docs/changelog/\n?? reports/\n?? scripts/\n?? src/engine/search/tavily_provider.py\n?? src/weblens/net/browser_proxy.py\n?? test-results/\n?? testing/\n?? weblens/benchmarks/stage7_common.py\n?? weblens/benchmarks/stage7_dataset.py\n?? weblens/benchmarks/stage7_run.py"
+    },
+    "cwd": "C:\\Users\\ACER\\Downloads\\Broswer for ai agnets\\weblens",
+    "timestamp": "2026-10-28T04:31:18.564966+00:00"
+  },
+  "dataset": {
+    "path": "reports/tavily-comparison/data/stage7_dataset.jsonl",
+    "sha256": "a4a64151fbdbda850a9de128bb7f83ec67f126b633aac42488c6f0b9296a9b21"
+  },
+  "config": {
+    "max_results": 10,
+    "search_token_budget": 1500,
+    "research_token_budget": 1200,
+    "max_tavily_credits": 420,
+    "keyless_providers": "ddg,mwmbl,wikipedia",
+    "keyless_mode": "fuse",
+    "tavily_mode": "fallback"
+  },
+  "usage_start": {
+    "status": "ok",
+    "key": {
+      "usage": 310,
+      "limit": 1000,
+      "search_usage": 310,
+      "crawl_usage": 0,
+      "extract_usage": 0,
+      "map_usage": 0,
+      "research_usage": 0
+    },
+    "account": {
+      "current_plan": "Researcher",
+      "plan_usage": 337,
+      "plan_limit": 1000,
+      "search_usage": 337,
+      "crawl_usage": 0,
+      "extract_usage": 0,
+      "map_usage": 0,
+      "research_usage": 0,
+      "paygo_usage": 0,
+      "paygo_limit": null
+    }
+  },
+  "memory": null,
+  "usage_end": {
+    "status": "ok",
+    "key": {
+      "usage": 310,
+      "limit": 1000,
+      "search_usage": 310,
+      "crawl_usage": 0,
+      "extract_usage": 0,
+      "map_usage": 0,
+      "research_usage": 0
+    },
+    "account": {
+      "current_plan": "Researcher",
+      "plan_usage": 337,
+      "plan_limit": 1000,
+      "search_usage": 337,
+      "crawl_usage": 0,
+      "extract_usage": 0,
+      "map_usage": 0,
+      "research_usage": 0,
+      "paygo_usage": 0,
+      "paygo_limit": null
+    }
+  },
+  "targets": 10
+}

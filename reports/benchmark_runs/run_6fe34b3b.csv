@@ -1,0 +1,6 @@
+run_id,repetition,provider,query_id,query,category,difficulty,is_unanswerable,status,latency_sec,result_count,tokens_returned,cache_hit,error,raw_response
+6fe34b3b,1,ddgs,1,What is the capital city of France?,current_facts,easy,False,no_reliable_result,0.0075,0,0,False,,[]
+6fe34b3b,1,ddgs,2,What is the approximate speed of light in vacuum?,current_facts,easy,False,no_reliable_result,0.0016,0,0,False,,[]
+6fe34b3b,1,ddgs,3,Who is the primary creator of the Linux operating system kernel?,current_facts,easy,False,no_reliable_result,0.0019,0,0,False,,[]
+6fe34b3b,1,ddgs,4,Who wrote the 1984 cyberpunk science fiction novel Neuromancer?,current_facts,easy,False,no_reliable_result,0.0011,0,0,False,,[]
+6fe34b3b,1,ddgs,5,Which underlying transport protocol does HTTP/3 use?,current_facts,medium,False,no_reliable_result,0.0019,0,0,False,,[]

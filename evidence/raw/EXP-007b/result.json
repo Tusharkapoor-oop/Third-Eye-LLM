@@ -1,0 +1,36 @@
+{
+  "class": "REAL",
+  "experiment": "EXP-007b",
+  "kind": "mutation-and-tamper",
+  "limitations": [
+    "Second attempt: EXP-007 could not count failures because the pytest summary was suppressed.",
+    "Only the SSRF guard was mutation-tested; token-cap, scanner and random-result mutations are NOT RUN.",
+    "Tamper tests mutate copies of the evidence tree, never the committed ledger."
+  ],
+  "rows": [
+    {
+      "case": "clean_copy_verifies",
+      "detail": "problems=[]",
+      "detected": true
+    },
+    {
+      "case": "ledger_record_tamper",
+      "detail": "test-init: record hash mismatch",
+      "detected": true
+    },
+    {
+      "case": "raw_artifact_tamper",
+      "detail": "evidence\\raw\\test-init\\stderr.log",
+      "detected": true
+    },
+    {
+      "case": "broken_build_ssrf_guard_off",
+      "detail": "guard_sites_patched=2 failed_summary=16 failed_lines=16 exit=1",
+      "detected": true
+    }
+  ],
+  "summary": {
+    "cases": 4,
+    "detected": 4
+  }
+}

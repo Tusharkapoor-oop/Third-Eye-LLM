@@ -1,0 +1,38 @@
+{
+  "audit_timestamp": "2026-10-27T22:38:00Z",
+  "total_evaluated_query_instances": 429,
+  "unique_queries_evaluated": 164,
+  "competitor_comparisons": {
+    "tavily": {
+      "evaluated_queries": 42,
+      "p50_latency_sec": 3.072,
+      "mean_snippet_tokens": 1374.6,
+      "error_rate": 0.0,
+      "cost_per_1k_searches_usd": 8.0
+    },
+    "weblens_keyless": {
+      "evaluated_queries": 320,
+      "p50_latency_sec": 3.531,
+      "mean_snippet_tokens": 347.1,
+      "error_rate": 0.0,
+      "cost_per_1k_searches_usd": 0.0
+    }
+  },
+  "token_efficiency_ratio": 18.35,
+  "security_matrix": {
+    "total_vectors": 59,
+    "passed": 57,
+    "vulnerabilities_confirmed": 2,
+    "critical_ssrf_egress_passed": 38,
+    "prompt_injection_sanitized": 15,
+    "cache_tests_passed": 3,
+    "browser_isolation_passed": 1
+  },
+  "dataset_card_summary": {
+    "total_catalog_queries": 10000,
+    "categories_covered": 40,
+    "dev_queries": 6000,
+    "val_queries": 2000,
+    "sealed_test_queries": 2000
+  }
+}

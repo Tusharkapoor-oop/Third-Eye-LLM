@@ -1,0 +1,619 @@
+{
+  "allowed_numbers": [
+    "0",
+    "1",
+    "2",
+    "3",
+    "4",
+    "5",
+    "6",
+    "8",
+    "01",
+    "08",
+    "11",
+    "13",
+    "14",
+    "15",
+    "17",
+    "32",
+    "40",
+    "41",
+    "47",
+    "48",
+    "50",
+    "58",
+    "64",
+    "0.0",
+    "0.1",
+    "0.3",
+    "1.6",
+    "162",
+    "163",
+    "200",
+    "245",
+    "407",
+    "454",
+    "732",
+    "8.3",
+    "9.1",
+    "2026",
+    "23.1",
+    "3.14",
+    "51.0",
+    "52.7",
+    "63.2",
+    "74.1",
+    "75.0",
+    "76.5",
+    "84.0",
+    "89.3",
+    "90.4",
+    "100.0",
+    "118.1",
+    "293.7"
+  ],
+  "generated_utc": "2026-11-01 13:47:08 UTC",
+  "ledger_head": "271bc8c3cc6b5b4ff81d80f86511f6106a3ee5f61818bc36a5716c5825125a53",
+  "metrics": {
+    "cache.cases": {
+      "class": "REAL",
+      "evidence": [
+        "EXP-004b"
+      ],
+      "kind": "value",
+      "value": "11"
+    },
+    "cache.passed": {
+      "class": "REAL",
+      "evidence": [
+        "EXP-004b"
+      ],
+      "kind": "value",
+      "value": "11"
+    },
+    "cache.rate": {
+      "ci": [
+        0.7412,
+        1.0
+      ],
+      "class": "REAL",
+      "evidence": [
+        "EXP-004b"
+      ],
+      "k": 11,
+      "kind": "proportion",
+      "n": 11,
+      "value": "11/11 (100.0% [74.1%, 100.0%]) (too small to support a claim)"
+    },
+    "dataset.core.n": {
+      "class": "REAL",
+      "evidence": [],
+      "kind": "value",
+      "value": "58"
+    },
+    "dataset.core.sha": {
+      "class": "REAL",
+      "evidence": [],
+      "kind": "value",
+      "value": "442c7bfc90acc3aef89a22d17ebf24ec8a2b6e310ed10ceab32aa0df2ca9ccba"
+    },
+    "dataset.expanded.n": {
+      "class": "REAL",
+      "evidence": [],
+      "kind": "value",
+      "value": "200"
+    },
+    "dataset.expanded.sha": {
+      "class": "REAL",
+      "evidence": [],
+      "kind": "value",
+      "value": "6130548dacb595da44a0973e66c4e3a44836846baf16a97ef1ca87664f2d065f"
+    },
+    "dataset.paired.n": {
+      "class": "REAL",
+      "evidence": [],
+      "kind": "value",
+      "value": "40"
+    },
+    "dataset.paired.sha": {
+      "class": "REAL",
+      "evidence": [],
+      "kind": "value",
+      "value": "ecb14a073716808d993f709ce4e78769bdc31c4009863b67fd68e3b504f767b8"
+    },
+    "dataset.root.n": {
+      "class": "REAL",
+      "evidence": [],
+      "kind": "value",
+      "value": "50"
+    },
+    "dataset.root.sha": {
+      "class": "REAL",
+      "evidence": [],
+      "kind": "value",
+      "value": "846b4de9b38de945821ad56e5bd4fa2375af9640164b9e9c2de6bf8245e32df1"
+    },
+    "extract.budget_checks": {
+      "class": "REAL",
+      "evidence": [
+        "EXP-005"
+      ],
+      "kind": "value",
+      "value": "14"
+    },
+    "extract.budget_ok": {
+      "class": "REAL",
+      "evidence": [
+        "EXP-005"
+      ],
+      "kind": "value",
+      "value": "14"
+    },
+    "extract.facts_found": {
+      "class": "REAL",
+      "evidence": [
+        "EXP-005"
+      ],
+      "kind": "value",
+      "value": "13"
+    },
+    "extract.facts_total": {
+      "class": "REAL",
+      "evidence": [
+        "EXP-005"
+      ],
+      "kind": "value",
+      "value": "17"
+    },
+    "extract.full_pages": {
+      "class": "REAL",
+      "evidence": [
+        "EXP-005"
+      ],
+      "kind": "value",
+      "value": "6"
+    },
+    "extract.http_latency_ms": {
+      "ci": [
+        23.1,
+        293.65
+      ],
+      "class": "SIMULATED",
+      "evidence": [
+        "EXP-005"
+      ],
+      "kind": "continuous",
+      "mean": 118.14,
+      "n": 11,
+      "value": "118.1 ms [23.1, 293.7] (n=11) (too small to support a claim)"
+    },
+    "extract.latency_ms": {
+      "ci": [
+        15.76,
+        233.05
+      ],
+      "class": "SIMULATED",
+      "evidence": [
+        "EXP-005"
+      ],
+      "kind": "continuous",
+      "mean": 92.82,
+      "n": 14,
+      "value": "92.8 ms [15.8, 233.1] (n=14) (too small to support a claim)"
+    },
+    "extract.pages": {
+      "class": "REAL",
+      "evidence": [
+        "EXP-005"
+      ],
+      "kind": "value",
+      "value": "14"
+    },
+    "extract.recall": {
+      "ci": [
+        0.5274,
+        0.9044
+      ],
+      "class": "SIMULATED",
+      "evidence": [
+        "EXP-005"
+      ],
+      "k": 13,
+      "kind": "proportion",
+      "n": 17,
+      "value": "13/17 (76.5% [52.7%, 90.4%]) (too small to support a claim)"
+    },
+    "extract.zero_pages": {
+      "class": "REAL",
+      "evidence": [
+        "EXP-005"
+      ],
+      "kind": "value",
+      "value": "3"
+    },
+    "injection.attacks": {
+      "class": "REAL",
+      "evidence": [
+        "EXP-003"
+      ],
+      "kind": "value",
+      "value": "64"
+    },
+    "injection.benign": {
+      "class": "REAL",
+      "evidence": [
+        "EXP-003"
+      ],
+      "kind": "value",
+      "value": "64"
+    },
+    "injection.detection": {
+      "ci": [
+        0.6318,
+        0.8399
+      ],
+      "class": "SIMULATED",
+      "evidence": [
+        "EXP-003"
+      ],
+      "k": 48,
+      "kind": "proportion",
+      "n": 64,
+      "value": "48/64 (75.0% [63.2%, 84.0%])"
+    },
+    "injection.flagged": {
+      "class": "REAL",
+      "evidence": [
+        "EXP-003"
+      ],
+      "kind": "value",
+      "value": "48"
+    },
+    "injection.fp": {
+      "class": "REAL",
+      "evidence": [
+        "EXP-003"
+      ],
+      "kind": "value",
+      "value": "1"
+    },
+    "injection.fp_rate": {
+      "ci": [
+        0.0028,
+        0.0833
+      ],
+      "class": "SIMULATED",
+      "evidence": [
+        "EXP-003"
+      ],
+      "k": 1,
+      "kind": "proportion",
+      "n": 64,
+      "value": "1/64 (1.6% [0.3%, 8.3%])"
+    },
+    "meta.branch": {
+      "class": "REAL",
+      "evidence": [],
+      "kind": "value",
+      "value": "master"
+    },
+    "meta.commit": {
+      "class": "REAL",
+      "evidence": [
+        "EXP-000"
+      ],
+      "kind": "value",
+      "value": "902415d49f8d"
+    },
+    "meta.generated_utc": {
+      "class": "REAL",
+      "evidence": [],
+      "kind": "value",
+      "value": "2026-11-01 13:47:08 UTC"
+    },
+    "meta.ledger_head": {
+      "class": "REAL",
+      "evidence": [],
+      "kind": "value",
+      "value": "271bc8c3cc6b5b4ff81d80f86511f6106a3ee5f61818bc36a5716c5825125a53"
+    },
+    "meta.runs": {
+      "class": "REAL",
+      "evidence": [],
+      "kind": "value",
+      "value": "41"
+    },
+    "meta.timeline_note": {
+      "class": "REAL",
+      "evidence": [],
+      "kind": "value",
+      "value": "No overlap observed in sequential pass runs."
+    },
+    "meta.tree_hash": {
+      "class": "REAL",
+      "evidence": [
+        "EXP-000"
+      ],
+      "kind": "value",
+      "value": "0d28a534517fc76e9445364b4190c41e4a3f5db01b520e7f2500178a006a2a59"
+    },
+    "mutation.cases": {
+      "class": "REAL",
+      "evidence": [
+        "EXP-007b"
+      ],
+      "kind": "value",
+      "value": "4"
+    },
+    "mutation.detected": {
+      "class": "REAL",
+      "evidence": [
+        "EXP-007b"
+      ],
+      "kind": "value",
+      "value": "4"
+    },
+    "mutation.rate": {
+      "ci": [
+        0.5101,
+        1.0
+      ],
+      "class": "REAL",
+      "evidence": [
+        "EXP-007b"
+      ],
+      "k": 4,
+      "kind": "proportion",
+      "n": 4,
+      "value": "4/4 (100.0% [51.0%, 100.0%]) (too small to support a claim)"
+    },
+    "notrun.count": {
+      "class": "REAL",
+      "evidence": [],
+      "kind": "value",
+      "value": "8"
+    },
+    "secrets.detail": {
+      "class": "REAL",
+      "evidence": [
+        "EXP-008"
+      ],
+      "kind": "value",
+      "value": "3 matches in untracked files (all non-secret)"
+    },
+    "secrets.env_example_placeholder": {
+      "class": "REAL",
+      "evidence": [
+        "EXP-008"
+      ],
+      "kind": "value",
+      "value": "False"
+    },
+    "secrets.env_example_starts_tvly": {
+      "class": "REAL",
+      "evidence": [
+        "EXP-008"
+      ],
+      "kind": "value",
+      "value": "False"
+    },
+    "secrets.files": {
+      "class": "REAL",
+      "evidence": [
+        "EXP-008"
+      ],
+      "kind": "value",
+      "value": "454"
+    },
+    "secrets.history_hits": {
+      "class": "REAL",
+      "evidence": [
+        "EXP-008"
+      ],
+      "kind": "value",
+      "value": "0"
+    },
+    "secrets.redaction": {
+      "class": "REAL",
+      "evidence": [
+        "EXP-008"
+      ],
+      "kind": "value",
+      "value": "verified"
+    },
+    "secrets.tree_hits": {
+      "class": "REAL",
+      "evidence": [
+        "EXP-008"
+      ],
+      "kind": "value",
+      "value": "3"
+    },
+    "ssrf.attempts": {
+      "class": "REAL",
+      "evidence": [
+        "EXP-002"
+      ],
+      "kind": "value",
+      "value": "32"
+    },
+    "ssrf.blocked": {
+      "class": "REAL",
+      "evidence": [
+        "EXP-002"
+      ],
+      "kind": "value",
+      "value": "32"
+    },
+    "ssrf.guard_off": {
+      "class": "REAL",
+      "evidence": [
+        "EXP-002"
+      ],
+      "kind": "value",
+      "value": "verified"
+    },
+    "ssrf.packets": {
+      "class": "REAL",
+      "evidence": [
+        "EXP-002"
+      ],
+      "kind": "value",
+      "value": "0"
+    },
+    "ssrf.rate": {
+      "ci": [
+        0.8928,
+        1.0
+      ],
+      "class": "SIMULATED",
+      "evidence": [
+        "EXP-002"
+      ],
+      "k": 32,
+      "kind": "proportion",
+      "n": 32,
+      "value": "32/32 (100.0% [89.3%, 100.0%])"
+    },
+    "subject.module": {
+      "class": "REAL",
+      "evidence": [
+        "EXP-000"
+      ],
+      "kind": "value",
+      "value": "weblens"
+    },
+    "subject.playwright": {
+      "class": "REAL",
+      "evidence": [],
+      "kind": "value",
+      "value": "absent"
+    },
+    "subject.pytest": {
+      "class": "REAL",
+      "evidence": [
+        "EXP-001b"
+      ],
+      "kind": "value",
+      "value": "9.1.1"
+    },
+    "subject.python": {
+      "class": "REAL",
+      "evidence": [
+        "EXP-000"
+      ],
+      "kind": "value",
+      "value": "3.14.0"
+    },
+    "subject.tokenizer": {
+      "class": "REAL",
+      "evidence": [
+        "EXP-006"
+      ],
+      "kind": "value",
+      "value": "cl100k_base"
+    },
+    "subject.version": {
+      "class": "REAL",
+      "evidence": [
+        "EXP-000"
+      ],
+      "kind": "value",
+      "value": "0.1.0"
+    },
+    "superseded.note": {
+      "class": "REAL",
+      "evidence": [],
+      "kind": "value",
+      "value": "Superseded report 15 claimed unverified counts; re-run established 162/163 pass."
+    },
+    "tests.collected": {
+      "class": "REAL",
+      "evidence": [
+        "EXP-001b"
+      ],
+      "kind": "value",
+      "value": "163"
+    },
+    "tests.exit": {
+      "class": "REAL",
+      "evidence": [
+        "EXP-001b"
+      ],
+      "kind": "value",
+      "value": "0"
+    },
+    "tests.failed": {
+      "class": "REAL",
+      "evidence": [
+        "EXP-001b"
+      ],
+      "kind": "value",
+      "value": "0"
+    },
+    "tests.passed": {
+      "class": "REAL",
+      "evidence": [
+        "EXP-001b"
+      ],
+      "kind": "value",
+      "value": "162"
+    },
+    "tests.ran": {
+      "class": "REAL",
+      "evidence": [
+        "EXP-001b"
+      ],
+      "kind": "value",
+      "value": "162"
+    },
+    "tests.skipped": {
+      "class": "REAL",
+      "evidence": [
+        "EXP-001b"
+      ],
+      "kind": "value",
+      "value": "1"
+    },
+    "tokens.schema_total": {
+      "class": "REAL",
+      "evidence": [
+        "EXP-006"
+      ],
+      "kind": "value",
+      "value": "732"
+    },
+    "tokens.source": {
+      "class": "REAL",
+      "evidence": [
+        "EXP-006"
+      ],
+      "kind": "value",
+      "value": "server.list_tools()"
+    },
+    "tokens.status": {
+      "class": "REAL",
+      "evidence": [
+        "EXP-006"
+      ],
+      "kind": "value",
+      "value": "measured"
+    },
+    "tokens.tokenizer": {
+      "class": "REAL",
+      "evidence": [
+        "EXP-006"
+      ],
+      "kind": "value",
+      "value": "cl100k_base"
+    },
+    "tokens.tools": {
+      "class": "REAL",
+      "evidence": [
+        "EXP-006"
+      ],
+      "kind": "value",
+      "value": "4"
+    }
+  }
+}

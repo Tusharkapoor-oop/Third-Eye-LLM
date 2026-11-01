@@ -8,11 +8,11 @@ from __future__ import annotations
 
 import base64
 
-import httpx
 from bs4 import BeautifulSoup
 
 from src.engine.config import CONFIG
 from src.engine.search.base import SearchProvider, SearchResult
+from src.engine.security import get_shared_http_client
 
 
 class BingSearchProvider(SearchProvider):
@@ -41,11 +41,17 @@ class BingSearchProvider(SearchProvider):
         params = {"q": effective_query}
 
         try:
-            async with httpx.AsyncClient(headers=headers, timeout=5.0, follow_redirects=True) as client:
-                resp = await client.get("https://www.bing.com/search", params=params)
-                if resp.status_code != 200:
-                    return []
-                html = resp.text
+            client = await get_shared_http_client()
+            resp = await client.get(
+                "https://www.bing.com/search",
+                params=params,
+                headers=headers,
+                timeout=5.0,
+                follow_redirects=True,
+            )
+            if resp.status_code != 200:
+                return []
+            html = resp.text
         except Exception:
             return []
 

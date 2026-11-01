@@ -352,8 +352,12 @@ def extract_pdf(body: bytes, url: str) -> ExtractedDoc:
 def age_days(iso: str | None) -> int | None:
     from ..search.base import parse_date
 
-    d = parse_date(iso)
-    if not d:
+    parsed = parse_date(iso)
+    if not parsed:
+        return None
+    try:
+        d = date.fromisoformat(parsed)
+    except ValueError:
         return None
     return (date.today() - d).days
 

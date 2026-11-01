@@ -1,0 +1,32 @@
+{
+  "recorded_at": "2026-10-27T22:26:00Z",
+  "audit_phase": "Phase 0 - Discovery and Threat Model",
+  "scope_targets": [
+    "WebLens Package (weblens/src/weblens/)",
+    "WebIntel Engine (src/engine/)",
+    "MCP Server Implementations (src/server/mcp_server.py, weblens/src/weblens/mcp_server.py)",
+    "Browser Egress Proxy (weblens/src/weblens/net/browser_proxy.py)",
+    "Headless Browser Fallback (src/engine/extract/browser_fallback.py)",
+    "Extraction Pipeline & Lexical Passage Selection",
+    "SQLite Cache Subsystem (weblens/src/weblens/cache.py)",
+    "Search Providers (DDGS, Wikipedia, Bing, Tavily)",
+    "Network Egress Policy & SSRF Enforcers (src/engine/security.py, weblens/src/weblens/net/ssrf.py)"
+  ],
+  "untracked_assets_preserved": [
+    "benchmarks/benchmark_harness.py",
+    "benchmarks/eval_dataset_expanded.json",
+    "reports/",
+    "test-results/"
+  ],
+  "historical_hypotheses_under_challenge": {
+    "claim_160_regression_tests": "Hypothesis - revalidating in this campaign",
+    "claim_browser_egress_restrictions": "Hypothesis - identified discrepancy between weblens proxy and engine browser fallback",
+    "claim_latency_advantage": "Hypothesis - evaluating against Tavily paired benchmarks",
+    "claim_cache_safety": "Hypothesis - evaluating key collision, TTL, concurrent eviction, and header leakage",
+    "claim_mcp_core_scenarios": "Hypothesis - tools capability passed core; non-tool specs unsupported",
+    "claim_payload_reduction_preserves_facts": "Hypothesis - evaluating required-fact retention",
+    "claim_competitiveness_vs_tavily": "Hypothesis - evaluating multi-metric retrieval & extraction trade-offs",
+    "claim_conflict_retrieval_0_of_8": "Hypothesis - root caused to expect_conflict schema mismatch in previous runner",
+    "claim_previous_security_suite_147_blocked": "Hypothesis - re-testing against explicit threat vectors"
+  }
+}

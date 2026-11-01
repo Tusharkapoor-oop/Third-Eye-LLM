@@ -1,0 +1,14 @@
+============================= test session starts =============================
+platform win32 -- Python 3.13.15, pytest-9.1.1, pluggy-1.6.0 -- C:\Users\ACER\AppData\Local\Programs\Python\Python313\python.exe
+cachedir: .pytest_cache
+rootdir: C:\Users\ACER\Downloads\Broswer for ai agnets
+configfile: pyproject.toml
+plugins: platformdirs-4.12.2, anyio-4.15.1, locust-2.47.0, asyncio-1.4.0, cov-7.1.0
+asyncio: mode=Mode.AUTO, debug=False, asyncio_default_fixture_loop_scope=None, asyncio_default_test_loop_scope=function
+collecting ... collected 3 items
+
+tests/test_p9_canary_secrets.py::test_canary_key_not_in_error_payload PASSED [ 33%]
+tests/test_p9_canary_secrets.py::test_canary_key_not_in_cache_keys PASSED [ 66%]
+tests/test_p9_canary_secrets.py::test_canary_redaction_in_evidence_runner PASSED [100%]
+
+============================== 3 passed in 1.06s ==============================

@@ -10,6 +10,11 @@ import json
 import time
 import os
 import sys
+from pathlib import Path
+
+# Ensure project root is in sys.path
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+
 if hasattr(sys.stdout, "reconfigure"):
     sys.stdout.reconfigure(encoding="utf-8", errors="replace")
 if hasattr(sys.stderr, "reconfigure"):
@@ -23,10 +28,11 @@ from src.engine.search.aggregator import SearchAggregator, get_domain
 from src.engine.extract.extractor import DocumentExtractor
 from src.server.token_counter import measure_tool_schema_tokens
 
-EVAL_PATH = os.path.join(os.path.dirname(__file__), "eval_dataset.json")
+EVAL_PATH_DEFAULT = os.path.join(os.path.dirname(__file__), "eval_dataset.json")
 
-def load_eval_dataset() -> list[dict]:
-    with open(EVAL_PATH, "r", encoding="utf-8") as f:
+def load_eval_dataset(path: str | None = None) -> list[dict]:
+    eval_path = path or EVAL_PATH_DEFAULT
+    with open(eval_path, "r", encoding="utf-8") as f:
         return json.load(f)
 
 def check_answer_contained(ground_truth: str, text: str) -> bool:
@@ -47,8 +53,8 @@ def check_answer_contained(ground_truth: str, text: str) -> bool:
     match_count = sum(1 for t in tokens if t in text_norm)
     return match_count >= max(1, int(len(tokens) * 0.5))
 
-async def run_full_benchmark(sample_limit: int | None = None) -> dict:
-    dataset = load_eval_dataset()
+async def run_full_benchmark(sample_limit: int | None = None, dataset_path: str | None = None) -> dict:
+    dataset = load_eval_dataset(dataset_path)
     if sample_limit:
         dataset = dataset[:sample_limit]
 
@@ -244,10 +250,11 @@ def main():
     import argparse
     parser = argparse.ArgumentParser(description="Run Web Intelligence Engine Benchmarks")
     parser.add_argument("--sample", type=int, default=None, help="Evaluate subset of queries for quick smoke tests")
+    parser.add_argument("--dataset", default=None, help="Path to a custom eval dataset JSON (default: eval_dataset.json)")
     parser.add_argument("--save-json", default="benchmarks/benchmark_results.json", help="Path to save benchmark JSON")
     args = parser.parse_args()
 
-    results = asyncio.run(run_full_benchmark(sample_limit=args.sample))
+    results = asyncio.run(run_full_benchmark(sample_limit=args.sample, dataset_path=args.dataset))
 
     # Print summary table
     print("\n" + "=" * 65)

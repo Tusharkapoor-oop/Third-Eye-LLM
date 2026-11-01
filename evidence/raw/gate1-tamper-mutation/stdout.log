@@ -1,0 +1,46 @@
+============================= test session starts =============================
+platform win32 -- Python 3.13.15, pytest-9.1.1, pluggy-1.6.0 -- C:\Users\ACER\AppData\Local\Programs\Python\Python313\python.exe
+cachedir: .pytest_cache
+rootdir: C:\Users\ACER\Downloads\Broswer for ai agnets
+configfile: pyproject.toml
+plugins: platformdirs-4.12.2, anyio-4.15.1, locust-2.47.0, asyncio-1.4.0, cov-7.1.0
+asyncio: mode=Mode.AUTO, debug=False, asyncio_default_fixture_loop_scope=None, asyncio_default_test_loop_scope=function
+collecting ... collected 6 items
+
+tests/test_gate1_tamper_mutation.py::test_tamper_detection_ledger_copy PASSED [ 16%]
+tests/test_gate1_tamper_mutation.py::test_tamper_detection_raw_file PASSED [ 33%]
+tests/test_gate1_tamper_mutation.py::test_ssrf_mutation_fails_when_guard_disabled FAILED [ 50%]
+tests/test_gate1_tamper_mutation.py::test_injection_scanner_mutation_fails_when_scanner_disabled FAILED [ 66%]
+tests/test_gate1_tamper_mutation.py::test_token_cap_mutation_fails_when_cap_disabled FAILED [ 83%]
+tests/test_gate1_tamper_mutation.py::test_null_random_oracle_controls PASSED [100%]
+
+================================== FAILURES ===================================
+________________ test_ssrf_mutation_fails_when_guard_disabled _________________
+
+    def test_ssrf_mutation_fails_when_guard_disabled():
+        """Verify that an SSRF exploit is blocked by default, and would succeed (failing the test) if guard is bypassed."""
+>       from weblens.net.ssrf import is_safe_url
+E       ModuleNotFoundError: No module named 'weblens.net'
+
+tests\test_gate1_tamper_mutation.py:110: ModuleNotFoundError
+_________ test_injection_scanner_mutation_fails_when_scanner_disabled _________
+
+    def test_injection_scanner_mutation_fails_when_scanner_disabled():
+        """Verify that prompt injection is detected by default, and missed if scanner is disabled."""
+>       from weblens.security.injection import scan_for_injection
+E       ModuleNotFoundError: No module named 'weblens.security'
+
+tests\test_gate1_tamper_mutation.py:126: ModuleNotFoundError
+_______________ test_token_cap_mutation_fails_when_cap_disabled _______________
+
+    def test_token_cap_mutation_fails_when_cap_disabled():
+        """Verify that token limits bound payload size, and removing cap causes overflow."""
+>       from weblens.tokens import count_tokens
+E       ModuleNotFoundError: No module named 'weblens.tokens'
+
+tests\test_gate1_tamper_mutation.py:143: ModuleNotFoundError
+=========================== short test summary info ===========================
+FAILED tests/test_gate1_tamper_mutation.py::test_ssrf_mutation_fails_when_guard_disabled
+FAILED tests/test_gate1_tamper_mutation.py::test_injection_scanner_mutation_fails_when_scanner_disabled
+FAILED tests/test_gate1_tamper_mutation.py::test_token_cap_mutation_fails_when_cap_disabled
+========================= 3 failed, 3 passed in 0.82s =========================

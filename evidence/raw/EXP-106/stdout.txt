@@ -1,0 +1,10 @@
+{
+  "attempts": 32,
+  "blocked": 32,
+  "fixture_packets_from_blocked": 0,
+  "guard_off_control_reached": true,
+  "not_run": [
+    "dns_mixed_answers",
+    "redirect_to_private"
+  ]
+}

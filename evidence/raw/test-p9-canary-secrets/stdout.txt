@@ -1,0 +1,47 @@
+============================= test session starts =============================
+platform win32 -- Python 3.13.15, pytest-9.1.1, pluggy-1.6.0 -- C:\Users\ACER\AppData\Local\Programs\Python\Python313\python.exe
+cachedir: .pytest_cache
+rootdir: C:\Users\ACER\Downloads\Broswer for ai agnets
+configfile: pyproject.toml
+plugins: platformdirs-4.12.2, anyio-4.15.1, locust-2.47.0, asyncio-1.4.0, cov-7.1.0
+asyncio: mode=Mode.AUTO, debug=False, asyncio_default_fixture_loop_scope=None, asyncio_default_test_loop_scope=function
+collecting ... collected 3 items
+
+tests/test_p9_canary_secrets.py::test_canary_key_not_in_error_payload FAILED [ 33%]
+tests/test_p9_canary_secrets.py::test_canary_key_not_in_cache_keys FAILED [ 66%]
+tests/test_p9_canary_secrets.py::test_canary_redaction_in_evidence_runner FAILED [100%]
+
+================================== FAILURES ===================================
+____________________ test_canary_key_not_in_error_payload _____________________
+
+    def test_canary_key_not_in_error_payload():
+        """Verify that provider errors do not echo API keys back to caller."""
+>       from weblens.search.tavily import TavilyProvider
+E       ImportError: cannot import name 'TavilyProvider' from 'weblens.search.tavily' (C:\Users\ACER\Downloads\Broswer for ai agnets\src\weblens\search\tavily.py)
+
+tests\test_p9_canary_secrets.py:26: ImportError
+______________________ test_canary_key_not_in_cache_keys ______________________
+
+    def test_canary_key_not_in_cache_keys():
+        """Verify that authorization headers and secret tokens are hashed in cache keys."""
+        from weblens.cache import cache_key
+    
+        headers = {"Authorization": f"Bearer {CANARY_KEY}"}
+>       ck = cache_key("https://example.com/api", headers=headers)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       TypeError: cache_key() got an unexpected keyword argument 'headers'
+
+tests\test_p9_canary_secrets.py:39: TypeError
+__________________ test_canary_redaction_in_evidence_runner ___________________
+
+    def test_canary_redaction_in_evidence_runner():
+        """Verify that evidence runner redaction engine successfully catches and redacts canary key."""
+>       from tools.evidence_run import redact_secrets
+E       ImportError: cannot import name 'redact_secrets' from 'tools.evidence_run' (C:\Users\ACER\Downloads\Broswer for ai agnets\tools\evidence_run.py)
+
+tests\test_p9_canary_secrets.py:45: ImportError
+=========================== short test summary info ===========================
+FAILED tests/test_p9_canary_secrets.py::test_canary_key_not_in_error_payload
+FAILED tests/test_p9_canary_secrets.py::test_canary_key_not_in_cache_keys - T...
+FAILED tests/test_p9_canary_secrets.py::test_canary_redaction_in_evidence_runner
+============================== 3 failed in 1.46s ==============================

@@ -1,0 +1,34 @@
+{
+  "class": "REAL",
+  "experiment": "EXP-06",
+  "kind": "mcp-schema-tokens",
+  "limitations": [
+    "Competitor MCP schema sizes were NOT measured; no competitor schema claim is made.",
+    "Schema tokens are tokenizer-dependent and comparable only within this tokenizer."
+  ],
+  "rows": [
+    {
+      "schema_tokens": 245,
+      "tool": "web_search"
+    },
+    {
+      "schema_tokens": 159,
+      "tool": "extract_url"
+    },
+    {
+      "schema_tokens": 228,
+      "tool": "crawl_site"
+    },
+    {
+      "schema_tokens": 100,
+      "tool": "deep_research"
+    }
+  ],
+  "summary": {
+    "schema_tokens_total": 732,
+    "source": "server.list_tools()",
+    "status": "measured",
+    "tokenizer": "cl100k_base",
+    "tools": 4
+  }
+}

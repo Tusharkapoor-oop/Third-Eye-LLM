@@ -1,0 +1,70 @@
+{
+  "class": "REAL",
+  "experiment": "EXP-04",
+  "kind": "cache-correctness",
+  "limitations": [
+    "Single-process concurrency only; no multi-process writer test.",
+    "Eviction is measured on the documented logical cap; the SQLite file can exceed it, which is recorded rather than hidden."
+  ],
+  "rows": [
+    {
+      "case": "ttl_expiry",
+      "detail": "fresh=True expired=True",
+      "passed": true
+    },
+    {
+      "case": "key_field_separation",
+      "detail": "separator prevents boundary collision",
+      "passed": true
+    },
+    {
+      "case": "key_deterministic",
+      "detail": "same input same key",
+      "passed": true
+    },
+    {
+      "case": "sql_injection_key",
+      "detail": "hostile key stored as data",
+      "passed": true
+    },
+    {
+      "case": "table_survives_hostile_key",
+      "detail": "rows=1",
+      "passed": true
+    },
+    {
+      "case": "logical_cap_enforced",
+      "detail": "bytes=408 evictions=0 file_bytes=173048",
+      "passed": false
+    },
+    {
+      "case": "physical_file_bounded",
+      "detail": "file_bytes=173048 logical_bytes=408",
+      "passed": true
+    },
+    {
+      "case": "restart_persistence",
+      "detail": "value survives reopen",
+      "passed": true
+    },
+    {
+      "case": "corrupt_value_contained",
+      "detail": "invalid payload returns miss, no crash",
+      "passed": true
+    },
+    {
+      "case": "disabled_cache_noop",
+      "detail": "cache disabled returns miss",
+      "passed": true
+    },
+    {
+      "case": "cross_key_isolation",
+      "detail": "distinct key does not return another key's value",
+      "passed": true
+    }
+  ],
+  "summary": {
+    "cases": 11,
+    "passed": 10
+  }
+}

@@ -1,0 +1,7 @@
+{
+  "facts_found": 13,
+  "facts_total": 17,
+  "pages": 14,
+  "pages_with_full_recall": 6,
+  "pages_with_zero_recall": 3
+}

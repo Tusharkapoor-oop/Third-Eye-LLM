@@ -1,0 +1,97 @@
+{
+  "computed_at": "2026-10-27T22:55:00Z",
+  "algorithm": "SHA-256",
+  "benchmark_root": "reports/extreme-benchmark",
+  "artifacts": {
+    "00-scope-and-threat-model.md": {
+      "bytes": 6188,
+      "sha256": "93eae4789ef972c9677244d3df32e7ac499cf69744073ebb1822103907e21796",
+      "status": "VERIFIED"
+    },
+    "01-architecture-and-data-flow.md": {
+      "bytes": 7281,
+      "sha256": "2ddf1a37c33a93e671c951c8c762e11638cdfbb9f7faacad3ccff7467af52b38",
+      "status": "VERIFIED"
+    },
+    "02-dataset-card.md": {
+      "bytes": 7007,
+      "sha256": "fc3ff6b6de9f9b38de7d5590ac48042379572429f7c8f3c37b08d40a16a15e37",
+      "status": "VERIFIED"
+    },
+    "03-methodology-and-scoring.md": {
+      "bytes": 4741,
+      "sha256": "9dd28746a222dce3a184c57305b4ab0758b513eb5f5ff3d7b8e94570f4be4268",
+      "status": "VERIFIED"
+    },
+    "04-security-findings.md": {
+      "bytes": 7806,
+      "sha256": "54c68c4d230b9a6464d3dcdb08a616198a06b751837e9e53742eaed305da1dd3",
+      "status": "VERIFIED"
+    },
+    "05-quality-results.md": {
+      "bytes": 4722,
+      "sha256": "73ee470449c2a7534eb06ae9c6673ae955d00e2a371c02753266106df63177f6",
+      "status": "VERIFIED"
+    },
+    "06-performance-and-load-results.md": {
+      "bytes": 3655,
+      "sha256": "5d912d7bf26e773168d47103af6032173664d526a0cf9f4eb57fd22da4c12d3c",
+      "status": "VERIFIED"
+    },
+    "07-cost-and-token-results.md": {
+      "bytes": 3494,
+      "sha256": "ce9b349e44253de6cf7f2f561049d5305bf35f592542102458872ce55f382e10",
+      "status": "VERIFIED"
+    },
+    "08-failure-and-reliability-results.md": {
+      "bytes": 3732,
+      "sha256": "ee12b5e542a5c9556de67118147941eae2ca947c91d8fb649927cddc24ccca4c",
+      "status": "VERIFIED"
+    },
+    "09-category-by-category-verdict.md": {
+      "bytes": 7470,
+      "sha256": "f9c5a486a94e77793d72a643794327f691b7ca9964f2bbc527e8b041dc0baaa8",
+      "status": "VERIFIED"
+    },
+    "10-remediation-and-regression-plan.md": {
+      "bytes": 5353,
+      "sha256": "c97d42de743ea6934d497e899a3a08c9fa3ba39bddedbcfe37300336b7b13215",
+      "status": "VERIFIED"
+    },
+    "11-final-release-decision.md": {
+      "bytes": 5642,
+      "sha256": "05f31052b4be3a2e3cf0aef022e6d4a3ab23cef1c92c162b07a36f3d585e0507",
+      "status": "VERIFIED"
+    },
+    "reproduce.md": {
+      "bytes": 2879,
+      "sha256": "b1debed2ddc8160978fff4014dd1d91a89cfda378d7832a8cd04e33a4f80aa44",
+      "status": "VERIFIED"
+    },
+    "datasets/manifest.json": {
+      "bytes": 1003,
+      "sha256": "6ae5a8db5c001e5074e94ae8aa43ade00efe39f637a3f1c84397808d6e7a076c",
+      "status": "VERIFIED"
+    },
+    "datasets/extreme_benchmark_10k.jsonl": {
+      "bytes": 6661756,
+      "sha256": "d1d91fe1e7289affb0a85a0a412c6a9d47dbbde2ea5e994566dcd2aa1ba1c5ba",
+      "status": "VERIFIED"
+    },
+    "results/summary.json": {
+      "bytes": 1039,
+      "sha256": "00cfcae89921f773c7da6cbbdcbfe40e3fed7fc2f80e0d929347cc7c999d2e60",
+      "status": "VERIFIED"
+    },
+    "results/per-query-results.jsonl": {
+      "bytes": 152209,
+      "sha256": "c9b334a5e62fe033cc822a60e6b6202b620baba34bafe0d5ea6e6ceaf9b896f8",
+      "status": "VERIFIED"
+    },
+    "results/security-test-results.jsonl": {
+      "bytes": 18297,
+      "sha256": "a5097c50fdbe10d2b74a0a4835acc3cbcda880966890e922c0381103d91cd31f",
+      "status": "VERIFIED"
+    }
+  }
+}

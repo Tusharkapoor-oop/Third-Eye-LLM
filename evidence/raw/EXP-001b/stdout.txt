@@ -1,0 +1,8 @@
+{
+  "collected": 163,
+  "errors": 0,
+  "exit_code": 0,
+  "failed": 0,
+  "passed": 162,
+  "skipped": 1
+}

@@ -1,0 +1,470 @@
+[
+  {
+    "id": 1,
+    "category": "current_facts",
+    "query": "What is the capital city of France?",
+    "ground_truth_answer": "Paris",
+    "acceptable_sources": [
+      "wikipedia.org",
+      "britannica.com",
+      "gouv.fr"
+    ],
+    "is_unanswerable": false,
+    "has_conflict": false
+  },
+  {
+    "id": 2,
+    "category": "current_facts",
+    "query": "What is the approximate speed of light in vacuum?",
+    "ground_truth_answer": "299,792,458 meters per second",
+    "acceptable_sources": [
+      "wikipedia.org",
+      "nist.gov",
+      "britannica.com"
+    ],
+    "is_unanswerable": false,
+    "has_conflict": false
+  },
+  {
+    "id": 3,
+    "category": "current_facts",
+    "query": "Who is the primary creator of the Linux operating system kernel?",
+    "ground_truth_answer": "Linus Torvalds",
+    "acceptable_sources": [
+      "wikipedia.org",
+      "kernel.org",
+      "britannica.com"
+    ],
+    "is_unanswerable": false,
+    "has_conflict": false
+  },
+  {
+    "id": 4,
+    "category": "current_facts",
+    "query": "Who wrote the 1984 cyberpunk science fiction novel Neuromancer?",
+    "ground_truth_answer": "William Gibson",
+    "acceptable_sources": [
+      "wikipedia.org",
+      "britannica.com"
+    ],
+    "is_unanswerable": false,
+    "has_conflict": false
+  },
+  {
+    "id": 7,
+    "category": "current_facts",
+    "query": "What is the chemical formula for water?",
+    "ground_truth_answer": "H2O",
+    "acceptable_sources": [
+      "wikipedia.org",
+      "britannica.com",
+      "usgs.gov"
+    ],
+    "is_unanswerable": false,
+    "has_conflict": false
+  },
+  {
+    "id": 8,
+    "category": "current_facts",
+    "query": "Which planet is fourth in order from the Sun in the solar system?",
+    "ground_truth_answer": "Mars",
+    "acceptable_sources": [
+      "wikipedia.org",
+      "nasa.gov",
+      "britannica.com"
+    ],
+    "is_unanswerable": false,
+    "has_conflict": false
+  },
+  {
+    "id": 9,
+    "category": "current_facts",
+    "query": "Which Python Enhancement Proposal introduced free-threading / optional GIL in Python 3.13?",
+    "ground_truth_answer": "PEP 703",
+    "acceptable_sources": [
+      "peps.python.org",
+      "python.org",
+      "github.com"
+    ],
+    "is_unanswerable": false,
+    "has_conflict": false
+  },
+  {
+    "id": 10,
+    "category": "current_facts",
+    "query": "What is the largest living species of mammal on Earth?",
+    "ground_truth_answer": "Blue whale",
+    "acceptable_sources": [
+      "wikipedia.org",
+      "worldwildlife.org",
+      "britannica.com"
+    ],
+    "is_unanswerable": false,
+    "has_conflict": false
+  },
+  {
+    "id": 11,
+    "category": "documentation_lookups",
+    "query": "In Python asyncio.gather what parameter controls whether exceptions are returned as results instead of raised?",
+    "ground_truth_answer": "return_exceptions",
+    "acceptable_sources": [
+      "docs.python.org",
+      "python.org"
+    ],
+    "is_unanswerable": false,
+    "has_conflict": false
+  },
+  {
+    "id": 12,
+    "category": "documentation_lookups",
+    "query": "What PostgreSQL operator is used to test if a JSONB document contains another JSONB document?",
+    "ground_truth_answer": "@>",
+    "acceptable_sources": [
+      "postgresql.org"
+    ],
+    "is_unanswerable": false,
+    "has_conflict": false
+  },
+  {
+    "id": 13,
+    "category": "documentation_lookups",
+    "query": "What does the -d or --detach flag do in docker run command?",
+    "ground_truth_answer": "Runs container in background and prints container ID",
+    "acceptable_sources": [
+      "docs.docker.com",
+      "docker.com"
+    ],
+    "is_unanswerable": false,
+    "has_conflict": false
+  },
+  {
+    "id": 14,
+    "category": "documentation_lookups",
+    "query": "In Rust what method on Result computes a default value using a closure if Err?",
+    "ground_truth_answer": "unwrap_or_else",
+    "acceptable_sources": [
+      "doc.rust-lang.org",
+      "rust-lang.org"
+    ],
+    "is_unanswerable": false,
+    "has_conflict": false
+  },
+  {
+    "id": 16,
+    "category": "documentation_lookups",
+    "query": "What pragma command in SQLite is used to enable foreign key constraints?",
+    "ground_truth_answer": "PRAGMA foreign_keys = ON",
+    "acceptable_sources": [
+      "sqlite.org"
+    ],
+    "is_unanswerable": false,
+    "has_conflict": false
+  },
+  {
+    "id": 17,
+    "category": "documentation_lookups",
+    "query": "What Redis command sets a timeout on a key after which it will be deleted?",
+    "ground_truth_answer": "EXPIRE",
+    "acceptable_sources": [
+      "redis.io"
+    ],
+    "is_unanswerable": false,
+    "has_conflict": false
+  },
+  {
+    "id": 18,
+    "category": "documentation_lookups",
+    "query": "In Git what command records a new commit that inverts the changes of an existing commit?",
+    "ground_truth_answer": "git revert",
+    "acceptable_sources": [
+      "git-scm.com"
+    ],
+    "is_unanswerable": false,
+    "has_conflict": false
+  },
+  {
+    "id": 19,
+    "category": "documentation_lookups",
+    "query": "What HTTP status code represents 405 Method Not Allowed?",
+    "ground_truth_answer": "405",
+    "acceptable_sources": [
+      "developer.mozilla.org",
+      "rfc-editor.org"
+    ],
+    "is_unanswerable": false,
+    "has_conflict": false
+  },
+  {
+    "id": 21,
+    "category": "niche_technical",
+    "query": "What is the underlying C library used by PyMuPDF for rendering and PDF parsing?",
+    "ground_truth_answer": "MuPDF",
+    "acceptable_sources": [
+      "pymupdf.readthedocs.io",
+      "mupdf.com",
+      "github.com"
+    ],
+    "is_unanswerable": false,
+    "has_conflict": false
+  },
+  {
+    "id": 22,
+    "category": "niche_technical",
+    "query": "What is the C library wrapped by Python lxml package for XML parsing?",
+    "ground_truth_answer": "libxml2",
+    "acceptable_sources": [
+      "lxml.de",
+      "github.com",
+      "wikipedia.org"
+    ],
+    "is_unanswerable": false,
+    "has_conflict": false
+  },
+  {
+    "id": 23,
+    "category": "niche_technical",
+    "query": "What is the bit register width of AVX-512 vector registers in x86 architecture?",
+    "ground_truth_answer": "512 bits",
+    "acceptable_sources": [
+      "intel.com",
+      "wikipedia.org"
+    ],
+    "is_unanswerable": false,
+    "has_conflict": false
+  },
+  {
+    "id": 26,
+    "category": "niche_technical",
+    "query": "What RFC document specifies Extension Mechanisms for DNS EDNS0?",
+    "ground_truth_answer": "RFC 6891",
+    "acceptable_sources": [
+      "rfc-editor.org",
+      "ietf.org"
+    ],
+    "is_unanswerable": false,
+    "has_conflict": false
+  },
+  {
+    "id": 27,
+    "category": "niche_technical",
+    "query": "What C++ design pattern binds resource acquisition to object lifetime and cleanup to destructor?",
+    "ground_truth_answer": "RAII Resource Acquisition Is Initialization",
+    "acceptable_sources": [
+      "cppreference.com",
+      "wikipedia.org"
+    ],
+    "is_unanswerable": false,
+    "has_conflict": false
+  },
+  {
+    "id": 28,
+    "category": "niche_technical",
+    "query": "What Linux system call flag specifies Edge Triggered notifications in epoll_ctl?",
+    "ground_truth_answer": "EPOLLET",
+    "acceptable_sources": [
+      "man7.org",
+      "kernel.org"
+    ],
+    "is_unanswerable": false,
+    "has_conflict": false
+  },
+  {
+    "id": 29,
+    "category": "niche_technical",
+    "query": "What is the Model Context Protocol latest protocol version date constant defined in MCP SDK types?",
+    "ground_truth_answer": "2026-07-28",
+    "acceptable_sources": [
+      "modelcontextprotocol.io",
+      "github.com"
+    ],
+    "is_unanswerable": false,
+    "has_conflict": false
+  },
+  {
+    "id": 30,
+    "category": "niche_technical",
+    "query": "What Trafilatura extraction algorithm function extracts main text from raw HTML?",
+    "ground_truth_answer": "extract",
+    "acceptable_sources": [
+      "trafilatura.readthedocs.io",
+      "github.com"
+    ],
+    "is_unanswerable": false,
+    "has_conflict": false
+  },
+  {
+    "id": 33,
+    "category": "unanswerable_or_fabricated",
+    "query": "What are the official Windows 14 hardware system requirements published by Microsoft?",
+    "ground_truth_answer": "Windows 14 has not been released or announced by Microsoft.",
+    "acceptable_sources": [],
+    "is_unanswerable": true,
+    "has_conflict": false
+  },
+  {
+    "id": 34,
+    "category": "unanswerable_or_fabricated",
+    "query": "Who was awarded the Nobel Prize in Computer Science in 2021?",
+    "ground_truth_answer": "There is no Nobel Prize in Computer Science.",
+    "acceptable_sources": [],
+    "is_unanswerable": true,
+    "has_conflict": false
+  },
+  {
+    "id": 35,
+    "category": "unanswerable_or_fabricated",
+    "query": "What is the non-stop commercial airline flight time from Tokyo to Atlantis airport?",
+    "ground_truth_answer": "Atlantis is a mythical location with no real airport.",
+    "acceptable_sources": [],
+    "is_unanswerable": true,
+    "has_conflict": false
+  },
+  {
+    "id": 36,
+    "category": "unanswerable_or_fabricated",
+    "query": "What is the official release date for Grand Theft Auto 8 PC edition?",
+    "ground_truth_answer": "GTA 8 does not exist.",
+    "acceptable_sources": [],
+    "is_unanswerable": true,
+    "has_conflict": false
+  },
+  {
+    "id": 37,
+    "category": "unanswerable_or_fabricated",
+    "query": "How many gigabytes of DDR6 VRAM does the NVIDIA GeForce RTX 2010 Ti have?",
+    "ground_truth_answer": "There is no RTX 2010 Ti GPU model.",
+    "acceptable_sources": [],
+    "is_unanswerable": true,
+    "has_conflict": false
+  },
+  {
+    "id": 38,
+    "category": "unanswerable_or_fabricated",
+    "query": "What was the date of the Great Lunar Solar War of 1776?",
+    "ground_truth_answer": "Fictional or non-existent event.",
+    "acceptable_sources": [],
+    "is_unanswerable": true,
+    "has_conflict": false
+  },
+  {
+    "id": 39,
+    "category": "unanswerable_or_fabricated",
+    "query": "How do you enable CUDA 14 hardware ray tracing on an Intel Pentium II processor?",
+    "ground_truth_answer": "Impossible; Pentium II lacks CUDA support and hardware ray tracing.",
+    "acceptable_sources": [],
+    "is_unanswerable": true,
+    "has_conflict": false
+  },
+  {
+    "id": 40,
+    "category": "unanswerable_or_fabricated",
+    "query": "What are the clinical treatment guidelines for chronic chronospatial hyper-flu syndrome in humans?",
+    "ground_truth_answer": "Fictional medical condition with no clinical basis.",
+    "acceptable_sources": [],
+    "is_unanswerable": true,
+    "has_conflict": false
+  },
+  {
+    "id": 41,
+    "category": "conflicting_or_debatable",
+    "query": "Did historical Viking warriors wear horned helmets into combat?",
+    "ground_truth_answer": "No historical evidence supports horned helmets in battle; it is a 19th-century romantic myth.",
+    "acceptable_sources": [
+      "history.com",
+      "britannica.com",
+      "wikipedia.org"
+    ],
+    "is_unanswerable": false,
+    "has_conflict": true
+  },
+  {
+    "id": 42,
+    "category": "conflicting_or_debatable",
+    "query": "Is light physically a wave or a particle in quantum electrodynamics?",
+    "ground_truth_answer": "Wave-particle duality; exhibits properties of both depending on measurement.",
+    "acceptable_sources": [
+      "wikipedia.org",
+      "britannica.com",
+      "physics.org"
+    ],
+    "is_unanswerable": false,
+    "has_conflict": true
+  },
+  {
+    "id": 43,
+    "category": "conflicting_or_debatable",
+    "query": "Was William Shakespeare the sole author of all plays attributed to him?",
+    "ground_truth_answer": "Scholarly consensus supports Shakespeare, with evidence of co-authorship on several plays.",
+    "acceptable_sources": [
+      "wikipedia.org",
+      "folger.edu",
+      "britannica.com"
+    ],
+    "is_unanswerable": false,
+    "has_conflict": true
+  },
+  {
+    "id": 44,
+    "category": "conflicting_or_debatable",
+    "query": "Has cold fusion / low-energy nuclear reaction been conclusively proven as a commercial energy source?",
+    "ground_truth_answer": "Unproven; lack of independently reproducible commercial net energy generation.",
+    "acceptable_sources": [
+      "wikipedia.org",
+      "nature.com",
+      "science.org"
+    ],
+    "is_unanswerable": false,
+    "has_conflict": true
+  },
+  {
+    "id": 46,
+    "category": "conflicting_or_debatable",
+    "query": "Is Rust strictly faster than modern C++ in all compiler benchmarks?",
+    "ground_truth_answer": "No; performance is comparable and varies by workload, compiler optimizations, and architecture.",
+    "acceptable_sources": [
+      "benchmarksgame-team.pages.debian.net",
+      "arxiv.org"
+    ],
+    "is_unanswerable": false,
+    "has_conflict": true
+  },
+  {
+    "id": 47,
+    "category": "conflicting_or_debatable",
+    "query": "Will Shor algorithm on quantum computers break AES-256 symmetric encryption?",
+    "ground_truth_answer": "No; Grover algorithm only halves effective key length to 128-bit security, which remains secure.",
+    "acceptable_sources": [
+      "nist.gov",
+      "enisa.europa.eu",
+      "wikipedia.org"
+    ],
+    "is_unanswerable": false,
+    "has_conflict": true
+  },
+  {
+    "id": 49,
+    "category": "conflicting_or_debatable",
+    "query": "Did prehistoric humans coexist with Tyrannosaurus rex?",
+    "ground_truth_answer": "No; non-avian dinosaurs went extinct approximately 66 million years before humans evolved.",
+    "acceptable_sources": [
+      "wikipedia.org",
+      "usgs.gov",
+      "britannica.com"
+    ],
+    "is_unanswerable": false,
+    "has_conflict": true
+  },
+  {
+    "id": 50,
+    "category": "conflicting_or_debatable",
+    "query": "Is Pluto officially classified as a classical planet or a dwarf planet by the IAU?",
+    "ground_truth_answer": "Dwarf planet (since IAU reclassification in 2006).",
+    "acceptable_sources": [
+      "iau.org",
+      "nasa.gov",
+      "wikipedia.org"
+    ],
+    "is_unanswerable": false,
+    "has_conflict": true
+  }
+]

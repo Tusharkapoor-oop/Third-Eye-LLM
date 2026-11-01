@@ -1,0 +1,53 @@
+{
+  "campaign_id": "stage7-20261028-a4a64151",
+  "run_id": "stage7-security-f432267e3e",
+  "at": "2026-11-01T13:23:26.730719+00:00",
+  "counts": {
+    "FAIL": 2,
+    "PASS": 38
+  },
+  "records": 40,
+  "findings": [
+    {
+      "actual": {
+        "hits": 1,
+        "initial": 0,
+        "status": "error:http_error"
+      },
+      "at": "2026-11-01T13:23:15.908215+00:00",
+      "campaign_id": "stage7-20261028-a4a64151",
+      "case_id": "REL-RETRY-001",
+      "evidence": null,
+      "expected": "two server hits, final status 200",
+      "group": "reliability",
+      "remediation": "Add bounded retry for 429/502/503/504 in SafeFetcher or document that callers must retry.",
+      "run_id": "stage7-security-f432267e3e:REL-RETRY-001",
+      "severity": "medium",
+      "status": "FAIL",
+      "title": "503 is retried once and the recovered response is returned"
+    },
+    {
+      "actual": {
+        "hits": 1,
+        "status": "error:http_error"
+      },
+      "at": "2026-11-01T13:23:15.942075+00:00",
+      "campaign_id": "stage7-20261028-a4a64151",
+      "case_id": "REL-RETRY-002",
+      "evidence": null,
+      "expected": "two server hits, final status 200",
+      "group": "reliability",
+      "remediation": "Honor Retry-After with a bounded retry budget; never retry indefinitely.",
+      "run_id": "stage7-security-f432267e3e:REL-RETRY-002",
+      "severity": "medium",
+      "status": "FAIL",
+      "title": "429 is retried once and the recovered response is returned"
+    }
+  ],
+  "notes": [
+    "All targets were owned loopback fixtures except the separate Tavily API quality campaign.",
+    "No Tavily infrastructure was attacked; no denial-of-service traffic was sent.",
+    "The browser proxy was exercised directly and via the recorded browser_fixture phase.",
+    "Missing browser crash-loop and official MCP conformance execution are residual limitations."
+  ]
+}

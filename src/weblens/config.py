@@ -18,17 +18,21 @@ class Settings(BaseSettings):
     )
 
     # --- search providers -------------------------------------------------
-    # Comma-separated order. Supported: ddg, bing, brave, tavily, searxng, wikipedia
-    search_providers: str = "ddg,bing,wikipedia"
+    # Comma-separated order. Supported: ddg, mwmbl, brave, tavily, searxng, bing, wikipedia
+    # Bing is optional and documented as degraded: its retired-API HTML fallback
+    # has returned unsafe, off-topic results and is not part of the default chain.
+    search_providers: str = "ddg,mwmbl,wikipedia"
     brave_api_key: str | None = None
     tavily_api_key: str | None = None
     searxng_url: str | None = None
-    search_mode: Literal["fallback", "fuse"] = "fallback"
+    search_mode: Literal["fallback", "fuse"] = "fuse"
+    provider_timeout_s: float = 3.5
 
     # --- network limits ---------------------------------------------------
     connect_timeout_s: float = 4.0
     read_timeout_s: float = 12.0
     total_timeout_s: float = 20.0
+    research_fetch_timeout_s: float = 8.0
     max_response_bytes: int = 4_000_000
     max_redirects: int = 5
     max_concurrency: int = 8
@@ -44,13 +48,15 @@ class Settings(BaseSettings):
     allow_private_networks: bool = False
     allowed_hosts: str = ""  # optional comma-separated allowlist; empty = all public
     block_hosts: str = ""  # comma-separated deny list (suffix match)
-    allow_browser: bool = True
+    allow_browser: bool = False
     browser_timeout_s: float = 20.0
 
     # --- cache ------------------------------------------------------------
     cache_dir: Path = Field(default_factory=lambda: Path.home() / ".weblens")
     cache_enabled: bool = True
-    search_cache_ttl_s: int = 600
+    # Logical payload cap (compressed value + metadata bytes), not SQLite file
+    # size. 0 disables eviction.
+    cache_max_bytes: int = Field(default=512 * 1024 * 1024, ge=0)
     page_cache_ttl_s: int = 86_400
     robots_cache_ttl_s: int = 3_600
 
@@ -65,16 +71,24 @@ class Settings(BaseSettings):
     http_port: int = 8765
     http_token: str | None = None
     log_level: str = "INFO"
+    mcp_profile: Literal["core", "research", "full"] = "core"
 
     @field_validator("search_providers")
     @classmethod
     def _providers(cls, v: str) -> str:
-        allowed = {"ddg", "brave", "tavily", "searxng", "bing", "wikipedia"}
+        allowed = {"ddg", "brave", "tavily", "searxng", "bing", "mwmbl", "wikipedia"}
         names = [p.strip().lower() for p in v.split(",") if p.strip()]
         bad = [p for p in names if p not in allowed]
         if bad:
             raise ValueError(f"unknown search provider(s): {bad}; allowed={sorted(allowed)}")
         return ",".join(names)
+
+    @field_validator("cache_dir", mode="after")
+    @classmethod
+    def _expand_cache_dir(cls, v: Path) -> Path:
+        # A literal "~" in WEBLENS_CACHE_DIR must not create a "~" directory in
+        # the working directory.
+        return v.expanduser()
 
     @property
     def provider_list(self) -> list[str]:

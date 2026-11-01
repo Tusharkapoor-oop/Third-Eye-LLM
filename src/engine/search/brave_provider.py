@@ -5,10 +5,9 @@ Activated when corresponding environment credentials or URLs are provided.
 
 from __future__ import annotations
 
-import httpx
-
 from src.engine.config import CONFIG
 from src.engine.search.base import SearchProvider, SearchResult
+from src.engine.security import get_shared_http_client
 
 
 class BraveSearchProvider(SearchProvider):
@@ -39,11 +38,16 @@ class BraveSearchProvider(SearchProvider):
             params["freshness"] = time_filter
 
         try:
-            async with httpx.AsyncClient(headers=headers, timeout=CONFIG.read_timeout) as client:
-                resp = await client.get("https://api.search.brave.com/res/v1/web/search", params=params)
-                if resp.status_code != 200:
-                    return []
-                data = resp.json()
+            client = await get_shared_http_client()
+            resp = await client.get(
+                "https://api.search.brave.com/res/v1/web/search",
+                params=params,
+                headers=headers,
+                timeout=CONFIG.read_timeout,
+            )
+            if resp.status_code != 200:
+                return []
+            data = resp.json()
         except Exception:
             return []
 
@@ -85,11 +89,15 @@ class SearXNGProvider(SearchProvider):
             params["time_range"] = time_filter
 
         try:
-            async with httpx.AsyncClient(timeout=CONFIG.read_timeout) as client:
-                resp = await client.get(f"{self.base_url}/search", params=params)
-                if resp.status_code != 200:
-                    return []
-                data = resp.json()
+            client = await get_shared_http_client()
+            resp = await client.get(
+                f"{self.base_url}/search",
+                params=params,
+                timeout=CONFIG.read_timeout,
+            )
+            if resp.status_code != 200:
+                return []
+            data = resp.json()
         except Exception:
             return []
 

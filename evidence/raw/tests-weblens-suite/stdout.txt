@@ -1,0 +1,26 @@
+============================= test session starts =============================
+platform win32 -- Python 3.13.15, pytest-9.1.1, pluggy-1.6.0
+rootdir: C:\Users\ACER\Downloads\Broswer for ai agnets\weblens
+configfile: pyproject.toml
+plugins: platformdirs-4.12.2, anyio-4.15.1, locust-2.47.0, asyncio-1.4.0, cov-7.1.0
+asyncio: mode=Mode.AUTO, debug=False, asyncio_default_fixture_loop_scope=None, asyncio_default_test_loop_scope=function
+collected 163 items
+
+weblens\tests\test_browser_optional.py .                                 [  0%]
+weblens\tests\test_browser_proxy.py .........                            [  6%]
+weblens\tests\test_cache.py ......                                       [  9%]
+weblens\tests\test_config.py ...                                         [ 11%]
+weblens\tests\test_crawl.py .........                                    [ 17%]
+weblens\tests\test_extract.py .........                                  [ 22%]
+weblens\tests\test_http_auth.py ....                                     [ 25%]
+weblens\tests\test_mcp.py .......                                        [ 29%]
+weblens\tests\test_passages.py ..........                                [ 35%]
+weblens\tests\test_research.py ..................                        [ 46%]
+weblens\tests\test_search_parsing.py .............                       [ 54%]
+weblens\tests\test_search_router.py .........                            [ 60%]
+weblens\tests\test_service.py ..........                                 [ 66%]
+weblens\tests\test_ssrf.py .............................                 [ 84%]
+weblens\tests\test_tokens.py ......                                      [ 87%]
+weblens\tests\test_urls.py ....................                          [100%]
+
+============================ 163 passed in 16.00s =============================

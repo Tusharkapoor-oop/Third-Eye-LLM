@@ -1,0 +1,8 @@
+Traceback (most recent call last):
+  File "C:\Users\ACER\Downloads\Broswer for ai agnets\evidence\experiments\exp_101_longpage.py", line 21, in <module>
+    from weblens.cache import Cache
+  File "C:\Users\ACER\Downloads\Broswer for ai agnets\weblens\src\weblens\cache.py", line 17, in <module>
+    from .config import Settings
+  File "C:\Users\ACER\Downloads\Broswer for ai agnets\weblens\src\weblens\config.py", line 8, in <module>
+    from pydantic import Field, field_validator
+ModuleNotFoundError: No module named 'pydantic'

@@ -1,0 +1,8 @@
+{
+  "env_example_looks_placeholder": false,
+  "env_example_starts_with_tvly": false,
+  "files_scanned": 454,
+  "history_hits": 0,
+  "redaction_ok": true,
+  "tree_hits": 3
+}

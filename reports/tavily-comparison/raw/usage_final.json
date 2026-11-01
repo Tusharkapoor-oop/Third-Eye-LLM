@@ -1,0 +1,38 @@
+{
+  "campaign_id": "stage7-20261028-a4a64151",
+  "checked_at": "2026-10-28T10:25:24.583286+00:00",
+  "source": "https://api.tavily.com/usage",
+  "http_status": 200,
+  "account": {
+    "current_plan": "Researcher",
+    "plan_limit": 1000,
+    "plan_usage": 551,
+    "remaining": 449,
+    "search_usage": 546,
+    "extract_usage": 4,
+    "map_usage": 1,
+    "crawl_usage": 0,
+    "research_usage": 0,
+    "paygo_usage": 0,
+    "paygo_limit": null
+  },
+  "key": {
+    "limit": 1000,
+    "usage": 520,
+    "remaining": 480,
+    "search_usage": 515,
+    "extract_usage": 4,
+    "map_usage": 1,
+    "crawl_usage": 0,
+    "research_usage": 0
+  },
+  "campaign": {
+    "account_usage_before": 170,
+    "account_usage_after": 551,
+    "credits_consumed": 381,
+    "hard_stop_remaining": 200,
+    "within_budget": true,
+    "remaining_above_stop": true
+  },
+  "note": "Account usage is authoritative for plan credits. Key usage differs (520) from account usage (551); the endpoint does not reconcile this. No API key or token is stored here."
+}

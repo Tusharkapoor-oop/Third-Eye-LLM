@@ -1,0 +1,7 @@
+{
+  "schema_tokens_total": 732,
+  "source": "server.list_tools()",
+  "status": "measured",
+  "tokenizer": "cl100k_base",
+  "tools": 4
+}

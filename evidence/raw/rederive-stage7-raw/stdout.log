@@ -1,0 +1,19 @@
+{
+  "ok": true,
+  "verdicts": {
+    "P1_precision_at_5_direct_vs_keyless": "LEFT better (practical)",
+    "P2_support_direct_vs_keyless": "LEFT better (practical)",
+    "P3_research_support_keyless_vs_weblens_tavily": "RIGHT better (practical)",
+    "P4_search_latency_direct_vs_keyless": "RIGHT better (practical)",
+    "P5_payload_tokens_direct_vs_keyless": "RIGHT better (practical)"
+  },
+  "evidence": {
+    "search_records": 324,
+    "research_records": 216,
+    "extraction_records": 10,
+    "browser_records": 6,
+    "load_records": 6,
+    "crawl_records": 4,
+    "pre_fix_extraction_records": 10
+  }
+}

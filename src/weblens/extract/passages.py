@@ -22,7 +22,7 @@ STOPWORDS = {
     "our", "their", "about", "into", "over", "under", "between", "vs", "versus",
 }
 
-TOKEN = re.compile(r"[a-z0-9][a-z0-9_+.#:-]*", re.I)
+TOKEN = re.compile(r"[a-z0-9][a-z0-9_+.#:-]*", re.IGNORECASE)
 SENTENCE_END = re.compile(r"(?<=[.!?])\s+(?=[A-Z0-9#])")
 
 

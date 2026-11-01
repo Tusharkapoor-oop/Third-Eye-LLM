@@ -5,11 +5,11 @@ Provides authoritative, high-density factual information with zero rate limits o
 
 from __future__ import annotations
 
-import httpx
 from bs4 import BeautifulSoup
 
 from src.engine.config import CONFIG
 from src.engine.search.base import SearchProvider, SearchResult
+from src.engine.security import get_shared_http_client
 
 
 class WikipediaSearchProvider(SearchProvider):
@@ -35,11 +35,16 @@ class WikipediaSearchProvider(SearchProvider):
         }
 
         try:
-            async with httpx.AsyncClient(headers=headers, timeout=CONFIG.read_timeout) as client:
-                resp = await client.get("https://en.wikipedia.org/w/api.php", params=params)
-                if resp.status_code != 200:
-                    return []
-                data = resp.json()
+            client = await get_shared_http_client()
+            resp = await client.get(
+                "https://en.wikipedia.org/w/api.php",
+                params=params,
+                headers=headers,
+                timeout=CONFIG.read_timeout,
+            )
+            if resp.status_code != 200:
+                return []
+            data = resp.json()
         except Exception:
             return []
 

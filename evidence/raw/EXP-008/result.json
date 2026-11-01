@@ -1,0 +1,65 @@
+{
+  "class": "REAL",
+  "experiment": "EXP-08",
+  "kind": "secret-scan",
+  "limitations": [
+    "Pattern-based scan only; gitleaks/trufflehog are not installed, so this is not a substitute for them.",
+    "No entropy analysis; a credential that matches no known shape would not be found."
+  ],
+  "rows": [
+    {
+      "case": "tree_scan",
+      "hits": [
+        {
+          "equals_live_env_key": false,
+          "kind": "env_assignment",
+          "matches": 1,
+          "path": ".env.example"
+        },
+        {
+          "equals_live_env_key": false,
+          "kind": "tavily",
+          "matches": 2,
+          "path": "tests/test_p9_canary_secrets.py"
+        },
+        {
+          "equals_live_env_key": false,
+          "kind": "bearer",
+          "matches": 1,
+          "path": "weblens/examples/clients/http-token.json"
+        }
+      ],
+      "scanned_files": 454
+    },
+    {
+      "case": "env_example_shape",
+      "exists": true,
+      "has_key_line": true,
+      "looks_placeholder": false,
+      "matches_tvly_pattern": false,
+      "starts_with_tvly": false,
+      "value_len_bucket": "1-20"
+    },
+    {
+      "case": "git_history_scan",
+      "commits": 2,
+      "hits": []
+    },
+    {
+      "case": "redaction_self_test",
+      "hits": [
+        "bearer",
+        "tavily"
+      ],
+      "passed": true
+    }
+  ],
+  "summary": {
+    "env_example_looks_placeholder": false,
+    "env_example_starts_with_tvly": false,
+    "files_scanned": 454,
+    "history_hits": 0,
+    "redaction_ok": true,
+    "tree_hits": 3
+  }
+}

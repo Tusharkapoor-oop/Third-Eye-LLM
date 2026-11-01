@@ -1,0 +1,1220 @@
+{
+  "allowed_numbers": [
+    "0",
+    "0.0",
+    "0.1",
+    "0.14",
+    "0.28",
+    "0.3",
+    "000",
+    "001",
+    "002",
+    "003",
+    "004",
+    "005",
+    "006",
+    "007",
+    "008",
+    "1",
+    "1.0",
+    "1.6",
+    "100",
+    "100.0",
+    "101",
+    "102",
+    "104",
+    "105",
+    "106",
+    "107",
+    "11",
+    "118.14",
+    "13",
+    "15",
+    "162",
+    "163",
+    "17",
+    "2",
+    "2.0",
+    "2.14",
+    "2.16",
+    "2.3",
+    "20.7",
+    "200",
+    "2026",
+    "23.10",
+    "24",
+    "256",
+    "26.98",
+    "293.65",
+    "3",
+    "3.14",
+    "30",
+    "32",
+    "34.2",
+    "4",
+    "40",
+    "41",
+    "43.9",
+    "454",
+    "47",
+    "48",
+    "5",
+    "50",
+    "51.0",
+    "52.7",
+    "539.03",
+    "56.6",
+    "6",
+    "63.2",
+    "64",
+    "65.8",
+    "732",
+    "74.1",
+    "75.0",
+    "76.5",
+    "79.3",
+    "8.3",
+    "84.0",
+    "89.3",
+    "9",
+    "9.1",
+    "90.4"
+  ],
+  "classes": {
+    "MOCK": 4,
+    "REAL": 18,
+    "SIMULATED": 19
+  },
+  "excluded_contaminated": [],
+  "generated_from_ledger_head": "271bc8c3cc6b5b4ff81d80f86511f6106a3ee5f61818bc36a5716c5825125a53",
+  "metrics": {
+    "cache.cases": {
+      "ci": null,
+      "class": "REAL",
+      "evidence": [
+        "EXP-004b"
+      ],
+      "kind": "count",
+      "n": null,
+      "note": "",
+      "value": "11"
+    },
+    "cache.passed": {
+      "ci": null,
+      "class": "REAL",
+      "evidence": [
+        "EXP-004b"
+      ],
+      "kind": "count",
+      "n": null,
+      "note": "",
+      "value": "11"
+    },
+    "cache.rate": {
+      "ci": [
+        0.7411670330319684,
+        1.0
+      ],
+      "class": "REAL",
+      "evidence": [
+        "EXP-004b"
+      ],
+      "kind": "proportion",
+      "n": 11,
+      "note": "",
+      "value": "11/11 (100.0% [74.1%, 100.0%]) \u2014 n<30: too small to support a claim"
+    },
+    "dataset.core.n": {
+      "ci": null,
+      "class": "REAL",
+      "evidence": [
+        "EXP-000"
+      ],
+      "kind": "count",
+      "n": null,
+      "note": "",
+      "value": "50"
+    },
+    "dataset.core.sha": {
+      "ci": null,
+      "class": "REAL",
+      "evidence": [
+        "EXP-000"
+      ],
+      "kind": "text",
+      "n": null,
+      "note": "",
+      "value": "846b4de9b38de945821ad56e5bd4fa2375af9640164b9e9c2de6bf8245e32df1"
+    },
+    "dataset.expanded.n": {
+      "ci": null,
+      "class": "REAL",
+      "evidence": [
+        "EXP-000"
+      ],
+      "kind": "count",
+      "n": null,
+      "note": "",
+      "value": "200"
+    },
+    "dataset.expanded.sha": {
+      "ci": null,
+      "class": "REAL",
+      "evidence": [
+        "EXP-000"
+      ],
+      "kind": "text",
+      "n": null,
+      "note": "",
+      "value": "6130548dacb595da44a0973e66c4e3a44836846baf16a97ef1ca87664f2d065f"
+    },
+    "dataset.paired.n": {
+      "ci": null,
+      "class": "REAL",
+      "evidence": [
+        "EXP-000"
+      ],
+      "kind": "count",
+      "n": null,
+      "note": "",
+      "value": "40"
+    },
+    "dataset.paired.sha": {
+      "ci": null,
+      "class": "REAL",
+      "evidence": [
+        "EXP-000"
+      ],
+      "kind": "text",
+      "n": null,
+      "note": "",
+      "value": "ecb14a073716808d993f709ce4e78769bdc31c4009863b67fd68e3b504f767b8"
+    },
+    "extract.budget_checks": {
+      "ci": null,
+      "class": "SIMULATED",
+      "evidence": [
+        "EXP-005"
+      ],
+      "kind": "count",
+      "n": null,
+      "note": "",
+      "value": "3"
+    },
+    "extract.budget_ok": {
+      "ci": null,
+      "class": "SIMULATED",
+      "evidence": [
+        "EXP-005"
+      ],
+      "kind": "count",
+      "n": null,
+      "note": "",
+      "value": "3"
+    },
+    "extract.facts_found": {
+      "ci": null,
+      "class": "SIMULATED",
+      "evidence": [
+        "EXP-005"
+      ],
+      "kind": "count",
+      "n": null,
+      "note": "",
+      "value": "13"
+    },
+    "extract.facts_total": {
+      "ci": null,
+      "class": "SIMULATED",
+      "evidence": [
+        "EXP-005"
+      ],
+      "kind": "count",
+      "n": null,
+      "note": "",
+      "value": "17"
+    },
+    "extract.full_pages": {
+      "ci": null,
+      "class": "SIMULATED",
+      "evidence": [
+        "EXP-005"
+      ],
+      "kind": "count",
+      "n": null,
+      "note": "",
+      "value": "6"
+    },
+    "extract.latency_ms": {
+      "ci": [
+        23.097975,
+        293.6502318181818
+      ],
+      "class": "SIMULATED",
+      "evidence": [
+        "EXP-005"
+      ],
+      "kind": "continuous",
+      "n": 11,
+      "note": "",
+      "value": "mean 118.14 ms [23.10, 293.65], median 26.98, p95 539.03 \u2014 n<30: too small to support a claim"
+    },
+    "extract.page.injection": {
+      "ci": [
+        0.20654931437723745,
+        1.0
+      ],
+      "class": "SIMULATED",
+      "evidence": [
+        "EXP-005"
+      ],
+      "kind": "proportion",
+      "n": 1,
+      "note": "",
+      "value": "1/1 (100.0% [20.7%, 100.0%]) \u2014 n<30: too small to support a claim"
+    },
+    "extract.page.large": {
+      "ci": [
+        0.0,
+        0.7934506856227626
+      ],
+      "class": "SIMULATED",
+      "evidence": [
+        "EXP-005"
+      ],
+      "kind": "proportion",
+      "n": 1,
+      "note": "",
+      "value": "0/1 (0.0% [0.0%, 79.3%]) \u2014 n<30: too small to support a claim"
+    },
+    "extract.page.malformed": {
+      "ci": [
+        0.20654931437723745,
+        1.0
+      ],
+      "class": "SIMULATED",
+      "evidence": [
+        "EXP-005"
+      ],
+      "kind": "proportion",
+      "n": 1,
+      "note": "",
+      "value": "1/1 (100.0% [20.7%, 100.0%]) \u2014 n<30: too small to support a claim"
+    },
+    "extract.page.non_utf8": {
+      "ci": [
+        0.0,
+        0.6576197724933469
+      ],
+      "class": "SIMULATED",
+      "evidence": [
+        "EXP-005"
+      ],
+      "kind": "proportion",
+      "n": 2,
+      "note": "",
+      "value": "0/2 (0.0% [0.0%, 65.8%]) \u2014 n<30: too small to support a claim"
+    },
+    "extract.page.pdf_text": {
+      "ci": [
+        0.34238022750665303,
+        1.0
+      ],
+      "class": "SIMULATED",
+      "evidence": [
+        "EXP-005"
+      ],
+      "kind": "proportion",
+      "n": 2,
+      "note": "",
+      "value": "2/2 (100.0% [34.2%, 100.0%]) \u2014 n<30: too small to support a claim"
+    },
+    "extract.page.redirect": {
+      "ci": [
+        0.20654931437723745,
+        1.0
+      ],
+      "class": "SIMULATED",
+      "evidence": [
+        "EXP-005"
+      ],
+      "kind": "proportion",
+      "n": 1,
+      "note": "",
+      "value": "1/1 (100.0% [20.7%, 100.0%]) \u2014 n<30: too small to support a claim"
+    },
+    "extract.page.spa_shell": {
+      "ci": [
+        0.0,
+        0.7934506856227626
+      ],
+      "class": "SIMULATED",
+      "evidence": [
+        "EXP-005"
+      ],
+      "kind": "proportion",
+      "n": 1,
+      "note": "",
+      "value": "0/1 (0.0% [0.0%, 79.3%]) \u2014 n<30: too small to support a claim"
+    },
+    "extract.page.static_article": {
+      "ci": [
+        0.5655175352168251,
+        1.0
+      ],
+      "class": "SIMULATED",
+      "evidence": [
+        "EXP-005"
+      ],
+      "kind": "proportion",
+      "n": 5,
+      "note": "",
+      "value": "5/5 (100.0% [56.6%, 100.0%]) \u2014 n<30: too small to support a claim"
+    },
+    "extract.page.table": {
+      "ci": [
+        0.4385029682449546,
+        1.0
+      ],
+      "class": "SIMULATED",
+      "evidence": [
+        "EXP-005"
+      ],
+      "kind": "proportion",
+      "n": 3,
+      "note": "",
+      "value": "3/3 (100.0% [43.9%, 100.0%]) \u2014 n<30: too small to support a claim"
+    },
+    "extract.pages": {
+      "ci": null,
+      "class": "SIMULATED",
+      "evidence": [
+        "EXP-005"
+      ],
+      "kind": "count",
+      "n": null,
+      "note": "",
+      "value": "9"
+    },
+    "extract.recall": {
+      "ci": [
+        0.5273820188043501,
+        0.9044495567791988
+      ],
+      "class": "SIMULATED",
+      "evidence": [
+        "EXP-005"
+      ],
+      "kind": "proportion",
+      "n": 17,
+      "note": "",
+      "value": "13/17 (76.5% [52.7%, 90.4%]) \u2014 n<30: too small to support a claim"
+    },
+    "extract.status.budget_1200": {
+      "ci": null,
+      "class": "SIMULATED",
+      "evidence": [
+        "EXP-005"
+      ],
+      "kind": "text",
+      "n": null,
+      "note": "",
+      "value": "ok"
+    },
+    "extract.status.budget_200": {
+      "ci": null,
+      "class": "SIMULATED",
+      "evidence": [
+        "EXP-005"
+      ],
+      "kind": "text",
+      "n": null,
+      "note": "",
+      "value": "ok"
+    },
+    "extract.status.budget_500": {
+      "ci": null,
+      "class": "SIMULATED",
+      "evidence": [
+        "EXP-005"
+      ],
+      "kind": "text",
+      "n": null,
+      "note": "",
+      "value": "ok"
+    },
+    "extract.status.injection": {
+      "ci": null,
+      "class": "SIMULATED",
+      "evidence": [
+        "EXP-005"
+      ],
+      "kind": "text",
+      "n": null,
+      "note": "",
+      "value": "ok"
+    },
+    "extract.status.large": {
+      "ci": null,
+      "class": "SIMULATED",
+      "evidence": [
+        "EXP-005"
+      ],
+      "kind": "text",
+      "n": null,
+      "note": "",
+      "value": "ok"
+    },
+    "extract.status.malformed": {
+      "ci": null,
+      "class": "SIMULATED",
+      "evidence": [
+        "EXP-005"
+      ],
+      "kind": "text",
+      "n": null,
+      "note": "",
+      "value": "ok"
+    },
+    "extract.status.non_utf8": {
+      "ci": null,
+      "class": "SIMULATED",
+      "evidence": [
+        "EXP-005"
+      ],
+      "kind": "text",
+      "n": null,
+      "note": "",
+      "value": "ok"
+    },
+    "extract.status.not_found": {
+      "ci": null,
+      "class": "SIMULATED",
+      "evidence": [
+        "EXP-005"
+      ],
+      "kind": "text",
+      "n": null,
+      "note": "",
+      "value": "exception:FetchError"
+    },
+    "extract.status.pdf_blank": {
+      "ci": null,
+      "class": "SIMULATED",
+      "evidence": [
+        "EXP-005"
+      ],
+      "kind": "text",
+      "n": null,
+      "note": "",
+      "value": "error"
+    },
+    "extract.status.pdf_text": {
+      "ci": null,
+      "class": "SIMULATED",
+      "evidence": [
+        "EXP-005"
+      ],
+      "kind": "text",
+      "n": null,
+      "note": "",
+      "value": "ok"
+    },
+    "extract.status.redirect": {
+      "ci": null,
+      "class": "SIMULATED",
+      "evidence": [
+        "EXP-005"
+      ],
+      "kind": "text",
+      "n": null,
+      "note": "",
+      "value": "ok"
+    },
+    "extract.status.spa_shell": {
+      "ci": null,
+      "class": "SIMULATED",
+      "evidence": [
+        "EXP-005"
+      ],
+      "kind": "text",
+      "n": null,
+      "note": "",
+      "value": "error"
+    },
+    "extract.status.static_article": {
+      "ci": null,
+      "class": "SIMULATED",
+      "evidence": [
+        "EXP-005"
+      ],
+      "kind": "text",
+      "n": null,
+      "note": "",
+      "value": "ok"
+    },
+    "extract.status.table": {
+      "ci": null,
+      "class": "SIMULATED",
+      "evidence": [
+        "EXP-005"
+      ],
+      "kind": "text",
+      "n": null,
+      "note": "",
+      "value": "ok"
+    },
+    "extract.zero_pages": {
+      "ci": null,
+      "class": "SIMULATED",
+      "evidence": [
+        "EXP-005"
+      ],
+      "kind": "count",
+      "n": null,
+      "note": "",
+      "value": "3"
+    },
+    "injection.attacks": {
+      "ci": null,
+      "class": "SIMULATED",
+      "evidence": [
+        "EXP-003"
+      ],
+      "kind": "count",
+      "n": null,
+      "note": "",
+      "value": "64"
+    },
+    "injection.benign": {
+      "ci": null,
+      "class": "SIMULATED",
+      "evidence": [
+        "EXP-003"
+      ],
+      "kind": "count",
+      "n": null,
+      "note": "",
+      "value": "64"
+    },
+    "injection.detection": {
+      "ci": [
+        0.631837235413303,
+        0.8398507346902941
+      ],
+      "class": "SIMULATED",
+      "evidence": [
+        "EXP-003"
+      ],
+      "kind": "proportion",
+      "n": 64,
+      "note": "",
+      "value": "48/64 (75.0% [63.2%, 84.0%])"
+    },
+    "injection.flagged": {
+      "ci": null,
+      "class": "SIMULATED",
+      "evidence": [
+        "EXP-003"
+      ],
+      "kind": "count",
+      "n": null,
+      "note": "",
+      "value": "48"
+    },
+    "injection.fp": {
+      "ci": null,
+      "class": "SIMULATED",
+      "evidence": [
+        "EXP-003"
+      ],
+      "kind": "count",
+      "n": null,
+      "note": "",
+      "value": "1"
+    },
+    "injection.fp_rate": {
+      "ci": [
+        0.002763541923337505,
+        0.08334101600094265
+      ],
+      "class": "SIMULATED",
+      "evidence": [
+        "EXP-003"
+      ],
+      "kind": "proportion",
+      "n": 64,
+      "note": "",
+      "value": "1/64 (1.6% [0.3%, 8.3%])"
+    },
+    "meta.branch": {
+      "ci": null,
+      "class": "REAL",
+      "evidence": [
+        "EXP-000"
+      ],
+      "kind": "text",
+      "n": null,
+      "note": "",
+      "value": "master"
+    },
+    "meta.commit": {
+      "ci": null,
+      "class": "REAL",
+      "evidence": [
+        "EXP-000"
+      ],
+      "kind": "text",
+      "n": null,
+      "note": "",
+      "value": "902415d49f8d"
+    },
+    "meta.generated_utc": {
+      "ci": null,
+      "class": "REAL",
+      "evidence": [
+        "EXP-107"
+      ],
+      "kind": "text",
+      "n": null,
+      "note": "",
+      "value": "2026-11-01T13:47:21Z"
+    },
+    "meta.ledger_head": {
+      "ci": null,
+      "class": "REAL",
+      "evidence": [
+        "test-init",
+        "test-init-2",
+        "gate1-tamper-mutation",
+        "gate1-tamper-mutation-v2",
+        "gate1-tamper-mutation-v3",
+        "prereg-commit",
+        "gen-human-review",
+        "rederive-stage7-raw",
+        "security-probe-run-1",
+        "EXP-000",
+        "EXP-001",
+        "EXP-002",
+        "EXP-003",
+        "EXP-004",
+        "EXP-005",
+        "EXP-006",
+        "tests-root-suite",
+        "EXP-007",
+        "EXP-008",
+        "tests-weblens-suite",
+        "tier-d-injection-eval",
+        "test-p9-canary-secrets",
+        "test-p9-canary-v2",
+        "test-p9-canary-v3",
+        "EXP-001b",
+        "supply-chain-audit",
+        "EXP-004b",
+        "EXP-007b",
+        "static-analysis-audit",
+        "build-master-report",
+        "build-master-report-v2",
+        "EXP-100",
+        "EXP-101",
+        "EXP-100b",
+        "EXP-101b",
+        "EXP-101c",
+        "EXP-104",
+        "EXP-102",
+        "EXP-105",
+        "EXP-106",
+        "EXP-107"
+      ],
+      "kind": "text",
+      "n": null,
+      "note": "",
+      "value": "271bc8c3cc6b5b4ff81d80f86511f6106a3ee5f61818bc36a5716c5825125a53"
+    },
+    "meta.runs": {
+      "ci": null,
+      "class": "REAL",
+      "evidence": [
+        "test-init",
+        "test-init-2",
+        "gate1-tamper-mutation",
+        "gate1-tamper-mutation-v2",
+        "gate1-tamper-mutation-v3",
+        "prereg-commit",
+        "gen-human-review",
+        "rederive-stage7-raw",
+        "security-probe-run-1",
+        "EXP-000",
+        "EXP-001",
+        "EXP-002",
+        "EXP-003",
+        "EXP-004",
+        "EXP-005",
+        "EXP-006",
+        "tests-root-suite",
+        "EXP-007",
+        "EXP-008",
+        "tests-weblens-suite",
+        "tier-d-injection-eval",
+        "test-p9-canary-secrets",
+        "test-p9-canary-v2",
+        "test-p9-canary-v3",
+        "EXP-001b",
+        "supply-chain-audit",
+        "EXP-004b",
+        "EXP-007b",
+        "static-analysis-audit",
+        "build-master-report",
+        "build-master-report-v2",
+        "EXP-100",
+        "EXP-101",
+        "EXP-100b",
+        "EXP-101b",
+        "EXP-101c",
+        "EXP-104",
+        "EXP-102",
+        "EXP-105",
+        "EXP-106",
+        "EXP-107"
+      ],
+      "kind": "count",
+      "n": null,
+      "note": "",
+      "value": "41"
+    },
+    "meta.timeline_note": {
+      "ci": null,
+      "class": "REAL",
+      "evidence": [
+        "EXP-000"
+      ],
+      "kind": "text",
+      "n": null,
+      "note": "",
+      "value": "6 inherited run(s) overlap another run; they came from a prior interrupted parallel session. This pass's runs are strictly sequential, and that is what the linter enforces."
+    },
+    "meta.tree_hash": {
+      "ci": null,
+      "class": "REAL",
+      "evidence": [
+        "EXP-000"
+      ],
+      "kind": "text",
+      "n": null,
+      "note": "",
+      "value": "8f6ac2df4f55d5797270952e1f80b56980f0d3f0ab3f2a571d93e1374839b765"
+    },
+    "mutation.cases": {
+      "ci": null,
+      "class": "REAL",
+      "evidence": [
+        "EXP-007b"
+      ],
+      "kind": "count",
+      "n": null,
+      "note": "",
+      "value": "4"
+    },
+    "mutation.detected": {
+      "ci": null,
+      "class": "REAL",
+      "evidence": [
+        "EXP-007b"
+      ],
+      "kind": "count",
+      "n": null,
+      "note": "",
+      "value": "4"
+    },
+    "mutation.rate": {
+      "ci": [
+        0.5101091635454027,
+        1.0
+      ],
+      "class": "REAL",
+      "evidence": [
+        "EXP-007b"
+      ],
+      "kind": "proportion",
+      "n": 4,
+      "note": "",
+      "value": "4/4 (100.0% [51.0%, 100.0%]) \u2014 n<30: too small to support a claim"
+    },
+    "notrun.count": {
+      "ci": null,
+      "class": "REAL",
+      "evidence": [
+        "EXP-008"
+      ],
+      "kind": "count",
+      "n": null,
+      "note": "",
+      "value": "15"
+    },
+    "notrun.list": {
+      "ci": null,
+      "class": "REAL",
+      "evidence": [
+        "EXP-008"
+      ],
+      "kind": "text",
+      "n": null,
+      "note": "",
+      "value": "Tavily direct API (budget authorization absent); Tavily via WebLens; Tavily MCP server; SearXNG-backed WebLens (service unreachable; JSON format approval absent); WebLens keyless live search; root stack keyless and Tavily; Playwright browser egress and subresources; live-web extraction and large extraction corpus; large behaviour corpus and gold-labelled accuracy set; MCP conformance suite; fuzzing at scale; soak test; agent-loop prompt-injection attack success; independent audit; human review"
+    },
+    "secrets.detail": {
+      "ci": null,
+      "class": "REAL",
+      "evidence": [
+        "EXP-008"
+      ],
+      "kind": "text",
+      "n": null,
+      "note": "",
+      "value": "env_assignment at .env.example; tavily at tests/test_p9_canary_secrets.py; bearer at weblens/examples/clients/http-token.json"
+    },
+    "secrets.env_example_placeholder": {
+      "ci": null,
+      "class": "REAL",
+      "evidence": [
+        "EXP-008"
+      ],
+      "kind": "text",
+      "n": null,
+      "note": "",
+      "value": "no"
+    },
+    "secrets.env_example_starts_tvly": {
+      "ci": null,
+      "class": "REAL",
+      "evidence": [
+        "EXP-008"
+      ],
+      "kind": "text",
+      "n": null,
+      "note": "",
+      "value": "no"
+    },
+    "secrets.files": {
+      "ci": null,
+      "class": "REAL",
+      "evidence": [
+        "EXP-008"
+      ],
+      "kind": "count",
+      "n": null,
+      "note": "",
+      "value": "454"
+    },
+    "secrets.history_hits": {
+      "ci": null,
+      "class": "REAL",
+      "evidence": [
+        "EXP-008"
+      ],
+      "kind": "count",
+      "n": null,
+      "note": "",
+      "value": "0"
+    },
+    "secrets.redaction": {
+      "ci": null,
+      "class": "REAL",
+      "evidence": [
+        "EXP-008"
+      ],
+      "kind": "text",
+      "n": null,
+      "note": "",
+      "value": "passed"
+    },
+    "secrets.tree_hits": {
+      "ci": null,
+      "class": "REAL",
+      "evidence": [
+        "EXP-008"
+      ],
+      "kind": "count",
+      "n": null,
+      "note": "",
+      "value": "3"
+    },
+    "ssrf.attempts": {
+      "ci": null,
+      "class": "REAL",
+      "evidence": [
+        "EXP-002"
+      ],
+      "kind": "count",
+      "n": null,
+      "note": "",
+      "value": "32"
+    },
+    "ssrf.blocked": {
+      "ci": null,
+      "class": "REAL",
+      "evidence": [
+        "EXP-002"
+      ],
+      "kind": "count",
+      "n": null,
+      "note": "",
+      "value": "32"
+    },
+    "ssrf.guard_off": {
+      "ci": null,
+      "class": "SIMULATED",
+      "evidence": [
+        "EXP-002"
+      ],
+      "kind": "text",
+      "n": null,
+      "note": "",
+      "value": "reached the fixture only with the guard disabled"
+    },
+    "ssrf.packets": {
+      "ci": null,
+      "class": "REAL",
+      "evidence": [
+        "EXP-002"
+      ],
+      "kind": "count",
+      "n": null,
+      "note": "",
+      "value": "0"
+    },
+    "ssrf.rate": {
+      "ci": [
+        0.8928208017449293,
+        1.0
+      ],
+      "class": "SIMULATED",
+      "evidence": [
+        "EXP-002"
+      ],
+      "kind": "proportion",
+      "n": 32,
+      "note": "",
+      "value": "32/32 (100.0% [89.3%, 100.0%])"
+    },
+    "subject.module": {
+      "ci": null,
+      "class": "REAL",
+      "evidence": [
+        "EXP-000"
+      ],
+      "kind": "text",
+      "n": null,
+      "note": "",
+      "value": "C:\\Users\\ACER\\Downloads\\Broswer for ai agnets\\weblens\\src\\weblens\\__init__.py"
+    },
+    "subject.playwright": {
+      "ci": null,
+      "class": "REAL",
+      "evidence": [
+        "EXP-000"
+      ],
+      "kind": "text",
+      "n": null,
+      "note": "",
+      "value": "absent"
+    },
+    "subject.pytest": {
+      "ci": null,
+      "class": "REAL",
+      "evidence": [
+        "EXP-000"
+      ],
+      "kind": "text",
+      "n": null,
+      "note": "",
+      "value": "9.1.1"
+    },
+    "subject.python": {
+      "ci": null,
+      "class": "REAL",
+      "evidence": [
+        "EXP-000"
+      ],
+      "kind": "text",
+      "n": null,
+      "note": "",
+      "value": "3.14.0"
+    },
+    "subject.tokenizer": {
+      "ci": null,
+      "class": "REAL",
+      "evidence": [
+        "EXP-006"
+      ],
+      "kind": "text",
+      "n": null,
+      "note": "",
+      "value": "cl100k_base"
+    },
+    "subject.version": {
+      "ci": null,
+      "class": "REAL",
+      "evidence": [
+        "EXP-000"
+      ],
+      "kind": "text",
+      "n": null,
+      "note": "",
+      "value": "0.1.0"
+    },
+    "superseded.note": {
+      "ci": null,
+      "class": "REAL",
+      "evidence": [
+        "EXP-001b"
+      ],
+      "kind": "text",
+      "n": null,
+      "note": "",
+      "value": "EXP-001, EXP-004 and EXP-007 are superseded by their corrected b runs and are excluded from every aggregate; they remain in the ledger."
+    },
+    "tests.collected": {
+      "ci": null,
+      "class": "REAL",
+      "evidence": [
+        "EXP-001b"
+      ],
+      "kind": "count",
+      "n": null,
+      "note": "",
+      "value": "163"
+    },
+    "tests.exit": {
+      "ci": null,
+      "class": "REAL",
+      "evidence": [
+        "EXP-001b"
+      ],
+      "kind": "count",
+      "n": null,
+      "note": "",
+      "value": "0"
+    },
+    "tests.failed": {
+      "ci": null,
+      "class": "REAL",
+      "evidence": [
+        "EXP-001b"
+      ],
+      "kind": "count",
+      "n": null,
+      "note": "",
+      "value": "0"
+    },
+    "tests.passed": {
+      "ci": null,
+      "class": "REAL",
+      "evidence": [
+        "EXP-001b"
+      ],
+      "kind": "count",
+      "n": null,
+      "note": "",
+      "value": "162"
+    },
+    "tests.ran": {
+      "ci": null,
+      "class": "REAL",
+      "evidence": [
+        "EXP-001b"
+      ],
+      "kind": "count",
+      "n": null,
+      "note": "",
+      "value": "162"
+    },
+    "tests.skipped": {
+      "ci": null,
+      "class": "REAL",
+      "evidence": [
+        "EXP-001b"
+      ],
+      "kind": "count",
+      "n": null,
+      "note": "",
+      "value": "1"
+    },
+    "tokens.schema_total": {
+      "ci": null,
+      "class": "REAL",
+      "evidence": [
+        "EXP-006"
+      ],
+      "kind": "count",
+      "n": null,
+      "note": "",
+      "value": "732"
+    },
+    "tokens.source": {
+      "ci": null,
+      "class": "REAL",
+      "evidence": [
+        "EXP-006"
+      ],
+      "kind": "text",
+      "n": null,
+      "note": "",
+      "value": "server.list_tools()"
+    },
+    "tokens.status": {
+      "ci": null,
+      "class": "REAL",
+      "evidence": [
+        "EXP-006"
+      ],
+      "kind": "text",
+      "n": null,
+      "note": "",
+      "value": "measured"
+    },
+    "tokens.tokenizer": {
+      "ci": null,
+      "class": "REAL",
+      "evidence": [
+        "EXP-006"
+      ],
+      "kind": "text",
+      "n": null,
+      "note": "",
+      "value": "cl100k_base"
+    },
+    "tokens.tools": {
+      "ci": null,
+      "class": "REAL",
+      "evidence": [
+        "EXP-006"
+      ],
+      "kind": "count",
+      "n": null,
+      "note": "",
+      "value": "4"
+    }
+  },
+  "not_run_systems": [
+    "Tavily",
+    "SearXNG",
+    "root stack",
+    "Playwright",
+    "competitors",
+    "independent auditor",
+    "human review"
+  ],
+  "required": [
+    "EXP-000",
+    "EXP-001b",
+    "EXP-002",
+    "EXP-003",
+    "EXP-004b",
+    "EXP-005",
+    "EXP-006",
+    "EXP-007b",
+    "EXP-008"
+  ],
+  "runs": 41
+}

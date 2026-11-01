@@ -1,0 +1,147 @@
+{
+  "campaign_id": "stage7-20261028-a4a64151",
+  "budget": {
+    "max_campaign_credits": 420,
+    "hard_stop_remaining": 200,
+    "account_usage_before": 170,
+    "account_limit": 1000,
+    "plan": "Researcher"
+  },
+  "search_tokens": {
+    "dev": {
+      "direct_tavily": {
+        "n": 53,
+        "mean": 1023.1698,
+        "p50": 1022,
+        "p90": 1154,
+        "p95": 1163,
+        "p99": 1185
+      },
+      "weblens_keyless": {
+        "n": 53,
+        "mean": 576.5849,
+        "p50": 721,
+        "p90": 859,
+        "p95": 905,
+        "p99": 920
+      },
+      "weblens_tavily": {
+        "n": 53,
+        "mean": 887.283,
+        "p50": 915,
+        "p90": 1048,
+        "p95": 1088,
+        "p99": 1098
+      }
+    },
+    "test": {
+      "direct_tavily": {
+        "n": 17,
+        "mean": 1068.1176,
+        "p50": 1063,
+        "p90": 1175,
+        "p95": 1211,
+        "p99": 1211
+      },
+      "weblens_keyless": {
+        "n": 17,
+        "mean": 283.2353,
+        "p50": 205,
+        "p90": 658,
+        "p95": 715,
+        "p99": 715
+      },
+      "weblens_tavily": {
+        "n": 17,
+        "mean": 903.2941,
+        "p50": 905,
+        "p90": 1052,
+        "p95": 1113,
+        "p99": 1113
+      }
+    },
+    "combined": {
+      "direct_tavily": {
+        "n": 70,
+        "mean": 1034.0857,
+        "p50": 1038,
+        "p90": 1159,
+        "p95": 1168,
+        "p99": 1211
+      },
+      "weblens_keyless": {
+        "n": 70,
+        "mean": 505.3429,
+        "p50": 620,
+        "p90": 822,
+        "p95": 885,
+        "p99": 920
+      },
+      "weblens_tavily": {
+        "n": 70,
+        "mean": 891.1714,
+        "p50": 914,
+        "p90": 1048,
+        "p95": 1088,
+        "p99": 1113
+      }
+    }
+  },
+  "research_tokens": {
+    "dev": {
+      "weblens_keyless": {
+        "n": 81,
+        "mean": 605.0988,
+        "p50": 658,
+        "p90": 923,
+        "p95": 962,
+        "p99": 1167
+      },
+      "weblens_tavily": {
+        "n": 81,
+        "mean": 611.8395,
+        "p50": 642,
+        "p90": 977,
+        "p95": 1054,
+        "p99": 1094
+      }
+    },
+    "test": {
+      "weblens_keyless": {
+        "n": 27,
+        "mean": 316.0,
+        "p50": 276,
+        "p90": 750,
+        "p95": 836,
+        "p99": 861
+      },
+      "weblens_tavily": {
+        "n": 27,
+        "mean": 547.2963,
+        "p50": 580,
+        "p90": 904,
+        "p95": 935,
+        "p99": 1059
+      }
+    },
+    "combined": {
+      "weblens_keyless": {
+        "n": 108,
+        "mean": 532.8241,
+        "p50": 585,
+        "p90": 897,
+        "p95": 953,
+        "p99": 1163
+      },
+      "weblens_tavily": {
+        "n": 108,
+        "mean": 595.7037,
+        "p50": 622,
+        "p90": 975,
+        "p95": 1054,
+        "p99": 1090
+      }
+    }
+  },
+  "caveat": "cl100k_base counts of delivered JSON. No model inference occurred; these are not billed model tokens. The usage endpoint returned HTTP 429 at least once; call-count accounting is preserved in raw meta files."
+}

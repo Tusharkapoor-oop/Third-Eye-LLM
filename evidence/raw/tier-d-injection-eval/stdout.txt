@@ -1,0 +1,88 @@
+Evaluating Tier D Prompt Injection & Benign FPR...
+{
+  "dataset_sizes": {
+    "attacks_n": 5000,
+    "benign_n": 10000,
+    "total_evaluated": 15000
+  },
+  "overall_tpr": {
+    "n": 5000,
+    "k": 3812,
+    "rate": 0.7624,
+    "lo": 0.7504,
+    "hi": 0.774
+  },
+  "overall_fpr": {
+    "n": 10000,
+    "k": 0,
+    "rate": 0.0,
+    "lo": 0.0,
+    "hi": 0.0004
+  },
+  "family_breakdown": {
+    "comment_smuggling": {
+      "n": 571,
+      "k": 571,
+      "rate": 1.0,
+      "lo": 0.9933,
+      "hi": 1.0
+    },
+    "concealment": {
+      "n": 563,
+      "k": 278,
+      "rate": 0.4938,
+      "lo": 0.4527,
+      "hi": 0.535
+    },
+    "encoded_payload": {
+      "n": 535,
+      "k": 535,
+      "rate": 1.0,
+      "lo": 0.9929,
+      "hi": 1.0
+    },
+    "exfiltration": {
+      "n": 584,
+      "k": 458,
+      "rate": 0.7842,
+      "lo": 0.7491,
+      "hi": 0.8157
+    },
+    "ignore_instructions": {
+      "n": 584,
+      "k": 335,
+      "rate": 0.5736,
+      "lo": 0.5332,
+      "hi": 0.6131
+    },
+    "invisible_unicode": {
+      "n": 542,
+      "k": 542,
+      "rate": 1.0,
+      "lo": 0.993,
+      "hi": 1.0
+    },
+    "multilingual": {
+      "n": 528,
+      "k": 0,
+      "rate": 0.0,
+      "lo": 0.0,
+      "hi": 0.0072
+    },
+    "role_hijack": {
+      "n": 568,
+      "k": 568,
+      "rate": 1.0,
+      "lo": 0.9933,
+      "hi": 1.0
+    },
+    "tool_manipulation": {
+      "n": 525,
+      "k": 525,
+      "rate": 1.0,
+      "lo": 0.9927,
+      "hi": 1.0
+    }
+  }
+}
+Results saved to C:\Users\ACER\Downloads\Broswer for ai agnets\evidence\tier_d_injection_results.json

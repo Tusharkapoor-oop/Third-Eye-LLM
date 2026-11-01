@@ -1,0 +1,59 @@
+{
+  "measured_at": "2026-10-24T04:45:32Z",
+  "rows": [
+    {
+      "kind": "static",
+      "url": "https://example.com/",
+      "marker": "Example Domain",
+      "http": {
+        "latency": 2.8,
+        "status": "success",
+        "marks": false,
+        "passages": 1,
+        "tokens": 28
+      },
+      "browser": {
+        "latency": 9.23,
+        "ok": true,
+        "marks": true,
+        "bytes": 1991
+      }
+    },
+    {
+      "kind": "spa",
+      "url": "https://svelte.dev/docs",
+      "marker": "Svelte",
+      "http": {
+        "latency": 5.32,
+        "status": "success",
+        "marks": true,
+        "passages": 2,
+        "tokens": 302
+      },
+      "browser": {
+        "latency": 12.17,
+        "ok": true,
+        "marks": true,
+        "bytes": 41719
+      }
+    },
+    {
+      "kind": "spa",
+      "url": "https://react.dev/",
+      "marker": "React",
+      "http": {
+        "latency": 3.44,
+        "status": "success",
+        "marks": true,
+        "passages": 5,
+        "tokens": 750
+      },
+      "browser": {
+        "latency": 18.68,
+        "ok": true,
+        "marks": true,
+        "bytes": 272503
+      }
+    }
+  ]
+}

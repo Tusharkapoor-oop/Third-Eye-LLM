@@ -71,6 +71,7 @@ class Settings(BaseSettings):
     http_port: int = 8765
     http_token: str | None = None
     log_level: str = "INFO"
+    mcp_profile: Literal["core", "research", "full"] = "core"
 
     @field_validator("search_providers")
     @classmethod

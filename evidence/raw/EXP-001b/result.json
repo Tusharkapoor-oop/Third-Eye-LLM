@@ -1,0 +1,33 @@
+{
+  "class": "REAL",
+  "experiment": "EXP-001b",
+  "kind": "test-suite",
+  "limitations": [
+    "This is the second attempt: EXP-001 parsed zero counts because of duplicated quiet flags.",
+    "The root tests/ suite and root stack were not run; no combined count is reported.",
+    "A passing suite is not evidence of runtime correctness."
+  ],
+  "rows": [
+    {
+      "collected": 163,
+      "command": "C:\\Users\\ACER\\Downloads\\Broswer for ai agnets\\.venv\\Scripts\\python.exe -m pytest tests -o addopts= -q -p no:cacheprovider --tb=short",
+      "cwd": "weblens",
+      "errors": 0,
+      "exit_code": 0,
+      "failed": 0,
+      "passed": 162,
+      "pythonpath": "weblens/src",
+      "skipped": 1,
+      "suite": "weblens/tests",
+      "xfailed": 0
+    }
+  ],
+  "summary": {
+    "collected": 163,
+    "errors": 0,
+    "exit_code": 0,
+    "failed": 0,
+    "passed": 162,
+    "skipped": 1
+  }
+}

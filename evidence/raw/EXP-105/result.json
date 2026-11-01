@@ -1,0 +1,189 @@
+{
+  "class": "SIMULATED",
+  "env": {
+    "fixture_port": 55674
+  },
+  "experiment": "EXP-05",
+  "kind": "extraction-fixtures",
+  "limitations": [
+    "Local fixture pages only; SIMULATED class, not live-web performance.",
+    "n=1 page per type, far below the pre-registered n>=100 per stratum.",
+    "allow_private_networks=True was required to reach the local server; this configuration is not the default.",
+    "Browser path NOT RUN (Playwright absent), so the SPA page measures the no-browser result only."
+  ],
+  "rows": [
+    {
+      "facts_found": 5,
+      "facts_total": 5,
+      "ms": 892.743,
+      "page_type": "static_article",
+      "status": "ok",
+      "tok": 218,
+      "warnings": [
+        "unranked_page_passages"
+      ]
+    },
+    {
+      "facts_found": 3,
+      "facts_total": 3,
+      "ms": 18.72,
+      "page_type": "table",
+      "status": "ok",
+      "tok": 182,
+      "warnings": [
+        "low_content",
+        "unranked_page_passages"
+      ]
+    },
+    {
+      "facts_found": 1,
+      "facts_total": 1,
+      "ms": 12.805,
+      "page_type": "malformed",
+      "status": "ok",
+      "tok": 159,
+      "warnings": [
+        "low_content",
+        "unranked_page_passages"
+      ]
+    },
+    {
+      "facts_found": 0,
+      "facts_total": 2,
+      "ms": 15.132,
+      "page_type": "non_utf8",
+      "status": "ok",
+      "tok": 95,
+      "warnings": [
+        "low_content",
+        "unranked_page_passages"
+      ]
+    },
+    {
+      "facts_found": 1,
+      "facts_total": 1,
+      "ms": 52.592,
+      "page_type": "large",
+      "status": "ok",
+      "tok": 921,
+      "warnings": [
+        "unranked_page_passages"
+      ]
+    },
+    {
+      "facts_found": 0,
+      "facts_total": 1,
+      "ms": 10.399,
+      "page_type": "spa_shell",
+      "status": "error",
+      "tok": 82,
+      "warnings": [
+        "javascript_required",
+        "low_content",
+        "extract_failed"
+      ]
+    },
+    {
+      "facts_found": 1,
+      "facts_total": 1,
+      "ms": 11.871,
+      "page_type": "injection",
+      "status": "ok",
+      "tok": 145,
+      "warnings": [
+        "low_content",
+        "html_comment_instructions",
+        "unranked_page_passages"
+      ]
+    },
+    {
+      "facts_found": 2,
+      "facts_total": 2,
+      "ms": 34.021,
+      "page_type": "pdf_text",
+      "status": "ok",
+      "tok": 157,
+      "warnings": [
+        "unranked_page_passages"
+      ]
+    },
+    {
+      "facts_found": 0,
+      "facts_total": 0,
+      "ms": 18.636,
+      "page_type": "pdf_blank",
+      "status": "error",
+      "tok": 94,
+      "warnings": [
+        "pdf_no_text_layer",
+        "extract_failed"
+      ]
+    },
+    {
+      "facts_found": 1,
+      "facts_total": 1,
+      "ms": 35.654,
+      "page_type": "redirect",
+      "status": "ok",
+      "tok": 159,
+      "warnings": [
+        "low_content",
+        "unranked_page_passages"
+      ]
+    },
+    {
+      "facts_found": 0,
+      "facts_total": 0,
+      "ms": 12.134,
+      "page_type": "not_found",
+      "status": "exception:FetchError",
+      "tok": 0,
+      "warnings": [
+        "HTTP 404 for http://127.0.0.1:55674/not_found"
+      ]
+    },
+    {
+      "facts_found": 0,
+      "facts_total": 0,
+      "ms": 0.0,
+      "page_type": "budget_200",
+      "status": "ok",
+      "tok": 193,
+      "warnings": [
+        "budget=200",
+        "within=True"
+      ]
+    },
+    {
+      "facts_found": 0,
+      "facts_total": 0,
+      "ms": 0.0,
+      "page_type": "budget_500",
+      "status": "ok",
+      "tok": 209,
+      "warnings": [
+        "budget=500",
+        "within=True"
+      ]
+    },
+    {
+      "facts_found": 0,
+      "facts_total": 0,
+      "ms": 0.0,
+      "page_type": "budget_1200",
+      "status": "ok",
+      "tok": 209,
+      "warnings": [
+        "budget=1200",
+        "within=True"
+      ]
+    }
+  ],
+  "summary": {
+    "facts_found": 14,
+    "facts_total": 17,
+    "pages": 14,
+    "pages_with_full_recall": 7,
+    "pages_with_zero_recall": 2
+  }
+}

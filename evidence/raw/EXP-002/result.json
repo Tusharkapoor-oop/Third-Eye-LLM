@@ -1,0 +1,306 @@
+{
+  "class": "SIMULATED",
+  "env": {
+    "fixture_port": 64205,
+    "fixture_requests_total": 1
+  },
+  "experiment": "EXP-02",
+  "kind": "ssrf-matrix",
+  "limitations": [
+    "Local loopback fixture only: SIMULATED class. No packet reached it from any blocked variant.",
+    "Redirect-to-private and real DNS-rebinding against a public attacker-controlled host are NOT RUN.",
+    "Browser subresource egress is NOT RUN: Playwright is not installed on this machine."
+  ],
+  "rows": [
+    {
+      "blocked": true,
+      "detail": "non-public destination: 127.0.0.1",
+      "error_code": "blocked_url",
+      "fixture_hits_delta": 0,
+      "url_kind": "loopback",
+      "variant": "loopback_ipv4"
+    },
+    {
+      "blocked": true,
+      "detail": "DNS resolution failed for 127.1: [Errno 11001] getaddrinfo failed",
+      "error_code": "blocked_url",
+      "fixture_hits_delta": 0,
+      "url_kind": "loopback",
+      "variant": "loopback_short"
+    },
+    {
+      "blocked": true,
+      "detail": "invalid or disallowed URL",
+      "error_code": "bad_input",
+      "fixture_hits_delta": 0,
+      "url_kind": "loopback",
+      "variant": "loopback_decimal"
+    },
+    {
+      "blocked": true,
+      "detail": "invalid or disallowed URL",
+      "error_code": "bad_input",
+      "fixture_hits_delta": 0,
+      "url_kind": "loopback",
+      "variant": "loopback_hex"
+    },
+    {
+      "blocked": true,
+      "detail": "Invalid IPv4 address: '0177.0.0.1'",
+      "error_code": "InvalidURL",
+      "fixture_hits_delta": 0,
+      "url_kind": "loopback",
+      "variant": "loopback_octal"
+    },
+    {
+      "blocked": true,
+      "detail": "non-public destination: ::1",
+      "error_code": "blocked_url",
+      "fixture_hits_delta": 0,
+      "url_kind": "loopback",
+      "variant": "loopback_ipv6"
+    },
+    {
+      "blocked": true,
+      "detail": "non-public destination: ::ffff:127.0.0.1",
+      "error_code": "blocked_url",
+      "fixture_hits_delta": 0,
+      "url_kind": "ipv4",
+      "variant": "ipv4_mapped_ipv6"
+    },
+    {
+      "blocked": true,
+      "detail": "blocked hostname: localhost",
+      "error_code": "blocked_url",
+      "fixture_hits_delta": 0,
+      "url_kind": "localhost",
+      "variant": "localhost_name"
+    },
+    {
+      "blocked": true,
+      "detail": "blocked hostname: localhost",
+      "error_code": "blocked_url",
+      "fixture_hits_delta": 0,
+      "url_kind": "localhost",
+      "variant": "localhost_upper"
+    },
+    {
+      "blocked": true,
+      "detail": "blocked hostname: localhost",
+      "error_code": "blocked_url",
+      "fixture_hits_delta": 0,
+      "url_kind": "localhost",
+      "variant": "localhost_trailing_dot"
+    },
+    {
+      "blocked": true,
+      "detail": "non-public destination: 169.254.169.254",
+      "error_code": "blocked_url",
+      "fixture_hits_delta": 0,
+      "url_kind": "metadata",
+      "variant": "metadata_ip"
+    },
+    {
+      "blocked": true,
+      "detail": "blocked hostname: metadata.google.internal",
+      "error_code": "blocked_url",
+      "fixture_hits_delta": 0,
+      "url_kind": "metadata",
+      "variant": "metadata_host"
+    },
+    {
+      "blocked": true,
+      "detail": "non-public destination: 10.0.0.1",
+      "error_code": "blocked_url",
+      "fixture_hits_delta": 0,
+      "url_kind": "private",
+      "variant": "private_10"
+    },
+    {
+      "blocked": true,
+      "detail": "non-public destination: 172.16.0.1",
+      "error_code": "blocked_url",
+      "fixture_hits_delta": 0,
+      "url_kind": "private",
+      "variant": "private_172"
+    },
+    {
+      "blocked": true,
+      "detail": "non-public destination: 192.168.1.1",
+      "error_code": "blocked_url",
+      "fixture_hits_delta": 0,
+      "url_kind": "private",
+      "variant": "private_192"
+    },
+    {
+      "blocked": true,
+      "detail": "non-public destination: 100.64.0.1",
+      "error_code": "blocked_url",
+      "fixture_hits_delta": 0,
+      "url_kind": "cgnat",
+      "variant": "cgnat"
+    },
+    {
+      "blocked": true,
+      "detail": "non-public destination: 0.0.0.0",
+      "error_code": "blocked_url",
+      "fixture_hits_delta": 0,
+      "url_kind": "unspecified",
+      "variant": "unspecified"
+    },
+    {
+      "blocked": true,
+      "detail": "non-public destination: 255.255.255.255",
+      "error_code": "blocked_url",
+      "fixture_hits_delta": 0,
+      "url_kind": "broadcast",
+      "variant": "broadcast"
+    },
+    {
+      "blocked": true,
+      "detail": "invalid or disallowed URL",
+      "error_code": "bad_input",
+      "fixture_hits_delta": 0,
+      "url_kind": "userinfo",
+      "variant": "userinfo"
+    },
+    {
+      "blocked": true,
+      "detail": "non-public destination: 127.0.0.1",
+      "error_code": "blocked_url",
+      "fixture_hits_delta": 0,
+      "url_kind": "fragment",
+      "variant": "fragment_trick"
+    },
+    {
+      "blocked": true,
+      "detail": "invalid or disallowed URL",
+      "error_code": "bad_input",
+      "fixture_hits_delta": 0,
+      "url_kind": "backslash",
+      "variant": "backslash"
+    },
+    {
+      "blocked": true,
+      "detail": "non-public destination: 127.0.0.1",
+      "error_code": "blocked_url",
+      "fixture_hits_delta": 0,
+      "url_kind": "crlf",
+      "variant": "crlf"
+    },
+    {
+      "blocked": true,
+      "detail": "non-public destination: 127.0.0.1",
+      "error_code": "blocked_url",
+      "fixture_hits_delta": 0,
+      "url_kind": "nul",
+      "variant": "nul"
+    },
+    {
+      "blocked": true,
+      "detail": "non-public destination: 127.0.0.1",
+      "error_code": "blocked_url",
+      "fixture_hits_delta": 0,
+      "url_kind": "port",
+      "variant": "port_8080"
+    },
+    {
+      "blocked": true,
+      "detail": "non-public destination: 127.0.0.1",
+      "error_code": "blocked_url",
+      "fixture_hits_delta": 0,
+      "url_kind": "port",
+      "variant": "port_22"
+    },
+    {
+      "blocked": true,
+      "detail": "invalid or disallowed URL",
+      "error_code": "bad_input",
+      "fixture_hits_delta": 0,
+      "url_kind": "scheme",
+      "variant": "scheme_file"
+    },
+    {
+      "blocked": true,
+      "detail": "invalid or disallowed URL",
+      "error_code": "bad_input",
+      "fixture_hits_delta": 0,
+      "url_kind": "scheme",
+      "variant": "scheme_gopher"
+    },
+    {
+      "blocked": true,
+      "detail": "invalid or disallowed URL",
+      "error_code": "bad_input",
+      "fixture_hits_delta": 0,
+      "url_kind": "scheme",
+      "variant": "scheme_ftp"
+    },
+    {
+      "blocked": true,
+      "detail": "invalid or disallowed URL",
+      "error_code": "bad_input",
+      "fixture_hits_delta": 0,
+      "url_kind": "scheme",
+      "variant": "scheme_javascript"
+    },
+    {
+      "blocked": true,
+      "detail": "invalid or disallowed URL",
+      "error_code": "bad_input",
+      "fixture_hits_delta": 0,
+      "url_kind": "scheme",
+      "variant": "scheme_data"
+    },
+    {
+      "blocked": true,
+      "detail": "invalid or disallowed URL",
+      "error_code": "bad_input",
+      "fixture_hits_delta": 0,
+      "url_kind": "scheme",
+      "variant": "scheme_blob"
+    },
+    {
+      "blocked": true,
+      "detail": "first_ip=93.184.216.34",
+      "error_code": "BlockedURLError",
+      "fixture_hits_delta": 0,
+      "url_kind": "dns",
+      "variant": "dns_rebinding_second_answer"
+    },
+    {
+      "blocked": null,
+      "detail": "covered by test_resolve_rejects_mixed_public_private in suite",
+      "error_code": "",
+      "fixture_hits_delta": 0,
+      "url_kind": "dns",
+      "variant": "dns_mixed_answers"
+    },
+    {
+      "blocked": false,
+      "detail": "fixture reached only when allow_private_networks=True",
+      "error_code": "",
+      "fixture_hits_delta": 1,
+      "url_kind": "control",
+      "variant": "guard_off_control"
+    },
+    {
+      "blocked": null,
+      "detail": "NOT RUN: requires a controllable public redirector; not exposed for this test",
+      "error_code": "",
+      "fixture_hits_delta": 0,
+      "url_kind": "redirect",
+      "variant": "redirect_to_private"
+    }
+  ],
+  "summary": {
+    "attempts": 32,
+    "blocked": 32,
+    "fixture_packets_from_blocked": 0,
+    "guard_off_control_reached": true,
+    "not_run": [
+      "dns_mixed_answers",
+      "redirect_to_private"
+    ]
+  }
+}

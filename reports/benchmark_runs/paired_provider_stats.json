@@ -1,0 +1,38 @@
+{
+  "measured_at": "2026-10-24T05:35:00Z",
+  "rows_valid_total": 381,
+  "method_note": "Merged across all provider-comparison run files; 39 'unavailable' rows from two key-env-bug attempts excluded; later successful rows supersede earlier per (provider, query). Scorer: ground-truth containment in title+snippet text (exact / >=4-digit / >=50% token match). Heuristic scorer - describe capability, not ground truth.",
+  "per_provider": {
+    "tavily": {
+      "n_queries": 40,
+      "statuses": {
+        "success": 38,
+        "no_reliable_result": 2
+      },
+      "success_latency_p50_s": 3.148,
+      "success_latency_p95_s": 4.755,
+      "tokens_median": 1379.0,
+      "tokens_mean": 1302.7,
+      "tokens_p95": 1599.8,
+      "result_count_mean": 4.75,
+      "answer_support": "29/32",
+      "paired_with_other_n": 40,
+      "latency_wins_head_to_head": "15/40"
+    },
+    "ddgs": {
+      "n_queries": 160,
+      "statuses": {
+        "success": 160
+      },
+      "success_latency_p50_s": 3.644,
+      "success_latency_p95_s": 6.2,
+      "tokens_median": 330.0,
+      "tokens_mean": 333.6,
+      "tokens_p95": 445.7,
+      "result_count_mean": 4.97,
+      "answer_support": "29/32",
+      "paired_with_other_n": 40,
+      "latency_wins_head_to_head": "25/40"
+    }
+  }
+}

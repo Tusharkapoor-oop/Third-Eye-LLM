@@ -1,0 +1,23 @@
+{
+  "run_id": "3b2d6c3c",
+  "timestamp": "2026-10-24T05:08:02.741421+00:00",
+  "python_version": "3.14.0 (main, Nov 19 2025, 22:43:52) [MSC v.1944 64 bit (AMD64)]",
+  "platform": "Windows-11-10.0.26300-SP0",
+  "commit": "b5316184679be54f0cf1daec39c66aca9ebffa0d",
+  "config": {
+    "results_dir": "reports/benchmark_runs",
+    "warm_cache": false,
+    "concurrent": false,
+    "repetitions": 1,
+    "warm_up": false,
+    "delay": 1.0
+  },
+  "dataset_version": "eval_dataset.json",
+  "total_queries": 24,
+  "providers_tested": [
+    "tavily",
+    "ddgs"
+  ],
+  "schema_tokens_o200k": 680,
+  "schema_tokens_cl100k": 655
+}

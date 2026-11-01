@@ -1,0 +1,13 @@
+Auditing supply chain dependencies...
+Found 75 pinned packages in uv.lock.
+{
+  "packages_audited_count": 75,
+  "vulnerabilities_found": [],
+  "vulnerabilities_count": 0,
+  "vendored_packages": {
+    "path": "modelcontextprotocol-server-2.3.1.tgz",
+    "size": 1537977,
+    "sha256": "96bc3fe00cbc9a72093a3f91c531387a5f988ea34d09e6c34a9a6b77dd0dc518",
+    "verified_origin": "NPM package @modelcontextprotocol/server@2.3.1 (Apache-2.0)"
+  }
+}

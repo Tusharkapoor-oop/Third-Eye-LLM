@@ -88,3 +88,35 @@ async def test_disabled_cache_is_a_noop(tmp_path):
         assert stats["entries"] == 0
     finally:
         cache.close()
+
+
+def test_auth_fingerprint_isolation():
+    from weblens.net.client import _auth_fingerprint
+
+    assert _auth_fingerprint(None) == ""
+    assert _auth_fingerprint({}) == ""
+    assert _auth_fingerprint({"Content-Type": "application/json"}) == ""
+
+    fp1 = _auth_fingerprint({"Authorization": "Bearer token-1"})
+    fp2 = _auth_fingerprint({"authorization": "Bearer token-2"})
+    fp1_dup = _auth_fingerprint({"AUTHORIZATION": "Bearer token-1"})
+
+    assert fp1 != ""
+    assert fp2 != ""
+    assert fp1 != fp2
+    assert fp1 == fp1_dup
+
+
+def test_cache_key_partitions_by_authorization():
+    from weblens.cache import cache_key
+    from weblens.net.client import _auth_fingerprint
+
+    url = "https://internal.service.local/api/profile"
+    key_anon = cache_key("http", "GET", url, _auth_fingerprint(None), "")
+    key_user_a = cache_key("http", "GET", url, _auth_fingerprint({"Authorization": "Bearer alice"}), "")
+    key_user_b = cache_key("http", "GET", url, _auth_fingerprint({"Authorization": "Bearer bob"}), "")
+
+    assert key_anon != key_user_a
+    assert key_anon != key_user_b
+    assert key_user_a != key_user_b
+

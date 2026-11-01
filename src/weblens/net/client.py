@@ -41,6 +41,15 @@ def _decode(body: bytes, content_type: str) -> str:
         return body.decode("utf-8", "replace")
 
 
+def _auth_fingerprint(headers: dict[str, str] | None) -> str:
+    if not headers:
+        return ""
+    for k, v in headers.items():
+        if k.lower() == "authorization":
+            return hashlib.sha256(v.encode("utf-8")).hexdigest()
+    return ""
+
+
 @dataclass
 class FetchResponse:
     url: str
@@ -157,9 +166,10 @@ class SafeFetcher:
             req_body = _json.dumps(json_body, separators=(",", ":")).encode()
             headers = {**(headers or {}), "Content-Type": "application/json"}
 
+        auth_fp = _auth_fingerprint(headers)
         for _hop in range(redirects + 1):
             self.policy.check_hostname(host_of(current))
-            key = cache_key("http", method.upper(), current, (req_body or b"").decode("utf-8", "replace"))
+            key = cache_key("http", method.upper(), current, auth_fp, (req_body or b"").decode("utf-8", "replace"))
             cached: FetchResponse | None = None
             if use_cache and self.cache.s.cache_enabled:
                 got = await self.cache.get(key)

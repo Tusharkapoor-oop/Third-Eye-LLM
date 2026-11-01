@@ -7,6 +7,7 @@ enforces domain diversity, and guarantees output stays within token budgets.
 from __future__ import annotations
 
 import asyncio
+import json
 import re
 import time
 from urllib.parse import parse_qsl, urlencode, urlparse, urlunparse
@@ -19,6 +20,7 @@ from src.engine.search.bing_provider import BingSearchProvider
 from src.engine.search.brave_provider import BraveSearchProvider, SearXNGProvider
 from src.engine.search.ddg_html_provider import DDGHTMLSearchProvider
 from src.engine.search.ddgs_provider import DDGSearchProvider
+from src.engine.search.tavily_provider import TavilySearchProvider
 from src.engine.search.wiki_provider import WikipediaSearchProvider
 
 # Common marketing and analytics tracking parameters to strip
@@ -75,6 +77,11 @@ class SearchAggregator:
         if CONFIG.searxng_base_url:
             self.providers["searxng"] = SearXNGProvider(CONFIG.searxng_base_url)
 
+        # Tavily provider (only if API key configured)
+        tavily = TavilySearchProvider()
+        if tavily.is_available():
+            self.providers["tavily"] = tavily
+
         self.tokenizer = tiktoken.get_encoding("o200k_base")
         self._cache: dict[str, tuple[float, list[SearchResult]]] = {}
         self._cache_ttl = 3600  # 1 hour
@@ -89,6 +96,15 @@ class SearchAggregator:
         preferred_provider: str | None = None
     ) -> SearchResponse:
         t0 = time.time()
+        if not query or not query.strip():
+            return SearchResponse(
+                query=query,
+                status="no_reliable_result",
+                results=[],
+                total_found=0,
+                latency_seconds=time.time() - t0
+            )
+
         cache_key = f"{query.lower().strip()}|{count}|{time_filter}|{domains}"
 
         # Check cache
@@ -109,7 +125,10 @@ class SearchAggregator:
             "syntax", "example", "documentation", "docs", "rfc", "api", "how to",
             "config", "code", "git", "python", "cuda", "gpu", "rtx", "linux",
             "kernel", "epoll", "asyncio", "rebase", "status code", "windows 14",
-            "gta 8", "flight time", "nobel prize in computer science", "quic"
+            "gta 8", "flight time", "nobel prize in computer science", "quic",
+            "PEP", "docker", "css", "redis", "http", "status", "api endpoint",
+            "function", "library", "framework", "SDK", "library", "implementation",
+            "troubleshoot", "debug", "error", "exception", "patch", "release note"
         )
         is_tech = any(k in q_lower for k in tech_markers) or bool(domains)
 
@@ -137,18 +156,24 @@ class SearchAggregator:
             return any(w in combined for w in words)
 
         # Fast fallback to alternative providers if primary timed out, returned 0, or had weak relevance
-        if not check_result_relevance(raw_results):
-            fallback_name = "bing" if provider_name != "bing" else "wikipedia"
-            if fallback_name in self.providers:
+        if not check_result_relevance(raw_results) and provider_name != "tavily":
+            # Try alternative providers in sequence
+            fallback_order = []
+            for name in ["bing", "wikipedia", "ddgs", "ddg_html"]:
+                if name in self.providers and name != provider_name:
+                    fallback_order.append(name)
+            
+            for fallback_name in fallback_order:
                 try:
                     fb_res = await asyncio.wait_for(
                         self.providers[fallback_name].search(query, count=count + 3, time_filter=time_filter, domains=domains),
                         timeout=6.0
                     )
-                    if check_result_relevance(fb_res) or not raw_results and fb_res:
+                    if check_result_relevance(fb_res) or (not raw_results and fb_res):
                         raw_results = fb_res
+                        break  # Stop after first successful fallback
                 except Exception:
-                    pass
+                    continue
 
         if not raw_results and "ddg_html" in self.providers and provider_name != "ddg_html":
             try:
@@ -201,24 +226,38 @@ class SearchAggregator:
                 break
 
         # Token Budget Enforcement (R1: Low Tokens)
-        final_results: list[SearchResult] = []
-        cumulative_tokens = 0
-        base_tokens = len(self.tokenizer.encode(query)) + 20 # overhead for wrapper JSON
+        def calc_resp_tokens(res_list: list[SearchResult]) -> int:
+            dummy = SearchResponse(
+                query=query,
+                status="success",
+                results=res_list,
+                total_found=len(res_list),
+                latency_seconds=0.0
+            )
+            return len(self.tokenizer.encode(json.dumps(dummy.to_dict(), separators=(",", ":"))))
 
+        final_results: list[SearchResult] = []
         for r in filtered_results:
-            item_text = f"{r.title} {r.url} {r.snippet}"
-            item_tokens = len(self.tokenizer.encode(item_text))
-            if cumulative_tokens + item_tokens + base_tokens > max_tokens and final_results:
-                # If budget exceeded, trim snippet or stop
-                remaining_budget = max_tokens - (cumulative_tokens + base_tokens)
-                if remaining_budget > 30:
-                    # Truncate snippet
-                    snippet_tokens = self.tokenizer.encode(r.snippet)[:remaining_budget - 20]
-                    r.snippet = self.tokenizer.decode(snippet_tokens) + "..."
-                    final_results.append(r)
+            candidate = final_results + [r]
+            cand_tokens = calc_resp_tokens(candidate)
+            if cand_tokens > max_tokens and final_results:
+                excess = cand_tokens - max_tokens
+                snip_tokens = self.tokenizer.encode(r.snippet)
+                if len(snip_tokens) > excess + 10:
+                    r.snippet = self.tokenizer.decode(snip_tokens[:len(snip_tokens) - excess - 5]) + "..."
+                    if calc_resp_tokens(final_results + [r]) <= max_tokens:
+                        final_results.append(r)
                 break
-            cumulative_tokens += item_tokens
             final_results.append(r)
+
+        while calc_resp_tokens(final_results) > max_tokens and len(final_results) > 1:
+            final_results.pop()
+
+        if len(final_results) == 1 and calc_resp_tokens(final_results) > max_tokens:
+            excess = calc_resp_tokens(final_results) - max_tokens
+            snip_tokens = self.tokenizer.encode(final_results[0].snippet)
+            if len(snip_tokens) > excess + 5:
+                final_results[0].snippet = self.tokenizer.decode(snip_tokens[:max(0, len(snip_tokens) - excess - 5)]) + "..."
 
         # Zero Fake Accuracy Gate (Requirement R2)
         distinctive_numbers = [n for n in re.findall(r"\b\d+\b", query) if len(n) >= 2]

@@ -1,0 +1,319 @@
+{
+  "class": "SIMULATED",
+  "dataset_sha256": "707bec990f68bf27ed006917e8df312993606baf5fb786f3349785b7353294ab",
+  "experiment": "EXP-101/102",
+  "kind": "long-page-reachability",
+  "limitations": [
+    "Synthetic pages, SIMULATED class; n=30 meets the aggregate threshold but is not live-web evidence.",
+    "No query is passed, matching the measured loss; query-focused selection is unchanged by the fix."
+  ],
+  "rows": [
+    {
+      "head_found": true,
+      "mid_found": false,
+      "ms": 1062.089,
+      "page": "long-00",
+      "passages": 4,
+      "status": "ok",
+      "tail_found": false,
+      "tok": 990
+    },
+    {
+      "head_found": true,
+      "mid_found": false,
+      "ms": 41.812,
+      "page": "long-01",
+      "passages": 4,
+      "status": "ok",
+      "tail_found": false,
+      "tok": 989
+    },
+    {
+      "head_found": true,
+      "mid_found": false,
+      "ms": 29.083,
+      "page": "long-02",
+      "passages": 4,
+      "status": "ok",
+      "tail_found": false,
+      "tok": 989
+    },
+    {
+      "head_found": true,
+      "mid_found": false,
+      "ms": 29.772,
+      "page": "long-03",
+      "passages": 4,
+      "status": "ok",
+      "tail_found": false,
+      "tok": 994
+    },
+    {
+      "head_found": true,
+      "mid_found": false,
+      "ms": 29.336,
+      "page": "long-04",
+      "passages": 4,
+      "status": "ok",
+      "tail_found": false,
+      "tok": 990
+    },
+    {
+      "head_found": true,
+      "mid_found": false,
+      "ms": 27.595,
+      "page": "long-05",
+      "passages": 4,
+      "status": "ok",
+      "tail_found": false,
+      "tok": 989
+    },
+    {
+      "head_found": true,
+      "mid_found": false,
+      "ms": 26.838,
+      "page": "long-06",
+      "passages": 4,
+      "status": "ok",
+      "tail_found": false,
+      "tok": 990
+    },
+    {
+      "head_found": true,
+      "mid_found": false,
+      "ms": 25.432,
+      "page": "long-07",
+      "passages": 4,
+      "status": "ok",
+      "tail_found": false,
+      "tok": 989
+    },
+    {
+      "head_found": true,
+      "mid_found": false,
+      "ms": 29.627,
+      "page": "long-08",
+      "passages": 4,
+      "status": "ok",
+      "tail_found": false,
+      "tok": 991
+    },
+    {
+      "head_found": true,
+      "mid_found": false,
+      "ms": 27.932,
+      "page": "long-09",
+      "passages": 4,
+      "status": "ok",
+      "tail_found": false,
+      "tok": 989
+    },
+    {
+      "head_found": true,
+      "mid_found": false,
+      "ms": 26.603,
+      "page": "long-10",
+      "passages": 4,
+      "status": "ok",
+      "tail_found": false,
+      "tok": 989
+    },
+    {
+      "head_found": true,
+      "mid_found": false,
+      "ms": 23.241,
+      "page": "long-11",
+      "passages": 4,
+      "status": "ok",
+      "tail_found": false,
+      "tok": 990
+    },
+    {
+      "head_found": true,
+      "mid_found": false,
+      "ms": 25.803,
+      "page": "long-12",
+      "passages": 4,
+      "status": "ok",
+      "tail_found": false,
+      "tok": 990
+    },
+    {
+      "head_found": true,
+      "mid_found": false,
+      "ms": 35.959,
+      "page": "long-13",
+      "passages": 4,
+      "status": "ok",
+      "tail_found": false,
+      "tok": 991
+    },
+    {
+      "head_found": true,
+      "mid_found": false,
+      "ms": 30.782,
+      "page": "long-14",
+      "passages": 4,
+      "status": "ok",
+      "tail_found": false,
+      "tok": 991
+    },
+    {
+      "head_found": true,
+      "mid_found": false,
+      "ms": 46.142,
+      "page": "long-15",
+      "passages": 4,
+      "status": "ok",
+      "tail_found": false,
+      "tok": 989
+    },
+    {
+      "head_found": true,
+      "mid_found": false,
+      "ms": 60.793,
+      "page": "long-16",
+      "passages": 4,
+      "status": "ok",
+      "tail_found": false,
+      "tok": 990
+    },
+    {
+      "head_found": true,
+      "mid_found": false,
+      "ms": 51.345,
+      "page": "long-17",
+      "passages": 4,
+      "status": "ok",
+      "tail_found": false,
+      "tok": 989
+    },
+    {
+      "head_found": true,
+      "mid_found": false,
+      "ms": 51.347,
+      "page": "long-18",
+      "passages": 4,
+      "status": "ok",
+      "tail_found": false,
+      "tok": 987
+    },
+    {
+      "head_found": true,
+      "mid_found": false,
+      "ms": 28.336,
+      "page": "long-19",
+      "passages": 4,
+      "status": "ok",
+      "tail_found": false,
+      "tok": 989
+    },
+    {
+      "head_found": true,
+      "mid_found": false,
+      "ms": 29.529,
+      "page": "long-20",
+      "passages": 4,
+      "status": "ok",
+      "tail_found": false,
+      "tok": 990
+    },
+    {
+      "head_found": true,
+      "mid_found": false,
+      "ms": 28.03,
+      "page": "long-21",
+      "passages": 4,
+      "status": "ok",
+      "tail_found": false,
+      "tok": 990
+    },
+    {
+      "head_found": true,
+      "mid_found": false,
+      "ms": 27.578,
+      "page": "long-22",
+      "passages": 4,
+      "status": "ok",
+      "tail_found": false,
+      "tok": 989
+    },
+    {
+      "head_found": true,
+      "mid_found": false,
+      "ms": 24.847,
+      "page": "long-23",
+      "passages": 4,
+      "status": "ok",
+      "tail_found": false,
+      "tok": 992
+    },
+    {
+      "head_found": true,
+      "mid_found": false,
+      "ms": 38.199,
+      "page": "long-24",
+      "passages": 4,
+      "status": "ok",
+      "tail_found": false,
+      "tok": 988
+    },
+    {
+      "head_found": true,
+      "mid_found": false,
+      "ms": 39.739,
+      "page": "long-25",
+      "passages": 4,
+      "status": "ok",
+      "tail_found": false,
+      "tok": 987
+    },
+    {
+      "head_found": true,
+      "mid_found": false,
+      "ms": 39.341,
+      "page": "long-26",
+      "passages": 4,
+      "status": "ok",
+      "tail_found": false,
+      "tok": 990
+    },
+    {
+      "head_found": true,
+      "mid_found": false,
+      "ms": 38.178,
+      "page": "long-27",
+      "passages": 4,
+      "status": "ok",
+      "tail_found": false,
+      "tok": 992
+    },
+    {
+      "head_found": true,
+      "mid_found": false,
+      "ms": 51.904,
+      "page": "long-28",
+      "passages": 4,
+      "status": "ok",
+      "tail_found": false,
+      "tok": 990
+    },
+    {
+      "head_found": true,
+      "mid_found": false,
+      "ms": 46.412,
+      "page": "long-29",
+      "passages": 4,
+      "status": "ok",
+      "tail_found": false,
+      "tok": 991
+    }
+  ],
+  "summary": {
+    "head_found": 30,
+    "mid_found": 0,
+    "pages": 30,
+    "tail_found": 0,
+    "tokens_total": 29694
+  }
+}

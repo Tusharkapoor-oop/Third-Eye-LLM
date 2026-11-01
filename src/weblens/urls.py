@@ -10,7 +10,15 @@ from __future__ import annotations
 import base64
 import binascii
 import re
-from urllib.parse import parse_qsl, quote, unquote, urlencode, urljoin, urlsplit, urlunsplit
+from urllib.parse import (
+    parse_qsl,
+    quote,
+    unquote,
+    urlencode,
+    urljoin,
+    urlsplit,
+    urlunsplit,
+)
 
 TRACKING_PREFIXES = ("utm_", "pk_", "mtm_", "hsa_", "vero_", "_hs")
 TRACKING_EXACT = {
@@ -47,7 +55,7 @@ TRACKING_EXACT = {
 BAD_SCHEMES = {"file", "ftp", "gopher", "javascript", "data", "vbscript", "blob", "about"}
 MAX_URL_LEN = 2048
 
-_BING_HOST = re.compile(r"(^|\.)bing\.com$", re.I)
+_BING_HOST = re.compile(r"(^|\.)bing\.com$", re.IGNORECASE)
 
 
 def is_http_url(url: str) -> bool:

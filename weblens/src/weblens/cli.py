@@ -185,29 +185,86 @@ def _serve_http(args: argparse.Namespace) -> int:
     return 0
 
 
+async def _run_app(args: argparse.Namespace) -> int:
+    service = WebLens()
+    try:
+        if args.app_name == "crawl2rag":
+            from .apps.crawl2rag import Crawl2RAG
+            kb = Crawl2RAG(service)
+            if args.action == "ingest":
+                payload = await kb.ingest(args.target, max_pages=args.max_pages)
+            elif args.action == "query":
+                payload = await kb.query(args.target, top_k=args.top_k)
+            else:
+                payload = kb.stats()
+        elif args.app_name == "company":
+            from .apps.company import CompanyResearcher
+            comp = CompanyResearcher(service)
+            payload = await comp.research_company(args.company)
+        elif args.app_name == "market":
+            from .apps.market import MarketResearcher
+            mkt = MarketResearcher(service)
+            payload = await mkt.analyze_asset(args.asset, question=args.question)
+        elif args.app_name == "chat":
+            from .apps.chat import ResearchChatSession
+            chat = ResearchChatSession(service)
+            payload = await chat.send_message(args.message)
+        elif args.app_name == "meeting":
+            from .apps.meeting import MeetingPrepAgent
+            mtg = MeetingPrepAgent(service)
+            payload = await mtg.prepare_brief(args.title, args.attendee, company_or_org=args.company)
+        elif args.app_name == "sheets":
+            from .apps.sheets import SheetsEnricher
+            col_specs = {}
+            for c in args.col:
+                if "=" in c:
+                    k, v = c.split("=", 1)
+                    col_specs[k.strip()] = v.strip()
+            enricher = SheetsEnricher(service)
+            payload = await enricher.process_csv(args.input_csv, args.output_csv, col_specs)
+        else:
+            payload = {"status": "error", "msg": f"unknown app {args.app_name}"}
+    finally:
+        await service.close()
+    _emit(payload, getattr(args, "pretty", False))
+    return 1 if payload.get("status") == "error" else 0
+
+
 async def _schema_report() -> dict[str, Any]:
     from .mcp_server import build_server
 
     service = WebLens()
+    profiles_data = {}
     try:
-        server = build_server(service)
-        tools = await server.list_tools()
+        for prof in ("core", "research", "full"):
+            server = build_server(service, profile=prof)
+            tools = await server.list_tools()
+            per: dict[str, int] = {}
+            dumped: list[dict[str, Any]] = []
+            for tool in tools:
+                item = tool.model_dump(by_alias=True, exclude_none=True)
+                dumped.append(item)
+                per[tool.name] = count_tokens(json.dumps(item, separators=(",", ":"), ensure_ascii=False))
+            total = count_json_tokens(dumped)
+            profiles_data[prof] = {
+                "tools": per,
+                "tool_count": len(tools),
+                "total_tokens": total,
+                "within_budget": total <= 1000 if prof == "core" else True,
+            }
     finally:
         await service.close()
-    per: dict[str, int] = {}
-    dumped: list[dict[str, Any]] = []
-    for tool in tools:
-        item = tool.model_dump(by_alias=True, exclude_none=True)
-        dumped.append(item)
-        per[tool.name] = count_tokens(json.dumps(item, separators=(",", ":"), ensure_ascii=False))
-    total = count_json_tokens(dumped)
+
+    core_data = profiles_data["core"]
     return {
         "status": "ok",
-        "tools": per,
-        "total_tokens": total,
+        "profile": "core",
+        "tools": core_data["tools"],
+        "total_tokens": core_data["total_tokens"],
         "tokenizer": "cl100k_base",
         "budget": 1000,
-        "within_budget": total <= 1000,
+        "within_budget": core_data["within_budget"],
+        "profiles": profiles_data,
     }
 
 
@@ -220,6 +277,7 @@ def _build_parser() -> argparse.ArgumentParser:
     sub = p.add_subparsers(dest="command", required=True)
 
     s = sub.add_parser("serve", help="run the MCP server (stdio by default)")
+    s.add_argument("--profile", choices=["core", "research", "full"], default=None, help="tool profile")
     s.add_argument("--http", action="store_true", help="serve streamable HTTP instead of stdio")
     s.add_argument("--host", default=None)
     s.add_argument("--port", type=int, default=None)
@@ -280,6 +338,48 @@ def _build_parser() -> argparse.ArgumentParser:
 
     t = sub.add_parser("tokens", help="measure tools/list schema tokens")
     t.add_argument("--pretty", action="store_true")
+
+    ap = sub.add_parser("app", help="execute a WebLens application")
+    ap_sub = ap.add_subparsers(dest="app_name", required=True)
+
+    # crawl2rag
+    a_c2r = ap_sub.add_parser("crawl2rag", help="query or ingest into a local knowledge base")
+    a_c2r.add_argument("action", choices=["ingest", "query", "stats"])
+    a_c2r.add_argument("target", help="URL to ingest or question to query")
+    a_c2r.add_argument("--max-pages", type=int, default=10)
+    a_c2r.add_argument("--top-k", type=int, default=5)
+    a_c2r.add_argument("--pretty", action="store_true")
+
+    # company
+    a_comp = ap_sub.add_parser("company", help="research a company profile")
+    a_comp.add_argument("company", help="company name or domain")
+    a_comp.add_argument("--pretty", action="store_true")
+
+    # market
+    a_mkt = ap_sub.add_parser("market", help="research asset filings and disclosures")
+    a_mkt.add_argument("asset", help="ticker or company name")
+    a_mkt.add_argument("-q", "--question", default=None)
+    a_mkt.add_argument("--pretty", action="store_true")
+
+    # chat
+    a_chat = ap_sub.add_parser("chat", help="send a turn to the conversational research agent")
+    a_chat.add_argument("message", help="user message")
+    a_chat.add_argument("--pretty", action="store_true")
+
+    # meeting
+    a_mtg = ap_sub.add_parser("meeting", help="prepare a cited pre-meeting brief")
+    a_mtg.add_argument("title", help="meeting title")
+    a_mtg.add_argument("-a", "--attendee", action="append", required=True, help="attendee name")
+    a_mtg.add_argument("-c", "--company", default=None, help="company name")
+    a_mtg.add_argument("--pretty", action="store_true")
+
+    # sheets
+    a_sht = ap_sub.add_parser("sheets", help="enrich a CSV table with web evidence")
+    a_sht.add_argument("input_csv", help="input CSV path")
+    a_sht.add_argument("output_csv", help="output CSV path")
+    a_sht.add_argument("--col", action="append", required=True, help="spec in format col_name=prompt")
+    a_sht.add_argument("--pretty", action="store_true")
+
     return p
 
 
@@ -297,6 +397,8 @@ def main(argv: list[str] | None = None) -> int:
         report = asyncio.run(_schema_report())
         _emit(report, args.pretty)
         return 0
+    if args.command == "app":
+        return asyncio.run(_run_app(args))
     return asyncio.run(_run_command(args))
 
 

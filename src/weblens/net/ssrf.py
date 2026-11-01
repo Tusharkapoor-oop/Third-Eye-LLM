@@ -121,7 +121,7 @@ class SafeNetworkBackend(AnyIOBackend):
         self,
         host: str,
         port: int,
-        timeout: float | None = None,  # noqa: ASYNC109 - httpcore backend API
+        timeout: float | None = None,
         local_address: str | None = None,
         socket_options=None,
     ):

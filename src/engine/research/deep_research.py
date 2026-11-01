@@ -6,6 +6,8 @@ cross-corroborates evidence, detects contradictions, and outputs structured doss
 
 from __future__ import annotations
 
+import asyncio
+import json
 import re
 import time
 from dataclasses import dataclass, field
@@ -106,8 +108,23 @@ class DeepResearchEngine:
         candidate_urls: list[tuple[str, str]] = [] # (url, title)
         seen_urls: set[str] = set()
 
-        for q in sub_queries:
-            resp = await self.search_aggregator.search(q, count=4, time_filter=time_filter, max_tokens=600)
+        async def run_search(q: str):
+            try:
+                return await self.search_aggregator.search(
+                    q,
+                    count=4,
+                    time_filter=time_filter,
+                    max_tokens=600,
+                )
+            except Exception:
+                return None
+
+        # These searches are independent. Gather preserves input order while
+        # avoiding the sum of network latencies for multi-angle research.
+        search_responses = await asyncio.gather(*(run_search(q) for q in sub_queries))
+        for resp in search_responses:
+            if resp is None:
+                continue
             for r in resp.results:
                 norm_u = normalize_url(r.url)
                 if norm_u not in seen_urls:
@@ -128,20 +145,34 @@ class DeepResearchEngine:
         sourced_facts: list[SourcedFact] = []
         sources_consulted: list[str] = []
         accumulated_tokens = 0
+        # Reserve room for metadata, summary synthesis, and JSON overhead
+        facts_token_budget = max(200, int(max_tokens * 0.70))
 
-        for url, title in top_candidates:
+        async def extract_candidate(candidate: tuple[str, str]):
+            url, _title = candidate
+            try:
+                return await self.extractor.extract_url(
+                    url,
+                    query=question,
+                    mode="passages",
+                    max_tokens=min(600, facts_token_budget),
+                )
+            except Exception:
+                return None
+
+        # Fetch candidate pages concurrently; evidence is still consumed in
+        # stable search order below, so output ordering and token budgeting do
+        # not change.
+        extracted = await asyncio.gather(*(extract_candidate(c) for c in top_candidates))
+        for (url, title), doc in zip(top_candidates, extracted, strict=False):
             sources_consulted.append(url)
-            doc = await self.extractor.extract_url(
-                url,
-                query=question,
-                mode="passages",
-                max_tokens=600
-            )
+            if doc is None:
+                continue
 
             if doc.status == "success" and doc.passages:
                 for p in doc.passages[:2]:
                     passage_toks = p.token_count
-                    if accumulated_tokens + passage_toks > max_tokens and sourced_facts:
+                    if accumulated_tokens + passage_toks > facts_token_budget and sourced_facts:
                         break
                     sourced_facts.append(SourcedFact(
                         claim_passage=p.text,
@@ -151,7 +182,7 @@ class DeepResearchEngine:
                     ))
                     accumulated_tokens += passage_toks
 
-            if accumulated_tokens >= max_tokens:
+            if accumulated_tokens >= facts_token_budget:
                 break
 
         # Step 3: Assess status and contradictions
@@ -172,12 +203,16 @@ class DeepResearchEngine:
 
         # Synthesize brief summary
         if sourced_facts:
-            key_claims = [f.claim_passage.strip().replace("\n", " ") for f in sourced_facts[:2]]
-            summary = "Key findings from top sources:\n- " + "\n- ".join(key_claims)
+            key_claims = []
+            for f in sourced_facts[:2]:
+                first_sent = f.claim_passage.strip().split(". ")[0].strip().replace("\n", " ")
+                if first_sent:
+                    key_claims.append(first_sent + ("." if not first_sent.endswith(".") else ""))
+            summary = "Key findings from top sources:\n- " + "\n- ".join(key_claims) if key_claims else "Findings extracted from verified sources."
         else:
             summary = "Insufficient verifiable evidence discovered."
 
-        return ResearchReport(
+        report = ResearchReport(
             question=question,
             status=status,
             summary_synthesis=summary,
@@ -187,3 +222,14 @@ class DeepResearchEngine:
             tokens_used=accumulated_tokens,
             latency_seconds=time.time() - t0
         )
+
+        # Enforce total serialized token ceiling
+        rep_json = json.dumps(report.to_dict(), separators=(",", ":"))
+        rep_tokens = len(self.tokenizer.encode(rep_json))
+        while rep_tokens > max_tokens and len(report.facts) > 1:
+            report.facts.pop()
+            rep_json = json.dumps(report.to_dict(), separators=(",", ":"))
+            rep_tokens = len(self.tokenizer.encode(rep_json))
+
+        report.tokens_used = rep_tokens
+        return report

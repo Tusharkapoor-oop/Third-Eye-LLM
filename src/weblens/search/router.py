@@ -55,7 +55,7 @@ _FRESH_DAYS = {"day": 1, "week": 7, "month": 31, "year": 365}
 _CONVERSATIONAL = re.compile(
     r"^(?:please\s+)?(?:can you|could you|would you|i want to|i need to|help me|tell me|"
     r"find me|search for|look up|what is|what are|who is|how do i|how to)\s+",
-    re.I,
+    re.IGNORECASE,
 )
 
 
@@ -85,28 +85,31 @@ def rank(hits: list[Hit], *, fused: bool = False) -> list[Hit]:
     groups: dict[str, list[Hit]] = {}
     for h in hits:
         groups.setdefault(h.provider, []).append(h)
+    positions: dict[int, int] = {}
     for group in groups.values():
         group.sort(key=lambda h: h.rank)
+        for pos, hit in enumerate(group):
+            positions[id(hit)] = pos
 
     scored: list[tuple[float, int, Hit]] = []
     for idx, h in enumerate(hits):
         s = 0.0
         if fused:
-            for group in groups.values():
-                for pos, gh in enumerate(group):
-                    if gh is h:
-                        s += 1.0 / (60.0 + pos)
-                        break
+            s = 1.0 / (60.0 + positions.get(id(h), 0))
         else:
             s = 1.0 / (1.0 + max(0, h.rank))
         s += 0.08 * _authority(h.url)
-        d = parse_date(h.date)
-        if d:
-            age_days = (today - d).days
-            if 0 <= age_days <= 30:
-                s += 0.15
-            elif age_days > 730:
-                s -= 0.1
+        d_str = parse_date(h.date)
+        if d_str:
+            try:
+                d = date.fromisoformat(d_str[:10])
+                age_days = (today - d).days
+                if 0 <= age_days <= 30:
+                    s += 0.15
+                elif age_days > 730:
+                    s -= 0.1
+            except ValueError:
+                pass
         scored.append((s, idx, h))
     scored.sort(key=lambda t: (-t[0], t[1]))
     return [t[2] for t in scored]

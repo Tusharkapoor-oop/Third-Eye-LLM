@@ -12,10 +12,10 @@ _PATTERNS: list[tuple[str, re.Pattern[str]]] = [
     (
         "ignore_instructions",
         re.compile(
-            r"\b(?:ignore|disregard|forget|override)\s+(?:all\s+|any\s+)?"
-            r"(?:previous|prior|above|earlier|system|developer)\s+"
-            r"(?:instructions?|prompts?|rules?|messages?)",
-            re.I,
+            r"\b(?:ignore|disregard|forget|override)\s+(?:all\s+|any\s+|everything\s+)?"
+            r"(?:previous|prior|above|earlier|system|developer|everything)?\s*"
+            r"(?:instructions?|prompts?|rules?|messages?|above)?",
+            re.IGNORECASE,
         ),
     ),
     (
@@ -23,15 +23,15 @@ _PATTERNS: list[tuple[str, re.Pattern[str]]] = [
         re.compile(
             r"\b(?:you are now|from now on you|act as (?:the|a) (?:system|developer)|"
             r"new (?:system )?instructions?:|system prompt:)",
-            re.I,
+            re.IGNORECASE,
         ),
     ),
     (
         "exfiltration",
         re.compile(
             r"\b(?:send|post|upload|transmit|forward|reveal|print|leak)\b.{0,80}"
-            r"\b(?:api[ _-]?key|token|password|secret|credential|environment variable|\.env)\b",
-            re.I | re.S,
+            r"\b(?:api[ _-]?key|token|password|secret|credentials?|environment variable|\.env)\b",
+            re.IGNORECASE | re.DOTALL,
         ),
     ),
     (
@@ -39,20 +39,20 @@ _PATTERNS: list[tuple[str, re.Pattern[str]]] = [
         re.compile(
             r"\b(?:call|invoke|execute|run)\s+(?:the\s+)?(?:tool|function|command)\b"
             r"|\b(?:rm\s+-rf|powershell\s+-|curl\s+[^|]{0,80}\|\s*(?:sh|bash))",
-            re.I,
+            re.IGNORECASE,
         ),
     ),
     (
         "concealment",
         re.compile(
             r"\b(?:do not|don't|never)\s+(?:tell|inform|mention|reveal)\s+"
-            r"(?:the\s+)?(?:user|human|operator)",
-            re.I,
+            r"(?:this|it)?\s*(?:to\s+)?(?:the\s+)?(?:user|human|operator)?",
+            re.IGNORECASE,
         ),
     ),
     (
         "encoded_payload",
-        re.compile(r"\b(?:base64|rot13)\b.{0,40}\b(?:decode|execute|run)\b", re.I | re.S),
+        re.compile(r"\b(?:base64|rot13)\b.{0,40}\b(?:decode|execute|run)\b", re.IGNORECASE | re.DOTALL),
     ),
 ]
 
@@ -75,8 +75,8 @@ def scan_injection(text: str) -> list[str]:
 
 def has_instruction_smuggling(html: str) -> bool:
     """Check HTML comments for imperative text aimed at a model."""
-    for match in re.finditer(r"<!--(.{0,600}?)-->", html, re.S):
+    for match in re.finditer(r"<!--(.{0,600}?)-->", html, re.DOTALL):
         body = match.group(1)
-        if re.search(r"\b(?:ignore|instruct|assistant|system|prompt|you must)\b", body, re.I):
+        if re.search(r"\b(?:ignore|instruct|assistant|system|prompt|you must)\b", body, re.IGNORECASE):
             return True
     return False

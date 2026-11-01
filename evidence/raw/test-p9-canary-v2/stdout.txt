@@ -1,0 +1,30 @@
+============================= test session starts =============================
+platform win32 -- Python 3.13.15, pytest-9.1.1, pluggy-1.6.0 -- C:\Users\ACER\AppData\Local\Programs\Python\Python313\python.exe
+cachedir: .pytest_cache
+rootdir: C:\Users\ACER\Downloads\Broswer for ai agnets
+configfile: pyproject.toml
+plugins: platformdirs-4.12.2, anyio-4.15.1, locust-2.47.0, asyncio-1.4.0, cov-7.1.0
+asyncio: mode=Mode.AUTO, debug=False, asyncio_default_fixture_loop_scope=None, asyncio_default_test_loop_scope=function
+collecting ... collected 3 items
+
+tests/test_p9_canary_secrets.py::test_canary_key_not_in_error_payload FAILED [ 33%]
+tests/test_p9_canary_secrets.py::test_canary_key_not_in_cache_keys PASSED [ 66%]
+tests/test_p9_canary_secrets.py::test_canary_redaction_in_evidence_runner PASSED [100%]
+
+================================== FAILURES ===================================
+____________________ test_canary_key_not_in_error_payload _____________________
+
+    def test_canary_key_not_in_error_payload():
+        """Verify that provider errors do not echo API keys back to caller."""
+        from weblens.config import Settings
+        from weblens.search.tavily import TavilySearch
+    
+        s = Settings([REDACTED:env_assignment]
+>       provider = TavilySearch(s)
+                   ^^^^^^^^^^^^^^^
+E       TypeError: TavilySearch.__init__() missing 1 required positional argument: 'api_key'
+
+tests\test_p9_canary_secrets.py:30: TypeError
+=========================== short test summary info ===========================
+FAILED tests/test_p9_canary_secrets.py::test_canary_key_not_in_error_payload
+========================= 1 failed, 2 passed in 1.21s =========================

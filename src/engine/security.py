@@ -6,6 +6,7 @@ redirect revalidation, and untrusted evidence sanitization.
 
 from __future__ import annotations
 
+import asyncio
 import ipaddress
 import re
 import socket
@@ -14,6 +15,39 @@ from urllib.parse import urljoin, urlparse
 import httpx
 
 from src.engine.config import CONFIG
+
+# Reuse one connection pool for the lifetime of each event loop. Creating an
+# AsyncClient per page defeats keep-alive/TLS reuse and was the dominant cost
+# on repeated extraction requests. The loop check keeps asyncio.run()-based
+# callers (including tests and short-lived CLI commands) isolated safely.
+_shared_http_client: httpx.AsyncClient | None = None
+_shared_http_loop: asyncio.AbstractEventLoop | None = None
+
+
+async def get_shared_http_client() -> httpx.AsyncClient:
+    """Return the event-loop-local HTTP client used by engine requests."""
+    global _shared_http_client, _shared_http_loop
+    loop = asyncio.get_running_loop()
+    if _shared_http_client is None or _shared_http_loop is not loop or _shared_http_client.is_closed:
+        _shared_http_client = httpx.AsyncClient(
+            timeout=httpx.Timeout(
+                CONFIG.read_timeout,
+                connect=CONFIG.connect_timeout,
+            ),
+            follow_redirects=False,
+            limits=httpx.Limits(max_keepalive_connections=20, max_connections=50),
+        )
+        _shared_http_loop = loop
+    return _shared_http_client
+
+
+async def close_shared_http_client() -> None:
+    """Close the shared engine client when an embedding application shuts down."""
+    global _shared_http_client, _shared_http_loop
+    if _shared_http_client is not None:
+        await _shared_http_client.aclose()
+    _shared_http_client = None
+    _shared_http_loop = None
 
 # Prohibited IPv4 / IPv6 network blocks
 BLOCKED_NETWORKS = [
@@ -62,6 +96,9 @@ def validate_url_security(url: str) -> tuple[bool, str, list[str]]:
     Validates a URL against scheme restrictions, private IP ranges, and cloud metadata targets.
     Returns: (is_safe: bool, reason: str, resolved_ips: list[str])
     """
+    if not url or not isinstance(url, str):
+        return False, "Missing or invalid URL", []
+
     if "\x00" in url:
         return False, "Null byte detected in URL", []
 
@@ -141,8 +178,11 @@ def sanitize_untrusted_content(text: str) -> tuple[str, bool]:
     clean_text = ZERO_WIDTH_CHARS.sub("", text)
     clean_text = CONTROL_CHARS.sub("", clean_text)
 
-    # Check for prompt injection signatures
+    # Check for prompt injection signatures using both fast regex and pattern scanner
     has_injection = bool(PROMPT_INJECTION_SUSPICION.search(clean_text))
+    if not has_injection:
+        from src.weblens.security.injection import scan_injection
+        has_injection = bool(scan_injection(clean_text))
 
     return clean_text, has_injection
 
@@ -172,20 +212,8 @@ async def safe_fetch_url(
     """
     owns_client = False
     current_url = url
-    ua = get_user_agent_for_url(current_url)
-
     if client is None:
-        client = httpx.AsyncClient(
-            headers={
-                "User-Agent": ua,
-                "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
-                "Accept-Language": "en-US,en;q=0.9",
-            },
-            timeout=httpx.Timeout(timeout, connect=CONFIG.connect_timeout),
-            follow_redirects=False,
-            limits=httpx.Limits(max_keepalive_connections=20, max_connections=50)
-        )
-        owns_client = True
+        client = await get_shared_http_client()
 
     redirect_count = 0
 

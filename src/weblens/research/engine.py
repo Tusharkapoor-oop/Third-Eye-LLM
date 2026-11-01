@@ -28,7 +28,7 @@ SENT_SPLIT = re.compile(r"(?<=[.!?])\s+(?=[A-Z0-9`#*])")
 NUM = re.compile(
     r"(?P<num>\d+(?:[.,]\d+)?)\s*(?P<unit>ms|milliseconds?|s|sec|seconds?|kb|mb|gb|tb|%|"
     r"usd|dollars?|€|£|\$)",
-    re.I,
+    re.IGNORECASE,
 )
 UNIT_NORM = {
     "ms": "ms", "millisecond": "ms", "milliseconds": "ms",
@@ -130,7 +130,7 @@ def sentence_candidates(passage: Passage, query: str, limit: int = 2) -> list[Fi
             if re.search(
                 r"\b(?:is|are|refers? to|means|defined as|stands for|returns?|provides?|creates?|allows?|used to)\b",
                 claim,
-                re.I,
+                re.IGNORECASE,
             ):
                 score += 0.3
             if re.search(r"(?:async def|>>>|```|\{\s*$)", claim):
@@ -152,7 +152,7 @@ def sentence_candidates(passage: Passage, query: str, limit: int = 2) -> list[Fi
             r"\b(?:Apache|MIT|GPLv?\d?|BSD|MPL|Unlicense|CC[- ]BY)\b"
             r"[\s\S]{0,50}?(?:\bLicense\b|\bVersion\b)[\s\S]{0,30}?\d+(?:\.\d+)?"
             r"(?:\s*,\s*\d{4})?",
-            re.I,
+            re.IGNORECASE,
         )
         for m in pattern.finditer(text):
             raw = text[m.start() : m.end()]

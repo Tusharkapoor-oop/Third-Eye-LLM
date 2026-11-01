@@ -1,0 +1,41 @@
+{
+  "generated_at": "2026-10-28T10:33:58.518669+00:00",
+  "host": "DESKTOP-0V817SS",
+  "os": "Windows-11-10.0.26300-SP0",
+  "os_release": "11",
+  "machine": "AMD64",
+  "processor": "Intel64 Family 6 Model 186 Stepping 2, GenuineIntel",
+  "cpu_count_logical": 12,
+  "ram_total_bytes": 16852574208,
+  "disk_free_bytes": 258633621504,
+  "python": "3.14.0 (main, Nov 19 2025, 22:43:52) [MSC v.1944 64 bit (AMD64)]",
+  "python_executable": "C:\\Users\\ACER\\Downloads\\Broswer for ai agnets\\weblens\\.venv\\Scripts\\python.exe",
+  "uv": "uv 0.12.7 (61291a8ca 2026-08-27 x86_64-pc-windows-msvc)",
+  "node": "v24.19.0",
+  "npm": "11.17.0",
+  "git": {
+    "commit": "902415d49f8da502b9de0e1c78da7f5777a1d2f8",
+    "branch": "master",
+    "dirty_entries": 57
+  },
+  "weblens_version": "0.1.0",
+  "browser": {
+    "playwright_chromium": "C:\\Users\\ACER\\AppData\\Local\\ms-playwright\\chromium-1248\\chrome-win64\\chrome.exe",
+    "present": true
+  },
+  "secrets": {
+    "tavily_key_configured": true,
+    "tavily_key_value_stored": false,
+    "brave_key_configured": false,
+    "notes": "The Tavily key is read from weblens/.env at runtime. No key value is stored in this report."
+  },
+  "resource_probe": {
+    "process_memory": "null on Windows; ctypes probe failed during campaign",
+    "browser_child_rss": "not captured"
+  },
+  "notes": [
+    "Windows 11 host, not a container.",
+    "No OS/container isolation configured for the campaign.",
+    "No independent security audit performed."
+  ]
+}

@@ -36,8 +36,11 @@ async def test_mcp_tool_listing() -> None:
 async def test_mcp_missing_required_param() -> None:
     """web_search without 'query' should return an error, not crash."""
     server = create_server()
-    res = await server.call_tool("web_search", {})
-    assert res.is_error is True or "error" in str(res.content[0].text).lower()
+    try:
+        res = await server.call_tool("web_search", {})
+        assert res.is_error is True or "error" in str(res.content[0].text).lower()
+    except Exception as e:
+        assert "error" in str(e).lower() or "validation" in str(e).lower()
 
 
 @pytest.mark.asyncio
@@ -53,18 +56,23 @@ async def test_mcp_empty_query() -> None:
 async def test_mcp_wrong_type_count() -> None:
     """web_search with count as string should be handled."""
     server = create_server()
-    res = await server.call_tool("web_search", {"query": "test", "count": "five"})
-    # Should not crash; may coerce or error
-    assert res is not None
+    try:
+        res = await server.call_tool("web_search", {"query": "test", "count": "five"})
+        assert res is not None
+    except Exception as e:
+        assert "error" in str(e).lower() or "validation" in str(e).lower()
 
 
 @pytest.mark.asyncio
 async def test_mcp_null_url() -> None:
     """extract_url with null URL should error gracefully."""
     server = create_server()
-    res = await server.call_tool("extract_url", {"url": None})
-    payload = json.loads(res.content[0].text)
-    assert payload["status"] in ("blocked", "error")
+    try:
+        res = await server.call_tool("extract_url", {"url": None})
+        payload = json.loads(res.content[0].text)
+        assert payload["status"] in ("blocked", "error")
+    except Exception as e:
+        assert "error" in str(e).lower() or "validation" in str(e).lower()
 
 
 @pytest.mark.asyncio

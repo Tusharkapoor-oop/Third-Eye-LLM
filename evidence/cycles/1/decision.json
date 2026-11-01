@@ -1,0 +1,50 @@
+{
+  "action": "REVERTED",
+  "candidate_tests_failed": 2,
+  "candidate_tests_passed": 162,
+  "fixture_recall_after": 0.8235294117647058,
+  "fixture_recall_before": 0.7647058823529411,
+  "fixture_recall_not_worse_2pp": true,
+  "guard_results": {
+    "fixture_recall_not_worse_2pp": true,
+    "head_not_worse": true,
+    "p95_latency_within_10pct": false,
+    "ssrf_ok": true,
+    "tests_ok": false,
+    "tokens_within_5pct": true
+  },
+  "head_after": 30,
+  "head_before": 30,
+  "head_not_worse": true,
+  "ledger_head": "271bc8c3cc6b5b4ff81d80f86511f6106a3ee5f61818bc36a5716c5825125a53",
+  "mcnemar_p": 1.862645149230957e-09,
+  "p95_latency_after": 75.65035,
+  "p95_latency_before": 56.792950000000005,
+  "p95_latency_within_10pct": false,
+  "patch": "evidence/cycles/1/rejected.patch",
+  "post_revert_tests_failed": 0,
+  "post_revert_tests_passed": 162,
+  "post_revert_tests_skipped": 1,
+  "reject_reasons": [
+    "p95_latency_within_10pct",
+    "tests_ok"
+  ],
+  "ssrf_attempts": 32,
+  "ssrf_ok": true,
+  "stop_reason": "session wall-clock budget reached after one rejected cycle",
+  "tail_after": 30,
+  "tail_before": 0,
+  "target": "unqueried long-page tail reachability",
+  "target_ci": [
+    1.0,
+    1.0
+  ],
+  "target_ci_excludes_zero": true,
+  "target_difference": 1.0,
+  "test_failure_cause": "The two new tests used a trailing sentence shorter than the 40-character chunk minimum, so it was dropped before selection; the held-out pages use full sentences. The candidate test result is a test-fixture defect, not a product pass.",
+  "tests_ok": false,
+  "tokens_mean_after": 941.8,
+  "tokens_mean_before": 989.8,
+  "tokens_within_5pct": true,
+  "verdict": "REJECT"
+}
