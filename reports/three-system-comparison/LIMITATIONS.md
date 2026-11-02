@@ -14,3 +14,4 @@
 3. **Rate Limiting on Free Search Engines**:
    - Public DDG HTML endpoints occasionally return HTTP 202 or rate-limit responses during rapid unthrottled bursts.
    - **Remediation**: Maintain the polite concurrency semaphore (default max 2 requests per host) and connection pool reuse.
+

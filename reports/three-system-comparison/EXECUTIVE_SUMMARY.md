@@ -27,3 +27,4 @@ All systems were evaluated across identical queries from the versioned V9 benchm
 2. **Token Efficiency**: WebLens optimizes token budgets surgically, averaging **428.2 tokens** on the deployed MCP server versus **1,459.5 tokens** for Tavily (a **70.7% token reduction**).
 3. **Cost**: WebLens operates at **$0.00** search cost by utilizing keyless federated search backends, whereas Tavily incurs paid credit consumption.
 4. **Where Tavily Wins**: On specialized technical and niche commercial queries, Tavily's proprietary index yields higher precision@5 (**0.653** vs Deployed WebLens **0.413**). WebLens should integrate additional specialized domain aggregators to close this gap.
+

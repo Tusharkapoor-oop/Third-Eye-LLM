@@ -18,3 +18,4 @@
 1. **Network Egress Advantage**: Deployed WebLens achieves **0.413** Precision@5 vs Local WebLens **0.240** (+72% increase), demonstrating that cloud datacenter network egress improves search provider hit completeness over residential ISPs.
 2. **Specialized Topic Gap**: Tavily achieves **0.653** Precision@5 due to pre-indexed technical sources (e.g. arXiv, Nature, specialist forums).
 3. **Accuracy Calibration**: None of the three systems returned false confidence on unanswerable or ungrounded queries (0% false confidence across all three).
+

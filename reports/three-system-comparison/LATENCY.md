@@ -18,3 +18,4 @@ All 15 stratified benchmark queries were evaluated with interleaved, rotating ex
 - **Local WebLens vs Tavily**: **3.26x faster** at p50 (939.5 ms vs 3,062.2 ms).
 - **Deployed WebLens vs Tavily**: **2.74x faster** at p50 (1,115.6 ms vs 3,062.2 ms).
 - **p95 Latency Stability**: Deployed WebLens exhibited the tightest tail latency at **1,380.2 ms** p95, compared to 4,883.3 ms for Tavily.
+

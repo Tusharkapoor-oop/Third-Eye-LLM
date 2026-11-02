@@ -1,209 +1,216 @@
-# WebIntel: Personal Web Intelligence Engine
+# WebLens: Autonomous Web Intelligence Platform & Model Context Protocol (MCP)
 
-> **A high-performance, local-first, model-independent web search, extraction, and research engine for AI agents via Model Context Protocol (MCP).**
+WebLens is a production-grade, local-first and cloud-deployable web intelligence platform designed for autonomous AI agents. Built with strict low-token budgets, verifiable character-span citations, and zero-guess factual grounding, WebLens replaces expensive, heavy third-party search subscriptions with a high-performance retrieval engine and application suite.
 
-Inspired by Tavily and Firecrawl, WebIntel is engineered from the ground up for developer workstations running **Windows 11**. It replaces heavy Docker stacks, multi-gigabyte browser daemons, and expensive cloud subscriptions with a streamlined, sub-second local retrieval engine.
-
----
-
-## Key Differentiators & Core Guarantees
-
-1. **R1: Strict Low Token Budget (<1,000 Schema Tokens)**
-   - Minimal schema overhead: Exactly **680 tokens** (`o200k_base`) / **655 tokens** (`cl100k_base`), verified via real tokenizers.
-   - Two-stage retrieval: Search calls return title, normalized URL, and a 40-token snippet (<600 tokens total). Extraction calls return query-relevant BM25 passage highlights, not whole raw pages (<1,500 tokens total).
-2. **R2: Zero Fake Accuracy (Calibrated Evidence Grounding)**
-   - **Zero uncalibrated scores**: No fabricated floats (`score: 0.98` or `similarity: 0.89`).
-   - Every passage includes exact character offsets (`char_start`, `char_end`) pointing to the verifiable substring in the source document.
-   - Explicit uncertainty states: When evidence is missing, conflicting, or unanswerable, the engine returns `no_reliable_result` or `conflicting_sources` instead of guessing.
-3. **R3: Sub-Second Local Latency & 0 MB Idle RAM**
-   - In-process HTTP extraction via Trafilatura (10–40ms, <15 MB RAM).
-   - On-demand headless Microsoft Edge fallback (`msedge.exe`) for JavaScript SPAs—zero background Chromium daemons or Docker containers.
-4. **Hardened Security Boundary**
-   - Full SSRF protection: Connect-time socket IP resolution blocks RFC 1918 private subnets, loopback (`127.0.0.1`, `::1`), and cloud metadata (`169.254.169.254`).
-   - Streaming byte limits (10 MB cap) and cycle/trap-proof recursive crawling.
-5. **Universal MCP 2.x Compatibility**
-   - Implements MCP Specification revision `2026-07-28` (`mcp==2.3.0`).
-   - Dual output representation: Emits standard `content` (serialized JSON) and modern `structured_content` with registered `outputSchema` for compatibility across Cline, Roo Code, Continue, Claude Desktop, and Ollama/LM Studio agents.
+WebLens is deployed live on Google Cloud Run and runs locally across Windows, Linux, and macOS.
 
 ---
 
-## Architecture Overview
+## Live Cloud Deployment
 
-```
-                      +---------------------------------------+
-                      |       MCP Client (Cline / Roo /       |
-                      |    Continue / Ollama / LM Studio)     |
-                      +-------------------+-------------------+
-                                          | JSON-RPC (STDIO / HTTP)
-                                          v
-                      +---------------------------------------+
-                      |      WebIntel Server (MCP 2.x)        |
-                      |   - 5 Minimal Tools (680 schema toks) |
-                      |   - Dual Output (Text + Structured)   |
-                      +-------------------+-------------------+
-                                          |
-                 +------------------------+------------------------+
-                 |                                                 |
-                 v                                                 v
-    +-------------------------+                       +-------------------------+
-    |    SearchAggregator     |                       |    DocumentExtractor    |
-    | - DuckDuckGo / Bing     |                       | - Trafilatura (15ms)    |
-    | - Wikipedia REST (0ms)  |                       | - PyMuPDF (PDF Docs)    |
-    | - Brave API / SearXNG   |                       | - Edge Fallback (SPAs)  |
-    | - Dedupe & URL Cleaner  |                       | - Token-Aware Chunker   |
-    +-------------------------+                       | - BM25 Passage Scorer   |
-                                                      +-------------------------+
-                                                                   |
-                                                      +------------v------------+
-                                                      | Exact Span Grounding    |
-                                                      | char_start / char_end   |
-                                                      +-------------------------+
-```
+- **MCP Endpoint**: `https://weblens-16131012091.us-central1.run.app/mcp`
+- **Health Check**: `https://weblens-16131012091.us-central1.run.app/`
+- **Current Revision**: `weblens-00003-l9q`
+- **Transport**: JSON-RPC over Streamable HTTP MCP (MCP Specification 2024-11-05 / 2026 standards)
+- **Active Tools**: All 13 tools active under `--profile full`
 
 ---
 
-## Tool Catalog
+## Key Differentiators & Empirical Advantages
 
-| Tool Name | Parameters | Purpose & Contract |
+1. **2.7x to 3.3x Faster than Commercial APIs**:
+   - Local WebLens p50 Latency: **939.5 ms** (3.26x faster than Tavily Direct).
+   - Deployed Cloud Run WebLens p50 Latency: **1,115.6 ms** (2.74x faster than Tavily Direct at 3,062.2 ms).
+2. **70.7% Fewer Tokens per Request**:
+   - Averages **428.2 tokens** on Cloud Run vs **1,459.5 tokens** for Tavily Direct, cutting downstream LLM token consumption costs.
+3. **100% Free Search Cost ($0.00)**:
+   - Keyless federated search backends (DuckDuckGo, Wikipedia REST, Mwmbl) eliminate recurring per-query API fees.
+4. **Zero Fake Accuracy & Verifiable Citations**:
+   - No fabricated relevance floats. Every passage contains exact character spans (`span_start`, `span_end`) traceable to the source document.
+   - Explicit uncertainty states (`no_reliable_result`, `conflicting_sources`) prevent hallucinations.
+5. **Hardened Security & Zero-Trust Architecture**:
+   - 100% pass rate on local penetration testing (26/26 tests passed) and remote Cloud Run security audit (10/10 tests passed).
+   - Enforced SSRF socket-level IP validation, path traversal boundaries, spreadsheet formula injection defense, and indirect prompt injection quarantine.
+
+---
+
+## Three-System Benchmark Summary
+
+Evaluated across identical queries from the versioned V9 benchmark dataset with interleaved execution:
+
+| Metric | System 1: Local WebLens | System 2: Deployed WebLens | System 3: Tavily Direct API | Advantage |
+| :--- | :--- | :--- | :--- | :--- |
+| **p50 Latency** | **939.5 ms** | 1,115.6 ms | 3,062.2 ms | **WebLens (2.7x - 3.3x faster)** |
+| **Mean Latency** | **1,119.7 ms** | 1,146.3 ms | 3,246.6 ms | **WebLens (2.9x faster)** |
+| **p95 Latency** | 3,464.5 ms | **1,380.2 ms** | 4,883.3 ms | **Deployed WebLens (Tighter tail)** |
+| **Mean Tokens / Query** | **265.1** | 428.2 | 1,459.5 | **WebLens (-70.7% tokens)** |
+| **Search Provider Cost** | **$0.00** | **$0.00** | $0.0050 / query | **WebLens (Zero API cost)** |
+| **Precision@5** | 0.240 | 0.413 | **0.653** | **Tavily (+58.1% on niche queries)** |
+| **False Confidence Rate** | **0.0% (0/15)** | **0.0% (0/15)** | **0.0% (0/15)** | **Tied (Zero hallucinations)** |
+| **Success / Uptime Rate** | 100.0% | **100.0%** | **100.0%** | **Tied** |
+
+---
+
+## All Nine Product Applications
+
+WebLens includes nine built-in product applications, each verified live with 100% pass rates:
+
+1. **Deep Research Agent**: Autonomous multi-hop evidence discovery, query decomposition, and conflict detection with strict 2,000-token boundaries.
+2. **Company Researcher**: Corporate intelligence profiles, domain discovery, leadership, products, and SEC/regulatory disclosures.
+3. **Conversational Answer Engine (Chat)**: Interactive conversational search with cited passage spans and multi-turn context retention.
+4. **Crawl2RAG Knowledge Base**: Bounded polite crawler indexing sites into local SQLite FTS5 with BM25 passage ranking and span citations.
+5. **Market Researcher & Portfolio Analyzer**: Financial asset and multi-stock portfolio intelligence sourcing verified metrics from regulatory filings with a strict zero-guess policy.
+6. **Sheets Batch Dataset Enricher**: Row-by-row dataset enrichment with defense against spreadsheet formula injection (`=`, `+`, `-`, `@`, `\t`, `\r` neutralized).
+7. **Meeting Preparation Agent**: Pre-meeting dossiers from calendar events and public professional records with automated privacy boundary enforcement.
+8. **WebLens 101 Tutorial**: Executable developer guide and interactive API walkthrough.
+9. **Persistent Research Chat**: Stateful multi-turn research dialogue backed by SQLite session persistence (`sessions` and `messages` tables).
+
+---
+
+## Registered MCP Tools (13 Total)
+
+When running with `--profile full` (default in container deployment), WebLens exposes 13 tools:
+
+| Tool Name | Parameters | Description |
 | :--- | :--- | :--- |
-| `web_search` | `query`, `count` (1-10, def 5), `freshness`, `domains`, `max_tokens` (def 600) | Provider-agnostic web search. Returns normalized URLs, titles, and concise snippets. |
-| `extract_url` | `url`, `query`, `mode` (`passages` \| `full_markdown`), `max_tokens` (def 1500) | Extracts main content. In `passages` mode, runs BM25 ranking to return top passages with exact character spans. |
-| `crawl_website` | `seed_url`, `max_depth` (1-3, def 2), `max_pages` (1-20, def 10), `query` | Bounded recursive website crawler with cycle detection and politeness tracking. |
-| `web_map` | `url`, `limit` (def 50) | Fast discovery of domain URL structure via sitemap XML parsing and seed links. |
-| `deep_research` | `topic`, `max_depth` (def 2), `max_queries` (def 4) | Multi-step autonomous research engine: breaks query into targeted searches, aggregates evidence, and highlights gaps. |
-
----
-
-## Installation & Setup on Windows 11
-
-### Prerequisites
-- Windows 11 (64-bit)
-- Python 3.11+ (Python 3.13 recommended)
-- `uv` package manager (recommended) or standard `pip`
-
-### Step 1: Clone & Install Dependencies
-```powershell
-# Navigate to project directory
-cd "C:\Users\ACER\Downloads\Broswer for ai agnets"
-
-# Using uv (fastest)
-uv sync
-
-# Or using standard pip
-python -m venv .venv
-.\.venv\Scripts\Activate.ps1
-pip install -e .
-```
-
-### Step 2: Environment Configuration
-Copy `.env.example` to `.env` (optional—the engine operates out of the box with 0 external API keys):
-```powershell
-cp .env.example .env
-```
-Supported environment variables:
-```env
-# Optional external search keys (engine falls back to free providers automatically)
-BRAVE_SEARCH_API_KEY=
-SEARXNG_URL=
-
-# Engine Performance & Limits
-DEFAULT_SEARCH_TOKENS=600
-DEFAULT_EXTRACT_TOKENS=1500
-MAX_STREAM_BYTES=10485760
-HTTP_TIMEOUT_SEARCH=8.0
-HTTP_TIMEOUT_FETCH=8.0
-```
+| `web_search` | `query`, `max_results` (1-10), `freshness`, `domains` | Fast web search returning titles, normalized URLs, and snippets. |
+| `extract_url` | `url`, `query`, `max_tokens`, `full` | Extracts relevant passages with exact character spans and timestamps. |
+| `crawl_site` | `url`, `mode` (`map` \| `crawl`), `max_pages`, `max_depth` | Bounded polite crawling respecting robots.txt and SSRF restrictions. |
+| `deep_research` | `query`, `max_tokens` | Multi-hop evidence discovery and conflict analysis. |
+| `company_research` | `company` | Structured company profile (leadership, products, competitors, risks). |
+| `market_research` | `asset`, `question` | Disclosures and verified metrics from official regulatory filings. |
+| `market_portfolio` | `assets` (list of tickers) | Parallel portfolio analysis with aggregated financial disclosures. |
+| `crawl2rag_index` | `url`, `max_pages` | Crawls and indexes a documentation site into local SQLite FTS5. |
+| `crawl2rag_query` | `question`, `top_k` | Queries local BM25 knowledge base returning passages with cited spans. |
+| `meeting_prep` | `meeting_title`, `attendees`, `company_or_org` | Pre-meeting attendee briefing dossier from public professional records. |
+| `sheets_enrich` | `rows`, `column_prompts` | Batch-enriches tabular datasets with formula injection protection. |
+| `research_chat` | `message`, `session_id` | Multi-turn stateful research dialogue with SQLite session persistence. |
+| `tutorial_101` | `step` | Interactive guided walkthrough of core capabilities. |
 
 ---
 
 ## MCP Client Configuration
 
-### 1. Cline & Roo Code (`cline_mcp_settings.json`)
-Add the following to your Cline or Roo Code MCP configuration file (`%APPDATA%\Code\User\globalStorage\saoudrizwan.claude-dev\settings\cline_mcp_settings.json`):
+### Connecting to Deployed Cloud Run Service
+
+To use the live deployed WebLens endpoint in Claude Desktop, Cline, Roo Code, or Continue:
 
 ```json
 {
   "mcpServers": {
-    "webintel": {
-      "command": "python",
-      "args": ["-m", "src.server.mcp_server"],
-      "cwd": "C:\\Users\\ACER\\Downloads\\Broswer for ai agnets",
-      "disabled": false,
-      "autoApprove": [
-        "web_search",
-        "extract_url",
-        "web_map"
-      ]
+    "weblens-cloud": {
+      "url": "https://weblens-16131012091.us-central1.run.app/mcp"
     }
   }
 }
 ```
 
-### 2. Continue.dev (`config.json`)
-Add to `~/.continue/config.json`:
+### Connecting to Local WebLens MCP Server
+
+In your client configuration (`cline_mcp_settings.json` or `claude_desktop_config.json`):
+
 ```json
 {
-  "experimental": {
-    "modelContextProtocolServers": [
-      {
-        "transport": {
-          "type": "stdio",
-          "command": "python",
-          "args": ["-m", "src.server.mcp_server"],
-          "cwd": "C:\\Users\\ACER\\Downloads\\Broswer for ai agnets"
-        }
+  "mcpServers": {
+    "weblens-local": {
+      "command": "python",
+      "args": ["-m", "weblens.cli", "serve", "--profile", "full"],
+      "cwd": "C:\\path\\to\\weblens",
+      "env": {
+        "WEBLENS_MCP_PROFILE": "full"
       }
-    ]
+    }
   }
 }
 ```
 
-### 3. Streamable HTTP Mode (Remote or Sidecar)
-To run WebIntel as a persistent background service over HTTP:
-```powershell
-python -m src.server.mcp_server --transport http --port 8000
+---
+
+## Installation & Local Execution
+
+### Prerequisites
+- Python 3.11+ (Python 3.12 or 3.13 recommended)
+- Windows 11, Linux, or macOS
+
+### Setup
+```bash
+# Clone repository
+git clone https://github.com/Tusharkapoor-oop/Third-Eye-LLM.git
+cd Third-Eye-LLM
+
+# Install package in editable mode
+pip install -e ./weblens -e .
+```
+
+### Running the MCP Server
+```bash
+# Run stdio MCP server (full profile)
+python -m weblens.cli serve --profile full
+
+# Run HTTP MCP server locally
+python -m weblens.cli serve --http --host 127.0.0.1 --port 8765 --profile full
+```
+
+### Running Applications from CLI
+```bash
+# Company Research
+python -m weblens.cli app company "Anthropic"
+
+# Market Analysis
+python -m weblens.cli app market "Apple Inc."
+
+# Portfolio Analysis
+python -m weblens.cli app market --portfolio "AAPL" --portfolio "MSFT"
+
+# Meeting Preparation
+python -m weblens.cli app meeting "Architecture Review" -a "Guido van Rossum" -c "Python Software Foundation"
+
+# WebLens 101 Tutorial
+python -m weblens.cli app tutorial --step all
 ```
 
 ---
 
-## Running Benchmarks & Regression Gates
+## Security & Penetration Testing
 
-The engine includes a single-command benchmark runner that executes the 50-query labelled evaluation set, verifies token budgets, measures p50/p95 latency, and enforces regression gates:
+WebLens is engineered with defensive zero-trust principles:
 
-```powershell
-# Run full 50-query benchmark suite
-python -m benchmarks.run_benchmarks
+- **SSRF Prevention**: Connect-time socket IP resolution blocks loopback (`127.0.0.1`, `::1`), RFC 1918 subnets (`10.x`, `172.16.x`, `192.168.x`), and cloud metadata (`169.254.169.254`, `metadata.google.internal`).
+- **Spreadsheet Formula Injection Defense**: Defangs cells starting with `=`, `+`, `-`, `@`, `\t`, `\r`, `\n` by prepending `'`.
+- **Indirect Prompt Injection Scanner**: Identifies and quarantines instruction override attempts inside untrusted web pages.
+- **Audit Verification**:
+  - Local Security Audit: 26/26 passed (100%).
+  - Deployed Cloud Run Security Audit: 10/10 passed (100%).
 
-# Run quick 5-query smoke test
-python -m benchmarks.run_benchmarks --sample 5
+To execute the automated security audit suite:
+```bash
+python weblens-lab/security_lab/run_three_system_security_audit.py
 ```
 
-### Regression Gates:
-- Tool Schema Overhead $\le$ 1,000 tokens
-- Search Call Returned Tokens $\le$ 650 tokens
-- Extract Call Returned Tokens $\le$ 1,500 tokens
-- Answer-Support Rate $\ge$ 60%
-- False-Confidence Rate $\le$ 15%
-- Zero uncalibrated scores anywhere in the payload
+To run all nine applications end-to-end:
+```bash
+python tools/run_all_nine_apps_live.py
+```
 
 ---
 
-## Running the Automated Test Suite
+## Security Notice: Zero Secret Leakage
 
-```powershell
-python -m pytest tests/ -v
-```
-All 32 test suites cover:
-- SSRF and Private IP blocking (`tests/test_security.py`)
-- Extraction and BM25 span grounding (`tests/test_extract.py`)
-- Crawling and trap detection (`tests/test_crawler.py`)
-- Official MCP protocol roundtrips (`tests/test_mcp_protocol.py` & `tests/test_mcp_e2e.py`)
-- In-memory search deduplication and ranking (`tests/test_search_engine.py`)
+- WebLens operates out of the box with zero required API keys.
+- **Never commit `.env` or any real API credentials to Git.**
+- The repository `.gitignore` strictly ignores `.env`, `.env.*`, certificates, and temporary credential files.
 
 ---
 
-## License & Architecture Records
-- See [`docs/RESEARCH_REPORT.md`](file:///c:/Users/ACER/Downloads/Broswer%20for%20ai%20agnets/docs/RESEARCH_REPORT.md) for primary source citations and the full evidence ledger.
-- See [`docs/COMPETITOR_MATRIX.md`](file:///c:/Users/ACER/Downloads/Broswer%20for%20ai%20agnets/docs/COMPETITOR_MATRIX.md) for deep evaluations of Tavily, Firecrawl, Exa, Brave, SearXNG, and Playwright MCP.
-- See [`docs/ARCHITECTURE_DECISIONS.md`](file:///c:/Users/ACER/Downloads/Broswer%20for%20ai%20agnets/docs/ARCHITECTURE_DECISIONS.md) for ADRs and 3-axis Pareto trade-off tables.
-- See [`docs/THREAT_MODEL.md`](file:///c:/Users/ACER/Downloads/Broswer%20for%20ai%20agnets/docs/THREAT_MODEL.md) for comprehensive security analysis and attack mitigations.
+## Documentation Links
+
+- [Three-System Architecture Specification](docs/THREE_SYSTEM_ARCHITECTURE.md)
+- [Three-System Executive Benchmark Summary](reports/three-system-comparison/EXECUTIVE_SUMMARY.md)
+- [Capability & Feature Matrix](reports/three-system-comparison/CAPABILITY_MATRIX.md)
+- [Search Quality & Retrieval Precision](reports/three-system-comparison/SEARCH_QUALITY.md)
+- [Latency & Performance Results](reports/three-system-comparison/LATENCY.md)
+- [Cost & Token Analysis](reports/three-system-comparison/COST_ANALYSIS.md)
+- [Local Security Plan & Verifications](docs/LOCAL_MCP_SECURITY_PLAN.md)
+- [Deployed Cloud Run Security Plan](docs/DEPLOYED_MCP_SECURITY_PLAN.md)
+- [Dataset Registry & Checksums](evidence/DATASET-REGISTRY.md)
+- [Release Gates Report](evidence/RELEASE-GATES.md)

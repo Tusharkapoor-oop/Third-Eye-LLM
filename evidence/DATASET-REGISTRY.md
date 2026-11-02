@@ -13,3 +13,4 @@
 - **SHA-256**: `2e99ebe5e4bbede2a964d6f4af1cb087d37efb4873d579fd0e77ba0ed3a17670`
 - **Attack Types**: SSRF cloud metadata, SSRF loopback, path traversal, CSV formula injection, indirect prompt injection.
 - **Manifest**: `weblens-lab/datasets/manifest.json`
+

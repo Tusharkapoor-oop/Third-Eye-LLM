@@ -20,3 +20,4 @@
 
 ## Economic Verdict
 WebLens provides a **100% cost reduction** on search provider APIs and uses **70.7% fewer tokens**, significantly lowering downstream LLM token consumption expenses for connected AI agents.
+

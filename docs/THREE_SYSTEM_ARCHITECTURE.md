@@ -42,3 +42,4 @@ This document establishes the architecture, boundaries, configuration, and inter
 - **Authentication**: Bearer token via `TAVILY_API_KEY`.
 - **Cost Model**: Commercial subscription, $0.005 per credit (1 credit for search, 2 credits for advanced search).
 - **Behavior**: Rich proprietary search index returning consolidated answers and web hits.
+

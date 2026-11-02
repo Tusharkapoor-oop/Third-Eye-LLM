@@ -20,3 +20,4 @@ This matrix compares native provider features and composed applications across t
 | **Token Budget Guarantee** | Strict truncation (<2000 tok) | Strict truncation (<2000 tok) | Variable payload sizes |
 | **Deployment Platform** | Local Windows machine | Google Cloud Run (us-central1) | Tavily Cloud Infrastructure |
 | **Pricing / Cost** | $0.00 (Keyless) | $0.00 (Keyless) | $0.0050 / search request |
+

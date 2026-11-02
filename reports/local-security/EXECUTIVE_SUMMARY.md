@@ -17,3 +17,4 @@
    - Scanning detects and quarantines override directives before LLM synthesis.
 5. **Context Window Safety**:
    - Sub-paragraph chunker and progressive summary truncation prevent token budget blowout.
+

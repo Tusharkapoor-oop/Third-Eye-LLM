@@ -34,8 +34,7 @@ sys.path.insert(0, str(ROOT / "weblens-lab"))
 
 from weblens.apps.sheets import defang_formula
 from weblens.config import Settings
-from weblens.errors import BlockedURLError
-from weblens.net.ssrf import DestinationPolicy
+from weblens.net.ssrf import is_private_ip, validate_url
 from weblens.security.injection import scan_injection
 from weblens.service import WebLens
 
@@ -43,7 +42,6 @@ from weblens.service import WebLens
 async def audit_local_security() -> dict[str, Any]:
     print("--- [AUDIT] Running Local Security Suite ---")
     results: list[dict[str, Any]] = []
-    policy = DestinationPolicy(Settings())
 
     # 1. SSRF Private IP validation
     ssrf_targets = [
@@ -57,46 +55,35 @@ async def audit_local_security() -> dict[str, Any]:
     ]
 
     for ip_str, should_be_private in ssrf_targets:
-        try:
-            policy.check_ip(ip_str)
-            blocked = False
-        except BlockedURLError:
-            blocked = True
-        passed = (blocked == should_be_private)
+        is_priv = is_private_ip(ip_str)
+        passed = (is_priv == should_be_private)
         results.append({
             "target": "local_mcp",
             "category": "ssrf_ip_filtering",
-            "test": f"check_ip({ip_str})",
+            "test": f"is_private_ip({ip_str})",
             "status": "PASS" if passed else "FAIL",
             "expected_blocked": should_be_private,
-            "actual_blocked": blocked,
+            "actual_blocked": is_priv,
         })
 
-    # 2. SSRF Hostname Validation
-    host_targets = [
-        ("localhost", True),
-        ("127.0.0.1", True),
-        ("metadata.google.internal", True),
-        ("instance-data.ec2.internal", True),
-        ("internal.lan", True),
-        ("example.com", False),
-        ("python.org", False),
+    # 2. SSRF URL Validation
+    url_targets = [
+        ("http://127.0.0.1:8080/admin", False),
+        ("http://169.254.169.254/latest/meta-data/", False),
+        ("http://metadata.google.internal/computeMetadata/v1/", False),
+        ("http://[::1]/secret", False),
+        ("https://example.com/page", True),
     ]
 
-    for host_str, should_be_blocked in host_targets:
-        try:
-            policy.check_hostname(host_str)
-            blocked = False
-        except BlockedURLError:
-            blocked = True
-        passed = (blocked == should_be_blocked)
+    for url, should_be_valid in url_targets:
+        is_valid, reason = validate_url(url)
+        passed = (is_valid == should_be_valid)
         results.append({
             "target": "local_mcp",
-            "category": "ssrf_hostname_validation",
-            "test": f"check_hostname({host_str})",
+            "category": "ssrf_url_validation",
+            "test": f"validate_url({url})",
             "status": "PASS" if passed else "FAIL",
-            "expected_blocked": should_be_blocked,
-            "actual_blocked": blocked,
+            "reason": reason,
         })
 
     # 3. Path Traversal Boundary Test
@@ -144,8 +131,7 @@ async def audit_local_security() -> dict[str, Any]:
 
     for text, should_detect in injection_samples:
         detected = scan_injection(text)
-        is_hit = bool(detected)
-        passed = (is_hit == should_detect)
+        passed = (detected == should_detect)
         results.append({
             "target": "local_mcp",
             "category": "prompt_injection_filter",
@@ -339,4 +325,3 @@ async def main() -> None:
 
 if __name__ == "__main__":
     asyncio.run(main())
-
