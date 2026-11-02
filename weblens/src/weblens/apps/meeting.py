@@ -89,3 +89,28 @@ class MeetingPrepAgent:
             "ms": elapsed_ms,
         }
 
+    async def prepare_from_calendar_event(
+        self,
+        event: dict[str, Any],
+    ) -> dict[str, Any]:
+        """Prepare briefing from a Google Calendar or standard iCal event dictionary.
+
+        Extracts summary, attendee names/emails, and organization context while stripping
+        private body notes to guarantee data minimization.
+        """
+        title = event.get("summary") or event.get("title") or "Meeting"
+        attendees_raw = event.get("attendees", [])
+        attendee_names = []
+        for a in attendees_raw:
+            if isinstance(a, str):
+                attendee_names.append(a)
+            elif isinstance(a, dict):
+                name = a.get("displayName") or a.get("email") or ""
+                if name:
+                    if "@" in name and not a.get("displayName"):
+                        name = name.split("@")[0].replace(".", " ").title()
+                    attendee_names.append(name)
+
+        company = event.get("company") or event.get("organization")
+        return await self.prepare_brief(title, attendee_names, company_or_org=company)
+

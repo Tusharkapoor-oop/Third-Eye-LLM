@@ -21,8 +21,11 @@ from ..service import WebLens
 
 def defang_formula(val: str) -> str:
     """Prepend a single quote to prevent spreadsheet formula execution."""
-    s = str(val or "").strip()
-    if s.startswith(("=", "+", "-", "@", "\t", "\r")):
+    raw = str(val or "")
+    if raw.startswith(("\t", "\r", "\n")):
+        return "'" + raw
+    s = raw.strip()
+    if s.startswith(("=", "+", "-", "@")):
         return "'" + s
     return s
 
@@ -41,7 +44,7 @@ class SheetsEnricher:
     ) -> dict[str, Any]:
         """Enrich target columns for a single row using WebLens search."""
         async with self.semaphore:
-            enriched_data = dict(row)
+            enriched_data = {k: defang_formula(v) for k, v in row.items()}
             entity_key = next((v for k, v in row.items() if k.lower() in ("company", "name", "domain", "ticker", "entity")), None)
             if not entity_key:
                 entity_key = next(iter(row.values()), "")
@@ -76,6 +79,22 @@ class SheetsEnricher:
                 enriched_data[f"{target_col}_status"] = "verified"
 
             return enriched_data
+
+    async def enrich_records(
+        self,
+        rows: list[dict[str, str]],
+        col_specs: dict[str, str],
+    ) -> dict[str, Any]:
+        """Enrich a batch of in-memory dictionary records with verified web evidence and formula injection defense."""
+        if not rows:
+            return {"status": "ok", "total_rows": 0, "records": []}
+        tasks = [self._enrich_row(r, col_specs) for r in rows]
+        enriched = await asyncio.gather(*tasks)
+        return {
+            "status": "ok",
+            "total_rows": len(rows),
+            "records": list(enriched),
+        }
 
     async def process_csv(
         self,

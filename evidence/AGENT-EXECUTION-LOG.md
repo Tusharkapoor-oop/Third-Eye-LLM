@@ -65,3 +65,4 @@ Autonomous principal engineering operations for WebLens v8:
   - Root Cause: Oversized Wikipedia pages without double newlines were returned as a single 3,165 token chunk because sentence-level sub-chunking was omitted.
   - Fix: Added `_sub_split_paragraph` in `src/engine/extract/chunker.py` and robust token popping/summary trimming in `src/engine/research/deep_research.py`.
   - Retest: `tests/test_token_boundaries.py`: 18 passed in 32.74s (100% pass).
+

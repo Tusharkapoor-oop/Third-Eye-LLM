@@ -40,3 +40,4 @@
 - **Answer Support Rate**: WebLens = 16.7% (3/18), Tavily = **22.2% (4/18)**.
 - **False Confidence Rate**: 0.0% (0/18) across both providers.
 - **Key Takeaway**: WebLens excels at surfacing authoritative technical, academic, and documentation URLs using local heuristic fusion; Tavily holds an edge on exact answer snippet extraction on unstructured or poorly formatted pages.
+

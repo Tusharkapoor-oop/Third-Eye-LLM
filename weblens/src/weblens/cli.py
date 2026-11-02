@@ -95,11 +95,12 @@ async def _run_cache(args: argparse.Namespace) -> int:
     return 0
 
 
-async def _serve_stdio() -> None:
+async def _serve_stdio(args: argparse.Namespace | None = None) -> None:
     from .mcp_server import build_server
 
     service = WebLens()
-    server = build_server(service)
+    profile = getattr(args, "profile", None) if args else None
+    server = build_server(service, profile=profile)
     try:
         await server.run_stdio_async()
     finally:
@@ -168,7 +169,7 @@ def _serve_http(args: argparse.Namespace) -> int:
         )
 
     service = WebLens(settings)
-    server = build_server(service)
+    server = build_server(service, profile=args.profile)
     app = server.streamable_http_app(
         stateless_http=not args.stateful,
         json_response=False,
@@ -230,11 +231,26 @@ async def _run_app(args: argparse.Namespace) -> int:
         elif args.app_name == "market":
             from .apps.market import MarketResearcher
             mkt = MarketResearcher(service)
-            payload = await mkt.analyze_asset(args.asset, question=args.question)
+            if getattr(args, "portfolio", None):
+                payload = await mkt.analyze_portfolio(args.portfolio)
+            else:
+                payload = await mkt.analyze_asset(args.asset, question=args.question)
         elif args.app_name == "chat":
             from .apps.chat import ResearchChatSession
             chat = ResearchChatSession(service)
             payload = await chat.send_message(args.message)
+        elif args.app_name == "research-chat":
+            from .apps.research_chat import PersistentResearchChat
+            pchat = PersistentResearchChat(service, session_id=getattr(args, "session_id", None))
+            msg = await pchat.send_query(args.message)
+            payload = {
+                "status": "ok",
+                "session_id": pchat.session_id,
+                "role": msg.role,
+                "content": msg.content,
+                "citations": msg.citations,
+                "tokens_used": msg.tokens_used,
+            }
         elif args.app_name == "meeting":
             from .apps.meeting import MeetingPrepAgent
             mtg = MeetingPrepAgent(service)
@@ -248,6 +264,9 @@ async def _run_app(args: argparse.Namespace) -> int:
                     col_specs[k.strip()] = v.strip()
             enricher = SheetsEnricher(service)
             payload = await enricher.process_csv(args.input_csv, args.output_csv, col_specs)
+        elif args.app_name == "tutorial":
+            from .apps.tutorial_101 import run_tutorial
+            payload = await run_tutorial(service, step=getattr(args, "step", "all"))
         else:
             payload = {"status": "error", "msg": f"unknown app {args.app_name}"}
     finally:
@@ -383,14 +402,21 @@ def _build_parser() -> argparse.ArgumentParser:
 
     # market
     a_mkt = ap_sub.add_parser("market", help="research asset filings and disclosures")
-    a_mkt.add_argument("asset", help="ticker or company name")
+    a_mkt.add_argument("asset", nargs="?", default="", help="ticker or company name")
     a_mkt.add_argument("-q", "--question", default=None)
+    a_mkt.add_argument("-p", "--portfolio", action="append", help="stock ticker for portfolio analysis")
     a_mkt.add_argument("--pretty", action="store_true")
 
     # chat
     a_chat = ap_sub.add_parser("chat", help="send a turn to the conversational research agent")
     a_chat.add_argument("message", help="user message")
     a_chat.add_argument("--pretty", action="store_true")
+
+    # research-chat
+    a_rc = ap_sub.add_parser("research-chat", help="send inquiry to persistent research chat session")
+    a_rc.add_argument("message", help="user inquiry")
+    a_rc.add_argument("--session-id", default=None, help="session id for multi-turn continuity")
+    a_rc.add_argument("--pretty", action="store_true")
 
     # meeting
     a_mtg = ap_sub.add_parser("meeting", help="prepare a cited pre-meeting brief")
@@ -406,6 +432,11 @@ def _build_parser() -> argparse.ArgumentParser:
     a_sht.add_argument("--col", action="append", required=True, help="spec in format col_name=prompt")
     a_sht.add_argument("--pretty", action="store_true")
 
+    # tutorial
+    a_tut = ap_sub.add_parser("tutorial", help="run WebLens 101 tutorial walkthrough")
+    a_tut.add_argument("--step", default="all", help="step to run")
+    a_tut.add_argument("--pretty", action="store_true")
+
     return p
 
 
@@ -415,7 +446,7 @@ def main(argv: list[str] | None = None) -> int:
     if args.command == "serve":
         if args.http:
             return _serve_http(args)
-        asyncio.run(_serve_stdio())
+        asyncio.run(_serve_stdio(args))
         return 0
     if args.command == "cache":
         return asyncio.run(_run_cache(args))

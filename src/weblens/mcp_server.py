@@ -1,4 +1,4 @@
-"""MCP server exposing four compact, read-only tools.
+"""MCP server exposing compact, read-only tools across configurable profiles.
 
 The server is stateless with respect to user data: every call carries its own
 arguments, and the only server-side state is a bounded HTTP cache. Returned
@@ -163,12 +163,40 @@ def build_server(service: WebLens, profile: str | None = None) -> MCPServer:
         ) -> str:
             return _tool_json(await market_researcher.analyze_asset(asset, question=question))
 
+        @server.tool(
+            name="market_portfolio",
+            description="Analyze disclosures, regulatory filings, and verified metrics across a portfolio of stocks.",
+            annotations=READ_ONLY,
+            structured_output=False,
+        )
+        async def market_portfolio(
+            assets: Annotated[list[str], Field(description="List of stock tickers or company names")],
+        ) -> str:
+            return _tool_json(await market_researcher.analyze_portfolio(assets))
+
     if prof == "full":
         from .apps.crawl2rag import Crawl2RAG
         from .apps.meeting import MeetingPrepAgent
+        from .apps.research_chat import PersistentResearchChat
+        from .apps.sheets import SheetsEnricher
+        from .apps.tutorial_101 import run_tutorial
 
         kb = Crawl2RAG(service)
         meeting_agent = MeetingPrepAgent(service)
+        sheets_enricher = SheetsEnricher(service)
+        chat_agent = PersistentResearchChat(service)
+
+        @server.tool(
+            name="crawl2rag_index",
+            description="Crawl and index a website or documentation URL into local RAG knowledge base.",
+            annotations=READ_ONLY,
+            structured_output=False,
+        )
+        async def crawl2rag_index(
+            url: Annotated[str, Field(description="Target site or documentation URL to index")],
+            max_pages: Annotated[int, Field(ge=1, le=20, description="Maximum pages to crawl and index")] = 5,
+        ) -> str:
+            return _tool_json(await kb.ingest(url, max_pages=max_pages))
 
         @server.tool(
             name="crawl2rag_query",
@@ -196,5 +224,50 @@ def build_server(service: WebLens, profile: str | None = None) -> MCPServer:
             return _tool_json(
                 await meeting_agent.prepare_brief(meeting_title, attendees, company_or_org=company_or_org)
             )
+
+        @server.tool(
+            name="sheets_enrich",
+            description="Batch-enrich rows in a dataset with live web research and formula injection defense.",
+            annotations=READ_ONLY,
+            structured_output=False,
+        )
+        async def sheets_enrich(
+            rows: Annotated[list[dict[str, str]], Field(description="List of row dictionaries to enrich")],
+            column_prompts: Annotated[dict[str, str], Field(description="Mapping of output column name to research query prompt")],
+        ) -> str:
+            return _tool_json(await sheets_enricher.enrich_records(rows, column_prompts))
+
+        @server.tool(
+            name="research_chat",
+            description="Multi-turn research dialogue with SQLite session persistence and citation extraction.",
+            annotations=READ_ONLY,
+            structured_output=False,
+        )
+        async def research_chat(
+            message: Annotated[str, Field(description="User research query or follow-up")],
+            session_id: Annotated[str | None, Field(description="Session ID for multi-turn continuity")] = None,
+        ) -> str:
+            active_chat = PersistentResearchChat(service, session_id=session_id) if session_id else chat_agent
+            reply = await active_chat.send_query(message)
+            return _tool_json({
+                "status": "ok",
+                "session_id": active_chat.session_id,
+                "message_id": reply.id,
+                "role": reply.role,
+                "content": reply.content,
+                "citations": reply.citations,
+                "tokens_used": reply.tokens_used,
+            })
+
+        @server.tool(
+            name="tutorial_101",
+            description="Interactive guide and walkthrough of search, extract, crawl, RAG, and deep research APIs.",
+            annotations=READ_ONLY,
+            structured_output=False,
+        )
+        async def tutorial_101(
+            step: Annotated[str | None, Field(description="Step filter: doctor, search, chat, company, market, sheets, meeting, rag, deep_research, or all")] = "all",
+        ) -> str:
+            return _tool_json(await run_tutorial(service, step=step or "all"))
 
     return server

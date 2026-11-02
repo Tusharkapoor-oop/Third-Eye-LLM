@@ -1,0 +1,210 @@
+{
+  "suite": "local_security_audit",
+  "timestamp": "2026-11-02T14:43:56.616102+00:00",
+  "total_tests": 26,
+  "passed": 26,
+  "failed": 0,
+  "pass_rate": 1.0,
+  "tests": [
+    {
+      "target": "local_mcp",
+      "category": "ssrf_ip_filtering",
+      "test": "check_ip(127.0.0.1)",
+      "status": "PASS",
+      "expected_blocked": true,
+      "actual_blocked": true
+    },
+    {
+      "target": "local_mcp",
+      "category": "ssrf_ip_filtering",
+      "test": "check_ip(10.0.0.1)",
+      "status": "PASS",
+      "expected_blocked": true,
+      "actual_blocked": true
+    },
+    {
+      "target": "local_mcp",
+      "category": "ssrf_ip_filtering",
+      "test": "check_ip(192.168.1.1)",
+      "status": "PASS",
+      "expected_blocked": true,
+      "actual_blocked": true
+    },
+    {
+      "target": "local_mcp",
+      "category": "ssrf_ip_filtering",
+      "test": "check_ip(169.254.169.254)",
+      "status": "PASS",
+      "expected_blocked": true,
+      "actual_blocked": true
+    },
+    {
+      "target": "local_mcp",
+      "category": "ssrf_ip_filtering",
+      "test": "check_ip(172.16.0.1)",
+      "status": "PASS",
+      "expected_blocked": true,
+      "actual_blocked": true
+    },
+    {
+      "target": "local_mcp",
+      "category": "ssrf_ip_filtering",
+      "test": "check_ip(8.8.8.8)",
+      "status": "PASS",
+      "expected_blocked": false,
+      "actual_blocked": false
+    },
+    {
+      "target": "local_mcp",
+      "category": "ssrf_ip_filtering",
+      "test": "check_ip(1.1.1.1)",
+      "status": "PASS",
+      "expected_blocked": false,
+      "actual_blocked": false
+    },
+    {
+      "target": "local_mcp",
+      "category": "ssrf_hostname_validation",
+      "test": "check_hostname(localhost)",
+      "status": "PASS",
+      "expected_blocked": true,
+      "actual_blocked": true
+    },
+    {
+      "target": "local_mcp",
+      "category": "ssrf_hostname_validation",
+      "test": "check_hostname(127.0.0.1)",
+      "status": "PASS",
+      "expected_blocked": true,
+      "actual_blocked": true
+    },
+    {
+      "target": "local_mcp",
+      "category": "ssrf_hostname_validation",
+      "test": "check_hostname(metadata.google.internal)",
+      "status": "PASS",
+      "expected_blocked": true,
+      "actual_blocked": true
+    },
+    {
+      "target": "local_mcp",
+      "category": "ssrf_hostname_validation",
+      "test": "check_hostname(instance-data.ec2.internal)",
+      "status": "PASS",
+      "expected_blocked": true,
+      "actual_blocked": true
+    },
+    {
+      "target": "local_mcp",
+      "category": "ssrf_hostname_validation",
+      "test": "check_hostname(internal.lan)",
+      "status": "PASS",
+      "expected_blocked": true,
+      "actual_blocked": true
+    },
+    {
+      "target": "local_mcp",
+      "category": "ssrf_hostname_validation",
+      "test": "check_hostname(example.com)",
+      "status": "PASS",
+      "expected_blocked": false,
+      "actual_blocked": false
+    },
+    {
+      "target": "local_mcp",
+      "category": "ssrf_hostname_validation",
+      "test": "check_hostname(python.org)",
+      "status": "PASS",
+      "expected_blocked": false,
+      "actual_blocked": false
+    },
+    {
+      "target": "local_mcp",
+      "category": "path_traversal",
+      "test": "cache_dir_boundary_containment",
+      "status": "PASS",
+      "notes": "Path escaped root: True"
+    },
+    {
+      "target": "local_mcp",
+      "category": "formula_injection",
+      "test": "defang_formula(=cmd|' /C calc')",
+      "status": "PASS",
+      "output": "'=cmd|' /C calc'!A0"
+    },
+    {
+      "target": "local_mcp",
+      "category": "formula_injection",
+      "test": "defang_formula(+12345)",
+      "status": "PASS",
+      "output": "'+12345"
+    },
+    {
+      "target": "local_mcp",
+      "category": "formula_injection",
+      "test": "defang_formula(-SUM(A1:A10))",
+      "status": "PASS",
+      "output": "'-SUM(A1:A10)"
+    },
+    {
+      "target": "local_mcp",
+      "category": "formula_injection",
+      "test": "defang_formula(@DDE('calc'))",
+      "status": "PASS",
+      "output": "'@DDE('calc')"
+    },
+    {
+      "target": "local_mcp",
+      "category": "formula_injection",
+      "test": "defang_formula(\tTabInjection)",
+      "status": "PASS",
+      "output": "'\tTabInjection"
+    },
+    {
+      "target": "local_mcp",
+      "category": "formula_injection",
+      "test": "defang_formula(\rCarriageReturn)",
+      "status": "PASS",
+      "output": "'\rCarriageReturn"
+    },
+    {
+      "target": "local_mcp",
+      "category": "formula_injection",
+      "test": "defang_formula(Normal Business)",
+      "status": "PASS",
+      "output": "Normal Business Text"
+    },
+    {
+      "target": "local_mcp",
+      "category": "prompt_injection_filter",
+      "test": "scan_injection(SYSTEM OVERRIDE: ignore a)",
+      "status": "PASS",
+      "detected": [
+        "ignore_instructions"
+      ]
+    },
+    {
+      "target": "local_mcp",
+      "category": "prompt_injection_filter",
+      "test": "scan_injection(Important user instructio)",
+      "status": "PASS",
+      "detected": []
+    },
+    {
+      "target": "local_mcp",
+      "category": "prompt_injection_filter",
+      "test": "scan_injection(Ignore previous direction)",
+      "status": "PASS",
+      "detected": [
+        "ignore_instructions"
+      ]
+    },
+    {
+      "target": "local_mcp",
+      "category": "prompt_injection_filter",
+      "test": "scan_injection(What is the history of ma)",
+      "status": "PASS",
+      "detected": []
+    }
+  ]
+}

@@ -61,6 +61,14 @@ class DestinationPolicy:
             raise BlockedURLError("empty host")
         if h in BLOCKED_HOSTNAMES or any(h.endswith(sfx) for sfx in BLOCKED_SUFFIXES):
             raise BlockedURLError(f"blocked hostname: {h}")
+        # Literal IPs bypass DNS; validate them here as well as at connect time
+        # so browser routing (which cannot use our httpcore backend) is covered.
+        try:
+            addr = ipaddress.ip_address(h)
+        except ValueError:
+            pass
+        else:
+            self.check_ip(str(addr))
         deny = self.s.denylist
         if any(h == d or h.endswith("." + d) for d in deny):
             raise BlockedURLError(f"host denied by policy: {h}")
@@ -121,7 +129,7 @@ class SafeNetworkBackend(AnyIOBackend):
         self,
         host: str,
         port: int,
-        timeout: float | None = None,
+        timeout: float | None = None,  # noqa: ASYNC109 - httpcore backend API
         local_address: str | None = None,
         socket_options=None,
     ):

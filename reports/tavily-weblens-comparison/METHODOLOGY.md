@@ -16,3 +16,4 @@
 - **Answer Support Rate**: Binary indicator of whether the ground-truth answer string is verbatim present in the retrieved evidence snippets.
 - **False Confidence**: Binary indicator of whether an unanswerable query received high precision (>0.40) or confident synthesis.
 - **Tokens**: Count of tokens returned calculated via `tiktoken` with `cl100k_base` and `o200k_base` encodings.
+

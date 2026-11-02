@@ -35,3 +35,4 @@
 
 3. **Conclusion**:
    WebLens is substantially faster at median (19x) and on average (1.8x), while Tavily exhibits slightly lower variance at the extreme 95th percentile.
+

@@ -35,3 +35,4 @@
 | **SEC-V8-001** | `src/engine/research/deep_research.py` | Research token blowout (3,641 tokens vs 2,000 cap) | Wikipedia extract returned 3,165-token chunk because sentence sub-chunking was omitted | Added `_sub_split_paragraph` in `chunker.py` and strict token popping |
 | **BUG-V8-002** | `weblens-lab/adapters/weblens_adapter` | `AttributeError: 'dict' object has no attribute 'results'` | Adapter expected dataclass objects while WebLens service returns dictionaries | Updated adapter to parse dictionary keys (`res`, `ps`, `tok`, `ms`) |
 | **NET-V8-003** | Cloud Run HTTP MCP | HTTP 421 Misdirected Request | Streamable HTTP defaulted to `127.0.0.1` triggering local DNS rebinding blocker | Set `allowed_hosts=["*"]` when `--allow-insecure` is active |
+

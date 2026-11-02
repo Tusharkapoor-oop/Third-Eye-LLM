@@ -58,3 +58,4 @@ Negligible. Multi-layer safeguards now exist at both chunk generation and report
 | **MCP Stress** | `test_mcp_stress.py` | 10 | 10 | 0 | PASS |
 | **Token Boundaries** | `test_token_boundaries.py` | 18 | 18 | 0 | PASS (after SEC-V8-001 fix) |
 | **TOTAL** | | **184** | **184** | **0** | **100% PASS** |
+

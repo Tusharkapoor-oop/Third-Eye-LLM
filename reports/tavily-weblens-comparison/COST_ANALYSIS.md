@@ -29,3 +29,4 @@ Downstream AI agents pay for input tokens consumed when processing tool outputs.
 - **Total Combined Cost Per 1,000 Queries (API + Downstream Tokens)**:
   - WebLens: **$0.97**
   - Tavily: **$8.58** (WebLens is 8.8x cheaper overall).
+

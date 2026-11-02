@@ -1,0 +1,67 @@
+{
+  "status": "ok",
+  "evaluation_timestamp": "2026-11-02T14:45:48.259560+00:00",
+  "total_queries_evaluated": 15,
+  "systems": {
+    "system_1_local_weblens": {
+      "latency": {
+        "p50_ms": 939.5,
+        "p90_ms": 1602.0,
+        "p95_ms": 3464.5,
+        "mean_ms": 1119.7
+      },
+      "quality": {
+        "mean_precision_at_5": 0.24,
+        "answer_supported_rate": 0.2,
+        "answer_supported_count": 3,
+        "false_confidence_count": 0,
+        "success_rate": 0.0
+      },
+      "tokens_and_cost": {
+        "mean_tokens": 265.1,
+        "total_credits": 0.0,
+        "estimated_cost_usd": 0.0
+      }
+    },
+    "system_2_deployed_weblens": {
+      "latency": {
+        "p50_ms": 1115.6,
+        "p90_ms": 1350.9,
+        "p95_ms": 1380.2,
+        "mean_ms": 1146.3
+      },
+      "quality": {
+        "mean_precision_at_5": 0.413,
+        "answer_supported_rate": 0.4,
+        "answer_supported_count": 6,
+        "false_confidence_count": 0,
+        "success_rate": 1.0
+      },
+      "tokens_and_cost": {
+        "mean_tokens": 428.2,
+        "total_credits": 0.0,
+        "estimated_cost_usd": 0.0
+      }
+    },
+    "system_3_tavily_direct": {
+      "latency": {
+        "p50_ms": 3062.2,
+        "p90_ms": 3907.9,
+        "p95_ms": 4883.3,
+        "mean_ms": 3246.6
+      },
+      "quality": {
+        "mean_precision_at_5": 0.653,
+        "answer_supported_rate": 0.667,
+        "answer_supported_count": 10,
+        "false_confidence_count": 0,
+        "success_rate": 1.0
+      },
+      "tokens_and_cost": {
+        "mean_tokens": 1459.5,
+        "total_credits": 15.0,
+        "estimated_cost_usd": 0.075
+      }
+    }
+  }
+}

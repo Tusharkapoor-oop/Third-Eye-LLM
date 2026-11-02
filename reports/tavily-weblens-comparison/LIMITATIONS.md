@@ -11,3 +11,4 @@
 ## 3. Answer String Matching
 - Answer support was evaluated using exact-case-insensitive string presence of the ground-truth answer in retrieved snippets.
 - Paraphrased or semantically equivalent answers that did not contain the exact target token were conservatively scored as unsupported (`False`), slightly understating real human utility.
+

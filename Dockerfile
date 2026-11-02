@@ -7,7 +7,8 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONPATH=/app/weblens/src:/app/src \
     PORT=8080 \
     WEBLENS_HTTP_HOST=0.0.0.0 \
-    WEBLENS_HTTP_PORT=8080
+    WEBLENS_HTTP_PORT=8080 \
+    WEBLENS_MCP_PROFILE=full
 
 WORKDIR /app
 
@@ -29,4 +30,4 @@ RUN pip install --no-cache-dir ./weblens .
 EXPOSE 8080
 
 # Run WebLens in HTTP MCP mode, dynamically reading $PORT assigned by Cloud Run
-CMD ["sh", "-c", "python -m weblens.cli serve --http --host 0.0.0.0 --port ${PORT:-8080} --allow-insecure"]
+CMD ["sh", "-c", "python -m weblens.cli serve --http --host 0.0.0.0 --port ${PORT:-8080} --profile full --allow-insecure"]

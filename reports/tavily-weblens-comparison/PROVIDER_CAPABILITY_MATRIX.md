@@ -39,3 +39,4 @@
 | **7. Meeting Prep** | `weblens.apps.meeting` | Open-source repo (`meeting-prep-agent`) | PASSED (`test_apps.py`) |
 | **8. WebLens 101** | `weblens.apps.tutorial_101` | Tavily Docs & Cookbook | PASSED (`test_apps.py`) |
 | **9. Research Agent Chat** | `weblens.apps.research_chat` | Stateful conversational chat | PASSED (`test_apps.py`) |
+

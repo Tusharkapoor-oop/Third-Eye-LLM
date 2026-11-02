@@ -1,0 +1,11 @@
+{
+  "version": "v9.0.0",
+  "target": "Three-System Evaluation Lab",
+  "categories_covered": 30,
+  "total_benchmark_queries": 30,
+  "total_adversarial_cases": 9,
+  "checksums": {
+    "eval_benchmark_suite.json": "b8f3a9d16df1b3ca2f204f3717406f1eb4a79f4ba411d098daf222f67c0ca53c",
+    "adversarial_suite.json": "2e99ebe5e4bbede2a964d6f4af1cb087d37efb4873d579fd0e77ba0ed3a17670"
+  }
+}

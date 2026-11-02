@@ -57,3 +57,4 @@
 - Raw trial log: `reports/tavily-weblens-comparison/raw/paired_pilot.jsonl`
 - Statistical summary: `reports/tavily-weblens-comparison/raw/summary.json`
 - Stratified query set: `benchmarks/eval_dataset_expanded.json`
+

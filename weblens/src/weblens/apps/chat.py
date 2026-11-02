@@ -70,7 +70,9 @@ class ResearchChatSession:
                 continue
             # Extract query-relevant passages
             extract_out = await self.service.extract(url, query=clean_msg, max_tokens=600)
-            passages = extract_out.get("passages", [])
+            passages = extract_out.get("ps") or extract_out.get("passages", [])
+            if not passages and h.get("s"):
+                passages = [{"p": h["s"], "s": [0, len(h["s"])]}]
             for p in passages:
                 text = p.get("p", "")
                 # Scan untrusted web text for prompt injection

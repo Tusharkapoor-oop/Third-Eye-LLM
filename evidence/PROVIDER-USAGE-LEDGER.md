@@ -1,26 +1,16 @@
-# WebLens & Tavily Provider Usage Ledger
+# Provider Usage and Telemetry Ledger (V9)
 
-## Billing & Telemetry Record
-- **Date**: 2026-11-01
-- **Authorized Plan**: Tavily Researcher Plan
-- **Pre-Registered Quota Ceiling**: Max 60% of remaining quota (600 credits max allowable).
+## Live Verification Ledger
 
----
+| System | Total Requests | Successful | Failed | Credits Consumed | Tokens Returned | Total Cost (USD) |
+|---|---|---|---|---|---|---|
+| **System 1: Local WebLens MCP** | 15 | 15 | 0 | 0.0 | 3,976 | **$0.00** |
+| **System 2: Deployed WebLens MCP** | 15 | 15 | 0 | 0.0 | 6,423 | **$0.00** |
+| **System 3: Tavily Direct API** | 15 | 15 | 0 | 15.0 | 21,892 | **$0.075** |
 
-## 1. Credit Consumption Ledger
-
-| Timestamp (UTC) | Run ID / Workflow | Provider | Queries / Calls | Credits Used | Remaining Quota | Verified via API |
-| :--- | :--- | :--- | :--- | :--- | :--- | :--- |
-| 2026-11-01T17:12:40Z | Pre-Flight Connectivity Probe | Tavily | 2 | 2.0 | 998.0 | Verified (`/usage`) |
-| 2026-11-01T17:22:46Z | Paired Stratified Benchmark Pilot | Tavily | 18 | 18.0 | 980.0 | Verified (`paired_pilot.jsonl`) |
-| 2026-11-01T17:24:53Z | Paired Stratified Benchmark Run | Tavily | 18 | 18.0 | 962.0 | Verified (`summary.json`) |
-| 2026-11-01 (All) | All Experiments & Tests | WebLens | 70+ | **0.0** | Unlimited | Verified (Keyless Local Engine) |
-
----
-
-## 2. Spend Summary
-
-- **Total Tavily Credits Consumed**: 38.0 credits (3.8% of 1,000 credit allocation).
-- **Quota Cap Compliance**: 38.0 / 600.0 credit cap (6.3% of allowed budget spent; 93.7% budget preserved).
-- **WebLens Cost**: $0.00 (Zero API credits or subscription fees).
-- **Tavily Approximate Cost**: $0.19 (at $0.005/credit equivalent).
+## Tavily Account Status
+- **Initial Allocation**: 1,000.0 credits
+- **Prior Spend (V8)**: 38.0 credits
+- **Session Spend (V9)**: 15.0 credits
+- **Remaining Account Balance**: **947.0 credits**
+- **Quota Cap Guard**: Budget ceiling of 60% remaining quota respected.

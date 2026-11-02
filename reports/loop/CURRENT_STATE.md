@@ -42,3 +42,4 @@
    - Canary secrets & crawler traps: 20 passed.
    - Token boundary tests: 18 passed.
    - Fixed SEC-V8-001 (deep research continuous text token blowout).
+

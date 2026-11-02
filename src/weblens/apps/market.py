@@ -9,6 +9,7 @@ Extracts verified market intelligence and financial metrics from official disclo
 
 from __future__ import annotations
 
+import asyncio
 import re
 import time
 from typing import Any
@@ -101,4 +102,38 @@ class MarketResearcher:
             "recent_disclosures": recent_disclosures[:3],
             "disclaimer": DISCLAIMER,
             "ms": elapsed_ms,
+        }
+
+    async def analyze_portfolio(
+        self,
+        assets: list[str],
+        *,
+        max_concurrency: int = 4,
+    ) -> dict[str, Any]:
+        """Analyze disclosures and verified financial metrics across a portfolio of assets."""
+        t0 = time.perf_counter()
+        clean_assets = [a.strip() for a in assets if a.strip()]
+        if not clean_assets:
+            return {"status": "error", "msg": "Asset list must not be empty", "disclaimer": DISCLAIMER}
+
+        sem = asyncio.Semaphore(max_concurrency)
+
+        async def _bounded(asset: str) -> dict[str, Any]:
+            async with sem:
+                return await self.analyze_asset(asset)
+
+        results = await asyncio.gather(*[_bounded(a) for a in clean_assets])
+        asset_reports = {a: res for a, res in zip(clean_assets, results)}
+
+        total_disclosures = sum(r.get("disclosures_found", 0) for r in results)
+        total_metrics = sum(len(r.get("verified_metrics", [])) for r in results)
+
+        return {
+            "status": "ok",
+            "portfolio_size": len(clean_assets),
+            "total_disclosures_analyzed": total_disclosures,
+            "total_verified_metrics": total_metrics,
+            "assets": asset_reports,
+            "disclaimer": DISCLAIMER,
+            "ms": int((time.perf_counter() - t0) * 1000),
         }
