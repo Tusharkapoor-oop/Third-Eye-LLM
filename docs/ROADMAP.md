@@ -64,3 +64,4 @@ WebLens is an evidence-first web-intelligence infrastructure tool designed speci
 | **Milestone 2.4** | Multi-Lingual Injection Defense | Expanded regex and heuristic rules for Spanish, Chinese, Russian, and Arabic payloads. | Detection Recall >= 85% with 0.00% FPR. |
 | **Milestone 2.5** | Distributed Multi-Tenant MCP | Ingress API key authentication, per-tenant rate limits, and Redis cache layer. | 1,000 QPM sustained under 2,000 ms p95. |
 | **Milestone 3.0** | Autonomous Evidence Synthesis | Agentic multi-hop hypothesis testing with automated contradiction resolution. | Verified claim support >= 95% on complex research. |
+

@@ -28,3 +28,4 @@ Each experiment adheres to strict preregistration and ledger anchoring:
 | **EXP-V10A** | 2026-11-02 | `21faa32` | Four-System evaluation including Google Gemini API adapter and 120 queries. | Three-system baseline | Gemini integration verified; 120-query evaluation completed. | **KEEP** | `reports/three-system-comparison/` |
 | **EXP-V10-SC** | 2026-11-02 | `21faa32` | Preregister and execute corrected scoring harness (PREREG-V10-001). | Flawed token > 3 scorer | Short tokens (H2O, 405, Au) correctly scored; dynamic items validated. | **KEEP** | `evidence/prereg-v10-001-scoring-fix.md` |
 | **EXP-V11-AUTH** | 2026-11-02 | `1209abb` | Institutional domain authority weighting and query comparison normalization. | Static authority list | Added `.gov.in`, `.gov.uk`, `rtings.com`, `worldbank.org`; 252 tests pass. | **KEEP** | `docs/SEARCH_QUALITY_STRATEGY.md` |
+

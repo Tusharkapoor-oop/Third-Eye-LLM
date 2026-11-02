@@ -1,24 +1,27 @@
-# GAP-LEDGER — "Where do we lack" (v10 loop)
+# GAP-LEDGER — Quality Loop 2026-11-02
 
-Seeded from EXP-V9B-100Q raw records (2026-11-02, same-run competitor numbers). Updated per cycle.
+Evidence sources:
+- `evidence/raw/quality-loop-20261102/metadata.json`
+- `evidence/raw/quality-loop-20261102/extraction_battery.jsonl`
+- `reports/local-security/local_security_results_v2.json`
+- `reports/EXTRACTION_FIDELITY_REPORT.md`
 
-| F# | Field | Our model (measured, pre-correction) | Best competitor (same run) | Gap | Root cause | Cycle fix | Disposition |
-|---|---|---|---|---|---|---|---|
-| F1 | Search: ≥1 relevant in top-5 | 80/100 answerable (P@5 0.688) | Tavily 90/100 (0.756) | −10 items | 6 structural scorer defects + 11 real retrieval misses | PREREG-V10-001 corrected measurer; engine fix pending | REMEDIATING |
-| F2 | Answer support | 0.80 | 0.90 | −0.10 | same as F1 | PREREG-V10-001 + Cycle-1 | REMEDIATING |
-| F3 | Hallucination 0% | not yet item-audited | — | unmeasured | claim-level audit not yet run | pending | OPEN |
-| F4 | Abstention 0 flags | 6 flags (heuristic; trap wording) | Tavily 7 flags | parity-ish | retrieval exposure to fabricated entities | pending audit | OPEN |
-| F7 | p50/ceiling latency | 922.7 ms p50 (PASS zone) | Tavily 2381.6 | leading | — | protect (G2) | CLOSED (protect) |
-| F8 | RAG recall 100% | unmeasured | — | unmeasured | no harness wired | pending | OPEN |
-| F10 | Citation fidelity | unmeasured | — | unmeasured | no claim-level audit yet | pending | OPEN |
-| F11 | Latency ceiling 100%<2.4s | unmeasured per-item | — | unmeasured | rerun | pending | OPEN |
-| F12 | Tokens ≤600 mean/100% | 425.8 mean (baseline) | Tavily 1527 | leading | — | protect (G2) | CLOSED (protect) |
-| F14 | $0 keyless | 0 credits baseline | Tavily 1 c/q | leading | — | protect (G2) | CLOSED (protect) |
-| F15 | Reliability 100% | local 1.00, deployed 0.99 (1 graceful abstention) | Tavily 1.00 | deployed −1 | no_reliable_result abstention (graceful) | verify per-item | REMEDIATING |
-| F16 | Security 100% blocked | 184/184 historical suites | n/a | — | standing suites | rerun before final | REMEDIATING (retest queued) |
-
-Notes:
-- Competitor numbers identical-same-run as required.
-- G2 guardrails protect F7/F12/F14 while F1/F2 open.
-
-*Preregistered scorer correction (2026-11-02, before re-measurement): ids 7, 9, 12, 19, 81, 82 are covered by PREREG-V10-001 (scoring availability was true for every system).*
+| F# | Field | WebLens measured | Best comparator in supplied V9B | Gap / blocker | Root cause or evidence gap | Disposition |
+|---|---|---:|---:|---|---|---|
+| F1 | Search hit in top-5 | 88/90 | not derivable from aggregate | 2 misses | keyless provider coverage/query formulation | OPEN |
+| F2 | Supported answer | 51/90 corrected rerun; prior report 73/90 | 80/90 corrected rerun | No increase; cycle rejected | scorer and provider chain changed together; causal isolation missing | OPEN |
+| F3 | Unsupported claims | UNSUPPORTED | UNSUPPORTED | no answer artifact | baseline is search-only | STRUCTURAL |
+| F4 | Trap abstention | 4/10 | 93/100 | 6 local flags | false-confidence policy/provider results | OPEN |
+| F5 | Extraction main-content recall & noise | 20/20 PASS (100%) | UNSUPPORTED | 0 flags; recall 1.00, precision 1.00 | Measured across 20-doc battery; TOC stripped, 0 boilerplate bleed | CLOSED |
+| F6 | Extraction fidelity (code/tables/HTML) | 20/20 PASS (100%) | UNSUPPORTED | 0% code mangled, 0% cell loss | Evaluated with code fences, multi-column tables, normalized escapes | CLOSED |
+| F7 | PDF multi-page separation & 0 lost pages | 20/20 PASS (100%) | UNSUPPORTED | 0 lost pages | Multi-page text extraction verified via PyMuPDF backend | CLOSED |
+| F8 | Retrieval / RAG (BM25 Recall@5) | UNSUPPORTED | UNSUPPORTED | no compatible raw artifacts | dedicated RAG battery not yet executed | STRUCTURAL |
+| F9 | Deep research sub-question coverage | UNSUPPORTED | UNSUPPORTED | no compatible raw artifacts | multi-hop evidence evaluation pending | STRUCTURAL |
+| F10 | Citation fidelity & SHA-256 integrity | UNSUPPORTED | UNSUPPORTED | no compatible raw artifacts | citation logging battery pending | STRUCTURAL |
+| F11 | Latency hard ceiling | 99/100; p50 922.7ms | Tavily p50 2381.6ms | one local request >2400ms | tail outlier | OPEN |
+| F12 | Tokens | 100/100; mean 425.8 | Tavily mean 1527.3 | second run absent | reproducibility gate | REMEDIATING |
+| F13 | Throughput | UNSUPPORTED | UNSUPPORTED | no sustained QPM windows | sequential benchmark | STRUCTURAL |
+| F14 | Keyless cost | 100/100 | Tavily 100.0 credits | second run absent | reproducibility gate | REMEDIATING |
+| F15 | Reliability | 100/100 | Tavily 1.0 | retry protocol absent | evidence protocol gap | REMEDIATING |
+| F16 | Security audit (SSRF, injection, MCP) | 38/38 PASS (100% local) | not comparable | 0 local findings | Local MCP suite passes 38/38 (0 FAIL, 0 UNVERIFIED) | CLOSED (Local) |
+| F17 | Prior-cycle regressions | not fully re-derived twice | not applicable | independent audit absent | reproducibility protocol gap | OPEN |

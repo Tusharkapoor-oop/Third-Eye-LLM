@@ -15,6 +15,7 @@ from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 
+from ..errors import BlockedURLError
 from ..extract.passages import build_chunks
 from ..service import WebLens
 
@@ -67,6 +68,20 @@ class Crawl2RAG:
         max_depth: int = 2,
     ) -> dict[str, Any]:
         """Crawl website and index clean passages with source spans into SQLite."""
+        # Validate destination policy upfront to prevent SSRF
+        if hasattr(self.service, "fetcher") and hasattr(self.service.fetcher, "policy"):
+            try:
+                self.service.fetcher.policy.check_url(start_url)
+            except BlockedURLError as e:
+                return {
+                    "status": "error",
+                    "err": "blocked_url",
+                    "msg": f"Destination blocked by SSRF policy: {e}",
+                    "url": start_url,
+                    "pages_crawled": 0,
+                    "pages_indexed": 0,
+                }
+
         t0 = time.perf_counter()
         crawl_out = await self.service.crawler.crawl(
             start_url,
@@ -74,6 +89,16 @@ class Crawl2RAG:
             max_depth=max_depth,
             max_tokens=25000,
         )
+
+        if any(p.status == "error" and any("BlockedURL" in str(w) for w in p.warnings) for p in crawl_out.pages):
+            return {
+                "status": "error",
+                "err": "blocked_url",
+                "msg": "Destination blocked by SSRF policy",
+                "url": start_url,
+                "pages_crawled": len(crawl_out.pages),
+                "pages_indexed": 0,
+            }
 
         now_iso = datetime.now(UTC).isoformat()
         indexed_pages = 0

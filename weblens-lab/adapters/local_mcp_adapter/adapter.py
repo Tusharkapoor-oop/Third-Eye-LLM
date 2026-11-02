@@ -35,7 +35,7 @@ from ..common_interface.base import (
 from ..mcp_client import CallMeta, MCPHttpClient, MCPTransportError
 from ..provenance import classify_search_status, results_hash
 
-ROOT = Path(__file__).resolve().parent.parent.parent
+ROOT = Path(__file__).resolve().parent.parent.parent.parent
 CACHE_ROOT = ROOT / "weblens-lab" / "sandbox" / "temporary" / "local_mcp_cache"
 LOG_ROOT = ROOT / "weblens-lab" / "sandbox" / "logs"
 

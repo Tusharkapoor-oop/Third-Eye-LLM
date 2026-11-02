@@ -39,3 +39,4 @@ The evaluation assesses whether `weblens_research` and `weblens_app_deep_researc
 - Implementation: `src/weblens/research/engine.py`
 - Integration Tests: `tests/test_both_stack_comparison.py`, `tests/test_search.py`
 - Verification Status: **Verified** (100% tests passing).
+

@@ -92,6 +92,8 @@ class WebLens:
             k = max(1, min(10, max_results or self.s.default_results))
             if not query or not query.strip():
                 raise WebLensError("query must not be empty", code=ErrCode.BAD_INPUT)
+            if len(query) > 2000:
+                raise WebLensError("query exceeds maximum allowed length of 2000 characters", code=ErrCode.BAD_INPUT)
             if freshness not in (None, "day", "week", "month", "year"):
                 raise WebLensError(
                     "freshness must be day, week, month or year", code=ErrCode.BAD_INPUT
@@ -217,6 +219,8 @@ class WebLens:
         async def run() -> dict[str, Any]:
             if not query or not query.strip():
                 raise WebLensError("query must not be empty", code=ErrCode.BAD_INPUT)
+            if len(query) > 2000:
+                raise WebLensError("query exceeds maximum allowed length of 2000 characters", code=ErrCode.BAD_INPUT)
             out = await self.research.research(
                 query,
                 max_tokens=max_tokens,

@@ -13,7 +13,7 @@ WebLens enforces zero-trust boundaries: all content retrieved from the public in
 | Attack Vector Category | Test Suite / Target | Vectors Tested | Vectors Blocked | Pass Rate | Status |
 |---|---|---|---|---|---|
 | **Local SSRF & Egress Probes** | `tests/test_ssrf_penetration.py` | 51 | 51 | **100.0%** | **Verified** |
-| **Local Security & Boundaries** | `run_security_audit_v2.py --local` | 26 | 26 | **100.0%** | **Verified** |
+| **Local Security & Boundaries** | `run_security_audit_v2.py --skip-deployed` | 38 | 38 | **100.0%** | **Verified** |
 | **Deployed Cloud Run Audit** | `run_security_audit_v2.py --deployed`| 10 | 10 | **100.0%** | **Verified** |
 | **Indirect Prompt Injection** | `tests/test_injection_sanitization.py`| 35 | 35 | **100.0%** | **Verified** |
 | **Canary Secret Leak Audit** | `tests/test_p9_canary_secrets.py` | 3 | 3 | **100.0%** | **Verified** |
@@ -58,3 +58,4 @@ The live Google Cloud Run endpoint (`https://weblens-16131012091.us-central1.run
 - Deployed Audit Results: `reports/deployed-security/deployed_security_results_v2.json`
 - Unit Test Suites: `tests/test_ssrf_penetration.py`, `tests/test_injection_sanitization.py`, `tests/test_p9_canary_secrets.py`
 - Verification Status: **Verified** (100% tests passing).
+

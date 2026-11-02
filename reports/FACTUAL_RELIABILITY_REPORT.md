@@ -45,3 +45,4 @@ Evaluations were performed across the 100-query benchmark dataset (`eval_dataset
 - Preregistered Scorer: `evidence/prereg-v10-001-scoring-fix.md`
 - Scorer Unit Tests: `tests/test_scoring_prereg_v10.py` (4/4 passed)
 - Verification Status: **Verified**.
+

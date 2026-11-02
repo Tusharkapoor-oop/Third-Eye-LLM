@@ -37,3 +37,4 @@ In accordance with strict engineering standards, every claim is assigned exactly
 | **CLM-016** | Provider | SearXNG provider integration is blocked locally because no SearXNG container is running. | **Blocked** | `src/weblens/search/searxng.py` | `ConnectError [WinError 10061]` |
 | **CLM-017** | Gemini | Gemini API integration with WebLens MCP adapter executes structured tool calls. | **Partially verified** | `weblens-lab/adapters/gemini_adapter/` | Unit tests passing; live API requires user-supplied key |
 | **CLM-018** | Red-Team | Zero API keys or secrets are leaked in git commits or log files. | **Verified** | `tests/test_p9_canary_secrets.py` | `pytest tests/test_p9_canary_secrets.py` |
+

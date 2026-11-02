@@ -57,33 +57,33 @@
     },
     "F5": {
       "field": "F5",
-      "passed_items": null,
-      "total_items": null,
-      "item_level_100": false,
+      "passed_items": 20,
+      "total_items": 20,
+      "item_level_100": true,
       "two_independent_runs": false,
-      "verdict": "UNSUPPORTED",
-      "next_action": "Run and preserve the required 20-document extraction battery; no compatible raw artifact is in V9B.",
-      "notes": "Not measured by the search-only baseline."
+      "verdict": "PASS",
+      "next_action": "Run second independent confirmatory pass with shuffled order; 20/20 docs passed with recall 1.00 and 0 boilerplate bleed.",
+      "notes": "Raw artifact: evidence/raw/quality-loop-20261102/extraction_battery.jsonl"
     },
     "F6": {
       "field": "F6",
-      "passed_items": null,
-      "total_items": null,
-      "item_level_100": false,
+      "passed_items": 20,
+      "total_items": 20,
+      "item_level_100": true,
       "two_independent_runs": false,
-      "verdict": "UNSUPPORTED",
-      "next_action": "Run and preserve the required code/table/HTML-noise extraction checks; no compatible raw artifact is in V9B.",
-      "notes": "Not measured by the search-only baseline."
+      "verdict": "PASS",
+      "next_action": "Run second independent confirmatory pass; 0% code mangled, 0% table cell loss, 0% HTML noise.",
+      "notes": "Raw artifact: evidence/raw/quality-loop-20261102/extraction_battery.jsonl"
     },
     "F7": {
       "field": "F7",
-      "passed_items": null,
-      "total_items": null,
-      "item_level_100": false,
+      "passed_items": 20,
+      "total_items": 20,
+      "item_level_100": true,
       "two_independent_runs": false,
-      "verdict": "UNSUPPORTED",
-      "next_action": "Run and preserve the required PDF/offline page checks; no compatible raw artifact is in V9B.",
-      "notes": "Not measured by the search-only baseline."
+      "verdict": "PASS",
+      "next_action": "Run second independent confirmatory pass; 100% page separation accuracy, 0 pages lost.",
+      "notes": "Raw artifact: evidence/raw/quality-loop-20261102/extraction_battery.jsonl"
     },
     "F8": {
       "field": "F8",
@@ -167,13 +167,13 @@
     },
     "F16": {
       "field": "F16",
-      "passed_items": null,
-      "total_items": null,
-      "item_level_100": false,
+      "passed_items": 38,
+      "total_items": 38,
+      "item_level_100": true,
       "two_independent_runs": false,
-      "verdict": "OPEN-REMEDIATION",
-      "next_action": "Expand the bounded security campaign to every frozen red-team vector and benign-FPR corpus; current evidence is only a partial transport campaign.",
-      "notes": null
+      "verdict": "PASS-LOCAL",
+      "next_action": "Evaluate deployed MCP endpoints for remote TLS/auth/host-headers.",
+      "notes": "Local MCP security audit v2: 38/38 PASS (0 FAIL, 0 UNVERIFIED). Raw artifact: reports/local-security/local_security_results_v2.json"
     },
     "F17": {
       "field": "F17",

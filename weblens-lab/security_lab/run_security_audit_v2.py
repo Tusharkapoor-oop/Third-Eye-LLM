@@ -128,6 +128,20 @@ def _contains_block_signal(payload: Any) -> bool:
     )
 
 
+def _extract_text(data: dict[str, Any]) -> str:
+    """Normalize extracted text across compact and full schema representations."""
+    if not isinstance(data, dict):
+        return ""
+    if data.get("text"):
+        return str(data["text"])
+    if data.get("x"):
+        return str(data["x"])
+    passages = data.get("ps") or []
+    if isinstance(passages, list):
+        return "\n".join(str(p.get("x", "")) for p in passages if isinstance(p, dict))
+    return ""
+
+
 def _secret_values() -> list[tuple[str, str]]:
     """Environment values that must never appear in a tool response."""
     out: list[tuple[str, str]] = []
@@ -391,28 +405,30 @@ async def audit_local_security() -> dict[str, Any]:
         for label, url in private_targets:
             out = await call("extract_url", {"url": url})
             blocked = bool(out["transport_error"]) or _contains_block_signal(out["data"])
+            extracted_len = len(_extract_text(out["data"]))
             tests.append(
                 result(
                     f"local_extract_blocks_{label}",
                     "ssrf_live_tool",
                     "live_local_mcp",
-                    "PASS" if blocked and not out["data"].get("text") else "FAIL",
+                    "PASS" if blocked and extracted_len == 0 else "FAIL",
                     severity="high",
                     evidence={
                         "tool": "extract_url",
                         "url": url,
                         "transport_error": out["transport_error"],
-                        "returned_text_length": len(str(out["data"].get("text") or "")),
+                        "returned_text_length": extracted_len,
                         "latency_ms": out["latency_ms"],
                     },
                 )
             )
 
         public_control = await call("extract_url", {"url": "https://example.com/", "max_tokens": 300})
+        control_text_len = len(_extract_text(public_control["data"]))
         control_ok = (
             not public_control["transport_error"]
             and public_control["data"].get("status") == "ok"
-            and len(public_control["data"].get("text") or "") > 50
+            and control_text_len > 50
         )
         tests.append(
             result(
@@ -422,7 +438,7 @@ async def audit_local_security() -> dict[str, Any]:
                 "PASS" if control_ok else "UNVERIFIED",
                 evidence={
                     "status": public_control["data"].get("status"),
-                    "text_length": len(public_control["data"].get("text") or ""),
+                    "text_length": control_text_len,
                     "transport_error": public_control["transport_error"],
                 },
                 notes="A control case proves the extractor is not simply blocking every URL.",
@@ -505,13 +521,18 @@ async def audit_local_security() -> dict[str, Any]:
         )
 
         unknown_tool = await call("tool_that_does_not_exist", {})
+        rejected = bool(unknown_tool["transport_error"]) or unknown_tool["data"].get("status") == "error"
         tests.append(
             result(
                 "local_unknown_tool_rejected",
                 "mcp_protocol",
                 "live_local_mcp",
-                "PASS" if unknown_tool["transport_error"] else "FAIL",
-                evidence={"transport_error": unknown_tool["transport_error"]},
+                "PASS" if rejected else "FAIL",
+                evidence={
+                    "transport_error": unknown_tool["transport_error"],
+                    "status": unknown_tool["data"].get("status"),
+                    "msg": unknown_tool["data"].get("msg"),
+                },
             )
         )
 

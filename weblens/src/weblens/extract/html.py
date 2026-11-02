@@ -197,10 +197,23 @@ def extract_html(html_text: str, url: str, *, include_links: bool = False) -> Ex
     sitename = (meta.get("sitename") or "").strip() or None
 
     text = ""
+    # Pre-clean known chrome: Wikipedia and documentation TOCs (F5-F7 requirement)
+    input_html = html_text
+    if 'id="toc"' in html_text or 'class="toc"' in html_text or 'id="toctitle"' in html_text:
+        try:
+            tree = lxml_html.fromstring(html_text)
+            for el in tree.xpath('//*[@id="toc" or @id="toctitle" or contains(@class, "toc")]'):
+                parent = el.getparent()
+                if parent is not None:
+                    parent.remove(el)
+            input_html = lxml_html.tostring(tree, encoding="unicode")
+        except Exception:
+            input_html = html_text
+
     try:
         text = (
             trafilatura.extract(
-                html_text,
+                input_html,
                 url=url,
                 output_format="markdown",
                 include_formatting=True,

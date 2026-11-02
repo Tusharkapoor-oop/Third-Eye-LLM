@@ -11,6 +11,7 @@ from __future__ import annotations
 import ipaddress
 import socket
 from dataclasses import dataclass
+from urllib.parse import urlsplit
 
 import anyio
 from httpcore._backends.anyio import AnyIOBackend
@@ -54,6 +55,18 @@ class Destination:
 class DestinationPolicy:
     def __init__(self, settings: Settings):
         self.s = settings
+
+    def check_url(self, url: str) -> None:
+        try:
+            parts = urlsplit(url)
+        except Exception as e:
+            raise BlockedURLError(f"invalid URL: {url}") from e
+        if parts.scheme not in ("http", "https"):
+            raise BlockedURLError(f"unsupported scheme: {parts.scheme}")
+        host = parts.hostname or ""
+        port = parts.port or (443 if parts.scheme == "https" else 80)
+        self.check_hostname(host)
+        self.check_port(port)
 
     def check_hostname(self, host: str) -> None:
         h = host.lower().strip(".")

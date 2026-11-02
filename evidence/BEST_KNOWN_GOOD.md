@@ -63,3 +63,4 @@ The following performance figures represent verified measurements on the 100-que
 3. **Prompt Injection Scanner (`weblens/src/weblens/security/injection.py`):**
    - Regex patterns covering instruction overrides, system overrides, role hijacking, and credential exfiltration.
    - 35/35 adversarial vectors blocked in unit testing.
+

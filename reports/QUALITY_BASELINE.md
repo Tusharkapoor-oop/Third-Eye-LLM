@@ -49,3 +49,4 @@ Measurements are derived directly from the 100-query stratified benchmark (`benc
 - Raw Results JSONL: `reports/three-system-comparison/v10-cycle0-corrected-scorer/three_system_results.jsonl`
 - Summary JSON: `reports/three-system-comparison/v10-cycle0-corrected-scorer/summary.json`
 - Verification Status: **Verified** (Reproduced via `weblens-lab/evaluations/run_three_system_benchmark.py`).
+

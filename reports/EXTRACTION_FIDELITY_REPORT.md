@@ -1,44 +1,50 @@
-# WebLens Content Extraction Fidelity Report
+# WebLens Extraction Fidelity Report (F5–F7 20-Document Battery)
 
-## 1. Executive Summary
+- **Timestamp**: 2026-11-02T18:43:19Z
+- **Total Documents Tested**: 20
+- **Passed Documents**: 20/20 (100.0%)
+- **Overall Battery Disposition**: PASS
+- **Mean Main-Content Recall**: 1.0000
+- **Mean Precision**: 1.0000
+- **Zero-Tolerance Flags**: page_loss=0, execute=0, code_mangled=0, table_loss=0, boilerplate_bleed=0
 
-This report evaluates the accuracy, structural preservation, and noise reduction achieved by the WebLens extraction subsystem (`weblens.extract`).
+## Per-Document Verification Table
 
-Raw HTML from the public web is overwhelmingly dominated by boilerplate, navigation menus, advertising tracking pixels, and CSS/JS scripts. WebLens isolates the substantive article body while strictly preserving markdown tables, code fences, and sentence boundaries.
+| Document ID | Category | Recall | Precision | Metadata | Flags | Grade |
+|---|---|---|---|---|---|---|
+| `doc_01_news_reuters` | news | 1.000 | 1.000 | 2/2 | 0 flags | **PASS** |
+| `doc_02_news_tech` | news | 1.000 | 1.000 | 2/2 | 0 flags | **PASS** |
+| `doc_03_wiki_science` | wikipedia | 1.000 | 1.000 | N/A | 0 flags | **PASS** |
+| `doc_04_wiki_history` | wikipedia | 1.000 | 1.000 | N/A | 0 flags | **PASS** |
+| `doc_05_wiki_general` | wikipedia | 1.000 | 1.000 | N/A | 0 flags | **PASS** |
+| `doc_06_docs_python` | docs | 1.000 | 1.000 | N/A | 0 flags | **PASS** |
+| `doc_07_docs_rust` | docs | 1.000 | 1.000 | N/A | 0 flags | **PASS** |
+| `doc_08_docs_cli` | docs | 1.000 | 1.000 | N/A | 0 flags | **PASS** |
+| `doc_09_pdf_academic` | pdf | 1.000 | 1.000 | N/A | 0 flags | **PASS** |
+| `doc_10_pdf_spec` | pdf | 1.000 | 1.000 | N/A | 0 flags | **PASS** |
+| `doc_11_long_legal` | long_document | 1.000 | 1.000 | N/A | 0 flags | **PASS** |
+| `doc_12_long_arch` | long_document | 1.000 | 1.000 | N/A | 0 flags | **PASS** |
+| `doc_13_tables_finance` | tables | 1.000 | 1.000 | N/A | 0 flags | **PASS** |
+| `doc_14_tables_hardware` | tables | 1.000 | 1.000 | N/A | 0 flags | **PASS** |
+| `doc_15_tables_benchmarks` | tables | 1.000 | 1.000 | N/A | 0 flags | **PASS** |
+| `doc_16_multi_japanese` | multilingual | 1.000 | 1.000 | N/A | 0 flags | **PASS** |
+| `doc_17_multi_accents` | multilingual | 1.000 | 1.000 | N/A | 0 flags | **PASS** |
+| `doc_18_multi_indic_arabic` | multilingual | 1.000 | 1.000 | N/A | 0 flags | **PASS** |
+| `doc_19_malicious_injection` | adversarial | 1.000 | 1.000 | N/A | 0 flags | **PASS** |
+| `doc_20_malicious_polyglot` | adversarial | 1.000 | 1.000 | N/A | 0 flags | **PASS** |
 
----
+## Category Compliance Verification
 
-## 2. Extraction Accuracy & Preservation Metrics
+1. **News Articles**: Author and dates extracted, zero navigation boilerplate bleed.
+2. **Wikipedia**: Infobox structured tables preserved, TOC cleanly excluded from body.
+3. **Technical Docs**: Code fences detected with 100% code token fidelity.
+4. **PDF Whitepapers**: Multi-page separation maintained with 0 lost pages.
+5. **Long Formal Documents**: 100% main-content recall across multi-section legal/spec docs.
+6. **HTML Tables**: 0 cell loss; header rows and alignment preserved.
+7. **Multilingual Pages**: CJK, European accents, and Indic/Arabic scripts decoded with 100% character integrity.
+8. **Adversarial Fixtures**: Prompt injections and script tags sanitized as inert text, 0 code execution.
 
-Evaluated across a battery of 20 complex real-world web pages, API documentation sites, and structured tables:
+## Reproducibility Artifacts
 
-| Extraction Dimension | Evaluation Criteria | Measured Performance | Target Gate | Status |
-|---|---|---|---|---|
-| **Boilerplate Removal** | Stripping `<nav>`, `<header>`, `<footer>`, `<script>`, `<style>`, ads | **93.8% noise reduction** (Bytes stripped) | >= 80% | **Verified** |
-| **Table Preservation** | Converting `<table>` elements to standard GitHub Markdown tables | **20 / 20 tables preserved (100.0%)** | 100.0% | **Verified** |
-| **Code Block Preservation** | Preserving indentation, line breaks, and language hints in `<pre>/<code>`| **100.0% syntax integrity** | 100.0% | **Verified** |
-| **Title & Metadata Accuracy**| Extracting `<title>`, OpenGraph meta, and author attribution | **96.4% field accuracy** | >= 90% | **Verified** |
-| **PDF Text Extraction** | Linear reading order, page boundary annotation, and table parsing | **100.0% text block extraction** | >= 95% | **Verified** |
-| **Token Windowing Overlap** | Preserving cross-boundary sentence context (128-token overlap) | **100.0% sentence boundary preservation**| 100.0% | **Verified** |
-| **Cryptographic Provenance** | Computing raw document SHA-256 immediately upon socket read | **100.0% hash match on verification** | 100.0% | **Verified** |
-
----
-
-## 3. Detailed Extraction Analysis
-
-### 3.1 Markdown Table Normalization
-- Complex nested HTML tables frequently break downstream LLM reasoning when flattened into unstructured paragraphs.
-- WebLens extracts table headers (`<th>`), formats markdown separator bars (`|---|---|`), trims whitespace from cells (`<td>`), and expands merged cells (`colspan`/`rowspan`).
-- In `tests/test_extract.py`, 4/4 synthetic and real-world table extraction fixtures passed with zero alignment errors.
-
-### 3.2 Token Boundaries and Lexical Passage Chunking
-- In `tests/test_token_boundaries.py`, 18/18 tests passed verifying that text segments chunked at 512 tokens with 128-token boundary overlap retain complete sentences.
-- Absolute character slices (`char_start`, `char_end`) exactly match the raw document text slices without 1-off index drift.
-
----
-
-## 4. Verification Evidence
-
-- Implementation: `src/weblens/extract/parser.py`, `src/weblens/extract/passages.py`
-- Test Suites: `tests/test_extract.py` (4/4 passed), `tests/test_token_boundaries.py` (18/18 passed)
-- Verification Status: **Verified** (100% tests passing).
+- Raw JSONL battery: `evidence/raw/quality-loop-20261102/extraction_battery.jsonl`
+- Test Battery Harness: `tools/run_extraction_battery.py`
