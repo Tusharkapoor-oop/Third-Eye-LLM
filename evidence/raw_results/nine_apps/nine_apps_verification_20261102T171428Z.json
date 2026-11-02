@@ -1,0 +1,209 @@
+{
+  "timestamp": "2026-11-02T17:14:28.774424+00:00",
+  "verification_version": "v10-assertions",
+  "total_workflows": 9,
+  "passed": 7,
+  "partial": 1,
+  "failed": 1,
+  "all_passed": false,
+  "work_dir": "C:\\Users\\ACER\\AppData\\Local\\Temp\\weblens_nine_apps_ni_vd4ag",
+  "outcomes": {
+    "app_1_deep_research": {
+      "status": "FAIL",
+      "report_status": "no_reliable_result",
+      "findings_count": 0,
+      "distinct_domains": 0,
+      "subqueries": 1,
+      "assertions": {
+        "findings_present": false,
+        "subqueries_present": true,
+        "every_finding_has_url": false,
+        "every_finding_has_span": true
+      },
+      "sample": [],
+      "latency_ms": 4475.8
+    },
+    "app_2_company_researcher": {
+      "status": "PARTIAL",
+      "report_status": "found",
+      "detected_domain": "blogspot.com",
+      "populated_fields": {
+        "overview": 2,
+        "leadership": 0,
+        "products_and_services": 3,
+        "competitors_and_alternatives": 0,
+        "risks_and_challenges": 0
+      },
+      "assertions": {
+        "status_found": true,
+        "domain_detected": true,
+        "overview_has_citations": true,
+        "leadership_has_citations": false
+      },
+      "latency_ms": 17602.8
+    },
+    "app_3_chat_answer_engine": {
+      "status": "PASS",
+      "report_status": "ok",
+      "citations_returned": 3,
+      "turn1_query_used": "Python asyncio event loop architecture",
+      "turn2_query_used": "Python asyncio event loop architecture What about its performance implications?",
+      "assertions": {
+        "turn1_has_citations": true,
+        "turn1_has_answer": true,
+        "history_advanced_to_two": true,
+        "followup_resolved_with_prior_topic": true
+      },
+      "latency_ms": 8032.1
+    },
+    "app_4_crawl2rag": {
+      "status": "PASS",
+      "database_path": "C:\\Users\\ACER\\AppData\\Local\\Temp\\weblens_nine_apps_ni_vd4ag\\crawl2rag.db",
+      "ingest": {
+        "pages_crawled": 2,
+        "pages_indexed": 2,
+        "passages_indexed": 43,
+        "failures": []
+      },
+      "stats": {
+        "documents": 2,
+        "passages": 43,
+        "db_bytes": 135168,
+        "db_path": "C:\\Users\\ACER\\AppData\\Local\\Temp\\weblens_nine_apps_ni_vd4ag\\crawl2rag.db"
+      },
+      "query_hits": 3,
+      "assertions": {
+        "ingest_indexed_pages": true,
+        "documents_nonzero": true,
+        "passages_nonzero": true,
+        "query_returned_passages": true,
+        "passages_have_spans": true
+      },
+      "sample_passage": {
+        "url": "https://docs.python.org/3/library/asyncio-task.html",
+        "title": "Coroutines and tasks \u2014 Python 3.15.2 documentation",
+        "span": [
+          9827,
+          10233
+        ],
+        "text": "already exited.\nSome ways to use `cancel()`:\n- call it from the task group body based on some condition or event\n- pass the task group instance to child tasks via `create_task()`, allowing a child\ntask to conditionally cancel the entire group\n- pass the task group instance or bound `cancel()` method to some other task *before* opening the task group, allowing remote cancellation\nAdded in version 3.15.\n\n",
+        "score": -3.578
+      },
+      "latency_ms": 469.8
+    },
+    "app_5_market_researcher": {
+      "status": "PASS",
+      "portfolio_size": 2,
+      "disclosures_analyzed": 5,
+      "verified_metrics": 9,
+      "assertions": {
+        "disclosures_present": true,
+        "verified_metrics_present": true,
+        "all_metrics_sourced": true,
+        "disclaimer_present": true
+      },
+      "sample_metrics": [
+        {
+          "metric_mention": "2020",
+          "value": "2020",
+          "currency": "USD",
+          "multiplier": null,
+          "as_of_date": "2026-10-23",
+          "source_url": "https://en.wikipedia.org/wiki/Waste_Management%2C_Inc."
+        },
+        {
+          "metric_mention": "19",
+          "value": "19",
+          "currency": "USD",
+          "multiplier": null,
+          "as_of_date": "2026-10-23",
+          "source_url": "https://en.wikipedia.org/wiki/Waste_Management%2C_Inc."
+        }
+      ],
+      "latency_ms": 3504.4
+    },
+    "app_6_sheets_enricher": {
+      "status": "PASS",
+      "rows_enriched": 2,
+      "verified_ceo_cells": 2,
+      "assertions": {
+        "all_rows_returned": true,
+        "formula_values_defanged": true,
+        "at_least_one_verified": true,
+        "verified_values_have_sources": true
+      },
+      "sample_rows": [
+        {
+          "Company": "Apple",
+          "Note": "'=cmd|' /C calc'!A0",
+          "CEO": "adopted in 2007 as the company expanded its focus from computers to consumer electronics. Apple is one of the Big Tech companies . The company was founded to",
+          "CEO_source": "https://en.wikipedia.org/wiki/Apple_Inc.",
+          "CEO_status": "verified"
+        },
+        {
+          "Company": "Microsoft",
+          "Note": "who is CEO",
+          "CEO": "in-house PC line\u2014 the Surface\u2014in 2012, and the formation of Microsoft Mobile through Nokia. Since Satya Nadella became CEO in 2014, the company has changed",
+          "CEO_source": "https://en.wikipedia.org/wiki/Microsoft",
+          "CEO_status": "verified"
+        }
+      ],
+      "latency_ms": 3526.3
+    },
+    "app_7_meeting_prep": {
+      "status": "PASS",
+      "attendees_researched": 1,
+      "attendees_with_sources": 1,
+      "company_context_items": 2,
+      "assertions": {
+        "one_attendee_researched": true,
+        "attendee_has_profile_text": true,
+        "attendee_has_sources": true,
+        "company_context_present": true,
+        "privacy_notice_present": true
+      },
+      "latency_ms": 10548.4
+    },
+    "app_8_tutorial_101": {
+      "status": "PASS",
+      "report_status": "ok",
+      "steps_executed": 9,
+      "passed_steps": 9,
+      "failed_steps": [],
+      "assertions": {
+        "all_nine_steps_ran": true,
+        "all_steps_passed": true
+      },
+      "step_statuses": {
+        "1_diagnostics": "passed",
+        "2_web_search": "passed",
+        "3_research_chat": "passed",
+        "4_company_research": "passed",
+        "5_market_research": "passed",
+        "6_sheets_enrich": "passed",
+        "7_meeting_prep": "passed",
+        "8_crawl2rag": "passed",
+        "9_deep_research": "passed"
+      },
+      "latency_ms": 51722.3
+    },
+    "app_9_persistent_research_chat": {
+      "status": "PASS",
+      "session_id": "nine-app-1793639664",
+      "database_path": "C:\\Users\\ACER\\AppData\\Local\\Temp\\weblens_nine_apps_ni_vd4ag\\research_sessions.db",
+      "citations_count": 8,
+      "persisted_message_count": 2,
+      "exported_topic": "Python Concurrency Models",
+      "exported_total_sources": 3,
+      "assertions": {
+        "assistant_content_present": true,
+        "citations_present": true,
+        "messages_persisted": true,
+        "reopened_session_has_assistant": true,
+        "topic_persisted": true,
+        "markdown_export_contains_topic": true
+      },
+      "latency_ms": 4389.3
+    }
+  }
+}

@@ -363,7 +363,11 @@ class ResearchEngine:
             max_tokens, self.s.max_research_tokens, minimum=300, maximum=8000
         )
         q = clean_query(query)
-        score_q = query.strip() or q
+        # Score evidence against the normalized query. Using the raw phrasing
+        # here reintroduced the filler words that clean_query removed, so a
+        # search that succeeded on "asyncio and threading" could still discard
+        # every passage because it lacked "core technical differences".
+        score_q = q or query.strip()
         queries = decompose(q)[: max(1, min(6, max_searches))]
         warnings: list[str] = []
         outcome = ResearchOutcome(

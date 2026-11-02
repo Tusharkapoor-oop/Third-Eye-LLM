@@ -1,0 +1,8 @@
+﻿{
+    "run":  "security-suite-run2",
+    "command":  "pytest -q --tb=short -rA tests/test_security.py tests/test_ssrf_penetration.py tests/test_injection_sanitization.py tests/test_p9_canary_secrets.py",
+    "exit_code":  0,
+    "duration_s":  16.55,
+    "log":  "C:\\Users\\ACER\\Downloads\\Broswer for ai agnets\\evidence\\raw\\quality-loop-20261102\\security-suite-run2.log",
+    "stderr":  "C:\\Users\\ACER\\Downloads\\Broswer for ai agnets\\evidence\\raw\\quality-loop-20261102\\security-suite-run2.err.log"
+}

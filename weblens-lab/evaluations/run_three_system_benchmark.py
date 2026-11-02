@@ -20,6 +20,7 @@ from __future__ import annotations
 import asyncio
 import json
 import os
+import re
 import sys
 import time
 from datetime import datetime, timezone
@@ -38,12 +39,42 @@ from weblens.config import Settings
 from weblens.urls import registrable_domain
 
 
+# PREREG-V10-001 (2026-11-02): corrected evaluation scorer.
+# - Short/symbolic ground-truth tokens (<=3 chars) match with non-alphanumeric
+#   boundaries (e.g. "405", "H2O", "Au", "@>"); long tokens remain substring matches.
+# - "NOT MEASURED -" ground truths are dynamic facts: token verification is skipped
+#   and support is granted iff a top-5 result comes from acceptable_sources.
+# Applied identically to all systems. See evidence/prereg-v10-001-scoring-fix.md.
+_DYNAMIC_GT_PREFIX = "not measured"
+_BOUNDARY_RE_CACHE: dict[str, re.Pattern[str]] = {}
+
+
+def _ground_truth_matches(text_lower: str, gt_tokens: list[str]) -> bool:
+    if not gt_tokens:
+        return False
+    for tok in gt_tokens:
+        if len(tok) > 3:
+            if tok in text_lower:
+                return True
+        else:
+            pattern = _BOUNDARY_RE_CACHE.get(tok)
+            if pattern is None:
+                pattern = re.compile(r"(?<![a-z0-9])" + re.escape(tok) + r"(?![a-z0-9])")
+                _BOUNDARY_RE_CACHE[tok] = pattern
+            if pattern.search(text_lower):
+                return True
+    return False
+
+
 def evaluate_precision(results: list[Any], item: dict[str, Any]) -> tuple[float, bool]:
     if not results:
         return 0.0, False
 
     acceptable = [dom.lower() for dom in item.get("acceptable_sources", [])]
-    gt_answer = str(item.get("ground_truth_answer", "")).lower()
+    gt_raw = str(item.get("ground_truth_answer", ""))
+    is_dynamic = gt_raw.strip().lower().startswith(_DYNAMIC_GT_PREFIX)
+    gt_answer = "" if is_dynamic else gt_raw.lower()
+    gt_tokens = gt_answer.split() if gt_answer else []
 
     relevant_count = 0
     answer_supported = False
@@ -56,7 +87,10 @@ def evaluate_precision(results: list[Any], item: dict[str, Any]) -> tuple[float,
         dom = registrable_domain(url).lower() if url else ""
 
         is_acceptable = any(acc in dom or acc in url for acc in acceptable) if acceptable else False
-        has_content = bool(gt_answer and any(tok in text for tok in gt_answer.split() if len(tok) > 3))
+        if is_dynamic:
+            has_content = is_acceptable
+        else:
+            has_content = _ground_truth_matches(text, gt_tokens)
 
         if is_acceptable or has_content:
             relevant_count += 1
@@ -72,6 +106,8 @@ async def run_three_system_benchmark(
     output_dir: Path,
     *,
     sample_size: int | None = None,
+    include_tavily: bool = True,
+    include_deployed: bool = True,
 ) -> dict[str, Any]:
     output_dir.mkdir(parents=True, exist_ok=True)
     raw_file = output_dir / "three_system_results.jsonl"
@@ -85,12 +121,15 @@ async def run_three_system_benchmark(
         eval_items = all_items
 
     settings = Settings()
-    settings.search_providers = "ddg,mwmbl,wikipedia"
+    # CYCLE-1 (v10, 2026-11-02): single-variable change — add keyless Bing (best-effort
+    # HTML adapter, no API key) as FIRST provider of the independent chain.
+    # Baseline chain for reference: "ddg,mwmbl,wikipedia"
+    settings.search_providers = "bing,ddg,mwmbl,wikipedia"
     settings.tavily_api_key = None
 
     sys1_local = WebLensAdapter(settings=settings, independent=True)
-    sys2_deployed = DeployedWebLensAdapter()
-    sys3_tavily = TavilyAdapter()
+    sys2_deployed = DeployedWebLensAdapter() if include_deployed else None
+    sys3_tavily = TavilyAdapter() if include_tavily else None
 
     records: list[dict[str, Any]] = []
     print(f"Starting Three-System Benchmark on {len(eval_items)} queries...")
@@ -113,6 +152,10 @@ async def run_three_system_benchmark(
                 systems_order = [("sys2_deployed", sys2_deployed), ("sys3_tavily", sys3_tavily), ("sys1_local", sys1_local)]
             else:
                 systems_order = [("sys3_tavily", sys3_tavily), ("sys1_local", sys1_local), ("sys2_deployed", sys2_deployed)]
+            if sys3_tavily is None:
+                systems_order = [(n, p) for n, p in systems_order if p is not None]
+            if sys2_deployed is None:
+                systems_order = [("sys1_local", sys1_local)]
 
             results_by_sys: dict[str, Any] = {}
 
@@ -153,8 +196,8 @@ async def run_three_system_benchmark(
                 "unanswerable": unanswerable,
                 "timestamp": datetime.now(timezone.utc).isoformat(),
                 "local_weblens": results_by_sys["sys1_local"],
-                "deployed_weblens": results_by_sys["sys2_deployed"],
-                "tavily_direct": results_by_sys["sys3_tavily"],
+                "deployed_weblens": results_by_sys.get("sys2_deployed"),
+                "tavily_direct": results_by_sys.get("sys3_tavily"),
             }
             records.append(record)
 
@@ -168,7 +211,8 @@ async def run_three_system_benchmark(
 
     finally:
         await sys1_local.close()
-        await sys2_deployed.close()
+        if sys2_deployed is not None:
+            await sys2_deployed.close()
 
     # Aggregate Metrics
     n = len(records)
@@ -176,23 +220,27 @@ async def run_three_system_benchmark(
         return {"status": "error", "msg": "No records produced"}
 
     def calc_stats(sys_key: str) -> dict[str, Any]:
-        lats = sorted([r[sys_key]["latency_ms"] for r in records if r[sys_key]["latency_ms"] > 0])
+        rows = [r[sys_key] for r in records if isinstance(r.get(sys_key), dict)]
+        if not rows:
+            return {"status": "not_measured", "latency": {}, "quality": {}, "tokens_and_cost": {}}
+        n_rows = len(rows)
+        lats = sorted([row["latency_ms"] for row in rows if row["latency_ms"] > 0])
         p50 = lats[len(lats) // 2] if lats else 0.0
         p90 = lats[int(len(lats) * 0.9)] if lats else 0.0
         p95 = lats[int(len(lats) * 0.95)] if lats else 0.0
         mean_lat = round(sum(lats) / len(lats), 1) if lats else 0.0
 
-        precisions = [r[sys_key]["precision_at_5"] for r in records]
-        mean_prec = round(sum(precisions) / n, 3)
+        precisions = [row["precision_at_5"] for row in rows]
+        mean_prec = round(sum(precisions) / n_rows, 3)
 
-        supp_count = sum(1 for r in records if r[sys_key]["answer_supported"])
-        supp_rate = round(supp_count / n, 3)
+        supp_count = sum(1 for row in rows if row["answer_supported"])
+        supp_rate = round(supp_count / n_rows, 3)
 
-        false_conf_count = sum(1 for r in records if r[sys_key]["false_confidence"])
-        success_count = sum(1 for r in records if r[sys_key]["status"] == "ok")
+        false_conf_count = sum(1 for row in rows if row["false_confidence"])
+        success_count = sum(1 for row in rows if row["status"] == "ok")
 
-        mean_tokens = round(sum(r[sys_key]["tokens"] for r in records) / n, 1)
-        total_credits = sum(r[sys_key]["credits_used"] for r in records)
+        mean_tokens = round(sum(row["tokens"] for row in rows) / n_rows, 1)
+        total_credits = sum(row["credits_used"] for row in rows)
 
         return {
             "latency": {
@@ -206,7 +254,7 @@ async def run_three_system_benchmark(
                 "answer_supported_rate": supp_rate,
                 "answer_supported_count": supp_count,
                 "false_confidence_count": false_conf_count,
-                "success_rate": round(success_count / n, 3),
+                "success_rate": round(success_count / n_rows, 3),
             },
             "tokens_and_cost": {
                 "mean_tokens": mean_tokens,

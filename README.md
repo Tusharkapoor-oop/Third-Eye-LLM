@@ -217,6 +217,21 @@ python tools/run_all_nine_apps_live.py
 
 ---
 
+## V11 Quality & Architecture Specifications
+
+- [Product Identity, Non-Goals & Boundaries](docs/PRODUCT_IDENTITY.md)
+- [Complete Architecture Audit & Invariants](docs/ARCHITECTURE_AUDIT.md)
+- [Feature Gap Analysis vs External Systems](docs/FEATURE_GAP_ANALYSIS.md)
+- [Search Quality & Authority Routing Strategy](docs/SEARCH_QUALITY_STRATEGY.md)
+- [Quality Evaluation Methodology & Metrics](docs/QUALITY_EVALUATION_METHODOLOGY.md)
+- [Source Quality & Authority Tier Policy](docs/SOURCE_QUALITY_POLICY.md)
+- [Content Extraction Specification](docs/EXTRACTION_SPECIFICATION.md)
+- [Citation & Provenance Specification](docs/CITATION_AND_PROVENANCE_SPECIFICATION.md)
+- [Model Context Protocol (MCP) & API Reference](docs/MCP_API_REFERENCE.md)
+- [Security Threat Model & Controls](docs/SECURITY_THREAT_MODEL.md)
+
+---
+
 ## Documentation Links
 
 - [Three-System Architecture Specification](docs/THREE_SYSTEM_ARCHITECTURE.md)

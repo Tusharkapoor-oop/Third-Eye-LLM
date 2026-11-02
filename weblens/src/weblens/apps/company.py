@@ -21,6 +21,40 @@ FICTION_MARKERS = re.compile(
     r"\b(?:fictional|imaginary|nonexistent|mythical|parody|fake company)\b", re.I
 )
 
+# Aggregators and social platforms are useful evidence but are poor choices for
+# the "official domain" field.
+NON_OFFICIAL = {
+    "wikipedia.org", "linkedin.com", "bloomberg.com", "crunchbase.com",
+    "reuters.com", "blogspot.com", "wordpress.com", "medium.com",
+    "youtube.com", "facebook.com", "twitter.com", "x.com", "reddit.com",
+    "glassdoor.com", "indeed.com", "pitchbook.com", "zoominfo.com",
+}
+
+
+async def _search_first_results(
+    service: WebLens,
+    queries: list[str],
+    *,
+    max_results: int,
+) -> list[dict[str, Any]]:
+    """Return results for the first query that yields any hits.
+
+    Keyword-stuffed queries frequently return nothing from keyless providers.
+    Trying a shorter variant is a real retry, not a synthetic fallback: an
+    empty result set stays empty if every variant fails.
+    """
+    seen: set[str] = set()
+    for query in queries:
+        clean = " ".join(query.split())
+        if not clean or clean in seen:
+            continue
+        seen.add(clean)
+        out = await service.search(clean, max_results=max_results)
+        hits = out.get("res", [])
+        if hits:
+            return hits
+    return []
+
 
 class CompanyResearcher:
     """Extracts structured, cited company intelligence profiles from verified sources."""
@@ -40,13 +74,17 @@ class CompanyResearcher:
         if not name:
             return {"status": "error", "msg": "Company query must not be empty"}
 
-        # Search for official presence
-        search_res = await self.service.search(
-            f"{name} official website company overview",
+        # Search for official presence. Start with the plain name because
+        # keyless providers fail on keyword-stuffed queries.
+        hits = await _search_first_results(
+            self.service,
+            [
+                f"{name} official website",
+                f"{name} company",
+                name,
+            ],
             max_results=5,
         )
-
-        hits = search_res.get("res", [])
         if not hits:
             return {
                 "status": "not_found",
@@ -65,23 +103,51 @@ class CompanyResearcher:
                 "ms": int((time.perf_counter() - t0) * 1000),
             }
 
-        # Identify candidate official domain
-        candidate_domain = None
+        # Identify candidate official domain. Prefer a domain that matches the
+        # company name and demote aggregators/social platforms, but never
+        # invent a domain: every candidate comes from a real search hit.
+        words = [w for w in re.split(r"[^a-z0-9]+", name.lower()) if len(w) > 3]
+        slug = re.sub(r"[^a-z0-9]+", "", name.lower())
+
+        def _domain_score(dom: str) -> tuple[int, int]:
+            low = dom.lower()
+            aggregator = int(any(low == a or low.endswith("." + a) for a in NON_OFFICIAL))
+            compact = low.replace(".", "")
+            name_match = int(slug in compact) if slug else 0
+            word_match = int(any(w in compact for w in words)) if words else 0
+            # Sort ascending: official-looking, name-matching domains first.
+            return (aggregator, -(name_match * 2 + word_match))
+
+        candidates: list[str] = []
         for h in hits:
             host = urlsplit(h.get("u", "")).netloc
             dom = registrable_domain(host) if host else None
-            if dom and not any(w in dom for w in ("wikipedia", "linkedin", "bloomberg", "crunchbase", "reuters")):
-                candidate_domain = dom
-                break
-        if not candidate_domain and hits:
-            host = urlsplit(hits[0].get("u", "")).netloc
-            candidate_domain = registrable_domain(host) if host else None
+            if dom and dom not in candidates:
+                candidates.append(dom)
+        candidate_domain = min(candidates, key=_domain_score) if candidates else None
 
-        # Run specialized sub-queries for deep profiling
-        leadership_res = await self.service.search(f"{name} CEO leadership executive team founders", max_results=3)
-        products_res = await self.service.search(f"{name} products services platform solutions", max_results=3)
-        competitors_res = await self.service.search(f"{name} competitors market alternatives vs", max_results=3)
-        risks_res = await self.service.search(f"{name} business challenges risks controversies", max_results=3)
+        # Run specialized sub-queries for deep profiling. Each field tries a
+        # plain query first and only then a more specific variant.
+        leadership = await _search_first_results(
+            self.service,
+            [f"{name} CEO", f"{name} leadership", f"{name} executive team", f"{name} founders", name],
+            max_results=3,
+        )
+        products = await _search_first_results(
+            self.service,
+            [f"{name} products", f"{name} services", f"{name} platform", name],
+            max_results=3,
+        )
+        competitors = await _search_first_results(
+            self.service,
+            [f"{name} competitors", f"{name} alternatives", name],
+            max_results=3,
+        )
+        risks = await _search_first_results(
+            self.service,
+            [f"{name} risks", f"{name} controversies", f"{name} challenges", name],
+            max_results=3,
+        )
 
         elapsed_ms = int((time.perf_counter() - t0) * 1000)
 
@@ -102,10 +168,10 @@ class CompanyResearcher:
             "detected_domain": candidate_domain,
             "profile": {
                 "overview": make_field(hits[:2]),
-                "leadership": make_field(leadership_res.get("res", [])),
-                "products_and_services": make_field(products_res.get("res", [])),
-                "competitors_and_alternatives": make_field(competitors_res.get("res", [])),
-                "risks_and_challenges": make_field(risks_res.get("res", [])),
+                "leadership": make_field(leadership),
+                "products_and_services": make_field(products),
+                "competitors_and_alternatives": make_field(competitors),
+                "risks_and_challenges": make_field(risks),
             },
             "ms": elapsed_ms,
         }

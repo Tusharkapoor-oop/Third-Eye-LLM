@@ -9,8 +9,8 @@ unchanged and are not treated as current verification.
 | Gate | Requirement | Status | Evidence Path |
 |---|---|---|---|
 | **Gate 1: Repository Integrity** | Working tree clean and secret-free history | **PARTIAL** | Current `git status` contains unrelated user changes; `evidence/SECURITY-FINDINGS.md` records historical credential exposure. |
-| **Gate 2: Local MCP Test Suite** | Fresh full suite pass | **NOT VERIFIED** | Prior full-suite commands exceeded the 120-second execution bound; fresh transport pilot is recorded in `evidence/raw_results/recon_checkpoint_2026-11-02.json`. |
-| **Gate 3: All 9 Applications Live** | 9/9 workflows execute end-to-end | **UNVERIFIED** | Existing application tests are mocked/partial; no fresh all-nine live run was completed in this checkpoint. |
+| **Gate 2: Local MCP Test Suite** | Fresh full suite pass | **PARTIAL** | Fresh root run: 252 passed; proper `weblens/` run: 173 passed, 1 optional Playwright test skipped. Raw capture: `evidence/raw/quality-loop-20261102/nested-weblens-run2-proper.log`. |
+| **Gate 3: All 9 Applications Live** | 9/9 workflows execute end-to-end | **PASS (assertion scope)** | `evidence/raw_results/nine_apps/nine_apps_verification_20261102T172245Z.json`: 9 PASS/0 PARTIAL/0 FAIL. This is application smoke evidence, not proof of all F1-F17 quality fields. |
 | **Gate 4: Deployed Cloud Run MCP** | Real endpoint exposes and executes all 13 tools | **PASS** | `evidence/raw_results/recon_checkpoint_2026-11-02.json`; actual HTTPS MCP identity and 13-tool discovery. |
 | **Gate 5: Local Security Audit** | Local MCP security coverage | **PARTIAL** | `evidence/raw_results/safe_security_campaign_2026-11-02.json`: controlled local transport/SSRF/injection checks passed, not exhaustive. |
 | **Gate 6: Deployed Security Audit** | Remote security coverage and authentication | **FAIL** | `evidence/raw_results/safe_security_campaign_2026-11-02.json`: TLS/SSRF/MCP/injection probes passed, but unauthenticated `tools/list` was accepted. |

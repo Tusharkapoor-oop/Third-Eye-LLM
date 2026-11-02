@@ -1,0 +1,528 @@
+{
+  "suite": "deployed_security_audit_v2",
+  "timestamp": "2026-11-02T17:25:03.847533+00:00",
+  "overall_status": "FAIL",
+  "total_tests": 23,
+  "status_counts": {
+    "FAIL": 14,
+    "PASS": 7,
+    "UNVERIFIED": 2
+  },
+  "findings": [
+    {
+      "id": "deployed_https_reachable",
+      "category": "transport_tls",
+      "severity": "info",
+      "status": "FAIL",
+      "notes": "",
+      "evidence": {
+        "status": 405,
+        "transport_error": null
+      }
+    },
+    {
+      "id": "deployed_hsts_header",
+      "category": "transport_tls",
+      "severity": "low",
+      "status": "FAIL",
+      "notes": "Absence of HSTS weakens transport hardening; Cloud Run may set it at the edge.",
+      "evidence": {
+        "strict_transport_security": null
+      }
+    },
+    {
+      "id": "deployed_unauthenticated_initialize",
+      "category": "authentication",
+      "severity": "high",
+      "status": "FAIL",
+      "notes": "Unauthenticated MCP initialize succeeded; the endpoint is publicly callable.",
+      "evidence": {
+        "status": 200,
+        "jsonrpc_error": null,
+        "session_id_present": false
+      }
+    },
+    {
+      "id": "deployed_bogus_bearer_accepted",
+      "category": "authentication",
+      "severity": "high",
+      "status": "FAIL",
+      "notes": "If a bogus Bearer token still initializes, authorization is not enforced.",
+      "evidence": {
+        "status": 200,
+        "jsonrpc_error": null
+      }
+    },
+    {
+      "id": "deployed_jsonrpc_invalid_jsonrpc_version",
+      "category": "mcp_protocol",
+      "severity": "info",
+      "status": "FAIL",
+      "notes": "Expected a JSON-RPC error object with HTTP 200, not a 5xx crash.",
+      "evidence": {
+        "status": 400,
+        "jsonrpc_error": -32602,
+        "transport_error": null
+      }
+    },
+    {
+      "id": "deployed_jsonrpc_unknown_tool",
+      "category": "mcp_protocol",
+      "severity": "info",
+      "status": "FAIL",
+      "notes": "Expected a JSON-RPC error object with HTTP 200, not a 5xx crash.",
+      "evidence": {
+        "status": 200,
+        "jsonrpc_error": null,
+        "transport_error": null
+      }
+    },
+    {
+      "id": "deployed_jsonrpc_missing_required_argument",
+      "category": "mcp_protocol",
+      "severity": "info",
+      "status": "FAIL",
+      "notes": "Expected a JSON-RPC error object with HTTP 200, not a 5xx crash.",
+      "evidence": {
+        "status": 200,
+        "jsonrpc_error": null,
+        "transport_error": null
+      }
+    },
+    {
+      "id": "deployed_extract_blocks_aws_metadata",
+      "category": "ssrf_live_tool",
+      "severity": "high",
+      "status": "FAIL",
+      "notes": "",
+      "evidence": {
+        "status": 200,
+        "jsonrpc_error": null,
+        "tool_status": "unparsed",
+        "returned_text_length": 134
+      }
+    },
+    {
+      "id": "deployed_extract_blocks_gcp_metadata",
+      "category": "ssrf_live_tool",
+      "severity": "high",
+      "status": "FAIL",
+      "notes": "",
+      "evidence": {
+        "status": 200,
+        "jsonrpc_error": null,
+        "tool_status": "unparsed",
+        "returned_text_length": 137
+      }
+    },
+    {
+      "id": "deployed_extract_blocks_loopback",
+      "category": "ssrf_live_tool",
+      "severity": "high",
+      "status": "FAIL",
+      "notes": "",
+      "evidence": {
+        "status": 200,
+        "jsonrpc_error": null,
+        "tool_status": "unparsed",
+        "returned_text_length": 128
+      }
+    },
+    {
+      "id": "deployed_extract_blocks_ipv6_loopback",
+      "category": "ssrf_live_tool",
+      "severity": "high",
+      "status": "FAIL",
+      "notes": "",
+      "evidence": {
+        "status": 200,
+        "jsonrpc_error": null,
+        "tool_status": "unparsed",
+        "returned_text_length": 122
+      }
+    },
+    {
+      "id": "deployed_extract_blocks_file_scheme",
+      "category": "ssrf_live_tool",
+      "severity": "high",
+      "status": "FAIL",
+      "notes": "",
+      "evidence": {
+        "status": 200,
+        "jsonrpc_error": null,
+        "tool_status": "unparsed",
+        "returned_text_length": 104
+      }
+    },
+    {
+      "id": "deployed_extract_public_control",
+      "category": "ssrf_live_tool_control",
+      "severity": "info",
+      "status": "UNVERIFIED",
+      "notes": "",
+      "evidence": {
+        "status": 200,
+        "tool_status": "ok",
+        "text_length": 0
+      }
+    },
+    {
+      "id": "deployed_search_oversize_query",
+      "category": "input_validation",
+      "severity": "low",
+      "status": "FAIL",
+      "notes": "",
+      "evidence": {
+        "status": 200,
+        "tool_status": "no_reliable_result",
+        "results": 0
+      }
+    },
+    {
+      "id": "deployed_rate_limit_metadata",
+      "category": "rate_limiting",
+      "severity": "medium",
+      "status": "FAIL",
+      "notes": "20 cheap tools/list calls; no 429 observed means no application-level rate limit was visible.",
+      "evidence": {
+        "requests": 20,
+        "statuses": [
+          200
+        ],
+        "saw_429": false
+      }
+    },
+    {
+      "id": "deployed_cross_tenant_crawl2rag",
+      "category": "cross_tenant_isolation",
+      "severity": "info",
+      "status": "UNVERIFIED",
+      "notes": "Indexing example.com failed, so cross-client visibility could not be tested.",
+      "evidence": {
+        "index_data": {
+          "status": "unparsed",
+          "text": "Error executing tool crawl2rag_index"
+        },
+        "probe_url": "https://example.com/?weblens_tenant_probe=wlprobe2b473dcc5b"
+      }
+    }
+  ],
+  "tests": [
+    {
+      "id": "deployed_https_reachable",
+      "category": "transport_tls",
+      "layer": "live_deployed",
+      "status": "FAIL",
+      "severity": "info",
+      "evidence": {
+        "status": 405,
+        "transport_error": null
+      },
+      "notes": ""
+    },
+    {
+      "id": "deployed_http_redirects_to_https",
+      "category": "transport_tls",
+      "layer": "live_deployed",
+      "status": "PASS",
+      "severity": "medium",
+      "evidence": {
+        "status": 302,
+        "location": "https://weblens-16131012091.us-central1.run.app/"
+      },
+      "notes": ""
+    },
+    {
+      "id": "deployed_hsts_header",
+      "category": "transport_tls",
+      "layer": "live_deployed",
+      "status": "FAIL",
+      "severity": "low",
+      "evidence": {
+        "strict_transport_security": null
+      },
+      "notes": "Absence of HSTS weakens transport hardening; Cloud Run may set it at the edge."
+    },
+    {
+      "id": "deployed_unauthenticated_initialize",
+      "category": "authentication",
+      "layer": "live_deployed",
+      "status": "FAIL",
+      "severity": "high",
+      "evidence": {
+        "status": 200,
+        "jsonrpc_error": null,
+        "session_id_present": false
+      },
+      "notes": "Unauthenticated MCP initialize succeeded; the endpoint is publicly callable."
+    },
+    {
+      "id": "deployed_tools_list",
+      "category": "mcp_protocol",
+      "layer": "live_deployed",
+      "status": "PASS",
+      "severity": "info",
+      "evidence": {
+        "status": 200,
+        "tool_count": 13,
+        "tools": [
+          "web_search",
+          "extract_url",
+          "crawl_site",
+          "deep_research",
+          "company_research",
+          "market_research",
+          "market_portfolio",
+          "crawl2rag_index",
+          "crawl2rag_query",
+          "meeting_prep",
+          "sheets_enrich",
+          "research_chat",
+          "tutorial_101"
+        ]
+      },
+      "notes": ""
+    },
+    {
+      "id": "deployed_bogus_bearer_accepted",
+      "category": "authentication",
+      "layer": "live_deployed",
+      "status": "FAIL",
+      "severity": "high",
+      "evidence": {
+        "status": 200,
+        "jsonrpc_error": null
+      },
+      "notes": "If a bogus Bearer token still initializes, authorization is not enforced."
+    },
+    {
+      "id": "deployed_jsonrpc_unknown_method",
+      "category": "mcp_protocol",
+      "layer": "live_deployed",
+      "status": "PASS",
+      "severity": "info",
+      "evidence": {
+        "status": 200,
+        "jsonrpc_error": -32601,
+        "transport_error": null
+      },
+      "notes": "Expected a JSON-RPC error object with HTTP 200, not a 5xx crash."
+    },
+    {
+      "id": "deployed_jsonrpc_invalid_jsonrpc_version",
+      "category": "mcp_protocol",
+      "layer": "live_deployed",
+      "status": "FAIL",
+      "severity": "info",
+      "evidence": {
+        "status": 400,
+        "jsonrpc_error": -32602,
+        "transport_error": null
+      },
+      "notes": "Expected a JSON-RPC error object with HTTP 200, not a 5xx crash."
+    },
+    {
+      "id": "deployed_jsonrpc_unknown_tool",
+      "category": "mcp_protocol",
+      "layer": "live_deployed",
+      "status": "FAIL",
+      "severity": "info",
+      "evidence": {
+        "status": 200,
+        "jsonrpc_error": null,
+        "transport_error": null
+      },
+      "notes": "Expected a JSON-RPC error object with HTTP 200, not a 5xx crash."
+    },
+    {
+      "id": "deployed_jsonrpc_missing_required_argument",
+      "category": "mcp_protocol",
+      "layer": "live_deployed",
+      "status": "FAIL",
+      "severity": "info",
+      "evidence": {
+        "status": 200,
+        "jsonrpc_error": null,
+        "transport_error": null
+      },
+      "notes": "Expected a JSON-RPC error object with HTTP 200, not a 5xx crash."
+    },
+    {
+      "id": "deployed_malformed_json",
+      "category": "mcp_protocol",
+      "layer": "live_deployed",
+      "status": "PASS",
+      "severity": "info",
+      "evidence": {
+        "status": 400
+      },
+      "notes": ""
+    },
+    {
+      "id": "deployed_extract_blocks_aws_metadata",
+      "category": "ssrf_live_tool",
+      "layer": "live_deployed",
+      "status": "FAIL",
+      "severity": "high",
+      "evidence": {
+        "status": 200,
+        "jsonrpc_error": null,
+        "tool_status": "unparsed",
+        "returned_text_length": 134
+      },
+      "notes": ""
+    },
+    {
+      "id": "deployed_extract_blocks_gcp_metadata",
+      "category": "ssrf_live_tool",
+      "layer": "live_deployed",
+      "status": "FAIL",
+      "severity": "high",
+      "evidence": {
+        "status": 200,
+        "jsonrpc_error": null,
+        "tool_status": "unparsed",
+        "returned_text_length": 137
+      },
+      "notes": ""
+    },
+    {
+      "id": "deployed_extract_blocks_loopback",
+      "category": "ssrf_live_tool",
+      "layer": "live_deployed",
+      "status": "FAIL",
+      "severity": "high",
+      "evidence": {
+        "status": 200,
+        "jsonrpc_error": null,
+        "tool_status": "unparsed",
+        "returned_text_length": 128
+      },
+      "notes": ""
+    },
+    {
+      "id": "deployed_extract_blocks_ipv6_loopback",
+      "category": "ssrf_live_tool",
+      "layer": "live_deployed",
+      "status": "FAIL",
+      "severity": "high",
+      "evidence": {
+        "status": 200,
+        "jsonrpc_error": null,
+        "tool_status": "unparsed",
+        "returned_text_length": 122
+      },
+      "notes": ""
+    },
+    {
+      "id": "deployed_extract_blocks_file_scheme",
+      "category": "ssrf_live_tool",
+      "layer": "live_deployed",
+      "status": "FAIL",
+      "severity": "high",
+      "evidence": {
+        "status": 200,
+        "jsonrpc_error": null,
+        "tool_status": "unparsed",
+        "returned_text_length": 104
+      },
+      "notes": ""
+    },
+    {
+      "id": "deployed_extract_public_control",
+      "category": "ssrf_live_tool_control",
+      "layer": "live_deployed",
+      "status": "UNVERIFIED",
+      "severity": "info",
+      "evidence": {
+        "status": 200,
+        "tool_status": "ok",
+        "text_length": 0
+      },
+      "notes": ""
+    },
+    {
+      "id": "deployed_search_oversize_query",
+      "category": "input_validation",
+      "layer": "live_deployed",
+      "status": "FAIL",
+      "severity": "low",
+      "evidence": {
+        "status": 200,
+        "tool_status": "no_reliable_result",
+        "results": 0
+      },
+      "notes": ""
+    },
+    {
+      "id": "deployed_cors_origin_echo",
+      "category": "cors",
+      "layer": "live_deployed",
+      "status": "PASS",
+      "severity": "medium",
+      "evidence": {
+        "access_control_allow_origin": null,
+        "status": 200
+      },
+      "notes": ""
+    },
+    {
+      "id": "deployed_host_header_localhost",
+      "category": "host_header",
+      "layer": "live_deployed",
+      "status": "PASS",
+      "severity": "medium",
+      "evidence": {
+        "status": 404,
+        "jsonrpc_error": null
+      },
+      "notes": "Accepted Host: localhost indicates DNS-rebinding host validation is not enforced."
+    },
+    {
+      "id": "deployed_rate_limit_metadata",
+      "category": "rate_limiting",
+      "layer": "live_deployed",
+      "status": "FAIL",
+      "severity": "medium",
+      "evidence": {
+        "requests": 20,
+        "statuses": [
+          200
+        ],
+        "saw_429": false
+      },
+      "notes": "20 cheap tools/list calls; no 429 observed means no application-level rate limit was visible."
+    },
+    {
+      "id": "deployed_cross_tenant_crawl2rag",
+      "category": "cross_tenant_isolation",
+      "layer": "live_deployed",
+      "status": "UNVERIFIED",
+      "severity": "info",
+      "evidence": {
+        "index_data": {
+          "status": "unparsed",
+          "text": "Error executing tool crawl2rag_index"
+        },
+        "probe_url": "https://example.com/?weblens_tenant_probe=wlprobe2b473dcc5b"
+      },
+      "notes": "Indexing example.com failed, so cross-client visibility could not be tested."
+    },
+    {
+      "id": "deployed_secret_disclosure",
+      "category": "secret_disclosure",
+      "layer": "live_deployed",
+      "status": "PASS",
+      "severity": "critical",
+      "evidence": {
+        "secrets_checked": 0,
+        "secret_hits": [],
+        "contains_traceback": false,
+        "contains_local_path": false
+      },
+      "notes": ""
+    }
+  ],
+  "target": "deployed_mcp",
+  "endpoint": "https://weblens-16131012091.us-central1.run.app/mcp"
+}

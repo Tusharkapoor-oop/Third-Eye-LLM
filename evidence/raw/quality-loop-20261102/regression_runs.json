@@ -1,0 +1,20 @@
+﻿[
+    {
+        "run":  "nested-weblens-run2",
+        "command":  "pytest --tb=no -rA",
+        "workdir":  "weblens",
+        "exit_code":  0,
+        "duration_s":  343.22,
+        "log":  "evidence\\raw\\quality-loop-20261102\\nested-weblens-run2.log",
+        "stderr":  "evidence\\raw\\quality-loop-20261102\\nested-weblens-run2.err.log"
+    },
+    {
+        "run":  "root-suite-run2",
+        "command":  "pytest -q --tb=short -rA",
+        "workdir":  ".",
+        "exit_code":  0,
+        "duration_s":  187.44,
+        "log":  "evidence\\raw\\quality-loop-20261102\\root-suite-run2.log",
+        "stderr":  "evidence\\raw\\quality-loop-20261102\\root-suite-run2.err.log"
+    }
+]

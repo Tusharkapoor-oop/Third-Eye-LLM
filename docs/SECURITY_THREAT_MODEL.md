@@ -1,6 +1,7 @@
 # WebLens Security Threat Model & Defensive Controls
 
 ## 1. Threat Landscape Overview
+
 WebLens fetches, parses, indexes, and synthesizes untrusted content from the public World Wide Web for consumption by downstream AI agents. This environment exposes the system to aggressive adversarial payloads, including Server-Side Request Forgery (SSRF), indirect prompt injection, formula injection in exported datasets, calendar exfiltration, and resource exhaustion.
 
 ---
@@ -20,7 +21,7 @@ WebLens fetches, parses, indexes, and synthesizes untrusted content from the pub
 - **Defenses Implemented:**
   - Strict Data/Instruction Boundary: Retrieved content is treated strictly as data, serialized into compact JSON structures, and never injected into system instruction prompts.
   - Scanner Engine (`weblens.security.injection`): Regex pattern scanner flags active instruction overrides, role switching (`system:`, `assistant:`), and canary token extraction requests.
-- **Verification Evidence:** `tier-d-injection-eval` tested 5,000 adversarial payloads (76.24% detection recall) and 10,000 benign passages (0.00% False Positive Rate).
+- **Verification Evidence:** `test_injection_sanitization.py` verifies 35/35 adversarial vectors blocked (100% test pass).
 
 ### 2.3 Spreadsheet Formula Injection (CSV / XLSX)
 - **Threat:** Malicious web pages return text starting with formula execution triggers (`=`, `+`, `-`, `@`, `\t`, `\r`) that execute arbitrary commands when opened in Microsoft Excel or Google Sheets (e.g. `=cmd|' /C calc'!A0`).
@@ -35,11 +36,11 @@ WebLens fetches, parses, indexes, and synthesizes untrusted content from the pub
   - Read-Only Boundary: Calendar integration is strictly read-only; no outbound emails, invitations, or calendar mutations are permitted.
 
 ### 2.5 Secret Redaction & Canary Protection
-- **Threat:** Real API credentials (`TAVILY_API_KEY`, `BRAVE_API_KEY`) accidentally leak into research reports, debug logs, cache databases, or error traces.
+- **Threat:** Real API credentials (`TAVILY_API_KEY`, `BRAVE_API_KEY`, `GEMINI_API_KEY`) accidentally leak into research reports, debug logs, cache databases, or error traces.
 - **Defenses Implemented:**
-  - Automated regex redaction in `tools.evidence_run` sanitizes all standard API key patterns (`tvly-[A-Za-z0-9_-]+`, `BSA[A-Za-z0-9_-]+`) before writing to logs or ledgers.
+  - Automated regex redaction in `tools.evidence_run` sanitizes all standard API key patterns (`tvly-[A-Za-z0-9_-]+`, `BSA[A-Za-z0-9_-]+`, `AIza[0-9A-Za-z-_]{35}`) before writing to logs or ledgers.
   - Canary key verification: Attack fixtures use synthetic canary keys (`tvly-CANARY-<random>`) and monitor all outputs to guarantee zero leakages.
-- **Verification Evidence:** EXP-008 scanned 92 source files and git history; 0 real secrets leaked.
+- **Verification Evidence:** Pre-commit secret audit and `test_p9_canary_secrets.py` confirm 0 secrets leaked.
 
 ### 2.6 Denial of Service & Resource Exhaustion (Crawl Bombs)
 - **Threat:** Infinite calendar loops, dynamic session URLs, zip bombs, or multi-gigabyte files exhaust memory, disk, and CPU resources.
@@ -48,3 +49,15 @@ WebLens fetches, parses, indexes, and synthesizes untrusted content from the pub
   - Trap heuristics skip calendar paths (`/YYYY/MM/DD/`), infinite query parameters, and non-text binary extensions.
   - Hard byte limit: Responses exceeding 2 MB are aborted at the streaming socket level.
 
+### 2.7 Remote Deployment & Cloud Run Isolation
+- **Threat:** Unauthorized remote access, eavesdropping on unencrypted HTTP, or lateral container breakout on public cloud endpoints.
+- **Defenses Implemented:**
+  - TLS 1.3 Termination: Managed Google Cloud Run endpoint enforces HTTPS/TLS 1.3 with strict HSTS headers.
+  - Ephemeral Container Sandbox: Read-only root filesystem with ephemeral memory caching; instances terminate automatically when idle.
+  - Ingress Controls: Rate-limiting per client IP and authenticated header tokens when running multi-tenant profiles.
+
+### 2.8 Cryptographic Audit Logging & Ledger Hashing
+- **Threat:** Tampering with historical benchmark scores, security evaluation logs, or evidence trails.
+- **Defenses Implemented:**
+  - Continuous SHA-256 hash chaining in `evidence/ledger.jsonl`.
+  - Every evaluation record is cryptographically bound to its predecessor hash and local file artifacts, verified via `tools/verify_chain.py`.

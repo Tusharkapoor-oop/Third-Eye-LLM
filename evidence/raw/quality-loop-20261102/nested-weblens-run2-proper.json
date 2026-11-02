@@ -1,0 +1,9 @@
+﻿{
+    "run":  "nested-weblens-run2-proper",
+    "command":  "pytest --tb=no -rA",
+    "workdir":  "weblens",
+    "exit_code":  0,
+    "duration_s":  21.84,
+    "log":  "C:\\Users\\ACER\\Downloads\\Broswer for ai agnets\\evidence\\raw\\quality-loop-20261102\\nested-weblens-run2-proper.log",
+    "stderr":  "C:\\Users\\ACER\\Downloads\\Broswer for ai agnets\\evidence\\raw\\quality-loop-20261102\\nested-weblens-run2-proper.err.log"
+}

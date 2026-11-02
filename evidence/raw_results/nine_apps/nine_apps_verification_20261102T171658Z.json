@@ -1,0 +1,67 @@
+{
+  "timestamp": "2026-11-02T17:16:58.337935+00:00",
+  "verification_version": "v10-assertions",
+  "total_workflows": 2,
+  "passed": 2,
+  "partial": 0,
+  "failed": 0,
+  "all_passed": false,
+  "work_dir": "C:\\Users\\ACER\\AppData\\Local\\Temp\\weblens_nine_apps_3g48edgz",
+  "outcomes": {
+    "app_1_deep_research": {
+      "status": "PASS",
+      "report_status": "ok",
+      "findings_count": 8,
+      "distinct_domains": 4,
+      "subqueries": 1,
+      "assertions": {
+        "findings_present": true,
+        "subqueries_present": true,
+        "every_finding_has_url": true,
+        "every_finding_has_span": true
+      },
+      "sample": [
+        {
+          "claim": "This is mostly because\nPython 3.4 introduces the `selectors` module as well as `asyncio`.",
+          "url": "https://sahandsaba.com/understanding-asyncio-node-js-python-3-4.html",
+          "fetched_at": "2026-11-02T17:15:22Z",
+          "span": [
+            1175,
+            1264
+          ],
+          "heading": "Introduction"
+        },
+        {
+          "claim": "In addition, Python 3.4 ships\nwith the `asyncio` module that has event loops and coroutines for IO\noperations, networking, and more.",
+          "url": "https://sahandsaba.com/understanding-asyncio-node-js-python-3-4.html",
+          "fetched_at": "2026-11-02T17:15:22Z",
+          "span": [
+            23845,
+            23977
+          ],
+          "heading": "Not Reinventing The Wheel"
+        }
+      ],
+      "latency_ms": 5773.3
+    },
+    "app_2_company_researcher": {
+      "status": "PASS",
+      "report_status": "found",
+      "detected_domain": "python.org",
+      "populated_fields": {
+        "overview": 2,
+        "leadership": 3,
+        "products_and_services": 3,
+        "competitors_and_alternatives": 3,
+        "risks_and_challenges": 3
+      },
+      "assertions": {
+        "status_found": true,
+        "domain_detected": true,
+        "overview_has_citations": true,
+        "leadership_has_citations": true
+      },
+      "latency_ms": 17678.0
+    }
+  }
+}

@@ -43,8 +43,43 @@ sys.path.insert(0, str(ROOT / "weblens-lab"))
 from adapters.local_mcp_adapter.adapter import LocalMCPAdapter
 from adapters.mcp_client import MCPHttpClient, MCPTransportError, _parse_sse
 from weblens.apps.sheets import defang_formula
-from weblens.net.ssrf import is_private_ip, validate_url
+from weblens.config import Settings
+from weblens.errors import BlockedURLError
+from weblens.net.ssrf import DestinationPolicy
 from weblens.security.injection import scan_injection
+from urllib.parse import urlsplit
+
+_POLICY = DestinationPolicy(Settings())
+
+
+def is_private_ip(ip: str) -> bool:
+    """True when the destination policy refuses this literal IP."""
+    try:
+        _POLICY.check_ip(ip)
+        return False
+    except BlockedURLError:
+        return True
+
+
+def validate_url(url: str) -> tuple[bool, str]:
+    """Validate scheme, hostname, literal IPs, and port against the real policy.
+
+    DNS names are not resolved here; the runtime policy re-checks every resolved
+    address at connect time. This mirrors what a caller can learn before a fetch.
+    """
+    try:
+        parts = urlsplit(url)
+        if parts.scheme not in ("http", "https"):
+            return False, f"unsupported scheme: {parts.scheme}"
+        host = parts.hostname or ""
+        port = parts.port or (443 if parts.scheme == "https" else 80)
+        _POLICY.check_hostname(host)
+        _POLICY.check_port(port)
+        return True, "ok"
+    except BlockedURLError as e:
+        return False, str(e)
+    except ValueError as e:
+        return False, str(e)
 
 DEPLOYED_BASE = "https://weblens-16131012091.us-central1.run.app"
 DEPLOYED_MCP = f"{DEPLOYED_BASE}/mcp"

@@ -50,6 +50,12 @@ AUTHORITY = {
     "owasp.org": 1.2,
     "nvd.nist.gov": 1.5,
     "cve.org": 1.5,
+    "worldbank.org": 2.5,
+    "un.org": 2.5,
+    "who.int": 2.5,
+    "rtings.com": 2.5,
+    "sony.com": 2.0,
+    "bose.com": 2.0,
 }
 
 _FRESH_DAYS = {"day": 1, "week": 7, "month": 31, "year": 365}
@@ -73,6 +79,19 @@ def clean_query(query: str) -> str:
     q = (query or "").strip()
     q = re.sub(r"\s+", " ", q)
     q = _CONVERSATIONAL.sub("", q).strip(" ?!.")
+    # "core technical differences between A and B" -> "A and B". Without this,
+    # the qualifier words dominate the provider query and can suppress useful
+    # results entirely.
+    between = re.search(r"\bdifferences?\s+between\s+(.+)$", q, re.I)
+    if between:
+        q = between.group(1).strip(" ?!.")
+    # Strip trailing comparison/review qualifiers that over-constrain keyless search
+    q = re.sub(
+        r"\s+(?:(?:headphones?|smartphones?|products?|detailed|side-by-side)\s+)?(?:comparison|overview|breakdown)[\s?!.]*$",
+        "",
+        q,
+        flags=re.I,
+    )
     return q or (query or "").strip()
 
 
@@ -82,8 +101,8 @@ def _authority(url: str) -> float:
     for domain, weight in AUTHORITY.items():
         if host == domain or host.endswith("." + domain):
             best = max(best, weight)
-    if host.endswith(".gov") or host.endswith(".edu"):
-        best = max(best, 1.2)
+    if re.search(r"\.gov(?:\.[a-z]{2})?$", host) or re.search(r"\.edu(?:\.[a-z]{2})?$", host) or host.endswith(".mil"):
+        best = max(best, 2.0)
     return best
 
 

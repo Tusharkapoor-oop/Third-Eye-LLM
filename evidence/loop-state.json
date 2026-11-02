@@ -1,0 +1,193 @@
+{
+  "session": "quality-loop-20261102",
+  "registry": "F1-F17 frozen from user prompt",
+  "updated_at": "2026-11-02T17:38:44.908786+00:00",
+  "status": "OPEN-REMEDIATION",
+  "dataset": {
+    "path": "benchmarks\\eval_dataset_expanded.json",
+    "sha256": "6130548dacb595da44a0973e66c4e3a44836846baf16a97ef1ca87664f2d065f",
+    "records_available": 200,
+    "records_measured": 100
+  },
+  "baseline": "reports\\three-system-comparison\\raw-v9b-2026-11-02\\summary.json",
+  "current_field": "F2",
+  "next_action": "Obtain a valid authorized Tavily credential and explicit BUDGET_CAP, then run the F2 paired 100-item cold-process benchmark with the MCP-backed local adapter and per-item answer/citation artifacts.",
+  "fields": {
+    "F1": {
+      "field": "F1",
+      "passed_items": 88,
+      "total_items": 90,
+      "item_level_100": false,
+      "two_independent_runs": false,
+      "verdict": "OPEN-REMEDIATION",
+      "next_action": "Add a single-variable query-rewrite/retrieval change, then rerun the same 100-item held-out slice twice with paired raw results.",
+      "notes": null
+    },
+    "F2": {
+      "field": "F2",
+      "passed_items": 73,
+      "total_items": 90,
+      "measured_rerun_passed_items": 51,
+      "measured_rerun_total_items": 90,
+      "item_level_100": false,
+      "two_independent_runs": false,
+      "verdict": "FAIL",
+      "next_action": "Reject the measured cycle. Register one isolated retrieval change, rerun the identical scorer twice, and preserve per-item answer evidence.",
+      "notes": "Corrected-scorer rerun: 51/90 (56.7%); previous V9B report: 73/90 (81.1%). Not causally comparable because scorer and provider chain both changed."
+    },
+    "F3": {
+      "field": "F3",
+      "passed_items": null,
+      "total_items": null,
+      "item_level_100": false,
+      "two_independent_runs": false,
+      "verdict": "UNSUPPORTED",
+      "next_action": "Capture generated answer text and claim-level citations for every item; the V9B search-only artifact cannot audit hallucinations.",
+      "notes": "No answer/claim artifact exists in the supplied baseline."
+    },
+    "F4": {
+      "field": "F4",
+      "passed_items": 4,
+      "total_items": 10,
+      "item_level_100": false,
+      "two_independent_runs": false,
+      "verdict": "FAIL",
+      "next_action": "Fix abstention/false-confidence behavior for the six flagged unanswerable items and rerun the complete trap set twice.",
+      "notes": null
+    },
+    "F5": {
+      "field": "F5",
+      "passed_items": null,
+      "total_items": null,
+      "item_level_100": false,
+      "two_independent_runs": false,
+      "verdict": "UNSUPPORTED",
+      "next_action": "Run and preserve the required 20-document extraction battery; no compatible raw artifact is in V9B.",
+      "notes": "Not measured by the search-only baseline."
+    },
+    "F6": {
+      "field": "F6",
+      "passed_items": null,
+      "total_items": null,
+      "item_level_100": false,
+      "two_independent_runs": false,
+      "verdict": "UNSUPPORTED",
+      "next_action": "Run and preserve the required code/table/HTML-noise extraction checks; no compatible raw artifact is in V9B.",
+      "notes": "Not measured by the search-only baseline."
+    },
+    "F7": {
+      "field": "F7",
+      "passed_items": null,
+      "total_items": null,
+      "item_level_100": false,
+      "two_independent_runs": false,
+      "verdict": "UNSUPPORTED",
+      "next_action": "Run and preserve the required PDF/offline page checks; no compatible raw artifact is in V9B.",
+      "notes": "Not measured by the search-only baseline."
+    },
+    "F8": {
+      "field": "F8",
+      "passed_items": null,
+      "total_items": null,
+      "item_level_100": false,
+      "two_independent_runs": false,
+      "verdict": "UNSUPPORTED",
+      "next_action": "Run and preserve the required BM25/hybrid/RRF per-query retrieval evidence; no compatible raw artifact is in V9B.",
+      "notes": "Not measured by the search-only baseline."
+    },
+    "F9": {
+      "field": "F9",
+      "passed_items": null,
+      "total_items": null,
+      "item_level_100": false,
+      "two_independent_runs": false,
+      "verdict": "UNSUPPORTED",
+      "next_action": "Run and preserve the required deep-research hop evidence; no compatible raw artifact is in V9B.",
+      "notes": "Not measured by the search-only baseline."
+    },
+    "F10": {
+      "field": "F10",
+      "passed_items": null,
+      "total_items": null,
+      "item_level_100": false,
+      "two_independent_runs": false,
+      "verdict": "UNSUPPORTED",
+      "next_action": "Run and preserve the required claim URL/passage/timestamp/hash citation log; no compatible raw artifact is in V9B.",
+      "notes": "Not measured by the search-only baseline."
+    },
+    "F11": {
+      "field": "F11",
+      "passed_items": 99,
+      "total_items": 100,
+      "item_level_100": false,
+      "two_independent_runs": false,
+      "verdict": "FAIL",
+      "next_action": "Remove the item-1 latency overrun while preserving retrieval quality; p50 passes but the 100% hard ceiling does not.",
+      "notes": "p50_ms=922.7; max item latency=3817.1"
+    },
+    "F12": {
+      "field": "F12",
+      "passed_items": 100,
+      "total_items": 100,
+      "item_level_100": true,
+      "two_independent_runs": false,
+      "verdict": "OPEN-REMEDIATION",
+      "next_action": "Repeat a cold and warm run; the current single run meets the item ceiling and mean but lacks the required second independent run.",
+      "notes": "mean_tokens=425.8"
+    },
+    "F13": {
+      "field": "F13",
+      "passed_items": null,
+      "total_items": null,
+      "item_level_100": false,
+      "two_independent_runs": false,
+      "verdict": "UNSUPPORTED",
+      "next_action": "Run a dedicated sustained throughput measurement with explicit windows and QPM logs; the sequential baseline is not valid evidence.",
+      "notes": null
+    },
+    "F14": {
+      "field": "F14",
+      "passed_items": 100,
+      "total_items": 100,
+      "item_level_100": true,
+      "two_independent_runs": false,
+      "verdict": "OPEN-REMEDIATION",
+      "next_action": "Repeat keyless local calls in a second cold process and preserve the provider credit ledger.",
+      "notes": null
+    },
+    "F15": {
+      "field": "F15",
+      "passed_items": 100,
+      "total_items": 100,
+      "item_level_100": true,
+      "two_independent_runs": false,
+      "verdict": "OPEN-REMEDIATION",
+      "next_action": "Repeat the reliability protocol with documented retry policy and a second fresh process.",
+      "notes": null
+    },
+    "F16": {
+      "field": "F16",
+      "passed_items": null,
+      "total_items": null,
+      "item_level_100": false,
+      "two_independent_runs": false,
+      "verdict": "OPEN-REMEDIATION",
+      "next_action": "Expand the bounded security campaign to every frozen red-team vector and benign-FPR corpus; current evidence is only a partial transport campaign.",
+      "notes": null
+    },
+    "F17": {
+      "field": "F17",
+      "passed_items": null,
+      "total_items": null,
+      "item_level_100": false,
+      "two_independent_runs": false,
+      "verdict": "OPEN-REMEDIATION",
+      "next_action": "Run the complete regression suite twice from fresh processes and tie every kept prior fix to an output artifact.",
+      "notes": "Fresh captures exist, but the proper nested run was 173 passed/1 skipped and the two-run matrix is not yet complete."
+    }
+  },
+  "evidence": [
+    "evidence\\raw\\quality-loop-20261102\\field_verdicts.jsonl",
+    "evidence\\raw\\quality-loop-20261102\\metadata.json"
+  ]
+}

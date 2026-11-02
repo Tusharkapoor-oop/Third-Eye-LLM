@@ -35,7 +35,9 @@ class WebLensAdapter(ResearchProvider):
         self._independent = independent
         if self._independent:
             # Enforce independent provider chain (no Tavily or third-party paid keys)
-            self._settings.search_providers = "ddg,mwmbl,wikipedia"
+            # CYCLE-1 (v10): keyless Bing added as first provider (see
+            # evidence/prereg-v10-cycle1 chain note); baseline was ddg,mwmbl,wikipedia.
+            self._settings.search_providers = "bing,ddg,mwmbl,wikipedia"
             self._settings.tavily_api_key = None
 
         self._service = WebLens(self._settings)
