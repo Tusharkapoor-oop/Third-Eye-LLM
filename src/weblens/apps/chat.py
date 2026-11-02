@@ -10,9 +10,11 @@ Multi-turn conversational research session with:
 from __future__ import annotations
 
 import time
+import re
 import uuid
 from typing import Any
 
+from ..extract.passages import query_terms, tokenize
 from ..security.injection import scan_injection
 from ..service import WebLens
 from ..tokens import count_tokens
@@ -47,6 +49,86 @@ class ResearchChatSession:
                 break
             self.history.pop(0)
 
+    @staticmethod
+    def _evidence_sentences(text: str, query: str, *, limit: int = 3) -> list[tuple[float, str, list[int]]]:
+        """Select concise answer-bearing sentences while preserving local spans.
+
+        Search/extraction passages are evidence, not answers. Returning whole
+        passages caused chat to echo navigation, boilerplate and unrelated
+        paragraphs. This selector only returns sentences with query coverage;
+        every returned span is relative to the supplied passage text.
+        """
+        terms, phrases = query_terms(query)
+        if not text.strip():
+            return []
+        boundaries = list(re.finditer(
+            r"(?<=[.!?])(?:\s|\n)+(?=[A-Za-z0-9`#*])|\n{2,}|\n(?=\s*[-*+]\s+)",
+            text,
+        ))
+        ranges: list[tuple[int, int]] = []
+        start = 0
+        for boundary in boundaries:
+            ranges.append((start, boundary.start()))
+            start = boundary.end()
+        ranges.append((start, len(text)))
+
+        candidates: list[tuple[float, str, list[int]]] = []
+        for begin, end in ranges:
+            raw = text[begin:end].strip()
+            if not raw:
+                continue
+            left_trim = len(text[begin:end]) - len(text[begin:end].lstrip())
+            absolute_begin = begin + left_trim
+            heading = re.match(r"(?:#{1,6}[^\n]*\n\s*)+", raw)
+            if heading:
+                absolute_begin += heading.end()
+                raw = raw[heading.end():].lstrip()
+                if not raw:
+                    continue
+            bullet = re.match(r"[-*+]\s+", raw)
+            if bullet:
+                absolute_begin += bullet.end()
+                raw = raw[bullet.end():].lstrip()
+                if not raw:
+                    continue
+            absolute_end = absolute_begin + len(raw)
+            if len(raw) < 25 or len(raw) > 500:
+                continue
+            low = raw.casefold()
+            if low.startswith(("advertisement", "sign in", "subscribe", "cookie", "skip to")):
+                continue
+            tokens = set(tokenize(raw))
+            covered = sum(1 for term in terms if term in tokens)
+            if terms and covered == 0:
+                continue
+            score = covered / max(1, len(terms))
+            if any(phrase.casefold() in low for phrase in phrases):
+                score += 0.4
+            if re.search(r"\b(?:is|are|means|refers to|provides|allows|returns|was|were)\b", low):
+                score += 0.15
+            if re.search(r"\bused\s+(?:as|for)\b", low):
+                score += 0.4
+            if re.search(r"\b(?:repl|webassembly|see also|copy path|sign in)\b", low):
+                score -= 0.5
+            if re.search(r"\b(?:asyncio\.run|await)\b", low):
+                score -= 0.45
+            if raw.endswith(":"):
+                score -= 0.5
+            score -= min(0.2, len(raw) / 3000)
+            candidates.append((score, raw, [absolute_begin, absolute_end]))
+        candidates.sort(key=lambda item: (-item[0], item[2][0]))
+        selected: list[tuple[float, str, list[int]]] = []
+        seen: set[str] = set()
+        for candidate in candidates:
+            key = re.sub(r"\W+", " ", candidate[1].casefold()).strip()
+            if key in seen:
+                continue
+            seen.add(key)
+            selected.append(candidate)
+            if len(selected) >= limit:
+                break
+        return selected
+
     async def send_message(self, user_message: str) -> dict[str, Any]:
         """Send a message to the conversational research agent and receive a cited response."""
         t0 = time.perf_counter()
@@ -72,31 +154,47 @@ class ResearchChatSession:
             extract_out = await self.service.extract(url, query=clean_msg, max_tokens=600)
             passages = extract_out.get("ps") or extract_out.get("passages", [])
             if not passages and h.get("s"):
-                passages = [{"p": h["s"], "s": [0, len(h["s"])]}]
+                passages = [{"p": h["s"], "s": [0, len(h["s"])], "source_type": "search_snippet"}]
             for p in passages:
-                text = p.get("p", "")
+                # MCP/service extraction uses compact ``x`` for passage text;
+                # older app fixtures use ``p``. Accept both so live chat does
+                # not silently discard every real extracted passage.
+                text = p.get("p") or p.get("x", "")
                 # Scan untrusted web text for prompt injection
                 injection_hits = scan_injection(text)
                 if injection_hits:
                     continue  # Quarantine dangerous passages
 
-                citations.append({
-                    "url": url,
-                    "title": h.get("t", ""),
-                    "span": p.get("s", [0, len(text)]),
-                    "text": text,
-                })
-                answer_parts.append(text)
-                if len(citations) >= 3:
+                base_span = p.get("s", [0, len(text)])
+                if not isinstance(base_span, list) or len(base_span) != 2:
+                    base_span = [0, len(text)]
+                evidence = self._evidence_sentences(text, clean_msg, limit=2)
+                for _, sentence, local_span in evidence:
+                    citation_span = [int(base_span[0]) + local_span[0], int(base_span[0]) + local_span[1]]
+                    citations.append({
+                        "id": len(citations) + 1,
+                        "url": url,
+                        "title": h.get("t", ""),
+                        "fetched_at": extract_out.get("at") or p.get("at"),
+                        "span": citation_span,
+                        "text": sentence,
+                        "source_type": p.get("source_type", "extracted_page"),
+                    })
+                    answer_parts.append(sentence)
+                    if len(citations) >= 2:
+                        break
+                if len(citations) >= 2:
                     break
-            if len(citations) >= 3:
+            if len(citations) >= 2:
                 break
 
         if not citations:
             answer = "I could not find reliable, uncompromised web evidence to answer your question."
             status = "no_reliable_result"
         else:
-            answer = " ".join(answer_parts[:3])
+            answer = "Based on the retrieved evidence:\n" + "\n".join(
+                f"- {part} [{index}]" for index, part in enumerate(answer_parts[:2], start=1)
+            )
             status = "ok"
 
         elapsed_ms = int((time.perf_counter() - t0) * 1000)
@@ -122,4 +220,3 @@ class ResearchChatSession:
     def clear_history(self) -> None:
         """Reset the conversation memory."""
         self.history.clear()
-

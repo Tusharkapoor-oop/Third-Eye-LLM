@@ -48,3 +48,4 @@ WebLens is engineered as self-hosted, sovereign infrastructure for autonomous ag
 1. **Long-Tail Coverage Expansion:** Integrate additional public search endpoints to eliminate the remaining coverage gap on obscure dynamic facts.
 2. **Hybrid Dense/Sparse RAG:** Enhance `Crawl2RAG` with optional lightweight local ONNX embeddings alongside BM25 for domain-specific technical documentation retrieval.
 3. **Multi-Hop Search Decomposition:** Further tune the research engine to automatically branch into contrasting sub-queries for nuanced comparative analysis.
+

@@ -89,3 +89,4 @@ $$S = S_{\text{lexical}} \times W_{\text{authority}} \times W_{\text{freshness}}
 When an agent issues a query based on a false presupposition (e.g., `"When was Windows 14 released?"`, `"Mars Colony One 1982 mission details"`):
 1. **Search Snippet Inspection:** The search router evaluates snippet consensus. If all returned hits discuss the impossibility, debunking, or non-existence of the subject, the system flags the entity as unverified.
 2. **Evidence Guard (`evidence_guard`):** If zero authoritative primary sources corroborate the premise, WebLens returns an explicit `no_reliable_result` response rather than allowing downstream agents to hallucinate plausible dates or specifications.
+

@@ -79,12 +79,12 @@ def clean_query(query: str) -> str:
     q = (query or "").strip()
     q = re.sub(r"\s+", " ", q)
     q = _CONVERSATIONAL.sub("", q).strip(" ?!.")
-    # "core technical differences between A and B" -> "A and B". Without this,
-    # the qualifier words dominate the provider query and can suppress useful
-    # results entirely.
+    # Keep the comparison intent while removing verbose lead-in wording.
+    # Dropping the intent entirely ("A and B") returns generic pages instead
+    # of evidence about the requested differences.
     between = re.search(r"\bdifferences?\s+between\s+(.+)$", q, re.I)
     if between:
-        q = between.group(1).strip(" ?!.")
+        q = between.group(1).strip(" ?!.") + " comparison"
     # Strip trailing comparison/review qualifiers that over-constrain keyless search
     q = re.sub(
         r"\s+(?:(?:headphones?|smartphones?|products?|detailed|side-by-side)\s+)?(?:comparison|overview|breakdown)[\s?!.]*$",

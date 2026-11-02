@@ -75,3 +75,4 @@ This hash chain guarantees:
 1. Historical runs cannot be retroactively edited, deleted, or fabricated.
 2. Every test result and benchmark score is permanently anchored to the exact code commit and raw outputs on disk.
 3. Anyone can independently verify ledger integrity by executing `python tools/verify_chain.py`.
+

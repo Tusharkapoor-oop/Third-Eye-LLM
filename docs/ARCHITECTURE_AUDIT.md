@@ -106,3 +106,4 @@ The platform architecture enforces strict decoupling between retrieval infrastru
 | Malformed HTML / Parser Crash | Extraction fails | Multi-engine fallback: `trafilatura` -> `lxml.html` -> regex strip tags. |
 | Infinite Crawl Trap | Memory / CPU exhaustion | Visited URL canonical hash set, max depth=3, max pages=30, trap regex filters. |
 | Upstream DNS Rebinding Probe | SSRF exploit attempt | Resolved IP pinning before socket connect; reject if resolved IP is non-public. |
+

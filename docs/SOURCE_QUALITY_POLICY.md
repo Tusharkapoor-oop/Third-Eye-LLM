@@ -50,3 +50,4 @@ When indexing or extracting external websites, WebLens strictly enforces crawler
 - **Calendar Loop Defense:** Regular expressions identify and prune infinite calendar paths (`/\d{4}/\d{2}/\d{2}/`).
 - **Query Parameter Stripping:** Session IDs, tracking tokens (`utm_source`, `fbclid`, `gclid`), and pagination parameters beyond page 5 are discarded.
 - **Bandwidth Ceilings:** Single-page download limit capped at 2.0 MB; total crawl session capped at 30 pages per domain.
+

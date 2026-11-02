@@ -85,3 +85,4 @@ Downstream AI agents operate under finite context budgets. WebLens breaks extrac
 - **Overlap:** 128 tokens to prevent losing context across sentence boundaries.
 - **Verbatim Anchors:** Every chunk retains absolute character offsets (`char_start`, `char_end`) relative to the raw extracted document text.
 - **Passage Scoring:** Passages are scored against query keywords using BM25 and exact lexical overlap, ensuring only the top-$K$ highest-density evidence spans are forwarded to the agent.
+

@@ -159,6 +159,18 @@ async def test_company_researcher_real_and_fictional(service):
 
 
 # --- Research Agent Chat Tests ---
+def test_research_chat_evidence_selector_prefers_answer_sentence():
+    text = (
+        "# Asyncio\n\n"
+        "asyncio is used as a foundation for asynchronous network frameworks.\n\n"
+        "See also the REPL documentation."
+    )
+    selected = ResearchChatSession._evidence_sentences(text, "What is Python asyncio used for?", limit=2)
+    assert selected
+    assert "used as a foundation" in selected[0][1]
+    assert not selected[0][1].startswith("#")
+
+
 @pytest.mark.asyncio
 async def test_research_chat_session(service):
     chat = ResearchChatSession(service, max_history_tokens=500)
@@ -182,6 +194,13 @@ async def test_research_chat_session(service):
         assert turn1["status"] == "ok"
         assert len(turn1["citations"]) == 1
         assert "high-performance network" in turn1["answer"]
+        assert turn1["answer"].startswith("Based on the retrieved evidence:")
+        citation = turn1["citations"][0]
+        assert citation["id"] == 1
+        assert citation["source_type"] == "extracted_page"
+        assert citation["span"][0] == 0
+        assert citation["span"][1] > citation["span"][0]
+        assert citation["text"] in turn1["answer"]
 
         # Follow-up turn
         turn2 = await chat.send_message("Does it support web-servers?")
@@ -376,5 +395,3 @@ async def test_persistent_research_chat(service, tmp_path):
 
         md = chat.export_markdown()
         assert "# Research Session: Python Async Ecosystem" in md
-
-

@@ -44,3 +44,4 @@ WebLens equips downstream agents with nine primary operational capabilities:
 - **Surgical Token Footprint:** Output format prioritizes compact JSON schemas, explicit character-level spans, and token-bounded passages to maximize agent context window efficiency.
 - **Defense in Depth:** All untrusted web content is treated as potentially adversarial data. Untrusted text is never executed as instructions.
 - **Zero Lock-In:** Core search and extraction operate without mandatory paid API keys, providing self-contained independence for any AI agent deployment.
+

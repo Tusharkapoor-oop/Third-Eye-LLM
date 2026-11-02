@@ -159,3 +159,4 @@ WebLens MCP returns JSON-RPC 2.0 compliant errors:
 | `-32002` | `TIMEOUT_EXCEEDED` | Upstream fetch timed out | Downstream agent should retry or inspect site availability. |
 | `-32003` | `CRAWL_TRAP_ABORTED` | Recursive trap detected | Crawl terminated safely to prevent resource exhaustion. |
 | `-32004` | `NO_RELIABLE_RESULT` | Query premise unverified/fictional | Query refers to false premise; treat as non-existent entity. |
+
