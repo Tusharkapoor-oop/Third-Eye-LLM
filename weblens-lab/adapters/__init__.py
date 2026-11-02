@@ -15,6 +15,7 @@ from .common_interface.base import (
     SearchResponse,
 )
 from .deployed_adapter.adapter import DeployedWebLensAdapter
+from .gemini_adapter.adapter import GeminiAdapter
 from .tavily_adapter.adapter import TavilyAdapter
 from .weblens_adapter.adapter import WebLensAdapter
 
@@ -23,6 +24,7 @@ __all__ = [
     "DeployedWebLensAdapter",
     "ExtractItem",
     "ExtractResponse",
+    "GeminiAdapter",
     "ProviderUsage",
     "ResearchProvider",
     "ResearchResponse",

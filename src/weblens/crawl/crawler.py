@@ -13,7 +13,7 @@ from urllib.parse import urlsplit
 from lxml import html as lxml_html
 
 from ..config import Settings
-from ..errors import ErrCode, WebLensError
+from ..errors import ErrCode, WebLensError, resolve_budget
 from ..extract.passages import select_passages
 from ..extract.service import ExtractionService
 from ..net import SafeFetcher
@@ -136,6 +136,11 @@ class CrawledPage:
     passages: list[dict] = field(default_factory=list)
     excerpt: str = ""
     warnings: list[str] = field(default_factory=list)
+    # Full cleaned text and token count, kept in memory only. Crawl2RAG needs
+    # the complete document to build accurate passages and source spans; the
+    # serialized crawl payload still uses the budgeted `passages`/`excerpt`.
+    text: str = ""
+    tokens: int = 0
 
 
 @dataclass
@@ -220,7 +225,9 @@ class SiteCrawler:
     ) -> MapOutcome:
         started = time.perf_counter()
         cap = max(1, min(200, max_urls))
-        budget = max(200, min(4000, max_tokens or self.s.max_search_tokens))
+        budget = resolve_budget(
+            max_tokens, self.s.max_search_tokens, minimum=200, maximum=4000
+        )
         root = normalize_url(url)
         if not root:
             raise WebLensError("invalid URL", code=ErrCode.BAD_INPUT)
@@ -258,7 +265,7 @@ class SiteCrawler:
                 entries.append(e)
                 if len(entries) >= cap:
                     break
-        if not entries:
+        if len(entries) <= 1:
             warnings.append("no_links_found")
         payload = {
             "status": "ok" if entries else "no_reliable_result",
@@ -300,7 +307,9 @@ class SiteCrawler:
         pages_cap = max(1, min(30, max_pages))
         depth_cap = max(0, min(3, max_depth))
         follow_min = follow_threshold(root)
-        budget = max(300, min(8000, max_tokens or self.s.max_extract_tokens))
+        budget = resolve_budget(
+            max_tokens, self.s.max_extract_tokens, minimum=300, maximum=8000
+        )
         queue: deque[tuple[str, int]] = deque([(root, 0)])
         seen: set[str] = {root.rstrip("/")}
         pages: list[CrawledPage] = []
@@ -341,6 +350,8 @@ class SiteCrawler:
                 status="ok",
                 published=doc.date_iso(),
                 warnings=list(doc.warnings),
+                text=doc.text,
+                tokens=count_tokens(doc.text),
             )
             if query and query.strip():
                 passages, cov = select_passages(doc.text, query, title=doc.title, max_passages=2, max_chars=2600)

@@ -17,7 +17,7 @@ from . import __version__
 from .cache import Cache
 from .config import Settings, get_settings
 from .crawl import SiteCrawler
-from .errors import ErrCode, WebLensError
+from .errors import ErrCode, WebLensError, resolve_budget
 from .extract import ExtractionService
 from .net import SafeFetcher
 from .research import ResearchEngine
@@ -96,7 +96,9 @@ class WebLens:
                 raise WebLensError(
                     "freshness must be day, week, month or year", code=ErrCode.BAD_INPUT
                 )
-            budget = max(120, min(2000, max_tokens or self.s.max_search_tokens))
+            budget = resolve_budget(
+                max_tokens, self.s.max_search_tokens, minimum=120, maximum=2000
+            )
             out = await self.router.search(
                 query,
                 k=k,

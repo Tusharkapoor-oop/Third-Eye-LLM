@@ -1,0 +1,922 @@
+{
+  "run_file": "reports\\three-system-comparison-v10\\raw\\run_full_v10_120.jsonl",
+  "records": 120,
+  "dataset_versions": [
+    "v10.0.0"
+  ],
+  "systems": {
+    "local_weblens": {
+      "n": 120,
+      "n_graded": 107,
+      "success_rate": 0.9,
+      "p50_ms": 837.0,
+      "p95_ms": 1497.3,
+      "mean_ms": 937.8,
+      "p5": 0.553,
+      "p1": 0.617,
+      "mrr": 0.66,
+      "ndcg5": 0.669,
+      "hit5": 0.729,
+      "tokens": 182.3,
+      "credits": 0.0,
+      "p5_ci95": [
+        0.477,
+        0.632
+      ],
+      "ndcg5_ci95": [
+        0.588,
+        0.752
+      ]
+    },
+    "deployed_weblens": {
+      "n": 120,
+      "n_graded": 107,
+      "success_rate": 0.942,
+      "p50_ms": 1037.8,
+      "p95_ms": 1622.2,
+      "mean_ms": 1037.1,
+      "p5": 0.471,
+      "p1": 0.636,
+      "mrr": 0.711,
+      "ndcg5": 0.729,
+      "hit5": 0.832,
+      "tokens": 206.2,
+      "credits": 0.0,
+      "p5_ci95": [
+        0.411,
+        0.533
+      ],
+      "ndcg5_ci95": [
+        0.66,
+        0.798
+      ]
+    },
+    "tavily_direct": {
+      "n": 120,
+      "n_graded": 107,
+      "success_rate": 1.0,
+      "p50_ms": 1537.4,
+      "p95_ms": 2673.1,
+      "mean_ms": 1606.8,
+      "p5": 0.74,
+      "p1": 0.757,
+      "mrr": 0.827,
+      "ndcg5": 0.777,
+      "hit5": 0.935,
+      "tokens": 1378.7,
+      "credits": 120.0,
+      "p5_ci95": [
+        0.675,
+        0.804
+      ],
+      "ndcg5_ci95": [
+        0.725,
+        0.823
+      ]
+    }
+  },
+  "paired": {
+    "local_minus_tavily_p5": {
+      "n_pairs": 107,
+      "mean_delta": -0.187,
+      "ci95": [
+        -0.265,
+        -0.108
+      ],
+      "wins": 24,
+      "ties": 34,
+      "losses": 49
+    },
+    "local_minus_tavily_ndcg5": {
+      "n_pairs": 107,
+      "mean_delta": -0.108,
+      "ci95": [
+        -0.189,
+        -0.027
+      ],
+      "wins": 48,
+      "ties": 19,
+      "losses": 40
+    },
+    "deployed_minus_local_p5": {
+      "n_pairs": 107,
+      "mean_delta": -0.082,
+      "ci95": [
+        -0.142,
+        -0.024
+      ],
+      "wins": 25,
+      "ties": 36,
+      "losses": 46
+    },
+    "local_minus_deployed_p5": {
+      "n_pairs": 107,
+      "mean_delta": 0.082,
+      "ci95": [
+        0.024,
+        0.142
+      ],
+      "wins": 46,
+      "ties": 36,
+      "losses": 25
+    }
+  },
+  "categories": [
+    {
+      "category": "academic_research",
+      "n": 4,
+      "local_weblens_p5": 0.6,
+      "local_weblens_ndcg5": 0.743,
+      "local_weblens_p50_ms": 1229.3,
+      "local_weblens_tokens": 230.5,
+      "deployed_weblens_p5": 0.55,
+      "deployed_weblens_ndcg5": 0.883,
+      "deployed_weblens_p50_ms": 1007.4,
+      "deployed_weblens_tokens": 242.8,
+      "tavily_direct_p5": 0.95,
+      "tavily_direct_ndcg5": 0.789,
+      "tavily_direct_p50_ms": 1955.8,
+      "tavily_direct_tokens": 1258.8
+    },
+    {
+      "category": "adversarial_injection",
+      "n": 4,
+      "local_weblens_p5": 1.0,
+      "local_weblens_ndcg5": 1.0,
+      "local_weblens_p50_ms": 876.0,
+      "local_weblens_tokens": 142.5,
+      "deployed_weblens_p5": 0.0,
+      "deployed_weblens_ndcg5": 0.0,
+      "deployed_weblens_p50_ms": 951.6,
+      "deployed_weblens_tokens": 135.0,
+      "tavily_direct_p5": 0.0,
+      "tavily_direct_ndcg5": 0.0,
+      "tavily_direct_p50_ms": 1506.5,
+      "tavily_direct_tokens": 1388.0
+    },
+    {
+      "category": "ambiguous_questions",
+      "n": 4,
+      "local_weblens_p5": 1.0,
+      "local_weblens_ndcg5": 1.0,
+      "local_weblens_p50_ms": 1043.0,
+      "local_weblens_tokens": 216.0,
+      "deployed_weblens_p5": 0.6,
+      "deployed_weblens_ndcg5": 0.947,
+      "deployed_weblens_p50_ms": 1075.8,
+      "deployed_weblens_tokens": 184.5,
+      "tavily_direct_p5": 0.2,
+      "tavily_direct_ndcg5": 0.431,
+      "tavily_direct_p50_ms": 1746.4,
+      "tavily_direct_tokens": 1286.2
+    },
+    {
+      "category": "company_research",
+      "n": 4,
+      "local_weblens_p5": 0.85,
+      "local_weblens_ndcg5": 0.92,
+      "local_weblens_p50_ms": 1013.8,
+      "local_weblens_tokens": 211.5,
+      "deployed_weblens_p5": 0.55,
+      "deployed_weblens_ndcg5": 0.899,
+      "deployed_weblens_p50_ms": 1011.1,
+      "deployed_weblens_tokens": 194.5,
+      "tavily_direct_p5": 0.95,
+      "tavily_direct_ndcg5": 0.96,
+      "tavily_direct_p50_ms": 1745.2,
+      "tavily_direct_tokens": 1438.5
+    },
+    {
+      "category": "competitive_intelligence",
+      "n": 4,
+      "local_weblens_p5": 0.5,
+      "local_weblens_ndcg5": 0.5,
+      "local_weblens_p50_ms": 704.2,
+      "local_weblens_tokens": 154.0,
+      "deployed_weblens_p5": 0.3,
+      "deployed_weblens_ndcg5": 0.498,
+      "deployed_weblens_p50_ms": 939.0,
+      "deployed_weblens_tokens": 189.0,
+      "tavily_direct_p5": 0.55,
+      "tavily_direct_ndcg5": 0.643,
+      "tavily_direct_p50_ms": 1655.8,
+      "tavily_direct_tokens": 1350.8
+    },
+    {
+      "category": "contradictory_sources",
+      "n": 4,
+      "local_weblens_p5": 0.6,
+      "local_weblens_ndcg5": 0.699,
+      "local_weblens_p50_ms": 801.8,
+      "local_weblens_tokens": 204.8,
+      "deployed_weblens_p5": 0.0,
+      "deployed_weblens_ndcg5": 0.0,
+      "deployed_weblens_p50_ms": 1111.7,
+      "deployed_weblens_tokens": 216.2,
+      "tavily_direct_p5": 0.2,
+      "tavily_direct_ndcg5": 0.631,
+      "tavily_direct_p50_ms": 1476.3,
+      "tavily_direct_tokens": 1232.2
+    },
+    {
+      "category": "conversational_research",
+      "n": 4,
+      "local_weblens_p5": 0.0,
+      "local_weblens_ndcg5": 0.0,
+      "local_weblens_p50_ms": 643.3,
+      "local_weblens_tokens": 49.8,
+      "deployed_weblens_p5": 0.05,
+      "deployed_weblens_ndcg5": 0.125,
+      "deployed_weblens_p50_ms": 985.1,
+      "deployed_weblens_tokens": 204.0,
+      "tavily_direct_p5": 0.3,
+      "tavily_direct_ndcg5": 0.654,
+      "tavily_direct_p50_ms": 1705.9,
+      "tavily_direct_tokens": 1266.8
+    },
+    {
+      "category": "crawl2rag",
+      "n": 4,
+      "local_weblens_p5": 0.0,
+      "local_weblens_ndcg5": 0.0,
+      "local_weblens_p50_ms": 679.2,
+      "local_weblens_tokens": 67.8,
+      "deployed_weblens_p5": 0.45,
+      "deployed_weblens_ndcg5": 0.522,
+      "deployed_weblens_p50_ms": 1127.0,
+      "deployed_weblens_tokens": 197.8,
+      "tavily_direct_p5": 0.8,
+      "tavily_direct_ndcg5": 0.76,
+      "tavily_direct_p50_ms": 1415.0,
+      "tavily_direct_tokens": 1283.8
+    },
+    {
+      "category": "current_events_news",
+      "n": 4,
+      "local_weblens_p5": 0.8,
+      "local_weblens_ndcg5": 0.875,
+      "local_weblens_p50_ms": 985.0,
+      "local_weblens_tokens": 217.0,
+      "deployed_weblens_p5": 0.85,
+      "deployed_weblens_ndcg5": 0.918,
+      "deployed_weblens_p50_ms": 330.8,
+      "deployed_weblens_tokens": 275.0,
+      "tavily_direct_p5": 0.8,
+      "tavily_direct_ndcg5": 0.871,
+      "tavily_direct_p50_ms": 323.9,
+      "tavily_direct_tokens": 1461.8
+    },
+    {
+      "category": "general_factual",
+      "n": 4,
+      "local_weblens_p5": 0.95,
+      "local_weblens_ndcg5": 0.988,
+      "local_weblens_p50_ms": 787.0,
+      "local_weblens_tokens": 218.0,
+      "deployed_weblens_p5": 0.8,
+      "deployed_weblens_ndcg5": 0.995,
+      "deployed_weblens_p50_ms": 428.5,
+      "deployed_weblens_tokens": 263.8,
+      "tavily_direct_p5": 1.0,
+      "tavily_direct_ndcg5": 0.896,
+      "tavily_direct_p50_ms": 330.9,
+      "tavily_direct_tokens": 1373.0
+    },
+    {
+      "category": "healthcare_information",
+      "n": 4,
+      "local_weblens_p5": 0.15,
+      "local_weblens_ndcg5": 0.383,
+      "local_weblens_p50_ms": 841.0,
+      "local_weblens_tokens": 217.2,
+      "deployed_weblens_p5": 0.35,
+      "deployed_weblens_ndcg5": 0.452,
+      "deployed_weblens_p50_ms": 1012.9,
+      "deployed_weblens_tokens": 233.8,
+      "tavily_direct_p5": 0.75,
+      "tavily_direct_ndcg5": 0.77,
+      "tavily_direct_p50_ms": 1672.3,
+      "tavily_direct_tokens": 1251.8
+    },
+    {
+      "category": "industry_research",
+      "n": 4,
+      "local_weblens_p5": 0.6,
+      "local_weblens_ndcg5": 0.647,
+      "local_weblens_p50_ms": 937.0,
+      "local_weblens_tokens": 215.2,
+      "deployed_weblens_p5": 0.4,
+      "deployed_weblens_ndcg5": 0.625,
+      "deployed_weblens_p50_ms": 1156.5,
+      "deployed_weblens_tokens": 176.0,
+      "tavily_direct_p5": 0.65,
+      "tavily_direct_ndcg5": 0.773,
+      "tavily_direct_p50_ms": 2606.9,
+      "tavily_direct_tokens": 1184.8
+    },
+    {
+      "category": "insufficient_evidence",
+      "n": 4,
+      "local_weblens_p5": 0.0,
+      "local_weblens_ndcg5": 0.0,
+      "local_weblens_p50_ms": 1091.1,
+      "local_weblens_tokens": 230.2,
+      "deployed_weblens_p5": 0.0,
+      "deployed_weblens_ndcg5": 0.0,
+      "deployed_weblens_p50_ms": 1359.7,
+      "deployed_weblens_tokens": 185.8,
+      "tavily_direct_p5": 0.0,
+      "tavily_direct_ndcg5": 0.0,
+      "tavily_direct_p50_ms": 1567.2,
+      "tavily_direct_tokens": 1730.0
+    },
+    {
+      "category": "legal_policy_research",
+      "n": 4,
+      "local_weblens_p5": 0.6,
+      "local_weblens_ndcg5": 0.607,
+      "local_weblens_p50_ms": 917.9,
+      "local_weblens_tokens": 221.5,
+      "deployed_weblens_p5": 0.6,
+      "deployed_weblens_ndcg5": 0.71,
+      "deployed_weblens_p50_ms": 1072.0,
+      "deployed_weblens_tokens": 210.8,
+      "tavily_direct_p5": 0.75,
+      "tavily_direct_ndcg5": 0.672,
+      "tavily_direct_p50_ms": 1527.3,
+      "tavily_direct_tokens": 1087.0
+    },
+    {
+      "category": "long_document_extraction",
+      "n": 4,
+      "local_weblens_p5": 0.6,
+      "local_weblens_ndcg5": 0.836,
+      "local_weblens_p50_ms": 909.7,
+      "local_weblens_tokens": 214.5,
+      "deployed_weblens_p5": 0.4,
+      "deployed_weblens_ndcg5": 0.639,
+      "deployed_weblens_p50_ms": 1101.4,
+      "deployed_weblens_tokens": 186.5,
+      "tavily_direct_p5": 0.7,
+      "tavily_direct_ndcg5": 0.588,
+      "tavily_direct_p50_ms": 1739.0,
+      "tavily_direct_tokens": 1115.8
+    },
+    {
+      "category": "market_research",
+      "n": 4,
+      "local_weblens_p5": 0.45,
+      "local_weblens_ndcg5": 0.535,
+      "local_weblens_p50_ms": 870.3,
+      "local_weblens_tokens": 241.0,
+      "deployed_weblens_p5": 0.5,
+      "deployed_weblens_ndcg5": 0.748,
+      "deployed_weblens_p50_ms": 1112.2,
+      "deployed_weblens_tokens": 190.8,
+      "tavily_direct_p5": 0.9,
+      "tavily_direct_ndcg5": 0.959,
+      "tavily_direct_p50_ms": 1933.4,
+      "tavily_direct_tokens": 1865.5
+    },
+    {
+      "category": "multihop_reasoning",
+      "n": 4,
+      "local_weblens_p5": 0.85,
+      "local_weblens_ndcg5": 1.0,
+      "local_weblens_p50_ms": 1129.7,
+      "local_weblens_tokens": 196.2,
+      "deployed_weblens_p5": 0.5,
+      "deployed_weblens_ndcg5": 0.989,
+      "deployed_weblens_p50_ms": 1173.5,
+      "deployed_weblens_tokens": 191.5,
+      "tavily_direct_p5": 0.75,
+      "tavily_direct_ndcg5": 0.902,
+      "tavily_direct_p50_ms": 1737.2,
+      "tavily_direct_tokens": 1203.5
+    },
+    {
+      "category": "multilingual_queries",
+      "n": 4,
+      "local_weblens_p5": 0.25,
+      "local_weblens_ndcg5": 0.25,
+      "local_weblens_p50_ms": 688.1,
+      "local_weblens_tokens": 70.2,
+      "deployed_weblens_p5": 0.3,
+      "deployed_weblens_ndcg5": 0.745,
+      "deployed_weblens_p50_ms": 987.7,
+      "deployed_weblens_tokens": 197.2,
+      "tavily_direct_p5": 0.9,
+      "tavily_direct_ndcg5": 0.855,
+      "tavily_direct_p50_ms": 1618.1,
+      "tavily_direct_tokens": 2730.5
+    },
+    {
+      "category": "private_kb_retrieval",
+      "n": 4,
+      "local_weblens_p5": 0.55,
+      "local_weblens_ndcg5": 0.75,
+      "local_weblens_p50_ms": 647.0,
+      "local_weblens_tokens": 98.8,
+      "deployed_weblens_p5": 0.55,
+      "deployed_weblens_ndcg5": 0.733,
+      "deployed_weblens_p50_ms": 908.8,
+      "deployed_weblens_tokens": 112.5,
+      "tavily_direct_p5": 0.55,
+      "tavily_direct_ndcg5": 0.784,
+      "tavily_direct_p50_ms": 1563.6,
+      "tavily_direct_tokens": 1132.2
+    },
+    {
+      "category": "product_research",
+      "n": 4,
+      "local_weblens_p5": 0.6,
+      "local_weblens_ndcg5": 0.893,
+      "local_weblens_p50_ms": 1448.6,
+      "local_weblens_tokens": 227.0,
+      "deployed_weblens_p5": 0.45,
+      "deployed_weblens_ndcg5": 0.923,
+      "deployed_weblens_p50_ms": 1093.8,
+      "deployed_weblens_tokens": 207.5,
+      "tavily_direct_p5": 0.5,
+      "tavily_direct_ndcg5": 0.588,
+      "tavily_direct_p50_ms": 2128.4,
+      "tavily_direct_tokens": 1590.0
+    },
+    {
+      "category": "programming_developer_docs",
+      "n": 4,
+      "local_weblens_p5": 0.1,
+      "local_weblens_ndcg5": 0.212,
+      "local_weblens_p50_ms": 1095.6,
+      "local_weblens_tokens": 139.8,
+      "deployed_weblens_p5": 0.25,
+      "deployed_weblens_ndcg5": 0.713,
+      "deployed_weblens_p50_ms": 877.4,
+      "deployed_weblens_tokens": 255.8,
+      "tavily_direct_p5": 0.4,
+      "tavily_direct_ndcg5": 0.581,
+      "tavily_direct_p50_ms": 1474.9,
+      "tavily_direct_tokens": 1234.0
+    },
+    {
+      "category": "public_sector_research",
+      "n": 4,
+      "local_weblens_p5": 1.0,
+      "local_weblens_ndcg5": 0.958,
+      "local_weblens_p50_ms": 902.9,
+      "local_weblens_tokens": 185.2,
+      "deployed_weblens_p5": 0.7,
+      "deployed_weblens_ndcg5": 0.994,
+      "deployed_weblens_p50_ms": 1073.7,
+      "deployed_weblens_tokens": 182.2,
+      "tavily_direct_p5": 1.0,
+      "tavily_direct_ndcg5": 0.817,
+      "tavily_direct_p50_ms": 1549.2,
+      "tavily_direct_tokens": 1197.0
+    },
+    {
+      "category": "rare_specialized_topics",
+      "n": 4,
+      "local_weblens_p5": 0.7,
+      "local_weblens_ndcg5": 0.886,
+      "local_weblens_p50_ms": 757.1,
+      "local_weblens_tokens": 164.0,
+      "deployed_weblens_p5": 0.45,
+      "deployed_weblens_ndcg5": 0.904,
+      "deployed_weblens_p50_ms": 1052.4,
+      "deployed_weblens_tokens": 264.0,
+      "tavily_direct_p5": 0.55,
+      "tavily_direct_ndcg5": 0.647,
+      "tavily_direct_p50_ms": 1941.2,
+      "tavily_direct_tokens": 1232.2
+    },
+    {
+      "category": "scientific_research",
+      "n": 4,
+      "local_weblens_p5": 0.65,
+      "local_weblens_ndcg5": 0.75,
+      "local_weblens_p50_ms": 895.5,
+      "local_weblens_tokens": 225.2,
+      "deployed_weblens_p5": 0.5,
+      "deployed_weblens_ndcg5": 0.706,
+      "deployed_weblens_p50_ms": 1154.9,
+      "deployed_weblens_tokens": 253.8,
+      "tavily_direct_p5": 0.95,
+      "tavily_direct_ndcg5": 0.756,
+      "tavily_direct_p50_ms": 1497.8,
+      "tavily_direct_tokens": 1423.0
+    },
+    {
+      "category": "startup_research",
+      "n": 4,
+      "local_weblens_p5": 0.9,
+      "local_weblens_ndcg5": 0.963,
+      "local_weblens_p50_ms": 671.8,
+      "local_weblens_tokens": 196.2,
+      "deployed_weblens_p5": 0.55,
+      "deployed_weblens_ndcg5": 0.731,
+      "deployed_weblens_p50_ms": 1025.5,
+      "deployed_weblens_tokens": 147.8,
+      "tavily_direct_p5": 0.9,
+      "tavily_direct_ndcg5": 0.972,
+      "tavily_direct_p50_ms": 1400.3,
+      "tavily_direct_tokens": 1235.8
+    },
+    {
+      "category": "stock_portfolio_research",
+      "n": 4,
+      "local_weblens_p5": 0.1,
+      "local_weblens_ndcg5": 0.358,
+      "local_weblens_p50_ms": 880.9,
+      "local_weblens_tokens": 137.2,
+      "deployed_weblens_p5": 0.25,
+      "deployed_weblens_ndcg5": 0.347,
+      "deployed_weblens_p50_ms": 1156.1,
+      "deployed_weblens_tokens": 154.8,
+      "tavily_direct_p5": 0.8,
+      "tavily_direct_ndcg5": 0.767,
+      "tavily_direct_p50_ms": 1415.2,
+      "tavily_direct_tokens": 1337.5
+    },
+    {
+      "category": "structured_data_enrichment",
+      "n": 4,
+      "local_weblens_p5": 0.7,
+      "local_weblens_ndcg5": 1.0,
+      "local_weblens_p50_ms": 891.8,
+      "local_weblens_tokens": 231.0,
+      "deployed_weblens_p5": 0.5,
+      "deployed_weblens_ndcg5": 0.857,
+      "deployed_weblens_p50_ms": 1080.0,
+      "deployed_weblens_tokens": 233.0,
+      "tavily_direct_p5": 0.85,
+      "tavily_direct_ndcg5": 0.99,
+      "tavily_direct_p50_ms": 1815.6,
+      "tavily_direct_tokens": 1652.2
+    },
+    {
+      "category": "technical_research",
+      "n": 4,
+      "local_weblens_p5": 0.65,
+      "local_weblens_ndcg5": 0.75,
+      "local_weblens_p50_ms": 786.2,
+      "local_weblens_tokens": 147.2,
+      "deployed_weblens_p5": 0.6,
+      "deployed_weblens_ndcg5": 0.906,
+      "deployed_weblens_p50_ms": 864.3,
+      "deployed_weblens_tokens": 227.5,
+      "tavily_direct_p5": 0.9,
+      "tavily_direct_ndcg5": 0.898,
+      "tavily_direct_p50_ms": 1135.8,
+      "tavily_direct_tokens": 1076.2
+    },
+    {
+      "category": "time_sensitive_questions",
+      "n": 4,
+      "local_weblens_p5": 0.75,
+      "local_weblens_ndcg5": 0.984,
+      "local_weblens_p50_ms": 1137.6,
+      "local_weblens_tokens": 252.8,
+      "deployed_weblens_p5": 0.65,
+      "deployed_weblens_ndcg5": 0.882,
+      "deployed_weblens_p50_ms": 1266.2,
+      "deployed_weblens_tokens": 241.5,
+      "tavily_direct_p5": 0.8,
+      "tavily_direct_ndcg5": 0.761,
+      "tavily_direct_p50_ms": 1503.6,
+      "tavily_direct_tokens": 1385.5
+    },
+    {
+      "category": "website_crawling",
+      "n": 4,
+      "local_weblens_p5": 0.25,
+      "local_weblens_ndcg5": 0.44,
+      "local_weblens_p50_ms": 680.3,
+      "local_weblens_tokens": 146.8,
+      "deployed_weblens_p5": 0.4,
+      "deployed_weblens_ndcg5": 0.808,
+      "deployed_weblens_p50_ms": 1027.7,
+      "deployed_weblens_tokens": 231.0,
+      "tavily_direct_p5": 0.75,
+      "tavily_direct_ndcg5": 0.868,
+      "tavily_direct_p50_ms": 1536.5,
+      "tavily_direct_tokens": 1357.8
+    }
+  ],
+  "largest_local_vs_tavily_gaps": [
+    {
+      "id": "crawl2rag_q02",
+      "category": "crawl2rag",
+      "query": "According to the Python documentation, how do you create a virtual environment with venv?",
+      "local_p5": 0.0,
+      "tavily_p5": 1.0,
+      "gap": 1.0,
+      "local_grades": [],
+      "tavily_grades": [
+        1,
+        2,
+        2,
+        1,
+        1
+      ],
+      "local_status": "empty"
+    },
+    {
+      "id": "crawl2rag_q03",
+      "category": "crawl2rag",
+      "query": "According to the FastAPI documentation, how do you declare a path parameter in a route?",
+      "local_p5": 0.0,
+      "tavily_p5": 1.0,
+      "gap": 1.0,
+      "local_grades": [
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "tavily_grades": [
+        1,
+        2,
+        1,
+        1,
+        1
+      ],
+      "local_status": "partial"
+    },
+    {
+      "id": "healthcare_information_q04",
+      "category": "healthcare_information",
+      "query": "What is the key difference between a virus and a bacterium?",
+      "local_p5": 0.0,
+      "tavily_p5": 1.0,
+      "gap": 1.0,
+      "local_grades": [
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "tavily_grades": [
+        1,
+        1,
+        1,
+        1,
+        1
+      ],
+      "local_status": "partial"
+    },
+    {
+      "id": "industry_research_q02",
+      "category": "industry_research",
+      "query": "Which are the three largest cloud infrastructure providers by market share?",
+      "local_p5": 0.0,
+      "tavily_p5": 1.0,
+      "gap": 1.0,
+      "local_grades": [
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "tavily_grades": [
+        1,
+        1,
+        1,
+        2,
+        1
+      ],
+      "local_status": "partial"
+    },
+    {
+      "id": "multilingual_queries_q02",
+      "category": "multilingual_queries",
+      "query": "Quelle est la capitale de l'Allemagne ?",
+      "local_p5": 0.0,
+      "tavily_p5": 1.0,
+      "gap": 1.0,
+      "local_grades": [],
+      "tavily_grades": [
+        1,
+        2,
+        1,
+        2,
+        1
+      ],
+      "local_status": "empty"
+    },
+    {
+      "id": "stock_portfolio_research_q03",
+      "category": "stock_portfolio_research",
+      "query": "On which stock exchange is Microsoft Corporation primarily listed?",
+      "local_p5": 0.0,
+      "tavily_p5": 1.0,
+      "gap": 1.0,
+      "local_grades": [
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "tavily_grades": [
+        1,
+        1,
+        2,
+        1,
+        2
+      ],
+      "local_status": "partial"
+    },
+    {
+      "id": "website_crawling_q04",
+      "category": "website_crawling",
+      "query": "What is the difference between an HTTP 301 and 302 redirect?",
+      "local_p5": 0.0,
+      "tavily_p5": 1.0,
+      "gap": 1.0,
+      "local_grades": [
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "tavily_grades": [
+        1,
+        1,
+        1,
+        1,
+        1
+      ],
+      "local_status": "partial"
+    },
+    {
+      "id": "academic_research_q01",
+      "category": "academic_research",
+      "query": "Who are the authors of the seminal Transformer architecture paper Attention Is All You Need?",
+      "local_p5": 0.0,
+      "tavily_p5": 0.8,
+      "gap": 0.8,
+      "local_grades": [
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "tavily_grades": [
+        1,
+        2,
+        1,
+        0,
+        2
+      ],
+      "local_status": "partial"
+    },
+    {
+      "id": "competitive_intelligence_q01",
+      "category": "competitive_intelligence",
+      "query": "How does Snowflake's cloud architecture compare with Databricks Lakehouse architecture?",
+      "local_p5": 0.0,
+      "tavily_p5": 0.8,
+      "gap": 0.8,
+      "local_grades": [
+        0
+      ],
+      "tavily_grades": [
+        1,
+        1,
+        1,
+        1,
+        0
+      ],
+      "local_status": "partial"
+    },
+    {
+      "id": "crawl2rag_q04",
+      "category": "crawl2rag",
+      "query": "According to the SQLite documentation, what is FTS5?",
+      "local_p5": 0.0,
+      "tavily_p5": 0.8,
+      "gap": 0.8,
+      "local_grades": [
+        0,
+        0
+      ],
+      "tavily_grades": [
+        1,
+        1,
+        2,
+        1,
+        0
+      ],
+      "local_status": "partial"
+    },
+    {
+      "id": "healthcare_information_q03",
+      "category": "healthcare_information",
+      "query": "What does body mass index measure?",
+      "local_p5": 0.2,
+      "tavily_p5": 1.0,
+      "gap": 0.8,
+      "local_grades": [
+        1,
+        0,
+        0,
+        0,
+        0
+      ],
+      "tavily_grades": [
+        1,
+        2,
+        2,
+        2,
+        1
+      ],
+      "local_status": "partial"
+    },
+    {
+      "id": "long_document_extraction_q02",
+      "category": "long_document_extraction",
+      "query": "According to the IPCC Sixth Assessment Report, what global temperature limit is central to the Paris Agreement?",
+      "local_p5": 0.2,
+      "tavily_p5": 1.0,
+      "gap": 0.8,
+      "local_grades": [
+        1,
+        0,
+        0,
+        0,
+        0
+      ],
+      "tavily_grades": [
+        1,
+        1,
+        1,
+        2,
+        1
+      ],
+      "local_status": "partial"
+    },
+    {
+      "id": "market_research_q02",
+      "category": "market_research",
+      "query": "What does a stock market index measure?",
+      "local_p5": 0.0,
+      "tavily_p5": 0.8,
+      "gap": 0.8,
+      "local_grades": [
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "tavily_grades": [
+        1,
+        1,
+        1,
+        1,
+        0
+      ],
+      "local_status": "partial"
+    },
+    {
+      "id": "multilingual_queries_q01",
+      "category": "multilingual_queries",
+      "query": "Python ka event loop kya karta hai aur yeh asynchronous programming mein kaise kaam karta hai?",
+      "local_p5": 0.0,
+      "tavily_p5": 0.8,
+      "gap": 0.8,
+      "local_grades": [],
+      "tavily_grades": [
+        1,
+        1,
+        1,
+        2,
+        0
+      ],
+      "local_status": "empty"
+    },
+    {
+      "id": "multilingual_queries_q04",
+      "category": "multilingual_queries",
+      "query": "\u4ec0\u4e48\u662f\u91cf\u5b50\u7ea0\u7f20\uff1f",
+      "local_p5": 0.0,
+      "tavily_p5": 0.8,
+      "gap": 0.8,
+      "local_grades": [],
+      "tavily_grades": [
+        2,
+        1,
+        1,
+        1,
+        0
+      ],
+      "local_status": "empty"
+    }
+  ]
+}

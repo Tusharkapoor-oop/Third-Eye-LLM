@@ -136,6 +136,11 @@ class CrawledPage:
     passages: list[dict] = field(default_factory=list)
     excerpt: str = ""
     warnings: list[str] = field(default_factory=list)
+    # Full cleaned text and token count, kept in memory only. Crawl2RAG needs
+    # the complete document to build accurate passages and source spans; the
+    # serialized crawl payload still uses the budgeted `passages`/`excerpt`.
+    text: str = ""
+    tokens: int = 0
 
 
 @dataclass
@@ -345,6 +350,8 @@ class SiteCrawler:
                 status="ok",
                 published=doc.date_iso(),
                 warnings=list(doc.warnings),
+                text=doc.text,
+                tokens=count_tokens(doc.text),
             )
             if query and query.strip():
                 passages, cov = select_passages(doc.text, query, title=doc.title, max_passages=2, max_chars=2600)

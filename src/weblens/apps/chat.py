@@ -122,3 +122,4 @@ class ResearchChatSession:
     def clear_history(self) -> None:
         """Reset the conversation memory."""
         self.history.clear()
+

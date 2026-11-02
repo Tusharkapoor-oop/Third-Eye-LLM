@@ -6,6 +6,7 @@ credentials. Tracks latency, tokens, credits, and HTTP telemetry.
 
 from __future__ import annotations
 
+import asyncio
 import os
 import time
 from typing import Any
@@ -22,6 +23,7 @@ from ..common_interface.base import (
     SearchItem,
     SearchResponse,
 )
+from ..provenance import results_hash
 
 
 class TavilyAdapter(ResearchProvider):
@@ -57,28 +59,50 @@ class TavilyAdapter(ResearchProvider):
     def _get_client(self) -> httpx.AsyncClient:
         if self._client is not None and not self._client.is_closed:
             return self._client
-        return httpx.AsyncClient(timeout=30.0)
+        self._client = httpx.AsyncClient(
+            timeout=30.0,
+            headers={
+                "Authorization": f"Bearer {self._api_key}",
+                "Content-Type": "application/json",
+                "User-Agent": "weblens-lab/10.0",
+            },
+        )
+        return self._client
+
+    async def close(self) -> None:
+        if self._client is not None:
+            await self._client.aclose()
 
     async def search(self, query: str, *, max_results: int = 5, **options: Any) -> SearchResponse:
         t0 = time.perf_counter()
         self._usage.requests += 1
         client = self._get_client()
 
+        # Key goes in the Authorization header, never in the JSON body, so it
+        # cannot end up in request-body logs.
         payload: dict[str, Any] = {
-            "api_key": self._api_key,
             "query": query,
             "max_results": max(1, min(max_results, 20)),
             "search_depth": options.get("search_depth", "basic"),
             "include_raw_content": options.get("include_raw_content", False),
+            "include_answer": options.get("include_answer", False),
+            "include_published_date": True,
+            "include_usage": True,
         }
 
         try:
             resp = await client.post(f"{self.BASE_URL}/search", json=payload)
+            if resp.status_code == 429:
+                retry_after = resp.headers.get("retry-after", "2")
+                delay = float(retry_after) if retry_after.replace(".", "", 1).isdigit() else 2.0
+                await asyncio.sleep(min(delay, 10.0))
+                resp = await client.post(f"{self.BASE_URL}/search", json=payload)
             elapsed_ms = (time.perf_counter() - t0) * 1000.0
             self._usage.total_latency_ms += elapsed_ms
 
             if resp.status_code != 200:
                 self._usage.failed_requests += 1
+                credits = 1.0 if resp.status_code >= 500 else 0.0
                 return SearchResponse(
                     provider=self.name,
                     query=query,
@@ -86,7 +110,9 @@ class TavilyAdapter(ResearchProvider):
                     status="error",
                     latency_ms=elapsed_ms,
                     tokens_returned=0,
-                    credits_used=1.0,
+                    credits_used=credits,
+                    http_status=resp.status_code,
+                    response_bytes=len(resp.content),
                     error=f"HTTP {resp.status_code}: {resp.text[:200]}",
                 )
 
@@ -106,20 +132,32 @@ class TavilyAdapter(ResearchProvider):
 
             total_chars = sum(len(i.content) + len(i.title) for i in items)
             approx_tokens = total_chars // 4
+            usage = data.get("usage") or {}
+            credits = float(usage.get("credits", 1.0))
 
             self._usage.successful_requests += 1
-            self._usage.credits_consumed += 1.0
+            self._usage.credits_consumed += credits
             self._usage.output_tokens += approx_tokens
 
             return SearchResponse(
                 provider=self.name,
                 query=query,
                 results=items,
-                status="ok" if items else "no_reliable_result",
+                status="ok" if items else "empty",
                 latency_ms=elapsed_ms,
                 tokens_returned=approx_tokens,
-                credits_used=1.0,
-                raw_response={"response_time": data.get("response_time"), "request_id": data.get("request_id")},
+                credits_used=credits,
+                http_status=resp.status_code,
+                response_bytes=len(resp.content),
+                response_hash=results_hash(items),
+                backend_provider="tavily",
+                raw_status="ok",
+                cache_state="unknown",
+                raw_response={
+                    "response_time": data.get("response_time"),
+                    "request_id": data.get("request_id"),
+                    "usage": usage,
+                },
             )
         except Exception as e:
             elapsed_ms = (time.perf_counter() - t0) * 1000.0
@@ -132,7 +170,7 @@ class TavilyAdapter(ResearchProvider):
                 latency_ms=elapsed_ms,
                 tokens_returned=0,
                 credits_used=0.0,
-                error=str(e),
+                error=str(e)[:300],
             )
 
     async def extract(self, urls: list[str], **options: Any) -> ExtractResponse:

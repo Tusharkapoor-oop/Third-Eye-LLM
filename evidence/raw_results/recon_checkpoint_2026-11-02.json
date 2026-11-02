@@ -1,0 +1,164 @@
+{
+  "experiment_id": "recon-20261102T165250Z-9040e52d",
+  "dataset_version": "v9.0.0-seed",
+  "started_at": "2026-11-02T16:52:50.960191+00:00",
+  "query": {
+    "id": "CAT01_001",
+    "category": "general_factual",
+    "sha256": "b8f3a9d16df1b3ca2f204f3717406f1eb4a79f4ba411d098daf222f67c0ca53c"
+  },
+  "systems": {
+    "local_weblens": {
+      "identity": {
+        "system": "local_weblens",
+        "transport": "stdio",
+        "server_name": "weblens",
+        "server_version": "0.1.0",
+        "tool_count": 13,
+        "tools": [
+          "web_search",
+          "extract_url",
+          "crawl_site",
+          "deep_research",
+          "company_research",
+          "market_research",
+          "market_portfolio",
+          "crawl2rag_index",
+          "crawl2rag_query",
+          "meeting_prep",
+          "sheets_enrich",
+          "research_chat",
+          "tutorial_101"
+        ],
+        "protocol_version": "2026-07-28"
+      },
+      "result": {
+        "status": "ok",
+        "result_count": 5,
+        "latency_ms": 4061.334,
+        "tokens_returned": 409,
+        "credits_used": 0.0,
+        "error": null,
+        "urls": [
+          "http://docs.python.org/2.3/lib/node756.html",
+          "http://docs.python.org/3.0/license.html",
+          "https://en.wikipedia.org/wiki/Python_%28programming_language%29",
+          "https://en.wikipedia.org/wiki/Monty_Python",
+          "https://www.pythoninstitute.org/about-python"
+        ]
+      },
+      "provenance": {
+        "system": "local_weblens",
+        "backend_provider": null,
+        "model": null,
+        "cache_state": "unknown",
+        "experiment_id": "recon-20261102T165250Z-9040e52d",
+        "dataset_version": "v9.0.0-seed",
+        "timestamp": "2026-11-02T16:53:05.486449+00:00",
+        "success": true,
+        "latency_ms": 4061.334,
+        "response_hash": "4dfc711b94f0342a1e83b6ad720a13b8ede36e184700230c63d99a0012c3f59b",
+        "status": "PASS"
+      }
+    },
+    "deployed_weblens": {
+      "identity": {
+        "system": "deployed_weblens",
+        "transport": "streamable_http",
+        "endpoint": "https://weblens-16131012091.us-central1.run.app/mcp",
+        "server_name": "weblens",
+        "server_version": "0.1.0",
+        "tool_count": 13,
+        "tools": [
+          "web_search",
+          "extract_url",
+          "crawl_site",
+          "deep_research",
+          "company_research",
+          "market_research",
+          "market_portfolio",
+          "crawl2rag_index",
+          "crawl2rag_query",
+          "meeting_prep",
+          "sheets_enrich",
+          "research_chat",
+          "tutorial_101"
+        ],
+        "protocol_version": "2026-07-28"
+      },
+      "result": {
+        "status": "ok",
+        "result_count": 5,
+        "latency_ms": 345.018,
+        "tokens_returned": 408,
+        "credits_used": 0.0,
+        "error": null,
+        "urls": [
+          "http://docs.python.org/2.3/lib/node756.html",
+          "http://docs.python.org/3.0/license.html",
+          "https://en.wikipedia.org/wiki/Python_%28programming_language%29",
+          "https://en.wikipedia.org/wiki/Monty_Python",
+          "https://www.pythoninstitute.org/about-python"
+        ]
+      },
+      "provenance": {
+        "system": "deployed_weblens",
+        "backend_provider": null,
+        "model": null,
+        "cache_state": "unknown",
+        "experiment_id": "recon-20261102T165250Z-9040e52d",
+        "dataset_version": "v9.0.0-seed",
+        "timestamp": "2026-11-02T16:53:12.403339+00:00",
+        "success": true,
+        "latency_ms": 345.018,
+        "response_hash": "433b557f4fca2b1e68109643108f7632a3c655bcbd0d0f6fe8dbafdab55fd737",
+        "status": "PASS"
+      }
+    },
+    "tavily_direct": {
+      "identity": {
+        "endpoint": "https://api.tavily.com",
+        "operation": "POST /search",
+        "direct": true
+      },
+      "result": {
+        "status": "error",
+        "result_count": 0,
+        "latency_ms": 1263.852,
+        "tokens_returned": 0,
+        "credits_used": 0.0,
+        "error": "HTTP 401: {\n    \"detail\": {\n        \"error\": \"Unauthorized: missing or invalid API key.\"\n    }\n}\n",
+        "urls": []
+      },
+      "provenance": {
+        "system": "tavily_direct",
+        "backend_provider": "tavily",
+        "model": null,
+        "cache_state": "unknown",
+        "experiment_id": "recon-20261102T165250Z-9040e52d",
+        "dataset_version": "v9.0.0-seed",
+        "timestamp": "2026-11-02T16:53:15.776154+00:00",
+        "success": false,
+        "latency_ms": 1263.852,
+        "response_hash": "c0f2d7430b44bd20d809cfbf6beb712972720b36ee8b58386a51b97abce3b3ed",
+        "status": "PARTIAL",
+        "error": "HTTP 401: {\n    \"detail\": {\n        \"error\": \"Unauthorized: missing or invalid API key.\"\n    }\n}\n"
+      }
+    }
+  },
+  "transport_observation": {
+    "endpoint": "https://weblens-16131012091.us-central1.run.app/mcp",
+    "root": {
+      "status_code": 200,
+      "https": true,
+      "server_header": "Google Frontend",
+      "content_type": "application/json"
+    },
+    "unauthenticated_tools_list": {
+      "status_code": 200,
+      "accepted": true,
+      "content_type": "text/event-stream"
+    }
+  },
+  "finished_at": "2026-11-02T16:53:15.783469+00:00"
+}

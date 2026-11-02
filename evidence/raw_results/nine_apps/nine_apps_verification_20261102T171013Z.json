@@ -1,0 +1,51 @@
+{
+  "timestamp": "2026-11-02T17:10:13.202563+00:00",
+  "verification_version": "v10-assertions",
+  "total_workflows": 2,
+  "passed": 1,
+  "partial": 1,
+  "failed": 0,
+  "all_passed": false,
+  "work_dir": "C:\\Users\\ACER\\AppData\\Local\\Temp\\weblens_nine_apps_sn828m2a",
+  "outcomes": {
+    "app_7_meeting_prep": {
+      "status": "PASS",
+      "attendees_researched": 1,
+      "attendees_with_sources": 1,
+      "company_context_items": 2,
+      "assertions": {
+        "one_attendee_researched": true,
+        "attendee_has_profile_text": true,
+        "attendee_has_sources": true,
+        "company_context_present": true,
+        "privacy_notice_present": true
+      },
+      "latency_ms": 11254.6
+    },
+    "app_8_tutorial_101": {
+      "status": "PARTIAL",
+      "report_status": "partial",
+      "steps_executed": 9,
+      "passed_steps": 8,
+      "failed_steps": [
+        "9_deep_research"
+      ],
+      "assertions": {
+        "all_nine_steps_ran": true,
+        "all_steps_passed": false
+      },
+      "step_statuses": {
+        "1_diagnostics": "passed",
+        "2_web_search": "passed",
+        "3_research_chat": "passed",
+        "4_company_research": "passed",
+        "5_market_research": "passed",
+        "6_sheets_enrich": "passed",
+        "7_meeting_prep": "passed",
+        "8_crawl2rag": "passed",
+        "9_deep_research": "degraded"
+      },
+      "latency_ms": 50807.8
+    }
+  }
+}

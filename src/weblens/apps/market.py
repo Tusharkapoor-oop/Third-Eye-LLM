@@ -137,3 +137,4 @@ class MarketResearcher:
             "disclaimer": DISCLAIMER,
             "ms": int((time.perf_counter() - t0) * 1000),
         }
+

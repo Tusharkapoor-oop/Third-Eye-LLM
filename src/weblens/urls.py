@@ -10,15 +10,7 @@ from __future__ import annotations
 import base64
 import binascii
 import re
-from urllib.parse import (
-    parse_qsl,
-    quote,
-    unquote,
-    urlencode,
-    urljoin,
-    urlsplit,
-    urlunsplit,
-)
+from urllib.parse import parse_qsl, quote, unquote, urlencode, urljoin, urlsplit, urlunsplit
 
 TRACKING_PREFIXES = ("utm_", "pk_", "mtm_", "hsa_", "vero_", "_hs")
 TRACKING_EXACT = {
@@ -55,7 +47,7 @@ TRACKING_EXACT = {
 BAD_SCHEMES = {"file", "ftp", "gopher", "javascript", "data", "vbscript", "blob", "about"}
 MAX_URL_LEN = 2048
 
-_BING_HOST = re.compile(r"(^|\.)bing\.com$", re.IGNORECASE)
+_BING_HOST = re.compile(r"(^|\.)bing\.com$", re.I)
 
 
 def is_http_url(url: str) -> bool:
@@ -121,8 +113,9 @@ def normalize_url(url: str, base: str | None = None) -> str | None:
     if scheme in BAD_SCHEMES or scheme not in {"http", "https"}:
         return None
     host = (p.hostname or "").strip(".").lower()
-    if not host or "." not in host and host != "localhost":
-        # single-label intranet hosts are refused (also blocks many SSRF tricks)
+    if not host or ("." not in host and ":" not in host and host != "localhost"):
+        # single-label intranet hosts are refused (also blocks many SSRF tricks);
+        # IPv6 literals contain colons and are validated at connection time.
         return None
     if p.username or p.password:
         return None
@@ -140,8 +133,9 @@ def normalize_url(url: str, base: str | None = None) -> str | None:
     path = p.path or "/"
     # collapse duplicate slashes but keep meaningful double slashes in path
     path = re.sub(r"/{2,}", "/", path)
-    if len(path) > 1 and path.endswith("/"):
-        path = path.rstrip("/")
+    # Trailing slashes are significant: many servers redirect /x to /x/ (and
+    # vice versa), so stripping them here caused redirect loops. Exact-URL
+    # dedupe in search/base.py normalizes trailing slashes separately.
     query = p.query
     tmp = urlunsplit((scheme, netloc, path, query, ""))
     tmp = strip_tracking(tmp)

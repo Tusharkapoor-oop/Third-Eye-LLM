@@ -1,0 +1,252 @@
+{
+  "run_id": "v10_20261102T164659Z_b29451",
+  "status": "ok",
+  "started_at": "2026-11-02T16:47:06.411819+00:00",
+  "finished_at": "2026-11-02T16:47:15.364734+00:00",
+  "dataset_version": "eval_benchmark_suite",
+  "dataset_path": "weblens-lab\\datasets\\eval_benchmark_suite.json",
+  "dataset_sha256": "b8f3a9d16df1b3ca2f204f3717406f1eb4a79f4ba411d098daf222f67c0ca53c",
+  "total_queries_evaluated": 1,
+  "completed_this_run": 1,
+  "request_budget": {
+    "local_weblens": 1,
+    "deployed_weblens": 1,
+    "tavily_direct": 1
+  },
+  "environment": {
+    "host": "DESKTOP-0V817SS",
+    "platform": "Windows 11",
+    "python": "3.14.0",
+    "git_commit": "475a6ff1f021f258e89ebb1a9520f000a4a61c48",
+    "cwd": "C:\\Users\\ACER\\Downloads\\Broswer for ai agnets"
+  },
+  "providers": {
+    "local_weblens": {
+      "endpoint": "http://127.0.0.1:54006/mcp",
+      "server_info": {
+        "name": "weblens",
+        "title": "WebLens",
+        "version": "0.1.0"
+      },
+      "protocol_version": "2024-11-05",
+      "tools": [
+        "web_search",
+        "extract_url",
+        "crawl_site",
+        "deep_research",
+        "company_research",
+        "market_research",
+        "market_portfolio",
+        "crawl2rag_index",
+        "crawl2rag_query",
+        "meeting_prep",
+        "sheets_enrich",
+        "research_chat",
+        "tutorial_101"
+      ],
+      "health_ms": 5277.4,
+      "initialize_ms": 33.9,
+      "tools_list_ms": 14.3,
+      "cache_dir": "C:\\Users\\ACER\\Downloads\\Broswer for ai agnets\\weblens-lab\\weblens-lab\\sandbox\\temporary\\local_mcp_cache\\1e6022bc8914",
+      "pid": 6156
+    },
+    "deployed_weblens": {
+      "endpoint": "https://weblens-16131012091.us-central1.run.app/mcp",
+      "server_info": {
+        "name": "weblens",
+        "title": "WebLens",
+        "version": "0.1.0"
+      },
+      "protocol_version": "2024-11-05",
+      "tools": [
+        "web_search",
+        "extract_url",
+        "crawl_site",
+        "deep_research",
+        "company_research",
+        "market_research",
+        "market_portfolio",
+        "crawl2rag_index",
+        "crawl2rag_query",
+        "meeting_prep",
+        "sheets_enrich",
+        "research_chat",
+        "tutorial_101"
+      ],
+      "initialize_ms": 978.4,
+      "tools_list_ms": 432.9
+    },
+    "tavily_direct": {
+      "endpoint": "https://api.tavily.com",
+      "auth": "Bearer header",
+      "search_depth": "basic",
+      "credits_model": "1 credit per basic search (provider-reported usage)"
+    }
+  },
+  "systems": {
+    "local_weblens": {
+      "n": 1,
+      "n_graded": 1,
+      "status_counts": {
+        "ok": 1,
+        "partial": 0,
+        "empty": 0,
+        "error": 0
+      },
+      "success_rate": 1.0,
+      "empty_rate": 0.0,
+      "error_rate": 0.0,
+      "quality": {
+        "precision_at_1": 1.0,
+        "precision_at_3": 1.0,
+        "precision_at_5": 0.6,
+        "mrr": 1.0,
+        "ndcg_at_5": 1.0,
+        "hit_at_5": 1.0,
+        "domain_diversity": 1.0,
+        "duplicate_rate": 0.0,
+        "p5_ci95": null,
+        "ndcg_ci95": null
+      },
+      "latency_ms": {
+        "p50": 3433.2,
+        "p90": 3433.2,
+        "p95": 3433.2,
+        "p99": 3433.2,
+        "mean": 3433.2,
+        "min": 3433.2,
+        "max": 3433.2,
+        "ci95": null
+      },
+      "tokens": {
+        "mean_normalized": 271.0,
+        "mean_provider_reported": 414.0,
+        "total_normalized": 271
+      },
+      "credits": {
+        "total": 0.0,
+        "mean": 0.0
+      },
+      "error_samples": []
+    },
+    "deployed_weblens": {
+      "n": 1,
+      "n_graded": 1,
+      "status_counts": {
+        "ok": 1,
+        "partial": 0,
+        "empty": 0,
+        "error": 0
+      },
+      "success_rate": 1.0,
+      "empty_rate": 0.0,
+      "error_rate": 0.0,
+      "quality": {
+        "precision_at_1": 1.0,
+        "precision_at_3": 1.0,
+        "precision_at_5": 1.0,
+        "mrr": 1.0,
+        "ndcg_at_5": 1.0,
+        "hit_at_5": 1.0,
+        "domain_diversity": 1.0,
+        "duplicate_rate": 0.0,
+        "p5_ci95": null,
+        "ndcg_ci95": null
+      },
+      "latency_ms": {
+        "p50": 455.7,
+        "p90": 455.7,
+        "p95": 455.7,
+        "p99": 455.7,
+        "mean": 455.7,
+        "min": 455.7,
+        "max": 455.7,
+        "ci95": null
+      },
+      "tokens": {
+        "mean_normalized": 237.0,
+        "mean_provider_reported": 408.0,
+        "total_normalized": 237
+      },
+      "credits": {
+        "total": 0.0,
+        "mean": 0.0
+      },
+      "error_samples": []
+    },
+    "tavily_direct": {
+      "n": 1,
+      "n_graded": 1,
+      "status_counts": {
+        "ok": 1,
+        "partial": 0,
+        "empty": 0,
+        "error": 0
+      },
+      "success_rate": 1.0,
+      "empty_rate": 0.0,
+      "error_rate": 0.0,
+      "quality": {
+        "precision_at_1": 1.0,
+        "precision_at_3": 1.0,
+        "precision_at_5": 1.0,
+        "mrr": 1.0,
+        "ndcg_at_5": 0.798,
+        "hit_at_5": 1.0,
+        "domain_diversity": 1.0,
+        "duplicate_rate": 0.0,
+        "p5_ci95": null,
+        "ndcg_ci95": null
+      },
+      "latency_ms": {
+        "p50": 1063.7,
+        "p90": 1063.7,
+        "p95": 1063.7,
+        "p99": 1063.7,
+        "mean": 1063.7,
+        "min": 1063.7,
+        "max": 1063.7,
+        "ci95": null
+      },
+      "tokens": {
+        "mean_normalized": 1473.0,
+        "mean_provider_reported": 1574.0,
+        "total_normalized": 1473
+      },
+      "credits": {
+        "total": 1.0,
+        "mean": 1.0
+      },
+      "error_samples": []
+    }
+  },
+  "paired_differences": {
+    "local_weblens_minus_tavily_direct": {
+      "n": 1,
+      "precision_at_5_mean_delta": -0.4,
+      "precision_at_5_delta_ci95": null,
+      "latency_mean_delta_ms": 2369.5
+    },
+    "deployed_weblens_minus_tavily_direct": {
+      "n": 1,
+      "precision_at_5_mean_delta": 0.0,
+      "precision_at_5_delta_ci95": null,
+      "latency_mean_delta_ms": -608.0
+    },
+    "local_weblens_minus_deployed_weblens": {
+      "n": 1,
+      "precision_at_5_mean_delta": -0.4,
+      "precision_at_5_delta_ci95": null,
+      "latency_mean_delta_ms": 2977.5
+    }
+  },
+  "resource_usage": {
+    "local_mcp_process": {
+      "rss_mb": 5.1,
+      "cpu_user_s": 0.016,
+      "cpu_system_s": 0.031,
+      "threads": 3
+    },
+    "deployed_container": "not observable from client (Cloud Run)"
+  }
+}

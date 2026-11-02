@@ -1,0 +1,77 @@
+{
+  "status": "PARTIAL",
+  "dataset_version": "v9.0.0-seed",
+  "validated_at": "2026-11-02T16:56:58.730930+00:00",
+  "files": {
+    "benchmark": {
+      "path": "weblens-lab\\datasets\\eval_benchmark_suite.json",
+      "sha256": "b8f3a9d16df1b3ca2f204f3717406f1eb4a79f4ba411d098daf222f67c0ca53c",
+      "records": 30
+    },
+    "adversarial": {
+      "path": "weblens-lab\\datasets\\adversarial_suite.json",
+      "sha256": "2e99ebe5e4bbede2a964d6f4af1cb087d37efb4873d579fd0e77ba0ed3a17670",
+      "records": 9
+    }
+  },
+  "targets": {
+    "primary_unique_queries": 100000,
+    "preferred_unique_queries": 250000,
+    "stress_unique_queries": 500000,
+    "document_corpus": 100000,
+    "adversarial_cases": 10000
+  },
+  "achieved": {
+    "total_records": 30,
+    "unique_queries": 30,
+    "documents": 0,
+    "adversarial_cases": 9,
+    "synthetic_records": 0,
+    "curated_seed_records": 30,
+    "unanswerable_records": 2
+  },
+  "coverage": {
+    "categories": 30,
+    "category_distribution": {
+      "academic_research": 1,
+      "adversarial_injection": 1,
+      "ambiguous_questions": 1,
+      "company_research": 1,
+      "competitive_intelligence": 1,
+      "contradictory_sources": 1,
+      "conversational_research": 1,
+      "crawl2rag": 1,
+      "current_events_news": 1,
+      "general_factual": 1,
+      "healthcare_information": 1,
+      "industry_research": 1,
+      "insufficient_evidence": 1,
+      "legal_policy_research": 1,
+      "long_document_extraction": 1,
+      "market_research": 1,
+      "multihop_reasoning": 1,
+      "multilingual_queries": 1,
+      "private_kb_retrieval": 1,
+      "product_research": 1,
+      "programming_developer_docs": 1,
+      "public_sector_research": 1,
+      "rare_specialized_topics": 1,
+      "scientific_research": 1,
+      "startup_research": 1,
+      "stock_portfolio_research": 1,
+      "structured_data_enrichment": 1,
+      "technical_research": 1,
+      "time_sensitive_questions": 1,
+      "website_crawling": 1
+    },
+    "split_distribution": {
+      "heldout": 30
+    },
+    "missing_required_fields": {},
+    "exact_duplicate_normalized_queries": [],
+    "near_duplicate_pairs": [],
+    "schema_status": "PASS",
+    "label_quality": "UNVERIFIED"
+  },
+  "interpretation": "Curated seed set validated; primary 100,000-query target is not met. No synthetic expansion is counted as real-world evidence."
+}

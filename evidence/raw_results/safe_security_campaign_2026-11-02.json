@@ -1,0 +1,138 @@
+{
+  "campaign_id": "safe-sec-20261102T165726Z-431dcce6",
+  "started_at": "2026-11-02T16:57:26.905621+00:00",
+  "scope": "non-destructive controlled MCP probes; no load test or credential guessing",
+  "local": {
+    "target": "local_weblens",
+    "tests": [
+      {
+        "id": "LOCAL-MCP-001",
+        "category": "mcp_protocol",
+        "status": "PASS",
+        "evidence": {
+          "transport": "stdio",
+          "tool_count": 13
+        }
+      },
+      {
+        "id": "LOCAL-SSRF-001",
+        "category": "ssrf",
+        "status": "PASS",
+        "evidence": {
+          "blocked": true
+        },
+        "error": "Expecting value: line 1 column 1 (char 0)"
+      },
+      {
+        "id": "LOCAL-SSRF-002",
+        "category": "ssrf",
+        "status": "PASS",
+        "evidence": {
+          "blocked": true
+        },
+        "error": "Expecting value: line 1 column 1 (char 0)"
+      },
+      {
+        "id": "LOCAL-SSRF-003",
+        "category": "ssrf",
+        "status": "PASS",
+        "evidence": {
+          "blocked": true
+        },
+        "error": "Expecting value: line 1 column 1 (char 0)"
+      },
+      {
+        "id": "LOCAL-INJ-001",
+        "category": "prompt_injection",
+        "status": "PASS",
+        "evidence": {
+          "tool_error": false
+        }
+      }
+    ]
+  },
+  "deployed": {
+    "target": "deployed_weblens",
+    "endpoint": "https://weblens-16131012091.us-central1.run.app/mcp",
+    "tests": [
+      {
+        "id": "DEPLOY-TLS-001",
+        "category": "transport_tls",
+        "status": "PASS",
+        "evidence": {
+          "status_code": 200,
+          "https": true,
+          "server": "Google Frontend"
+        }
+      },
+      {
+        "id": "DEPLOY-AUTH-001",
+        "category": "authentication",
+        "status": "FAIL",
+        "evidence": {
+          "status_code": 200,
+          "unauthenticated_tools_list_accepted": true
+        }
+      },
+      {
+        "id": "DEPLOY-SSRF-001",
+        "category": "ssrf",
+        "status": "PASS",
+        "evidence": {
+          "status_code": 200,
+          "blocked": true,
+          "body_secret_free": true
+        }
+      },
+      {
+        "id": "DEPLOY-SSRF-002",
+        "category": "ssrf",
+        "status": "PASS",
+        "evidence": {
+          "status_code": 200,
+          "blocked": true,
+          "body_secret_free": true
+        }
+      },
+      {
+        "id": "DEPLOY-SSRF-003",
+        "category": "ssrf",
+        "status": "PASS",
+        "evidence": {
+          "status_code": 200,
+          "blocked": true,
+          "body_secret_free": true
+        }
+      },
+      {
+        "id": "DEPLOY-SSRF-004",
+        "category": "ssrf",
+        "status": "PASS",
+        "evidence": {
+          "status_code": 200,
+          "blocked": true,
+          "body_secret_free": true
+        }
+      },
+      {
+        "id": "DEPLOY-MCP-001",
+        "category": "mcp_protocol",
+        "status": "PASS",
+        "evidence": {
+          "status_code": 200,
+          "secret_free": true
+        }
+      },
+      {
+        "id": "DEPLOY-INJ-001",
+        "category": "prompt_injection",
+        "status": "PASS",
+        "evidence": {
+          "status_code": 200,
+          "secret_free": true
+        }
+      }
+    ]
+  },
+  "finished_at": "2026-11-02T16:57:43.301105+00:00"
+}

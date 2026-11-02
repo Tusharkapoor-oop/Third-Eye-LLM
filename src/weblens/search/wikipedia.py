@@ -16,6 +16,7 @@ from .base import Hit, clean_snippet, make_hit
 
 class WikipediaSearch:
     name = "wikipedia"
+    timeout_s = 4.0
 
     def __init__(self, fetcher: SafeFetcher, lang: str = "en"):
         self.fetcher = fetcher

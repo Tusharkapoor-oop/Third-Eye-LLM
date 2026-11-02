@@ -55,8 +55,16 @@ AUTHORITY = {
 _FRESH_DAYS = {"day": 1, "week": 7, "month": 31, "year": 365}
 
 _CONVERSATIONAL = re.compile(
-    r"^(?:please\s+)?(?:can you|could you|would you|i want to|i need to|help me|tell me|"
-    r"find me|search for|look up|what is|what are|who is|how do i|how to)\s+",
+    r"^(?:please\s+)?(?:"
+    r"can you|could you|would you|i want to|i need to|help me|"
+    r"tell me about|tell me|"
+    r"explain(?: to me)?(?: the)?(?: difference| similarities)?(?: between)?|"
+    r"describe|compare|"
+    r"find me|search for|look up|"
+    r"what(?:'s| is| are)(?: the)?(?: difference| similarities)?(?: between)?|"
+    r"who is|who are|"
+    r"how do i|how to|how does|why does|why is|when did|where is"
+    r")\s+",
     re.I,
 )
 

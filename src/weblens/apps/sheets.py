@@ -157,3 +157,4 @@ class SheetsEnricher:
             "enriched_rows": len(all_enriched),
             "output_path": str(out_path),
         }
+

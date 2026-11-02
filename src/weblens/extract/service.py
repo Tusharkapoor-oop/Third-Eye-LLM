@@ -8,7 +8,7 @@ from dataclasses import dataclass, field
 
 from ..cache import Cache
 from ..config import Settings
-from ..errors import ErrCode, WebLensError
+from ..errors import ErrCode, WebLensError, resolve_budget
 from ..net import FetchResponse, SafeFetcher
 from ..security.injection import has_instruction_smuggling
 from ..tokens import count_json_tokens, count_tokens, truncate_tokens
@@ -131,7 +131,9 @@ class ExtractionService:
         allow_browser: bool = True,
     ) -> ExtractOutcome:
         started = time.perf_counter()
-        budget = max(200, min(8000, max_tokens or self.s.max_extract_tokens))
+        budget = resolve_budget(
+            max_tokens, self.s.max_extract_tokens, minimum=200, maximum=8000
+        )
         doc = await self.fetch_doc(url, allow_browser=allow_browser, include_links=full)
         out = ExtractOutcome(
             status="ok",
@@ -193,7 +195,8 @@ class ExtractionService:
         out.passages = passages
         return self._finish(out, started)
 
-    def _passage_payload(self, out: ExtractOutcome, passages: list[Passage] | None = None) -> dict:
+    @staticmethod
+    def _passage_payload(out: ExtractOutcome, passages: list[Passage] | None = None) -> dict:
         ps = []
         for p in passages if passages is not None else out.passages:
             item: dict[str, object] = {
@@ -225,7 +228,8 @@ class ExtractionService:
             body["warn"] = list(dict.fromkeys(out.warnings))
         return body
 
-    def _full_payload(self, out: ExtractOutcome) -> dict:
+    @staticmethod
+    def _full_payload(out: ExtractOutcome) -> dict:
         body: dict[str, object] = {
             "status": out.status,
             "u": out.final_url,
@@ -252,7 +256,8 @@ class ExtractionService:
         out.tokens = body["tok"]  # type: ignore[assignment]
         return out
 
-    def payload(self, out: ExtractOutcome) -> dict:
+    @classmethod
+    def payload(cls, out: ExtractOutcome) -> dict:
         """Build the compact payload and enforce the token budget exactly.
 
         The budget includes the envelope, provenance, ``ms`` and ``tok``. A
@@ -263,7 +268,7 @@ class ExtractionService:
         target = max(80, budget - 6)
         if out.full_text is not None:
             for _ in range(60):
-                body = self._full_payload(out)
+                body = cls._full_payload(out)
                 body["ms"] = out.elapsed_ms
                 body["tok"] = 0
                 n = count_json_tokens(body)
@@ -283,10 +288,10 @@ class ExtractionService:
                     break
                 out.full_text = short
                 out.cut = True
-            body = self._full_payload(out)
+            body = cls._full_payload(out)
         else:
             for _ in range(80):
-                body = self._passage_payload(out)
+                body = cls._passage_payload(out)
                 body["ms"] = out.elapsed_ms
                 body["tok"] = 0
                 n = count_json_tokens(body)
@@ -306,7 +311,7 @@ class ExtractionService:
                         continue
                 out.passages.pop()
                 out.cut = True
-            body = self._passage_payload(out)
+            body = cls._passage_payload(out)
         body["ms"] = out.elapsed_ms
         body["tok"] = count_json_tokens({**body, "tok": 0})
         if count_json_tokens(body) > budget:

@@ -43,3 +43,8 @@
    - Token boundary tests: 18 passed.
    - Fixed SEC-V8-001 (deep research continuous text token blowout).
 
+## V9 Continuation Checkpoint (2026-11-02)
+- **SEC-V9-001 fixed**: live Tavily key redacted from 2 committed reports; rotation by owner still required (key remains in git history of `1c11ac3`).
+- **Deployed System 2 verified live**: root 200 healthy, MCP init 200, 10 tools listed; drift documented (`reports/deployed-security/DEPLOYMENT_DRIFT_2026-11-02.md`): `/healthz` 404 remotely though code exists at HEAD, deployed image predates `a9bd964`.
+- **Scaled benchmark EXP-V9B-100Q executed**: 100 held-out queries × 3 systems; Tavily wins quality (P@5 0.756, support 0.90), local WebLens wins speed (922.7 ms p50) and cost ($0); see `reports/three-system-comparison/THREE_SYSTEM_100Q_EXTENSION_2026-11-02.md`.
+

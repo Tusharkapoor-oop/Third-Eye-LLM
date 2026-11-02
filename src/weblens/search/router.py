@@ -21,6 +21,8 @@ from .base import Hit, dedupe, diversify, near_duplicate, parse_date
 from .bing import BingHTML
 from .brave import BraveSearch
 from .duckduckgo import DuckDuckGoLite
+from .mwmbl import MwmblSearch
+from .relevance import filter_hits
 from .searxng import SearXNGSsearch
 from .tavily import TavilySearch
 from .wikipedia import WikipediaSearch
@@ -53,9 +55,17 @@ AUTHORITY = {
 _FRESH_DAYS = {"day": 1, "week": 7, "month": 31, "year": 365}
 
 _CONVERSATIONAL = re.compile(
-    r"^(?:please\s+)?(?:can you|could you|would you|i want to|i need to|help me|tell me|"
-    r"find me|search for|look up|what is|what are|who is|how do i|how to)\s+",
-    re.IGNORECASE,
+    r"^(?:please\s+)?(?:"
+    r"can you|could you|would you|i want to|i need to|help me|"
+    r"tell me about|tell me|"
+    r"explain(?: to me)?(?: the)?(?: difference| similarities)?(?: between)?|"
+    r"describe|compare|"
+    r"find me|search for|look up|"
+    r"what(?:'s| is| are)(?: the)?(?: difference| similarities)?(?: between)?|"
+    r"who is|who are|"
+    r"how do i|how to|how does|why does|why is|when did|where is"
+    r")\s+",
+    re.I,
 )
 
 
@@ -85,31 +95,28 @@ def rank(hits: list[Hit], *, fused: bool = False) -> list[Hit]:
     groups: dict[str, list[Hit]] = {}
     for h in hits:
         groups.setdefault(h.provider, []).append(h)
-    positions: dict[int, int] = {}
     for group in groups.values():
         group.sort(key=lambda h: h.rank)
-        for pos, hit in enumerate(group):
-            positions[id(hit)] = pos
 
     scored: list[tuple[float, int, Hit]] = []
     for idx, h in enumerate(hits):
         s = 0.0
         if fused:
-            s = 1.0 / (60.0 + positions.get(id(h), 0))
+            for group in groups.values():
+                for pos, gh in enumerate(group):
+                    if gh is h:
+                        s += 1.0 / (60.0 + pos)
+                        break
         else:
             s = 1.0 / (1.0 + max(0, h.rank))
         s += 0.08 * _authority(h.url)
-        d_str = parse_date(h.date)
-        if d_str:
-            try:
-                d = date.fromisoformat(d_str[:10])
-                age_days = (today - d).days
-                if 0 <= age_days <= 30:
-                    s += 0.15
-                elif age_days > 730:
-                    s -= 0.1
-            except ValueError:
-                pass
+        d = date.fromisoformat(h.date[:10]) if h.date else None
+        if d:
+            age_days = (today - d).days
+            if 0 <= age_days <= 30:
+                s += 0.15
+            elif age_days > 730:
+                s -= 0.1
         scored.append((s, idx, h))
     scored.sort(key=lambda t: (-t[0], t[1]))
     return [t[2] for t in scored]
@@ -158,6 +165,8 @@ class SearchRouter:
                     self._providers.append(SearXNGSsearch(self.fetcher, s.searxng_url))
                 elif name == "bing":
                     self._providers.append(BingHTML(self.fetcher))
+                elif name == "mwmbl":
+                    self._providers.append(MwmblSearch(self.fetcher))
                 elif name == "wikipedia":
                     self._providers.append(WikipediaSearch(self.fetcher))
             except ProviderError as e:
@@ -192,6 +201,19 @@ class SearchRouter:
                 code=ErrCode.NO_PROVIDER,
             )
         mode = mode or self.s.search_mode
+        stats = {"off_topic": 0, "domain": 0}
+
+        def accept(hits: list[Hit]) -> list[Hit]:
+            kept, off, dom = filter_hits(
+                hits,
+                used,
+                domains=domains,
+                exclude_domains=exclude_domains,
+            )
+            stats["off_topic"] += off
+            stats["domain"] += dom
+            return kept
+
         if mode == "fuse" and len(self._providers) > 1:
             merged = await self._fuse(
                 used,
@@ -200,6 +222,7 @@ class SearchRouter:
                 domains=domains,
                 exclude_domains=exclude_domains,
                 outcome=outcome,
+                accept=accept,
             )
         else:
             merged = await self._fallback(
@@ -209,6 +232,7 @@ class SearchRouter:
                 domains=domains,
                 exclude_domains=exclude_domains,
                 outcome=outcome,
+                accept=accept,
             )
 
         merged = dedupe(merged)
@@ -222,14 +246,23 @@ class SearchRouter:
         merged = diversify(rank(unique, fused=(mode == "fuse")), per_domain=2)[:k]
 
         outcome.hits = merged
+        if stats["off_topic"]:
+            outcome.warnings.append(f"off_topic_filtered:{stats['off_topic']}")
+        if stats["domain"]:
+            outcome.warnings.append(f"domain_filtered:{stats['domain']}")
         if not merged:
             outcome.status = "no_reliable_result"
             outcome.warnings.append("no_results")
+            if stats["off_topic"]:
+                outcome.warnings.append("no_query_match")
         elif freshness in _FRESH_DAYS:
             window = _FRESH_DAYS[freshness]
             cutoff = date.today() - timedelta(days=window)
-            dated = [parse_date(h.date) for h in merged[:3]]
-            known = [d for d in dated if d]
+            known = [
+                date.fromisoformat(d[:10])
+                for h in merged[:3]
+                if (d := parse_date(h.date))
+            ]
             if known and all(d < cutoff for d in known):
                 outcome.status = "possibly_outdated"
                 outcome.warnings.append(f"top_results_older_than_{freshness}")
@@ -240,24 +273,42 @@ class SearchRouter:
         outcome.elapsed_ms = int((time.perf_counter() - started) * 1000)
         return outcome
 
+    def _provider_timeout(self, provider) -> float:
+        value = getattr(provider, "timeout_s", None)
+        return float(value) if value else self.s.provider_timeout_s
+
     async def _fallback(
-        self, q: str, *, k: int, freshness, domains, exclude_domains, outcome: SearchOutcome
+        self,
+        q: str,
+        *,
+        k: int,
+        freshness,
+        domains,
+        exclude_domains,
+        outcome: SearchOutcome,
+        accept,
     ) -> list[Hit]:
         collected: list[Hit] = []
         for provider in self._providers:
             name = getattr(provider, "name", "?")
             try:
-                hits = await provider.search(  # type: ignore[attr-defined]
-                    q,
-                    k=k,
-                    freshness=freshness,
-                    domains=domains,
-                    exclude_domains=exclude_domains,
+                raw = await asyncio.wait_for(
+                    provider.search(  # type: ignore[attr-defined]
+                        q,
+                        k=k,
+                        freshness=freshness,
+                        domains=domains,
+                        exclude_domains=exclude_domains,
+                    ),
+                    timeout=self._provider_timeout(provider),
                 )
+                hits = accept(raw)
                 outcome.providers.append(name)
                 collected.extend(hits)
                 if len({h.url for h in collected}) >= k:
                     break
+            except TimeoutError:
+                outcome.failures[name] = "timeout"
             except WebLensError as e:
                 outcome.failures[name] = str(e.code)
             except Exception as e:  # provider bugs must not kill the request
@@ -265,19 +316,30 @@ class SearchRouter:
         return collected
 
     async def _fuse(
-        self, q: str, *, k: int, freshness, domains, exclude_domains, outcome: SearchOutcome
+        self,
+        q: str,
+        *,
+        k: int,
+        freshness,
+        domains,
+        exclude_domains,
+        outcome: SearchOutcome,
+        accept,
     ) -> list[Hit]:
         async def one(p):
             name = getattr(p, "name", "?")
             try:
-                hits = await p.search(  # type: ignore[attr-defined]
-                    q,
-                    k=max(k, 8),
-                    freshness=freshness,
-                    domains=domains,
-                    exclude_domains=exclude_domains,
+                raw = await asyncio.wait_for(
+                    p.search(  # type: ignore[attr-defined]
+                        q,
+                        k=max(k, 8),
+                        freshness=freshness,
+                        domains=domains,
+                        exclude_domains=exclude_domains,
+                    ),
+                    timeout=self._provider_timeout(p),
                 )
-                return name, hits, None
+                return name, accept(raw), None
             except Exception as e:
                 return name, [], e
 

@@ -1,0 +1,22 @@
+{
+  "computed_at": "2026-10-27T22:55:00Z",
+  "algorithm": "SHA-256",
+  "benchmark_root": "reports/extreme-benchmark",
+  "artifacts": {
+    "reproduce.md": {
+      "bytes": 1715,
+      "sha256": "0b3a71421ed8b5300c15059a5577d367bf8202d63b2f9df9242472b72b1ad7ac",
+      "status": "VERIFIED"
+    },
+    "results/summary.json": {
+      "bytes": 4712,
+      "sha256": "e631c9366f8b1dad7502c6d66e555a5c36f19a1c75d1cda358d390e8badf720a",
+      "status": "VERIFIED"
+    },
+    "results/security-test-results.jsonl": {
+      "bytes": 18297,
+      "sha256": "a5097c50fdbe10d2b74a0a4835acc3cbcda880966890e922c0381103d91cd31f",
+      "status": "VERIFIED"
+    }
+  }
+}

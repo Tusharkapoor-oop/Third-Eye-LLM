@@ -11,15 +11,19 @@ import asyncio
 import re
 import time
 from dataclasses import dataclass, field
+from datetime import date
 
 from ..config import Settings
+from ..errors import resolve_budget
 from ..extract.passages import Passage, query_terms, select_passages, tokenize
 from ..extract.service import ExtractionService
+from ..lexical import STOPWORDS
 from ..search.router import SearchRouter, clean_query
 from ..tokens import count_json_tokens
 from ..urls import registrable_domain
 
 FRESH = ("latest", "current", "today", "now", "2026", "2025", "price", "release", "news", "recent")
+STRICT_TERMS = {"exact", "precise"}
 GAP_IGNORE = {
     "python", "javascript", "typescript", "java", "go", "golang", "rust", "csharp",
     "php", "ruby", "linux", "windows", "macos", "android", "ios", "web",
@@ -28,7 +32,7 @@ SENT_SPLIT = re.compile(r"(?<=[.!?])\s+(?=[A-Z0-9`#*])")
 NUM = re.compile(
     r"(?P<num>\d+(?:[.,]\d+)?)\s*(?P<unit>ms|milliseconds?|s|sec|seconds?|kb|mb|gb|tb|%|"
     r"usd|dollars?|€|£|\$)",
-    re.IGNORECASE,
+    re.I,
 )
 UNIT_NORM = {
     "ms": "ms", "millisecond": "ms", "milliseconds": "ms",
@@ -83,6 +87,71 @@ def decompose(query: str) -> list[str]:
     return seen[:4]
 
 
+_FICTION_CUE = re.compile(r"\b(?:fictional|imaginary|made[- ]up|nonexistent)\b", re.I)
+_GENERIC_ENTITY = {
+    "city", "town", "village", "country", "state", "island", "place", "company",
+    "organization", "organisation", "person", "character", "word", "term", "name",
+    "standard", "prize", "award", "product", "brand", "language", "protocol",
+    "version", "thing", "story", "world", "species", "animal", "event",
+}
+_SENSITIVE = re.compile(
+    r"\b(?:private|secret|leaked?|stolen)\s+(?:api[ _-]?key|key|token|credential)s?\b"
+    r"|\b(?:api[ _-]?key|password|passcode|access token|credential)s?\s+(?:of|for)\s+"
+    r"|\b(?:phone number|home address|social security number|passport number|"
+    r"credit card number|bank account)\b",
+    re.I,
+)
+_FUTURE_VALUE = re.compile(
+    r"\b(?:stock|share|price|valuation|worth|who won|winner|election result|final score)\b",
+    re.I,
+)
+_PROPRIETARY = re.compile(
+    r"\b(?:closed[- ]source|proprietary)\b.{0,60}\b(?:source code|code|kernel|implementation)\b",
+    re.I,
+)
+_EXACT_NUMBER = re.compile(r"\bexact\s+(?:number|count|amount|value|figure)\b", re.I)
+_DIGITS = re.compile(r"\b\d[\d,.]*\b")
+
+
+def evidence_guard(query: str, findings: list[Finding]) -> list[str]:
+    """Deterministic guards against presenting evidence that cannot answer the query.
+
+    These are refusal/safety rules, not relevance scores. Each reason becomes a
+    ``no_reliable_result`` gap so the caller sees why evidence was withheld.
+    """
+    text = " ".join(f"{f.claim} {f.url}" for f in findings).lower()
+    reasons: list[str] = []
+
+    if _SENSITIVE.search(query):
+        reasons.append("sensitive_query")
+
+    if match := _FICTION_CUE.search(query):
+        entity = None
+        for word in re.findall(r"[A-Za-z][A-Za-z0-9_.-]{2,}", query[match.end() :]):
+            low = word.lower()
+            if low in _GENERIC_ENTITY or low in STOPWORDS:
+                continue
+            entity = low
+            break
+        if entity and entity not in text:
+            reasons.append(f"unverifiable_entity:{entity}")
+
+    if _FUTURE_VALUE.search(query):
+        for year_match in re.finditer(r"\b(20\d{2})\b", query):
+            year = int(year_match.group(1))
+            if year > date.today().year:
+                reasons.append(f"future_value_unknown:{year}")
+                break
+
+    if _PROPRIETARY.search(query):
+        reasons.append("proprietary_source_unavailable")
+
+    if _EXACT_NUMBER.search(query) and not _DIGITS.search(text):
+        reasons.append("exact_value_not_found")
+
+    return reasons
+
+
 def sentence_candidates(passage: Passage, query: str, limit: int = 2) -> list[Finding]:
     terms, phrases = query_terms(query)
     text = passage.text
@@ -101,6 +170,10 @@ def sentence_candidates(passage: Passage, query: str, limit: int = 2) -> list[Fi
         mhead = re.match(r"\s*(?:#{1,6}[^\n]*\n)+\s*", raw)
         if mhead:
             a += mhead.end()
+            raw = text[a:b]
+        mbullet = re.match(r"\s*[-*+]\s+", raw)
+        if mbullet and not re.match(r"\s*[-*+]\s*\d", raw):
+            a += mbullet.end()
             raw = text[a:b]
         claim = raw.strip()
         if len(claim) < 30 or len(claim) > 700:
@@ -130,7 +203,7 @@ def sentence_candidates(passage: Passage, query: str, limit: int = 2) -> list[Fi
             if re.search(
                 r"\b(?:is|are|refers? to|means|defined as|stands for|returns?|provides?|creates?|allows?|used to)\b",
                 claim,
-                re.IGNORECASE,
+                re.I,
             ):
                 score += 0.3
             if re.search(r"(?:async def|>>>|```|\{\s*$)", claim):
@@ -139,6 +212,17 @@ def sentence_candidates(passage: Passage, query: str, limit: int = 2) -> list[Fi
             r"\b(?:Apache|MIT|GPLv?\d?|BSD|MPL|Unlicense|CC[- ]BY)\b", claim
         ):
             score += 0.8
+        # Multi-line code snippets are rarely the answer to a factual question.
+        # Keep them only when they read like a sentence (inline API mentions do
+        # not trigger this), and never let them outrank prose.
+        if claim.count("\n") >= 2 and re.search(
+            r"(?:```|^\s*(?:async def|def |class |import |from |try:|except |if __name__|print\())",
+            claim,
+            re.M,
+        ):
+            score -= 1.0
+        if score < 0.2:
+            continue
         lead = len(raw) - len(raw.lstrip())
         start = passage.start + a + lead
         end = start + len(claim)
@@ -152,7 +236,7 @@ def sentence_candidates(passage: Passage, query: str, limit: int = 2) -> list[Fi
             r"\b(?:Apache|MIT|GPLv?\d?|BSD|MPL|Unlicense|CC[- ]BY)\b"
             r"[\s\S]{0,50}?(?:\bLicense\b|\bVersion\b)[\s\S]{0,30}?\d+(?:\.\d+)?"
             r"(?:\s*,\s*\d{4})?",
-            re.IGNORECASE,
+            re.I,
         )
         for m in pattern.finditer(text):
             raw = text[m.start() : m.end()]
@@ -275,7 +359,9 @@ class ResearchEngine:
         max_pages: int = 6,
     ) -> ResearchOutcome:
         started = time.perf_counter()
-        budget = max(300, min(8000, max_tokens or self.s.max_research_tokens))
+        budget = resolve_budget(
+            max_tokens, self.s.max_research_tokens, minimum=300, maximum=8000
+        )
         q = clean_query(query)
         score_q = query.strip() or q
         queries = decompose(q)[: max(1, min(6, max_searches))]
@@ -294,6 +380,17 @@ class ResearchEngine:
             outcome.status = "no_reliable_result"
             outcome.gaps.append("empty_query")
             return outcome
+
+        # Refuse impossible/private requests before spending network time.
+        early = [
+            reason
+            for reason in evidence_guard(q, [])
+            if reason.startswith(("sensitive_query", "future_value_unknown", "proprietary_source"))
+        ]
+        if early:
+            outcome.status = "no_reliable_result"
+            outcome.gaps = early
+            return self._finish(outcome, started, budget)
 
         async def one(qq: str):
             try:
@@ -328,15 +425,19 @@ class ResearchEngine:
         async def fetch_one(hit):
             async with sem:
                 try:
-                    doc = await self.extractor.fetch_doc(hit.url, allow_browser=False)
+                    doc = await asyncio.wait_for(
+                        self.extractor.fetch_doc(hit.url, allow_browser=False),
+                        timeout=self.s.research_fetch_timeout_s,
+                    )
                     return hit, doc
+                except TimeoutError:
+                    return hit, TimeoutError("research fetch deadline")
                 except Exception as e:
                     return hit, e
 
         fetched = await asyncio.gather(*(fetch_one(h) for h in targets))
         findings: list[Finding] = []
         seen_claims: set[str] = set()
-        used_urls: set[str] = set()
         stale_dates: list[str] = []
         for hit, doc in fetched:
             if isinstance(doc, Exception):
@@ -346,7 +447,6 @@ class ResearchEngine:
             if cov == 0:
                 warnings.append(f"no_query_match:{registrable_domain(hit.url.split('/')[2])}")
                 continue
-            used_urls.add(hit.url)
             for p in passages:
                 for f in sentence_candidates(p, score_q, limit=1):
                     norm = re.sub(r"\W+", " ", f.claim.lower()).strip()
@@ -381,6 +481,14 @@ class ResearchEngine:
                 break
         outcome.findings = kept
 
+        guard = evidence_guard(q, outcome.findings)
+        if guard:
+            outcome.findings = []
+            outcome.gaps = guard
+            outcome.status = "no_reliable_result"
+            outcome.warnings = list(dict.fromkeys(warnings))
+            return self._finish(outcome, started, budget)
+
         # Budget findings.
         while outcome.findings:
             if count_json_tokens(self.payload(outcome, final=False)) <= budget:
@@ -392,8 +500,18 @@ class ResearchEngine:
         supported = set()
         for f in outcome.findings:
             supported |= set(tokenize(f.claim))
-        missing = [t for t in terms if t not in supported and t not in GAP_IGNORE]
+        missing = [t for t in terms if t not in supported and t not in GAP_IGNORE and t not in FRESH]
         outcome.gaps = [f"no_source_for:{t}" for t in missing[:6]]
+
+        # "exact"/"precise" are answerability-critical modifiers: if the
+        # evidence never supports them, an approximate page is not an answer.
+        strict_missing = [t for t in terms if t in STRICT_TERMS and t not in supported]
+        if strict_missing:
+            outcome.findings = []
+            outcome.gaps = [f"no_source_for:{t}" for t in strict_missing]
+            outcome.status = "no_reliable_result"
+            outcome.warnings = list(dict.fromkeys(warnings))
+            return self._finish(outcome, started, budget)
 
         # Freshness / conflicts.
         if any(w in q.lower() for w in FRESH):
@@ -402,7 +520,11 @@ class ResearchEngine:
 
                 from ..search.base import parse_date
 
-                ages = [(date.today() - d).days for d in (parse_date(x) for x in stale_dates) if d]
+                ages = []
+                for x in stale_dates:
+                    parsed = parse_date(x)
+                    if parsed:
+                        ages.append((date.today() - date.fromisoformat(parsed)).days)
                 if ages and min(ages) > 365:
                     outcome.status = "possibly_outdated"
                     outcome.warnings.append("all_sources_older_than_1y")
@@ -414,6 +536,9 @@ class ResearchEngine:
         elif not outcome.findings:
             outcome.status = "no_reliable_result"
             outcome.gaps.append("no_supported_claim")
+        elif outcome.status == "possibly_outdated":
+            # A stale-source warning outranks a coverage gap.
+            pass
         elif outcome.gaps:
             outcome.status = "partial"
         if warnings:

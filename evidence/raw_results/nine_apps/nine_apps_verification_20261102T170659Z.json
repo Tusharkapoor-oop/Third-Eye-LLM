@@ -1,0 +1,17 @@
+{
+  "timestamp": "2026-11-02T17:06:59.043436+00:00",
+  "verification_version": "v10-assertions",
+  "total_workflows": 1,
+  "passed": 0,
+  "partial": 0,
+  "failed": 1,
+  "all_passed": false,
+  "work_dir": "C:\\Users\\ACER\\AppData\\Local\\Temp\\weblens_nine_apps_35u3xbdj",
+  "outcomes": {
+    "app_4_crawl2rag": {
+      "status": "FAIL",
+      "error": "AttributeError: 'CrawlOutcome' object has no attribute 'failures'",
+      "latency_ms": 0.0
+    }
+  }
+}

@@ -1,0 +1,288 @@
+{
+  "run_id": "full_v10_120",
+  "status": "ok",
+  "started_at": "2026-11-02T16:51:42.198969+00:00",
+  "finished_at": "2026-11-02T17:00:12.273836+00:00",
+  "dataset_version": "v10.0.0",
+  "dataset_path": "weblens-lab\\datasets\\eval_benchmark_suite_v10.json",
+  "dataset_sha256": "a42d4004fb91208f1ae18de89e2337f2ccf5e7cb580a3c600a8ec7d8057d6361",
+  "total_queries_evaluated": 120,
+  "completed_this_run": 120,
+  "request_budget": {
+    "local_weblens": 120,
+    "deployed_weblens": 120,
+    "tavily_direct": 120
+  },
+  "environment": {
+    "host": "DESKTOP-0V817SS",
+    "platform": "Windows 11",
+    "python": "3.14.0",
+    "git_commit": "475a6ff1f021f258e89ebb1a9520f000a4a61c48",
+    "cwd": "C:\\Users\\ACER\\Downloads\\Broswer for ai agnets"
+  },
+  "providers": {
+    "local_weblens": {
+      "endpoint": "http://127.0.0.1:50301/mcp",
+      "server_info": {
+        "name": "weblens",
+        "title": "WebLens",
+        "version": "0.1.0"
+      },
+      "protocol_version": "2024-11-05",
+      "tools": [
+        "web_search",
+        "extract_url",
+        "crawl_site",
+        "deep_research",
+        "company_research",
+        "market_research",
+        "market_portfolio",
+        "crawl2rag_index",
+        "crawl2rag_query",
+        "meeting_prep",
+        "sheets_enrich",
+        "research_chat",
+        "tutorial_101"
+      ],
+      "health_ms": 14303.3,
+      "initialize_ms": 132.1,
+      "tools_list_ms": 89.2,
+      "cache_dir": "C:\\Users\\ACER\\Downloads\\Broswer for ai agnets\\weblens-lab\\weblens-lab\\sandbox\\temporary\\local_mcp_cache\\4d71d3c8d35c",
+      "pid": 23980
+    },
+    "deployed_weblens": {
+      "endpoint": "https://weblens-16131012091.us-central1.run.app/mcp",
+      "server_info": {
+        "name": "weblens",
+        "title": "WebLens",
+        "version": "0.1.0"
+      },
+      "protocol_version": "2024-11-05",
+      "tools": [
+        "web_search",
+        "extract_url",
+        "crawl_site",
+        "deep_research",
+        "company_research",
+        "market_research",
+        "market_portfolio",
+        "crawl2rag_index",
+        "crawl2rag_query",
+        "meeting_prep",
+        "sheets_enrich",
+        "research_chat",
+        "tutorial_101"
+      ],
+      "initialize_ms": 993.5,
+      "tools_list_ms": 336.5
+    },
+    "tavily_direct": {
+      "endpoint": "https://api.tavily.com",
+      "auth": "Bearer header",
+      "search_depth": "basic",
+      "credits_model": "1 credit per basic search (provider-reported usage)"
+    }
+  },
+  "systems": {
+    "local_weblens": {
+      "n": 120,
+      "n_graded": 107,
+      "status_counts": {
+        "ok": 37,
+        "partial": 71,
+        "empty": 12,
+        "error": 0
+      },
+      "success_rate": 0.9,
+      "empty_rate": 0.1,
+      "error_rate": 0.0,
+      "quality": {
+        "precision_at_1": 0.617,
+        "precision_at_3": 0.579,
+        "precision_at_5": 0.553,
+        "mrr": 0.66,
+        "ndcg_at_5": 0.669,
+        "hit_at_5": 0.729,
+        "domain_diversity": 0.898,
+        "duplicate_rate": 0.0,
+        "p5_ci95": [
+          0.477,
+          0.632
+        ],
+        "ndcg_ci95": [
+          0.588,
+          0.752
+        ]
+      },
+      "latency_ms": {
+        "p50": 837.0,
+        "p90": 1330.7,
+        "p95": 1497.3,
+        "p99": 2161.4,
+        "mean": 937.8,
+        "min": 523.6,
+        "max": 2689.1,
+        "ci95": [
+          879.067,
+          1003.522
+        ]
+      },
+      "tokens": {
+        "mean_normalized": 182.3,
+        "mean_provider_reported": 320.1,
+        "total_normalized": 21877
+      },
+      "credits": {
+        "total": 0.0,
+        "mean": 0.0
+      },
+      "error_samples": []
+    },
+    "deployed_weblens": {
+      "n": 120,
+      "n_graded": 107,
+      "status_counts": {
+        "ok": 84,
+        "partial": 29,
+        "empty": 7,
+        "error": 0
+      },
+      "success_rate": 0.942,
+      "empty_rate": 0.058,
+      "error_rate": 0.0,
+      "quality": {
+        "precision_at_1": 0.636,
+        "precision_at_3": 0.548,
+        "precision_at_5": 0.471,
+        "mrr": 0.711,
+        "ndcg_at_5": 0.729,
+        "hit_at_5": 0.832,
+        "domain_diversity": 0.942,
+        "duplicate_rate": 0.0,
+        "p5_ci95": [
+          0.411,
+          0.533
+        ],
+        "ndcg_ci95": [
+          0.66,
+          0.798
+        ]
+      },
+      "latency_ms": {
+        "p50": 1037.8,
+        "p90": 1485.2,
+        "p95": 1622.2,
+        "p99": 1961.1,
+        "mean": 1037.1,
+        "min": 310.4,
+        "max": 2320.5,
+        "ci95": [
+          975.169,
+          1100.917
+        ]
+      },
+      "tokens": {
+        "mean_normalized": 206.2,
+        "mean_provider_reported": 374.7,
+        "total_normalized": 24744
+      },
+      "credits": {
+        "total": 0.0,
+        "mean": 0.0
+      },
+      "error_samples": []
+    },
+    "tavily_direct": {
+      "n": 120,
+      "n_graded": 107,
+      "status_counts": {
+        "ok": 120,
+        "partial": 0,
+        "empty": 0,
+        "error": 0
+      },
+      "success_rate": 1.0,
+      "empty_rate": 0.0,
+      "error_rate": 0.0,
+      "quality": {
+        "precision_at_1": 0.757,
+        "precision_at_3": 0.769,
+        "precision_at_5": 0.74,
+        "mrr": 0.827,
+        "ndcg_at_5": 0.777,
+        "hit_at_5": 0.935,
+        "domain_diversity": 1.0,
+        "duplicate_rate": 0.0,
+        "p5_ci95": [
+          0.675,
+          0.804
+        ],
+        "ndcg_ci95": [
+          0.725,
+          0.823
+        ]
+      },
+      "latency_ms": {
+        "p50": 1537.4,
+        "p90": 2340.0,
+        "p95": 2673.1,
+        "p99": 4362.0,
+        "mean": 1606.8,
+        "min": 285.3,
+        "max": 5086.7,
+        "ci95": [
+          1471.528,
+          1751.414
+        ]
+      },
+      "tokens": {
+        "mean_normalized": 1378.7,
+        "mean_provider_reported": 1479.8,
+        "total_normalized": 165448
+      },
+      "credits": {
+        "total": 120.0,
+        "mean": 1.0
+      },
+      "error_samples": []
+    }
+  },
+  "paired_differences": {
+    "local_weblens_minus_tavily_direct": {
+      "n": 120,
+      "precision_at_5_mean_delta": -0.167,
+      "precision_at_5_delta_ci95": [
+        -0.24,
+        -0.092
+      ],
+      "latency_mean_delta_ms": -669.0
+    },
+    "deployed_weblens_minus_tavily_direct": {
+      "n": 120,
+      "precision_at_5_mean_delta": -0.24,
+      "precision_at_5_delta_ci95": [
+        -0.295,
+        -0.183
+      ],
+      "latency_mean_delta_ms": -569.7
+    },
+    "local_weblens_minus_deployed_weblens": {
+      "n": 120,
+      "precision_at_5_mean_delta": 0.073,
+      "precision_at_5_delta_ci95": [
+        0.017,
+        0.128
+      ],
+      "latency_mean_delta_ms": -99.3
+    }
+  },
+  "resource_usage": {
+    "local_mcp_process": {
+      "rss_mb": 0.8,
+      "cpu_user_s": 0.0,
+      "cpu_system_s": 0.016,
+      "threads": 1
+    },
+    "deployed_container": "not observable from client (Cloud Run)"
+  }
+}

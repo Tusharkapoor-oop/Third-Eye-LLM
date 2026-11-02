@@ -1,0 +1,69 @@
+{
+  "version": "v10.0.0",
+  "created_at": "2026-11-02T16:49:09.881721+00:00",
+  "path": "weblens-lab\\datasets\\eval_benchmark_suite_v10.json",
+  "sha256": "a42d4004fb91208f1ae18de89e2337f2ccf5e7cb580a3c600a8ec7d8057d6361",
+  "total_queries": 120,
+  "categories": 30,
+  "queries_per_category": {
+    "general_factual": 4,
+    "current_events_news": 4,
+    "technical_research": 4,
+    "programming_developer_docs": 4,
+    "scientific_research": 4,
+    "academic_research": 4,
+    "multihop_reasoning": 4,
+    "long_document_extraction": 4,
+    "company_research": 4,
+    "startup_research": 4,
+    "industry_research": 4,
+    "market_research": 4,
+    "stock_portfolio_research": 4,
+    "product_research": 4,
+    "competitive_intelligence": 4,
+    "legal_policy_research": 4,
+    "public_sector_research": 4,
+    "healthcare_information": 4,
+    "structured_data_enrichment": 4,
+    "website_crawling": 4,
+    "crawl2rag": 4,
+    "private_kb_retrieval": 4,
+    "conversational_research": 4,
+    "ambiguous_questions": 4,
+    "insufficient_evidence": 4,
+    "contradictory_sources": 4,
+    "time_sensitive_questions": 4,
+    "rare_specialized_topics": 4,
+    "multilingual_queries": 4,
+    "adversarial_injection": 4
+  },
+  "splits": {
+    "heldout": 60,
+    "development": 60
+  },
+  "unanswerable_items": 13,
+  "synthetic_items": 0,
+  "human_authored_items": 120,
+  "label_confidence_distribution": {
+    "0.9": 30,
+    "0.85": 74,
+    "0.7": 16
+  },
+  "duplicates": {
+    "exact": 0,
+    "near_duplicate_pairs_ge_0_80": []
+  },
+  "provenance": "author_curated_stable_facts_2026-11-02",
+  "generator": "weblens-lab/datasets/build_v10_datasets.py",
+  "target_disclosure": {
+    "requested_primary_target": 100000,
+    "achieved": 120,
+    "shortfall": 99880,
+    "reason": "Curated, fact-checkable queries only. Generating 100k paraphrases would inflate counts without measuring real-world quality, and running 100k x 3 providers exceeds this session's time and API budget. Reported as BLOCKED, not as achieved."
+  },
+  "limitations": [
+    "Domain-match labels reward authoritative sources but do not prove snippet correctness.",
+    "Unanswerable items are excluded from precision/MRR/nDCG; they are used for abstention behaviour.",
+    "The web-search benchmark does not validate Crawl2RAG or private-KB retrieval; those are covered by workflow tests."
+  ]
+}

@@ -1,0 +1,47 @@
+{
+  "timestamp": "2026-11-02T17:07:27.358524+00:00",
+  "verification_version": "v10-assertions",
+  "total_workflows": 1,
+  "passed": 1,
+  "partial": 0,
+  "failed": 0,
+  "all_passed": false,
+  "work_dir": "C:\\Users\\ACER\\AppData\\Local\\Temp\\weblens_nine_apps_c1k0962h",
+  "outcomes": {
+    "app_4_crawl2rag": {
+      "status": "PASS",
+      "database_path": "C:\\Users\\ACER\\AppData\\Local\\Temp\\weblens_nine_apps_c1k0962h\\crawl2rag.db",
+      "ingest": {
+        "pages_crawled": 2,
+        "pages_indexed": 2,
+        "passages_indexed": 43,
+        "failures": []
+      },
+      "stats": {
+        "documents": 2,
+        "passages": 43,
+        "db_bytes": 135168,
+        "db_path": "C:\\Users\\ACER\\AppData\\Local\\Temp\\weblens_nine_apps_c1k0962h\\crawl2rag.db"
+      },
+      "query_hits": 3,
+      "assertions": {
+        "ingest_indexed_pages": true,
+        "documents_nonzero": true,
+        "passages_nonzero": true,
+        "query_returned_passages": true,
+        "passages_have_spans": true
+      },
+      "sample_passage": {
+        "url": "https://docs.python.org/3/library/asyncio-task.html",
+        "title": "Coroutines and tasks \u2014 Python 3.15.2 documentation",
+        "span": [
+          9827,
+          10233
+        ],
+        "text": "already exited.\nSome ways to use `cancel()`:\n- call it from the task group body based on some condition or event\n- pass the task group instance to child tasks via `create_task()`, allowing a child\ntask to conditionally cancel the entire group\n- pass the task group instance or bound `cancel()` method to some other task *before* opening the task group, allowing remote cancellation\nAdded in version 3.15.\n\n",
+        "score": -3.578
+      },
+      "latency_ms": 3486.1
+    }
+  }
+}

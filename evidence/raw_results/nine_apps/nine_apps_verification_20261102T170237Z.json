@@ -1,0 +1,202 @@
+{
+  "timestamp": "2026-11-02T17:02:37.227455+00:00",
+  "verification_version": "v10-assertions",
+  "total_workflows": 9,
+  "passed": 6,
+  "partial": 2,
+  "failed": 1,
+  "all_passed": false,
+  "work_dir": "C:\\Users\\ACER\\AppData\\Local\\Temp\\weblens_nine_apps_pzb1cu7s",
+  "outcomes": {
+    "app_1_deep_research": {
+      "status": "PASS",
+      "report_status": "partial",
+      "findings_count": 3,
+      "distinct_domains": 2,
+      "subqueries": 1,
+      "assertions": {
+        "findings_present": true,
+        "subqueries_present": true,
+        "every_finding_has_url": true,
+        "every_finding_has_span": true
+      },
+      "sample": [
+        {
+          "claim": "18. \u2191 \"Python async/await Tutorial\".",
+          "url": "https://en.wikipedia.org/wiki/Coroutine",
+          "fetched_at": "2026-11-02T14:37:25Z",
+          "span": [
+            30578,
+            30614
+          ],
+          "heading": "References"
+        },
+        {
+          "claim": "47. \u2191 Sean Kelly; Walter Bright; Alex R\u00f8nne Petersen; Martin Nowak. \"Class core.thread.fiber.Fiber\".",
+          "url": "https://en.wikipedia.org/wiki/Coroutine",
+          "fetched_at": "2026-11-02T14:37:25Z",
+          "span": [
+            34908,
+            35008
+          ],
+          "heading": "References"
+        }
+      ],
+      "latency_ms": 3341.4
+    },
+    "app_2_company_researcher": {
+      "status": "PASS",
+      "report_status": "found",
+      "detected_domain": "wikipedia.org",
+      "populated_fields": {
+        "overview": 2,
+        "leadership": 3,
+        "products_and_services": 3,
+        "competitors_and_alternatives": 3,
+        "risks_and_challenges": 3
+      },
+      "assertions": {
+        "status_found": true,
+        "domain_detected": true,
+        "overview_has_citations": true,
+        "leadership_has_citations": true
+      },
+      "latency_ms": 8845.8
+    },
+    "app_3_chat_answer_engine": {
+      "status": "PASS",
+      "report_status": "ok",
+      "citations_returned": 2,
+      "turn1_query_used": "Python asyncio event loop architecture",
+      "turn2_query_used": "Python asyncio event loop architecture What about its performance implications?",
+      "assertions": {
+        "turn1_has_citations": true,
+        "turn1_has_answer": true,
+        "history_advanced_to_two": true,
+        "followup_resolved_with_prior_topic": true
+      },
+      "latency_ms": 4123.4
+    },
+    "app_4_crawl2rag": {
+      "status": "FAIL",
+      "error": "AttributeError: 'CrawledPage' object has no attribute 'text'",
+      "latency_ms": 0.0
+    },
+    "app_5_market_researcher": {
+      "status": "PASS",
+      "portfolio_size": 2,
+      "disclosures_analyzed": 8,
+      "verified_metrics": 12,
+      "assertions": {
+        "disclosures_present": true,
+        "verified_metrics_present": true,
+        "all_metrics_sourced": true,
+        "disclaimer_present": true
+      },
+      "sample_metrics": [
+        {
+          "metric_mention": "2025",
+          "value": "2025",
+          "currency": "USD",
+          "multiplier": null,
+          "as_of_date": "2026-02-18",
+          "source_url": "https://en.wikipedia.org/wiki/Robinhood_Markets"
+        },
+        {
+          "metric_mention": "10",
+          "value": "10",
+          "currency": "USD",
+          "multiplier": null,
+          "as_of_date": "2026-02-18",
+          "source_url": "https://en.wikipedia.org/wiki/Robinhood_Markets"
+        }
+      ],
+      "latency_ms": 2651.6
+    },
+    "app_6_sheets_enricher": {
+      "status": "PASS",
+      "rows_enriched": 2,
+      "verified_ceo_cells": 2,
+      "assertions": {
+        "all_rows_returned": true,
+        "formula_values_defanged": true,
+        "at_least_one_verified": true,
+        "verified_values_have_sources": true
+      },
+      "sample_rows": [
+        {
+          "Company": "Apple",
+          "Note": "'=cmd|' /C calc'!A0",
+          "CEO": "adopted in 2007 as the company expanded its focus from computers to consumer electronics. Apple is one of the Big Tech companies . The company was founded to",
+          "CEO_source": "https://en.wikipedia.org/wiki/Apple_Inc.",
+          "CEO_status": "verified"
+        },
+        {
+          "Company": "Microsoft",
+          "Note": "who is CEO",
+          "CEO": "in-house PC line\u2014 the Surface\u2014in 2012, and the formation of Microsoft Mobile through Nokia. Since Satya Nadella became CEO in 2014, the company has changed",
+          "CEO_source": "https://en.wikipedia.org/wiki/Microsoft",
+          "CEO_status": "verified"
+        }
+      ],
+      "latency_ms": 4145.8
+    },
+    "app_7_meeting_prep": {
+      "status": "PARTIAL",
+      "attendees_researched": 1,
+      "attendees_with_sources": 0,
+      "company_context_items": 2,
+      "assertions": {
+        "one_attendee_researched": true,
+        "attendee_has_profile_text": true,
+        "attendee_has_sources": false,
+        "company_context_present": true,
+        "privacy_notice_present": true
+      },
+      "latency_ms": 4135.2
+    },
+    "app_8_tutorial_101": {
+      "status": "PARTIAL",
+      "report_status": "ok",
+      "steps_executed": 9,
+      "passed_steps": 0,
+      "failed_steps": [
+        "2_web_search"
+      ],
+      "assertions": {
+        "all_nine_steps_ran": true,
+        "all_steps_passed": false
+      },
+      "step_statuses": {
+        "1_diagnostics": "passed",
+        "2_web_search": "degraded",
+        "3_research_chat": "passed",
+        "4_company_research": "passed",
+        "5_market_research": "passed",
+        "6_sheets_enrich": "passed",
+        "7_meeting_prep": "passed",
+        "8_crawl2rag": "passed",
+        "9_deep_research": "passed"
+      },
+      "latency_ms": 23325.0
+    },
+    "app_9_persistent_research_chat": {
+      "status": "PASS",
+      "session_id": "nine-app-1793638954",
+      "database_path": "C:\\Users\\ACER\\AppData\\Local\\Temp\\weblens_nine_apps_pzb1cu7s\\research_sessions.db",
+      "citations_count": 3,
+      "persisted_message_count": 2,
+      "exported_topic": "Python Concurrency Models",
+      "exported_total_sources": 2,
+      "assertions": {
+        "assistant_content_present": true,
+        "citations_present": true,
+        "messages_persisted": true,
+        "reopened_session_has_assistant": true,
+        "topic_persisted": true,
+        "markdown_export_contains_topic": true
+      },
+      "latency_ms": 2553.5
+    }
+  }
+}

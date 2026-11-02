@@ -82,9 +82,18 @@ class Crawl2RAG:
 
         with sqlite3.connect(self.db_path) as conn:
             for page in crawl_out.pages:
-                text = page.text or ""
-                if not text.strip():
+                text = (getattr(page, "text", "") or "").strip()
+                if not text:
+                    # Backwards-compatible fallback for crawlers that only
+                    # expose budgeted passages/excerpts.
+                    passages = getattr(page, "passages", None) or []
+                    text = "\n\n".join(str(p.get("x", "")) for p in passages).strip()
+                if not text:
+                    text = (getattr(page, "excerpt", "") or "").strip()
+                if not text:
                     continue
+
+                page_tokens = getattr(page, "tokens", 0) or 0
 
                 chash = hashlib.sha256(text.encode("utf-8")).hexdigest()
                 row = conn.execute(
@@ -107,7 +116,7 @@ class Crawl2RAG:
                         ingested_at = excluded.ingested_at,
                         page_tokens = excluded.page_tokens
                     """,
-                    (page.url, page.title or "", chash, now_iso, page.tokens),
+                    (page.url, page.title or "", chash, now_iso, page_tokens),
                 )
 
                 passages = build_chunks(text)
@@ -132,7 +141,8 @@ class Crawl2RAG:
             "pages_indexed": indexed_pages,
             "passages_indexed": indexed_passages,
             "skipped_unchanged": skipped_unchanged,
-            "failures": crawl_out.failures,
+            "failures": getattr(crawl_out, "failures", None)
+            or getattr(crawl_out, "warnings", []),
             "ms": elapsed_ms,
             "db_path": str(self.db_path),
         }

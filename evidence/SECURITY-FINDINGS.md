@@ -1,10 +1,32 @@
 # WebLens Security & Penetration Testing Findings
 
 ## Assessment Date
-2026-11-01
+2026-11-01 (last full campaign); 2026-11-02 (SEC-V9-001 appended)
 
 ## Scope
 Local WebLens MCP server, network layer, token budgeting engine, and isolated sandbox environment (`weblens-lab/`).
+
+---
+
+## Finding SEC-V9-001: Live Tavily API Key Committed to Git-Tracked Reports
+
+### Metadata
+- **Finding ID**: SEC-V9-001
+- **Severity**: High (live credential disclosure in a public-trackable repository; also contradicts claim CLM-013)
+- **Affected Component**: `reports/V8_SESSION_SUMMARY.md`, `reports/tavily-weblens-comparison/cost_analysis/COST_ANALYSIS.md` (both committed in `1c11ac3`)
+- **Vulnerability**: Credential leakage — a live development Tavily key (`tvly-dev-…`, value redacted here) was pasted in plaintext into session reports, violating v9 rule 14 and the scan-verified CLM-013 claim ("0 secret hits in 92 files", which was scoped to source files only, excluding markdown reports).
+
+### Discovery method
+Working-tree grep of committed markdown for full key value during the 2026-11-02 v9 continuation session; confirmed via `git grep` at HEAD (2 files) and exact-match comparison against `.env` (ENV_MATCH — the disclosed key is the active credential).
+
+### Remediation
+1. Both report files redacted to `tvly-dev-…` placeholders.
+2. Working-tree scan reopened to include all `.md`/report surfaces, not just source files.
+3. **Required user action (rotation)**: the key must be rotated in the Tavily dashboard, because it remains in git history (commits `1c11ac3`) regardless of redaction. History rewrite was not performed autonomously (destructive, not authorized).
+4. New key replaces `TAVILY_API_KEY` in `.env` and `weblens/.env` after rotation.
+
+### Status
+FIX APPLIED (redaction + coverage expansion); RESIDUAL RISK: key present in git history until rotated.
 
 ---
 

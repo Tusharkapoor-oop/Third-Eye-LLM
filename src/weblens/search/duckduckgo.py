@@ -39,6 +39,7 @@ def unwrap(href: str) -> str:
 
 class DuckDuckGoLite:
     name = "ddg"
+    timeout_s = 3.5
     _last_call = 0.0
     _lock = asyncio.Lock()
     _min_interval = 1.5
@@ -68,15 +69,16 @@ class DuckDuckGoLite:
             wait = self._min_interval - (time.monotonic() - self._last_call)
             if wait > 0:
                 await asyncio.sleep(wait)
-            try:
-                resp = await self.fetcher.fetch(
-                    url,
-                    headers={"Accept": "text/html"},
-                    cache_ttl=600,
-                    max_bytes=1_500_000,
-                )
-            finally:
-                self._last_call = time.monotonic()
+            # Reserve the slot before fetching so concurrent research queries
+            # are spaced by start time instead of serializing whole requests.
+            self._last_call = time.monotonic()
+
+        resp = await self.fetcher.fetch(
+            url,
+            headers={"Accept": "text/html"},
+            cache_ttl=600,
+            max_bytes=1_500_000,
+        )
 
         if resp.status == 202 or "anomaly-modal" in resp.text or "bots use DuckDuckGo" in resp.text:
             raise ProviderError("ddg returned a bot challenge", code=ErrCode.PROVIDER, retryable=True)

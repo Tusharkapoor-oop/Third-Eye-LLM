@@ -1,0 +1,79 @@
+{
+  "status": "ok",
+  "evaluation_timestamp": "2026-11-02T16:55:42.674853+00:00",
+  "total_queries_evaluated": 15,
+  "systems": {
+    "system_1_local_weblens": {
+      "status": "active",
+      "latency": {
+        "p50_ms": 758.6,
+        "p90_ms": 1103.5,
+        "mean_ms": 824.3
+      },
+      "quality": {
+        "mean_precision_at_5": 0.28,
+        "answer_supported_rate": 0.333,
+        "success_rate": 0.267
+      },
+      "tokens_and_cost": {
+        "mean_tokens": 320.1,
+        "total_credits": 0.0,
+        "cost_usd": 0.0
+      }
+    },
+    "system_2_deployed_weblens": {
+      "status": "active",
+      "latency": {
+        "p50_ms": 836.5,
+        "p90_ms": 1312.9,
+        "mean_ms": 883.1
+      },
+      "quality": {
+        "mean_precision_at_5": 0.353,
+        "answer_supported_rate": 0.333,
+        "success_rate": 0.6
+      },
+      "tokens_and_cost": {
+        "mean_tokens": 321.5,
+        "total_credits": 0.0,
+        "cost_usd": 0.0
+      }
+    },
+    "system_3_tavily_direct": {
+      "status": "active",
+      "latency": {
+        "p50_ms": 1276.2,
+        "p90_ms": 2085.7,
+        "mean_ms": 1140.8
+      },
+      "quality": {
+        "mean_precision_at_5": 0.733,
+        "answer_supported_rate": 0.867,
+        "success_rate": 1.0
+      },
+      "tokens_and_cost": {
+        "mean_tokens": 1475.4,
+        "total_credits": 15.0,
+        "cost_usd": 0.075
+      }
+    },
+    "system_4_google_gemini": {
+      "status": "blocked_or_unavailable",
+      "latency": {
+        "p50_ms": 0.0,
+        "p90_ms": 0.0,
+        "mean_ms": 0.0
+      },
+      "quality": {
+        "mean_precision_at_5": 0.0,
+        "answer_supported_rate": 0.0,
+        "success_rate": 0.0
+      },
+      "tokens_and_cost": {
+        "mean_tokens": 0.0,
+        "total_credits": 0.0,
+        "cost_usd": 0.0
+      }
+    }
+  }
+}

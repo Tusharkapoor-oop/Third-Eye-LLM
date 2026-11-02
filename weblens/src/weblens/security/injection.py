@@ -12,16 +12,16 @@ _PATTERNS: list[tuple[str, re.Pattern[str]]] = [
     (
         "ignore_instructions",
         re.compile(
-            r"\b(?:ignore|disregard|forget|override)\s+(?:all\s+|any\s+)?"
+            r"\b(?:ignore|disregard|forget|override)\s+(?:all\s+|any\s+|everything\s+)?"
             r"(?:previous|prior|above|earlier|system|developer)\s+"
-            r"(?:instructions?|prompts?|rules?|messages?)",
+            r"(?:instructions?|prompts?|rules?|messages?)|\bforget\s+everything\s+above\b",
             re.I,
         ),
     ),
     (
         "role_hijack",
         re.compile(
-            r"\b(?:you are now|from now on you|act as (?:the|a) (?:system|developer)|"
+            r"\b(?:you are now|from now on you|act as (?:the|a)\s+(?:system|developer|hacker|admin|root)|"
             r"new (?:system )?instructions?:|system prompt:)",
             re.I,
         ),
@@ -30,7 +30,7 @@ _PATTERNS: list[tuple[str, re.Pattern[str]]] = [
         "exfiltration",
         re.compile(
             r"\b(?:send|post|upload|transmit|forward|reveal|print|leak)\b.{0,80}"
-            r"\b(?:api[ _-]?key|token|password|secret|credential|environment variable|\.env)\b",
+            r"\b(?:api[ _-]?keys?|tokens?|passwords?|secrets?|credentials?|environment variables?|\.env)\b",
             re.I | re.S,
         ),
     ),
@@ -45,8 +45,7 @@ _PATTERNS: list[tuple[str, re.Pattern[str]]] = [
     (
         "concealment",
         re.compile(
-            r"\b(?:do not|don't|never)\s+(?:tell|inform|mention|reveal)\s+"
-            r"(?:the\s+)?(?:user|human|operator)",
+            r"\b(?:do not|don't|never)\s+(?:tell|inform|mention|reveal)\b.{0,25}\b(?:user|human|operator)\b",
             re.I,
         ),
     ),

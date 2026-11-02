@@ -39,13 +39,27 @@ class SearchResponse:
     provider: str
     query: str
     results: list[SearchItem]
-    status: Literal["ok", "no_reliable_result", "error"]
+    # ok          -> transport ok and at least one result, engine status ok
+    # partial     -> results returned but engine reported a degraded state
+    # empty       -> transport ok and the engine deliberately returned nothing
+    # error       -> transport or tool error
+    status: Literal["ok", "partial", "empty", "no_reliable_result", "error"]
     latency_ms: float
     tokens_returned: int
     credits_used: float = 0.0
     error: str | None = None
     raw_response: dict[str, Any] | None = field(default=None, repr=False)
+    raw_status: str | None = None
+    http_status: int | None = None
+    response_bytes: int | None = None
+    response_hash: str | None = None
+    backend_provider: str | None = None
+    cache_state: str = "unknown"
     timestamp: str = field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
+
+    @property
+    def successful(self) -> bool:
+        return self.status in ("ok", "partial") and bool(self.results)
 
 
 @dataclass

@@ -290,13 +290,11 @@ def extract_plain(text: str, url: str, title: str = "") -> ExtractedDoc:
 
 
 def extract_pdf(body: bytes, url: str) -> ExtractedDoc:
-    from io import BytesIO
-
-    from pypdf import PdfReader
+    import pymupdf
 
     warnings: list[str] = []
     try:
-        reader = PdfReader(BytesIO(body))
+        doc = pymupdf.open(stream=body, filetype="pdf")
     except Exception:
         return ExtractedDoc(
             url=url,
@@ -308,38 +306,58 @@ def extract_pdf(body: bytes, url: str) -> ExtractedDoc:
             kind="pdf",
             warnings=["pdf_parse_failed"],
         )
-    pages: list[str] = []
-    for i, page in enumerate(reader.pages[:40]):
-        try:
-            t = page.extract_text() or ""
-        except Exception:  # noqa: S112 - skip unreadable PDF pages
+    try:
+        if doc.needs_pass:
+            return ExtractedDoc(
+                url=url,
+                final_url=url,
+                title=url,
+                text="",
+                fetched_at="",
+                sha256="",
+                kind="pdf",
+                warnings=["pdf_encrypted"],
+            )
+        page_count = doc.page_count
+        pages: list[str] = []
+        for i in range(min(page_count, 40)):
+            try:
+                t = doc[i].get_text() or ""
+            except Exception:  # noqa: S112 - skip unreadable PDF pages
                 continue
-        t = _clean_text(t)
-        if t:
-            pages.append(f"## Page {i + 1}\n\n{t}")
-    text = "\n\n".join(pages)
-    if len(reader.pages) > 40:
-        warnings.append("pdf_truncated_40_pages")
-    if not text:
-        warnings.append("pdf_no_text_layer")
-    return ExtractedDoc(
-        url=url,
-        final_url=url,
-        title=(reader.metadata.title if reader.metadata else None) or url,
-        text=text,
-        fetched_at="",
-        sha256=hashlib.sha256(text.encode()).hexdigest(),
-        kind="pdf",
-        author=(reader.metadata.author if reader.metadata else None),
-        warnings=warnings,
-    )
+            t = _clean_text(t)
+            if t:
+                pages.append(f"## Page {i + 1}\n\n{t}")
+        text = "\n\n".join(pages)
+        if page_count > 40:
+            warnings.append("pdf_truncated_40_pages")
+        if not text:
+            warnings.append("pdf_no_text_layer")
+        meta = doc.metadata or {}
+        return ExtractedDoc(
+            url=url,
+            final_url=url,
+            title=(meta.get("title") or "").strip() or url,
+            text=text,
+            fetched_at="",
+            sha256=hashlib.sha256(text.encode()).hexdigest(),
+            kind="pdf",
+            author=(meta.get("author") or "").strip() or None,
+            warnings=warnings,
+        )
+    finally:
+        doc.close()
 
 
 def age_days(iso: str | None) -> int | None:
     from ..search.base import parse_date
 
-    d = parse_date(iso)
-    if not d:
+    parsed = parse_date(iso)
+    if not parsed:
+        return None
+    try:
+        d = date.fromisoformat(parsed)
+    except ValueError:
         return None
     return (date.today() - d).days
 

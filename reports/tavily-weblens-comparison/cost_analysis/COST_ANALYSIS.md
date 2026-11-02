@@ -23,7 +23,7 @@ Cost analysis evaluates the financial efficiency of each provider, considering b
 | **Pro** | ~$29-49/month | 10,000-50,000 queries/month, advanced search | Most common paid tier |
 | **Enterprise** | Custom | Unlimited, SLA, priority support | For high-volume deployments |
 
-*Exact Tavily pricing should be confirmed via the user's Tavily account dashboard. The API key in this session's .env (`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`) is a development key, which may have different quotas than production keys.*
+*Exact Tavily pricing should be confirmed via the user's Tavily account dashboard. The API key in this session's .env is a development key (`tvly-dev-…` — value redacted, see SEC-V9-001), which may have different quotas than production keys.*
 
 ### Token Budget Cost (R1 Prime Requirement)
 

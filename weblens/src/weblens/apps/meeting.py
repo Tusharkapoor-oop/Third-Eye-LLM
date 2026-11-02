@@ -21,6 +21,31 @@ PRIVACY_PROBE_PATTERN = re.compile(
 )
 
 
+async def _search_with_fallback(
+    service: WebLens,
+    queries: list[str],
+    *,
+    max_results: int,
+) -> dict[str, Any]:
+    """Try increasingly broad queries, returning the first with results.
+
+    Keyless providers frequently return nothing for keyword-stuffed queries.
+    Falling back to a shorter query is honest: every returned hit is still a
+    real provider result, and an empty final result stays empty.
+    """
+    last: dict[str, Any] = {}
+    seen: set[str] = set()
+    for query in queries:
+        clean = " ".join(query.split())
+        if not clean or clean in seen:
+            continue
+        seen.add(clean)
+        last = await service.search(clean, max_results=max_results)
+        if last.get("res"):
+            return last
+    return last
+
+
 class MeetingPrepAgent:
     """Prepares structured, cited meeting briefings strictly from public professional information."""
 
@@ -54,11 +79,19 @@ class MeetingPrepAgent:
                 continue
 
             query = f"{clean_name} {company_or_org or ''} biography career public role"
-            search_out = await self.service.search(query, max_results=2)
+            search_out = await _search_with_fallback(
+                self.service,
+                [
+                    f"{clean_name} {company_or_org or ''}",
+                    clean_name,
+                    query,
+                ],
+                max_results=2,
+            )
             hits = search_out.get("res", [])
 
-            bio_snippets = [h.get("s", "") for h in hits]
-            sources = [h.get("u", "") for h in hits if h.get("u")]
+            bio_snippets = [h.get("s", "") for h in hits if h.get("s")]
+            sources = list(dict.fromkeys(h.get("u", "") for h in hits if h.get("u")))
 
             attendee_profiles.append({
                 "attendee": clean_name,
@@ -69,7 +102,15 @@ class MeetingPrepAgent:
         # Research company context if provided
         company_notes = []
         if company_or_org:
-            comp_search = await self.service.search(f"{company_or_org} recent developments strategic focus news", max_results=2)
+            comp_search = await _search_with_fallback(
+                self.service,
+                [
+                    f"{company_or_org} recent developments strategic focus news",
+                    f"{company_or_org} news",
+                    company_or_org,
+                ],
+                max_results=2,
+            )
             for h in comp_search.get("res", []):
                 company_notes.append({
                     "title": h.get("t"),

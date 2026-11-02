@@ -57,7 +57,7 @@ Created `weblens-lab/sandbox/` with complete isolation infrastructure:
 
 | Aspect | Status |
 |--------|--------|
-| **API key** | ✅ Loaded from .env: `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` |
+| **API key** | ✅ Loaded from .env (`tvly-dev-…` — value redacted; see SEC-V9-001) |
 | **Account capabilities** | ✅ Verified working via test calls |
 | **Search endpoints** | ✅ `POST https://api.tavily.com/search` |
 | **Search depth** | ✅ `basic` mode used in pilots |

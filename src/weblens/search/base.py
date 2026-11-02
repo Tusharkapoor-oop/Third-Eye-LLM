@@ -40,9 +40,9 @@ class ProviderUnavailable(RuntimeError):
 
 
 _DATE_PATTERNS = [
-    re.compile(r"\b(20\d{2})-(\d{2})-(\d{2})\b"),
-    re.compile(r"\b(\d{1,2})\s+(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)[a-z]*\s+(20\d{2})\b", re.IGNORECASE),
-    re.compile(r"\b(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)[a-z]*\s+(\d{1,2}),?\s+(20\d{2})\b", re.IGNORECASE),
+    re.compile(r"\b(20\d{2})-(\d{2})-(\d{2})(?!\d)"),
+    re.compile(r"\b(\d{1,2})\s+(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)[a-z]*\s+(20\d{2})\b", re.I),
+    re.compile(r"\b(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)[a-z]*\s+(\d{1,2}),?\s+(20\d{2})\b", re.I),
 ]
 _MONTHS = {
     "jan": 1, "feb": 2, "mar": 3, "apr": 4, "may": 5, "jun": 6,
@@ -85,7 +85,7 @@ def clean_snippet(text: str, limit: int = 320) -> str:
     t = re.sub(r"<[^>]{0,200}>", " ", text)
     t = html_mod.unescape(t)
     t = re.sub(r"\s+", " ", t).strip()
-    t = re.sub(r"^(?:Web result|Image result|Video result)\s*[·•]\s*", "", t, flags=re.IGNORECASE)
+    t = re.sub(r"^(?:Web result|Image result|Video result)\s*[·•]\s*", "", t, flags=re.I)
     if len(t) > limit:
         cut = t[:limit]
         p = max(cut.rfind(". "), cut.rfind("; "), cut.rfind(" "))

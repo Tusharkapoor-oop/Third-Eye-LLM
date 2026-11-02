@@ -1,63 +1,51 @@
 {
-  "timestamp": "2026-11-02T14:41:40.681378+00:00",
-  "total_workflows": 9,
-  "passed": 9,
+  "timestamp": "2026-11-02T17:10:13.202563+00:00",
+  "verification_version": "v10-assertions",
+  "total_workflows": 2,
+  "passed": 1,
+  "partial": 1,
   "failed": 0,
+  "all_passed": false,
+  "work_dir": "C:\\Users\\ACER\\AppData\\Local\\Temp\\weblens_nine_apps_sn828m2a",
   "outcomes": {
-    "app_1_deep_research": {
-      "status": "PASS",
-      "findings_count": 6,
-      "subqueries": 1,
-      "latency_ms": 1229.7
-    },
-    "app_2_company_researcher": {
-      "status": "PASS",
-      "detected_domain": "python.org",
-      "latency_ms": 6650.7
-    },
-    "app_3_chat_answer_engine": {
-      "status": "PASS",
-      "citations_returned": 2,
-      "tokens": 0,
-      "latency_ms": 1769.8
-    },
-    "app_4_crawl2rag": {
-      "status": "PASS",
-      "database_path": "C:\\Users\\ACER\\.weblens\\crawl2rag.db",
-      "indexed_documents": 0,
-      "indexed_passages": 0,
-      "latency_ms": 6.6
-    },
-    "app_5_market_researcher": {
-      "status": "PASS",
-      "portfolio_size": 2,
-      "disclosures_analyzed": 8,
-      "verified_metrics": 11,
-      "latency_ms": 3054.3
-    },
-    "app_6_sheets_enricher": {
-      "status": "PASS",
-      "rows_enriched": 2,
-      "formula_defense_active": true,
-      "latency_ms": 3282.2
-    },
     "app_7_meeting_prep": {
       "status": "PASS",
       "attendees_researched": 1,
-      "privacy_notice": true,
-      "latency_ms": 3282.2
+      "attendees_with_sources": 1,
+      "company_context_items": 2,
+      "assertions": {
+        "one_attendee_researched": true,
+        "attendee_has_profile_text": true,
+        "attendee_has_sources": true,
+        "company_context_present": true,
+        "privacy_notice_present": true
+      },
+      "latency_ms": 11254.6
     },
     "app_8_tutorial_101": {
-      "status": "PASS",
-      "steps_executed": 1,
-      "latency_ms": 1615.2
-    },
-    "app_9_persistent_research_chat": {
-      "status": "PASS",
-      "session_id": "86a24c19-502e-456a-b62d-171999c1f239",
-      "citations_count": 3,
-      "tokens_used": 468,
-      "latency_ms": 3244.4
+      "status": "PARTIAL",
+      "report_status": "partial",
+      "steps_executed": 9,
+      "passed_steps": 8,
+      "failed_steps": [
+        "9_deep_research"
+      ],
+      "assertions": {
+        "all_nine_steps_ran": true,
+        "all_steps_passed": false
+      },
+      "step_statuses": {
+        "1_diagnostics": "passed",
+        "2_web_search": "passed",
+        "3_research_chat": "passed",
+        "4_company_research": "passed",
+        "5_market_research": "passed",
+        "6_sheets_enrich": "passed",
+        "7_meeting_prep": "passed",
+        "8_crawl2rag": "passed",
+        "9_deep_research": "degraded"
+      },
+      "latency_ms": 50807.8
     }
   }
 }

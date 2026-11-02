@@ -53,3 +53,26 @@ class FetchError(WebLensError):
 
 class ProviderError(WebLensError):
     code = ErrCode.PROVIDER
+
+
+def resolve_budget(
+    requested: int | None,
+    default: int,
+    *,
+    minimum: int,
+    maximum: int,
+) -> int:
+    """Return an explicit budget, rejecting requests too small for provenance.
+
+    Silently raising a caller's budget would break the promise that ``max_tokens``
+    is an upper bound, so values below the documented floor are a bad input.
+    """
+    if requested is None:
+        return max(minimum, min(maximum, default))
+    if requested < minimum:
+        raise WebLensError(
+            f"max_tokens must be >= {minimum} for this tool",
+            code=ErrCode.BAD_INPUT,
+        )
+    return min(maximum, requested)
+

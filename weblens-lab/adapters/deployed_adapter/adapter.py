@@ -1,15 +1,15 @@
-"""Deployed WebLens MCP Provider Adapter for Three-System Evaluation.
+"""Deployed WebLens MCP adapter.
 
-Connects to the deployed WebLens MCP endpoint on Google Cloud Run via HTTP/MCP (JSON-RPC).
-Instruments remote latency, network payload sizes, status codes, and tool responses.
+Exercises the real remote deployment over Streamable HTTP with a full MCP
+handshake (initialize -> notifications/initialized -> tools/list -> tools/call).
+Every call records HTTP status, payload bytes, negotiated protocol version and
+server identity so remote behaviour is distinguishable from a localhost run.
 """
 
 from __future__ import annotations
 
-import json
 import time
 from typing import Any
-import httpx
 
 from ..common_interface.base import (
     AnswerResponse,
@@ -21,89 +21,83 @@ from ..common_interface.base import (
     SearchItem,
     SearchResponse,
 )
+from ..mcp_client import CallMeta, MCPHttpClient
+from ..provenance import classify_search_status, results_hash
+
+DEFAULT_ENDPOINT = "https://weblens-16131012091.us-central1.run.app/mcp"
 
 
 class DeployedWebLensAdapter(ResearchProvider):
-    """Adapter for remote deployed WebLens MCP running on Google Cloud Run."""
-
     def __init__(
         self,
-        endpoint_url: str = "https://weblens-16131012091.us-central1.run.app/mcp",
+        endpoint_url: str | None = None,
         *,
-        timeout_s: float = 35.0,
+        token: str | None = None,
+        timeout_s: float = 45.0,
     ) -> None:
-        self.endpoint_url = endpoint_url.rstrip("/")
+        self.endpoint_url = (endpoint_url or DEFAULT_ENDPOINT).rstrip("/")
         self.timeout_s = timeout_s
         self._usage = ProviderUsage()
-        self._client = httpx.AsyncClient(timeout=timeout_s)
-        self._req_id = 0
+        self._client = MCPHttpClient(
+            self.endpoint_url,
+            token=token,
+            timeout_s=timeout_s,
+            client_name="weblens-lab-deployed",
+        )
+        self.tools: list[str] = []
+        self.server_info: dict[str, Any] = {}
+        self.protocol_version: str | None = None
+        self._initialize_ms: float | None = None
+        self._tools_list_ms: float | None = None
+        self._started = False
 
     @property
     def name(self) -> str:
-        return "deployed_weblens"
+        return "deployed_weblens_mcp"
 
     @property
     def is_independent(self) -> bool:
         return True
 
-    async def close(self) -> None:
-        await self._client.aclose()
+    async def start(self) -> None:
+        t0 = time.perf_counter()
+        await self._client.initialize()
+        self._initialize_ms = (time.perf_counter() - t0) * 1000.0
+        t0 = time.perf_counter()
+        tools = await self._client.list_tools()
+        self._tools_list_ms = (time.perf_counter() - t0) * 1000.0
+        self.tools = [tool.name for tool in tools]
+        self.server_info = self._client.server_info
+        self.protocol_version = self._client.protocol_version
+        self._started = True
 
-    def _next_id(self) -> str:
-        self._req_id += 1
-        return str(self._req_id)
-
-    async def _call_mcp_tool(self, name: str, arguments: dict[str, Any]) -> dict[str, Any]:
-        """Send a JSON-RPC tools/call request to the remote MCP HTTP server."""
-        payload = {
-            "jsonrpc": "2.0",
-            "id": self._next_id(),
-            "method": "tools/call",
-            "params": {
-                "name": name,
-                "arguments": arguments,
-            },
+    def start_metadata(self) -> dict[str, Any]:
+        return {
+            "endpoint": self.endpoint_url,
+            "server_info": self.server_info,
+            "protocol_version": self.protocol_version,
+            "tools": self.tools,
+            "initialize_ms": round(self._initialize_ms, 1) if self._initialize_ms else None,
+            "tools_list_ms": round(self._tools_list_ms, 1) if self._tools_list_ms else None,
         }
 
-        resp = await self._client.post(self.endpoint_url, json=payload)
-        resp.raise_for_status()
+    async def close(self) -> None:
+        await self._client.close()
 
-        # Parse SSE or raw JSON response
-        text = resp.text
-        if "data:" in text:
-            # Server-Sent Event stream
-            for line in text.splitlines():
-                if line.startswith("data:"):
-                    line_data = line[len("data:"):].strip()
-                    if line_data:
-                        msg = json.loads(line_data)
-                        if msg.get("id") == payload["id"]:
-                            res = msg.get("result", {})
-                            content_blocks = res.get("content", [])
-                            if content_blocks and "text" in content_blocks[0]:
-                                return json.loads(content_blocks[0]["text"])
-                            return res
-        # Fallback to direct json
-        msg = resp.json()
-        res = msg.get("result", {})
-        if "content" in res and res["content"] and "text" in res["content"][0]:
-            return json.loads(res["content"][0]["text"])
-        return res
+    async def _call(self, tool: str, arguments: dict[str, Any]) -> tuple[dict[str, Any], CallMeta, float]:
+        if not self._started:
+            await self.start()
+        data, elapsed_ms, meta = await self._client.timed_call(tool, arguments)
+        return data or {}, meta, elapsed_ms
 
     async def search(self, query: str, *, max_results: int = 5, **options: Any) -> SearchResponse:
-        t0 = time.perf_counter()
         self._usage.requests += 1
-
+        t0 = time.perf_counter()
         try:
-            data = await self._call_mcp_tool(
-                "web_search",
-                {"query": query, "max_results": max_results},
+            data, meta, elapsed_ms = await self._call(
+                "web_search", {"query": query, "max_results": max_results}
             )
-            elapsed_ms = (time.perf_counter() - t0) * 1000.0
             self._usage.total_latency_ms += elapsed_ms
-
-            status = data.get("status", "error")
-            raw_res = data.get("res", [])
             items = [
                 SearchItem(
                     url=r.get("u", ""),
@@ -111,24 +105,32 @@ class DeployedWebLensAdapter(ResearchProvider):
                     content=r.get("s", ""),
                     published_date=r.get("d"),
                 )
-                for r in raw_res
+                for r in (data.get("res") or [])
             ]
-
-            toks = data.get("tok", 0)
-            self._usage.successful_requests += 1
-            self._usage.output_tokens += toks
-
+            raw_status = data.get("status")
+            status = classify_search_status(raw_status, len(items))
+            if status == "error":
+                self._usage.failed_requests += 1
+            else:
+                self._usage.successful_requests += 1
+            self._usage.output_tokens += int(data.get("tok") or 0)
             return SearchResponse(
                 provider=self.name,
                 query=query,
                 results=items,
-                status="ok" if status == "ok" and items else "no_reliable_result",
+                status=status,  # type: ignore[arg-type]
                 latency_ms=elapsed_ms,
-                tokens_returned=toks,
+                tokens_returned=int(data.get("tok") or 0),
                 credits_used=0.0,
-                error=data.get("error") if status != "ok" else None,
+                raw_status=raw_status,
+                http_status=meta.http_status,
+                response_bytes=meta.response_bytes,
+                response_hash=results_hash(items),
+                backend_provider=",".join(data.get("prov") or []) or "deployed_keyless",
+                cache_state="unknown",
+                error=data.get("msg") if raw_status == "error" else None,
             )
-        except Exception as e:
+        except Exception as exc:
             elapsed_ms = (time.perf_counter() - t0) * 1000.0
             self._usage.failed_requests += 1
             return SearchResponse(
@@ -139,92 +141,83 @@ class DeployedWebLensAdapter(ResearchProvider):
                 latency_ms=elapsed_ms,
                 tokens_returned=0,
                 credits_used=0.0,
-                error=str(e),
+                error=f"{type(exc).__name__}: {str(exc)[:300]}",
+                cache_state="unknown",
             )
 
     async def extract(self, urls: list[str], **options: Any) -> ExtractResponse:
-        t0 = time.perf_counter()
         self._usage.requests += 1
+        t0 = time.perf_counter()
         items: list[ExtractItem] = []
-        total_toks = 0
-
+        total_tokens = 0
         try:
             for url in urls[:5]:
-                data = await self._call_mcp_tool(
-                    "extract_url",
-                    {"url": url, "full": options.get("full", False)},
+                data, _meta, _ms = await self._call(
+                    "extract_url", {"url": url, "full": bool(options.get("full", False))}
                 )
-                text = data.get("text", "")
-                toks = data.get("tokens", 0)
-                total_toks += toks
+                text = data.get("text") or ""
+                total_tokens += int(data.get("tok") or 0)
                 items.append(
                     ExtractItem(
                         url=url,
                         raw_content=text,
                         markdown=text,
-                        status="ok" if text else "failed",
+                        status="ok" if data.get("status") == "ok" and text else "failed",
+                        error=data.get("msg") if data.get("status") != "ok" else None,
                     )
                 )
-
             elapsed_ms = (time.perf_counter() - t0) * 1000.0
             self._usage.total_latency_ms += elapsed_ms
             self._usage.successful_requests += 1
-            self._usage.output_tokens += total_toks
-
+            self._usage.output_tokens += total_tokens
             return ExtractResponse(
                 provider=self.name,
                 results=items,
                 latency_ms=elapsed_ms,
-                tokens_returned=total_toks,
+                tokens_returned=total_tokens,
                 credits_used=0.0,
             )
-        except Exception as e:
+        except Exception as exc:
             elapsed_ms = (time.perf_counter() - t0) * 1000.0
             self._usage.failed_requests += 1
             return ExtractResponse(
                 provider=self.name,
-                results=[],
+                results=items,
                 latency_ms=elapsed_ms,
-                tokens_returned=0,
+                tokens_returned=total_tokens,
                 credits_used=0.0,
-                error=str(e),
+                error=f"{type(exc).__name__}: {str(exc)[:300]}",
             )
 
-    async def crawl(self, url: str, *, max_pages: int = 10, **options: Any) -> ExtractResponse:
-        t0 = time.perf_counter()
+    async def crawl(self, url: str, *, max_pages: int = 5, **options: Any) -> ExtractResponse:
         self._usage.requests += 1
-
+        t0 = time.perf_counter()
         try:
-            data = await self._call_mcp_tool(
-                "crawl_site",
-                {"url": url, "mode": "crawl", "max_pages": min(max_pages, 5)},
+            data, _meta, elapsed_ms = await self._call(
+                "crawl_site", {"url": url, "mode": "crawl", "max_pages": min(max_pages, 5)}
             )
-            elapsed_ms = (time.perf_counter() - t0) * 1000.0
-            self._usage.total_latency_ms += elapsed_ms
-
-            pages = data.get("pages", [])
+            pages = data.get("pages") or []
             items = [
                 ExtractItem(
-                    url=p.get("url", url),
-                    raw_content=p.get("text", ""),
-                    markdown=p.get("text", ""),
-                    status="ok",
+                    url=p.get("u") or p.get("url") or url,
+                    raw_content=p.get("text") or "",
+                    markdown=p.get("text") or "",
+                    status="ok" if (p.get("text") or "") else "failed",
                 )
                 for p in pages
             ]
-
-            toks = data.get("tokens", 0)
+            self._usage.total_latency_ms += elapsed_ms
             self._usage.successful_requests += 1
-            self._usage.output_tokens += toks
-
+            self._usage.output_tokens += int(data.get("tok") or 0)
             return ExtractResponse(
                 provider=self.name,
                 results=items,
                 latency_ms=elapsed_ms,
-                tokens_returned=toks,
+                tokens_returned=int(data.get("tok") or 0),
                 credits_used=0.0,
+                error=data.get("msg") if data.get("status") == "error" else None,
             )
-        except Exception as e:
+        except Exception as exc:
             elapsed_ms = (time.perf_counter() - t0) * 1000.0
             self._usage.failed_requests += 1
             return ExtractResponse(
@@ -233,29 +226,25 @@ class DeployedWebLensAdapter(ResearchProvider):
                 latency_ms=elapsed_ms,
                 tokens_returned=0,
                 credits_used=0.0,
-                error=str(e),
+                error=f"{type(exc).__name__}: {str(exc)[:300]}",
             )
 
     async def answer(self, query: str, **options: Any) -> AnswerResponse:
-        t0 = time.perf_counter()
         self._usage.requests += 1
-
+        t0 = time.perf_counter()
         try:
-            data = await self._call_mcp_tool(
-                "deep_research",
-                {"query": query, "max_tokens": 1500},
+            data, _meta, elapsed_ms = await self._call(
+                "deep_research", {"query": query, "max_tokens": 1500}
             )
-            elapsed_ms = (time.perf_counter() - t0) * 1000.0
-            self._usage.total_latency_ms += elapsed_ms
-
-            findings = data.get("key_findings", [])
-            summary = data.get("executive_summary", "")
-            citations = [{"url": f.get("url"), "title": f.get("claim")} for f in findings]
-            toks = data.get("methodology", {}).get("tokens_returned", 0)
-
+            findings = data.get("key_findings") or []
+            summary = data.get("executive_summary") or ""
+            citations = [
+                {"url": f.get("url"), "title": f.get("claim"), "span": f.get("span")}
+                for f in findings
+            ]
+            tokens = int((data.get("methodology") or {}).get("tokens_returned") or data.get("tok") or 0)
             self._usage.successful_requests += 1
-            self._usage.output_tokens += toks
-
+            self._usage.output_tokens += tokens
             return AnswerResponse(
                 provider=self.name,
                 query=query,
@@ -263,11 +252,12 @@ class DeployedWebLensAdapter(ResearchProvider):
                 citations=citations,
                 confidence=0.9 if citations else 0.4,
                 latency_ms=elapsed_ms,
-                tokens_returned=toks,
+                tokens_returned=tokens,
                 credits_used=0.0,
                 status="ok" if summary else "uncertain",
+                error=data.get("msg") if data.get("status") == "error" else None,
             )
-        except Exception as e:
+        except Exception as exc:
             elapsed_ms = (time.perf_counter() - t0) * 1000.0
             self._usage.failed_requests += 1
             return AnswerResponse(
@@ -280,42 +270,41 @@ class DeployedWebLensAdapter(ResearchProvider):
                 tokens_returned=0,
                 credits_used=0.0,
                 status="error",
-                error=str(e),
+                error=f"{type(exc).__name__}: {str(exc)[:300]}",
             )
 
     async def research(self, query: str, **options: Any) -> ResearchResponse:
-        t0 = time.perf_counter()
         self._usage.requests += 1
-
+        t0 = time.perf_counter()
         try:
-            data = await self._call_mcp_tool(
-                "deep_research",
-                {"query": query, "max_tokens": 2500},
+            data, _meta, elapsed_ms = await self._call(
+                "deep_research", {"query": query, "max_tokens": 2500}
             )
-            elapsed_ms = (time.perf_counter() - t0) * 1000.0
-            self._usage.total_latency_ms += elapsed_ms
-
-            findings = data.get("key_findings", [])
-            summary = data.get("executive_summary", "")
-            subqueries = data.get("methodology", {}).get("subqueries_searched", [])
-            toks = data.get("methodology", {}).get("tokens_returned", 0)
-
+            findings = data.get("key_findings") or []
+            summary = data.get("executive_summary") or ""
+            methodology = data.get("methodology") or {}
+            tokens = int(methodology.get("tokens_returned") or data.get("tok") or 0)
             self._usage.successful_requests += 1
-            self._usage.output_tokens += toks
-
+            self._usage.output_tokens += tokens
+            report = f"### Executive Summary\n{summary}\n\n### Findings\n"
+            report += "\n".join(f"- {f.get('claim')} ({f.get('url')})" for f in findings)
             return ResearchResponse(
                 provider=self.name,
                 query=query,
-                report_markdown=f"### Executive Summary\n{summary}\n\n### Findings\n" + "\n".join(f"- {f.get('claim')} ({f.get('url')})" for f in findings),
-                subqueries=subqueries,
-                sources=[{"url": f.get("url"), "title": f.get("claim")} for f in findings],
-                contradictions=[],
+                report_markdown=report,
+                subqueries=methodology.get("subqueries_searched") or [query],
+                sources=[
+                    {"url": f.get("url"), "title": f.get("claim"), "span": f.get("span")}
+                    for f in findings
+                ],
+                contradictions=data.get("contradictions") or [],
                 latency_ms=elapsed_ms,
-                tokens_returned=toks,
+                tokens_returned=tokens,
                 credits_used=0.0,
-                status="ok" if summary else "partial",
+                status="ok" if findings else "partial",
+                error=data.get("msg") if data.get("status") == "error" else None,
             )
-        except Exception as e:
+        except Exception as exc:
             elapsed_ms = (time.perf_counter() - t0) * 1000.0
             self._usage.failed_requests += 1
             return ResearchResponse(
@@ -329,9 +318,8 @@ class DeployedWebLensAdapter(ResearchProvider):
                 tokens_returned=0,
                 credits_used=0.0,
                 status="error",
-                error=str(e),
+                error=f"{type(exc).__name__}: {str(exc)[:300]}",
             )
 
     def get_usage(self) -> ProviderUsage:
         return self._usage
-
