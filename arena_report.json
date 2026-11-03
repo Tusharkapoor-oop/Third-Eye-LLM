@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-11-03T16:12:27Z",
+  "generated_at": "2026-11-03T16:17:40Z",
   "engines": {
     "A": "local engine via src.engine",
     "B": "tavily live",
@@ -13,8 +13,8 @@
         "A": {
           "status": "ok",
           "score": 85,
-          "latency_s": 15.417,
-          "tokens": 898,
+          "latency_s": 47.312,
+          "tokens": 893,
           "breakdown": {
             "answer_completeness": 20,
             "code_and_table_fidelity": 15,
@@ -30,7 +30,7 @@
         "B": {
           "status": "ok",
           "score": 69,
-          "latency_s": 4.56,
+          "latency_s": 5.553,
           "tokens": 3969,
           "breakdown": {
             "answer_completeness": 30,
@@ -60,7 +60,7 @@
         "A": {
           "status": "ok",
           "score": 90,
-          "latency_s": 4.999,
+          "latency_s": 23.089,
           "tokens": 712,
           "breakdown": {
             "answer_completeness": 30,
@@ -76,7 +76,7 @@
         "B": {
           "status": "ok",
           "score": 68,
-          "latency_s": 4.523,
+          "latency_s": 4.733,
           "tokens": 3147,
           "breakdown": {
             "answer_completeness": 30,
@@ -107,7 +107,7 @@
         "A": {
           "status": "ok",
           "score": 100,
-          "latency_s": 0.893,
+          "latency_s": 2.899,
           "tokens": 421,
           "breakdown": {
             "answer_completeness": 30,
@@ -120,19 +120,17 @@
         },
         "B": {
           "status": "ok",
-          "score": 78,
-          "latency_s": 6.633,
+          "score": 80,
+          "latency_s": 3.288,
           "tokens": 3875,
           "breakdown": {
             "answer_completeness": 30,
             "code_and_table_fidelity": 20,
             "signal_to_noise": 20,
-            "source_authority": 6,
+            "source_authority": 8,
             "token_efficiency": 2
           },
-          "root_causes": [
-            "LOW_AUTHORITY_DOMAIN"
-          ]
+          "root_causes": []
         },
         "C": {
           "status": "BLOCKED",
@@ -150,7 +148,7 @@
         "A": {
           "status": "ok",
           "score": 100,
-          "latency_s": 12.891,
+          "latency_s": 26.139,
           "tokens": 389,
           "breakdown": {
             "answer_completeness": 30,
@@ -164,7 +162,7 @@
         "B": {
           "status": "ok",
           "score": 80,
-          "latency_s": 1.884,
+          "latency_s": 3.12,
           "tokens": 5673,
           "breakdown": {
             "answer_completeness": 30,
@@ -192,15 +190,15 @@
       "engines": {
         "A": {
           "status": "ok",
-          "score": 78,
-          "latency_s": 55.548,
-          "tokens": 1548,
+          "score": 85,
+          "latency_s": 26.778,
+          "tokens": 728,
           "breakdown": {
             "answer_completeness": 30,
             "code_and_table_fidelity": 10,
             "signal_to_noise": 20,
-            "source_authority": 12,
-            "token_efficiency": 6
+            "source_authority": 10,
+            "token_efficiency": 15
           },
           "root_causes": [
             "LOW_CODE_FIDELITY"
@@ -208,14 +206,14 @@
         },
         "B": {
           "status": "ok",
-          "score": 66,
-          "latency_s": 3.007,
+          "score": 68,
+          "latency_s": 3.389,
           "tokens": 3939,
           "breakdown": {
             "answer_completeness": 30,
             "code_and_table_fidelity": 15,
             "signal_to_noise": 17,
-            "source_authority": 2,
+            "source_authority": 4,
             "token_efficiency": 2
           },
           "root_causes": [
@@ -236,13 +234,13 @@
     }
   },
   "summary": {
-    "avg_A": 90.6,
-    "avg_B": 72.2,
+    "avg_A": 92.0,
+    "avg_B": 73.0,
     "avg_C": null,
-    "latency_A_s": 89.748,
-    "latency_B_s": 20.607,
-    "info_density_A_per_1k_tokens": 114.163,
-    "info_density_B_per_1k_tokens": 17.522,
+    "latency_A_s": 126.217,
+    "latency_B_s": 20.083,
+    "info_density_A_per_1k_tokens": 146.357,
+    "info_density_B_per_1k_tokens": 17.716,
     "meets_avg_target": true,
     "beats_tavily_density": true
   }
