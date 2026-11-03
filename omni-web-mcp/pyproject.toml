@@ -1,0 +1,82 @@
+[build-system]
+requires = ["setuptools>=69.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "omni-web-mcp"
+version = "1.0.0"
+description = "Production-grade Model Context Protocol server: Tavily-compatible 5-endpoint web intelligence (search / extract / map / crawl / research) on local SearXNG + Crawl4AI with automatic Tavily hybrid fallback."
+readme = "README.md"
+requires-python = ">=3.11"
+license = { text = "MIT" }
+authors = [{ name = "Omni Web MCP Team" }]
+keywords = ["mcp", "tavily", "crawl4ai", "searxng", "firecrawl", "exa", "web-search", "extraction"]
+classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+]
+dependencies = [
+    "mcp[cli]>=1.2.0",
+    "pydantic>=2.7.0,<3.0.0",
+    "pydantic-settings>=2.3.0",
+    "httpx>=0.27.0",
+    "aiosqlite>=0.20.0",
+    "python-dotenv>=1.0.1",
+    "rank-bm25>=0.2.2",
+    "lxml>=5.2.0",
+    "beautifulsoup4>=4.12.3",
+    "lxml-html-clean>=0.1.1",
+    "tavily-python>=0.5.0",
+]
+
+[project.optional-dependencies]
+# Heavyweight dependencies kept optional so the server degrades gracefully
+# (BM25+TF-IDF fallback path) when native weights / playwright are unavailable.
+crawl = [
+    "crawl4ai>=0.5.0",
+    "playwright>=1.44.0",
+]
+rerank = [
+    "flashrank>=0.2.7",
+]
+dev = [
+    "pytest>=8.2.0",
+    "pytest-asyncio>=0.23.5",
+    "mypy>=1.10.0",
+    "ruff>=0.4.7",
+]
+
+[project.urls]
+Homepage = "https://example.invalid/omni-web-mcp"
+Documentation = "https://example.invalid/omni-web-mcp/docs"
+
+[project.scripts]
+omni-web-mcp = "omni_web_mcp.server:main"
+
+[tool.setuptools]
+packages = { find = { include = ["omni_web_mcp*"] } }
+
+[tool.setuptools.package-dir]
+"" = "."
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+testpaths = ["tests", "test_suite.py"]
+addopts = "-ra"
+
+[tool.ruff]
+line-length = 110
+target-version = "py311"
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "N", "UP", "ASYNC"]
+
+[tool.mypy]
+python_version = "3.11"
+strict = false
+warn_unused_ignores = true
+ignore_missing_imports = true

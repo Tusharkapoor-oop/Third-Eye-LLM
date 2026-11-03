@@ -7,6 +7,20 @@ from __future__ import annotations
 
 import os
 from dataclasses import dataclass
+from pathlib import Path
+
+
+def _bootstrap_env() -> None:
+    for env_path in (Path(".env"), Path(__file__).resolve().parents[2] / ".env"):
+        if env_path.exists():
+            for line in env_path.read_text(encoding="utf-8").splitlines():
+                line = line.strip()
+                if line and not line.startswith("#") and "=" in line:
+                    k, v = line.split("=", 1)
+                    os.environ.setdefault(k.strip(), v.strip())
+
+
+_bootstrap_env()
 
 
 @dataclass(frozen=True)
@@ -23,6 +37,11 @@ class EngineConfig:
     tavily_api_key: str = os.getenv("TAVILY_API_KEY", "")
     exa_api_key: str = os.getenv("EXA_API_KEY", "")
     searxng_base_url: str = os.getenv("SEARXNG_BASE_URL", "")
+    gemini_api_key: str = os.getenv("GEMINI_API_KEY", "")
+    gemini_model: str = os.getenv("GEMINI_QUERY_MODEL", "gemini-2.5-flash")
+    enable_query_expansion: bool = os.getenv("ENABLE_QUERY_EXPANSION", "false").lower() in ("true", "1", "yes")
+    tavily_extract_fallback: bool = os.getenv("ENABLE_TAVILY_EXTRACT_FALLBACK", "false").lower() in ("true", "1", "yes")
+    enable_tavily_fallback: bool = os.getenv("ENABLE_TAVILY_FALLBACK", "false").lower() in ("true", "1", "yes")
 
     # Token Budgets (R1 Prime Requirement)
     default_search_tokens: int = int(os.getenv("DEFAULT_SEARCH_TOKEN_BUDGET", "600"))
@@ -39,6 +58,10 @@ class EngineConfig:
     # Browser Fallback
     enable_browser_fallback: bool = os.getenv("ENABLE_BROWSER_FALLBACK", "true").lower() in ("true", "1", "yes")
     browser_binary_path: str = os.getenv("BROWSER_BINARY_PATH", "")
+    browser_timeout: float = float(os.getenv("BROWSER_TIMEOUT_SECONDS", "12.0"))
+    browser_profile_dir: str = os.getenv("BROWSER_PROFILE_DIR", ".crawl4ai_profile")
+    max_concurrent_fetches: int = int(os.getenv("MAX_CONCURRENT_FETCHES", "8"))
+    arena_budget_cap: float = float(os.getenv("BUDGET_CAP", "0"))
 
     # User Agent
     user_agent: str = (

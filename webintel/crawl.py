@@ -20,7 +20,8 @@ from urllib.parse import urljoin, urlsplit, urlunsplit
 
 import httpx
 
-from .extract import extract_main_content, _split_blocks, _THIN_THRESHOLD_CHARS
+from .extractor import html_to_markdown
+from .reranker import MarkdownChunker
 from .limits import TokenBudget, estimate_tokens, json_tokens
 from .security import UnsafeURLError, validate_url
 from .utils import fingerprint_url
@@ -193,16 +194,25 @@ class BoundedCrawler:
         if res.status != 200:
             return {"u": u, "st": f"HTTP {res.status}"}
         html = res.text
-        text, meta = extract_main_content(html, u)
-        if not text or len(text) < _THIN_THRESHOLD_CHARS:
+        rendered = html_to_markdown(html, u)
+        text = rendered.markdown
+        if not text or len(text.strip()) < 250:
             thin = "thin_content_js" if len(html) > 20_000 else "no_content"
             return {"u": u, "st": thin}
-        blocks, sections = _split_blocks(text)
-        item = {"u": u, "st": "ok",
-                "x": (blocks[0][:600] if blocks else "")}
+        chunks = MarkdownChunker().chunk(text)
+        passages = [
+            {"sec": c.section, "span": c.text, "kind": c.kind}
+            for c in chunks[:3]
+        ]
+        if not passages:
+            return {"u": u, "st": "no_content"}
+        item = {"u": u, "st": "ok", "t": rendered.title or None, "x": passages}
         tk = json_tokens(item)
         if not budget.admit("", est=tk):
-            return None
+            # Trim to the first chunk rather than dropping the page entirely.
+            item["x"] = passages[:1]
+            if not budget.admit("", est=json_tokens(item)):
+                return None
         return item
 
 

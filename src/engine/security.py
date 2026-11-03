@@ -16,6 +16,24 @@ import httpx
 
 from src.engine.config import CONFIG
 
+WAF_MARKERS = (
+    "just a moment...", "verify you are human", "cf-chl-", "turnstile",
+    "datadome", "akamai bot manager", "access denied", "enable javascript",
+    "checking your browser", "perimeterx", "incapsula",
+)
+
+
+def is_blocked_response(html: str, status_code: int) -> bool:
+    """Detect common WAF/challenge shells without treating ordinary 4xx as content."""
+    if status_code in (401, 403, 429, 503):
+        return True
+    sample = re.sub(r"\s+", " ", (html or "")[:200_000]).casefold()
+    if not sample:
+        return status_code >= 400
+    marker_hits = sum(marker in sample for marker in WAF_MARKERS)
+    shell = len(re.sub(r"<[^>]+>", " ", sample).split()) < 80
+    return marker_hits >= 2 or (marker_hits >= 1 and shell)
+
 # Reuse one connection pool for the lifetime of each event loop. Creating an
 # AsyncClient per page defeats keep-alive/TLS reuse and was the dominant cost
 # on repeated extraction requests. The loop check keeps asyncio.run()-based

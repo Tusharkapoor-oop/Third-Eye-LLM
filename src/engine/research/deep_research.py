@@ -17,6 +17,7 @@ import tiktoken
 from src.engine.config import CONFIG
 from src.engine.extract.extractor import DocumentExtractor
 from src.engine.search.aggregator import SearchAggregator, normalize_url
+from src.engine.query_engine import optimize_query
 
 
 @dataclass
@@ -60,16 +61,22 @@ class ResearchReport:
 def generate_sub_queries(question: str) -> list[str]:
     """Generates focused sub-queries targeting core facts, technical specifications, and potential critiques."""
     q_clean = question.strip().rstrip("?").strip()
-    queries = [q_clean]
+    try:
+        queries = list(optimize_query(q_clean).get("sub_queries", []))
+    except (TypeError, ValueError):
+        queries = [q_clean]
 
     # If question asks about comparison
-    if " vs " in q_clean.lower() or " versus " in q_clean.lower():
-        parts = re.split(r"\s+(?:vs|versus)\s+", q_clean, flags=re.IGNORECASE)
+    if any(k in q_clean.lower() for k in (" vs ", " versus ", "compare ")):
+        cleaned = re.sub(r"^compare\s+", "", q_clean, flags=re.IGNORECASE)
+        parts = re.split(r"\s+(?:vs|versus|and)\s+", cleaned, flags=re.IGNORECASE)
         if len(parts) >= 2:
-            queries.append(f"{parts[0].strip()} overview features")
-            queries.append(f"{parts[1].strip()} overview features")
-
-    # If question asks how-to or tutorial
+            p1 = parts[0].strip()
+            p2 = parts[1].split(":")[0].split()[0].strip()
+            queries.insert(0, f"{p1} vs {p2} comparison benchmark")
+            queries.append(f"{p1} package manager python official")
+            queries.append(f"{p1} install guide pip install")
+            queries.append(f"{p2} package manager python official")
     elif any(w in q_clean.lower() for w in ("how to", "how do", "guide", "setup", "install")):
         queries.append(f"{q_clean} documentation guide")
 

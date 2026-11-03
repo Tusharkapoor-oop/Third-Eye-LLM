@@ -68,3 +68,6 @@ benchmarks/benchmark_results.json
 **/sandbox/temporary/
 **/sandbox/logs/
 *.log
+.webintel/
+.arena_budget_state.json
+.crawl4ai_profile/

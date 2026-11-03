@@ -35,7 +35,7 @@ async def test_tools_list_and_schema_budget():
     try:
         tools = await session.list_tools()
         names = {t.name for t in tools.tools}
-        assert names == {"web_search", "extract_url", "crawl_website", "deep_research"}
+        assert names == {"web_search", "extract_url", "web_map", "crawl_website", "deep_research"}
         # precise schema+description token overhead (R1 measurement)
         from webintel.limits import count_tokens
         total = 0

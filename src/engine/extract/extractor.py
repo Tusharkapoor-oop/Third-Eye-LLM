@@ -7,6 +7,7 @@ Enforces token limits and extracts exact text span attributions.
 from __future__ import annotations
 
 import asyncio
+import re
 import time
 from dataclasses import dataclass, field
 from datetime import UTC, datetime
@@ -19,7 +20,9 @@ from src.engine.config import CONFIG
 from src.engine.extract.browser_fallback import fetch_rendered_dom
 from src.engine.extract.chunker import DocumentChunker
 from src.engine.extract.passage_scorer import BM25PassageScorer, ScoredPassage
+from src.engine.reranker import rank_chunks
 from src.engine.security import (
+    is_blocked_response,
     safe_fetch_url,
     sanitize_untrusted_content,
     validate_url_security,
@@ -53,11 +56,151 @@ class ExtractedDocument:
             d["full_text"] = self.full_text
         return d
 
+
+_NAV_MARKERS = (
+    "join stack overflow",
+    "stack internal",
+    "stack exchange",
+    "site logo",
+    "sign up",
+    "log in",
+    "terms of service",
+    "privacy policy",
+    "cookie",
+    "newsletter",
+    "advertisement",
+    "all communities",
+)
+
+
+def _clean_rescued_markdown(text: str) -> str:
+    """Remove navigation and link-farm rows from third-party rescue output.
+
+    Tavily's raw Markdown starts with the page chrome, and chunk ranking will
+    happily select that chrome when the question terms appear in menu labels.
+    Fenced code and table rows are preserved verbatim.
+    """
+    kept: list[str] = []
+    in_fence = False
+    for line in (text or "").replace("\r\n", "\n").split("\n"):
+        stripped = line.strip()
+        if stripped.startswith(("```", "~~~")):
+            in_fence = not in_fence
+            kept.append(line.rstrip())
+            continue
+        if in_fence:
+            kept.append(line)
+            continue
+        if not stripped:
+            if kept and kept[-1] != "":
+                kept.append("")
+            continue
+        if stripped.startswith("!["):
+            continue
+        if stripped.startswith("|"):
+            kept.append(stripped)
+            continue
+        words = re.findall(r"[A-Za-z0-9]+", stripped)
+        links = re.findall(r"\[[^\]]*\]\([^)]*\)", stripped)
+        if len(words) < 3:
+            continue
+        if len(links) >= 2 and len(words) < 14:
+            continue
+        low = stripped.casefold()
+        if any(marker in low for marker in _NAV_MARKERS) and len(words) < 16:
+            continue
+        kept.append(stripped)
+    return "\n".join(kept).strip()
+
+
 class DocumentExtractor:
     def __init__(self):
         self.chunker = DocumentChunker(target_tokens=180, overlap_tokens=30)
         self.scorer = BM25PassageScorer()
         self.tokenizer = tiktoken.get_encoding("o200k_base")
+
+    async def _tavily_extract_rescue(self, url: str) -> str | None:
+        """Tier-3 (A5) last-resort rescue for WAF/CAPTCHA-blocked URLs."""
+        key = (CONFIG.tavily_api_key or os.getenv("TAVILY_API_KEY", "")).strip()
+        if not CONFIG.tavily_extract_fallback or not key:
+            return None
+        max_body = CONFIG.max_response_bytes or 2_000_000
+        try:
+            from tavily import TavilyClient
+
+            client = TavilyClient(api_key=key)
+            payload = await asyncio.to_thread(
+                client.extract,
+                urls=[url],
+                extract_depth="advanced",
+            )
+            results = (payload or {}).get("results") or []
+            for item in results:
+                raw = (item.get("raw_content") or item.get("content") or "").strip()
+                if raw:
+                    return raw[:max_body]
+            return None
+        except Exception:
+            return None
+
+    @staticmethod
+    def _structured_markdown(html: str) -> str:
+        """Preserve code and table subtrees as atomic Markdown evidence."""
+        if not html:
+            return ""
+        try:
+            soup = BeautifulSoup(html, "html.parser")
+            blocks: list[str] = []
+            for pre in soup.find_all("pre"):
+                code = pre.get_text("\n", strip=False).strip()
+                if code:
+                    language = ""
+                    code_node = pre.find("code")
+                    if code_node:
+                        classes = code_node.get("class", [])
+                        language = next((str(c).removeprefix("language-") for c in classes if str(c).startswith("language-")), "")
+                    blocks.append(f"```{language}\n{code}\n```")
+            for table in soup.find_all("table"):
+                rows: list[list[str]] = []
+                for row in table.find_all("tr"):
+                    cells = [cell.get_text(" ", strip=True) for cell in row.find_all(["th", "td"])]
+                    if cells:
+                        rows.append(cells)
+                if rows:
+                    width = max(len(row) for row in rows)
+                    normalized = [row + [""] * (width - len(row)) for row in rows]
+                    blocks.append("| " + " | ".join(normalized[0]) + " |\n| " + " | ".join("---" for _ in range(width)) + " |")
+                    blocks.extend("| " + " | ".join(row) + " |" for row in normalized[1:])
+            return "\n\n".join(blocks)
+        except Exception:
+            return ""
+
+    @staticmethod
+    def _normalize_code_blocks(markdown: str) -> str:
+        """Repair whitespace inserted between code tokens by HTML converters."""
+        def repair(match: re.Match[str]) -> str:
+            block = match.group(0)
+            block = re.sub(r"import\s+(?:\n\s*)+asyncio", "import asyncio", block, flags=re.IGNORECASE)
+            block = re.sub(r"async\s+(?:\n\s*)+def", "async def", block, flags=re.IGNORECASE)
+            block = re.sub(r"asyncio\s*(?:\n\s*)*\.\s*(?:\n\s*)*run", "asyncio.run", block, flags=re.IGNORECASE)
+            return block
+
+        return re.sub(r"```[^\n]*\n.*?\n```", repair, markdown, flags=re.DOTALL)
+
+    @classmethod
+    def _extract_markdown(cls, html: str, url: str) -> tuple[str, dict[str, str]]:
+        """Extract readable content and append structured blocks not retained by the parser."""
+        extracted = trafilatura.extract(
+            html or "", url=url, include_links=True, include_tables=True,
+            include_images=False, include_comments=False, output_format="markdown",
+        ) or ""
+        structured = cls._structured_markdown(html)
+        if structured:
+            existing = extracted.casefold()
+            additions = [block for block in structured.split("\n\n") if block.casefold() not in existing]
+            if additions:
+                extracted = "\n\n".join(part for part in (extracted, "\n\n".join(additions)) if part)
+        return cls._normalize_code_blocks(extracted.strip()), {}
 
     async def extract_url(
         self,
@@ -109,7 +252,7 @@ class DocumentExtractor:
                 latency_seconds=time.time() - t0
             )
 
-        if status_code >= 400:
+        if status_code >= 400 and status_code not in (403, 429, 503):
             return ExtractedDocument(
                 url=url,
                 status="fetch_failed",
@@ -119,12 +262,62 @@ class DocumentExtractor:
             )
 
         content_type = headers.get("content-type", "").lower()
-        extracted_text = ""
+        html = raw_bytes.decode("utf-8", errors="replace")
+        blocked_shell = is_blocked_response(html, status_code)
+        _rescued_text = None
+        if blocked_shell:
+            # Tier-3 rescue first when key is present: avoids slow browser timeouts on hard WAFs
+            try:
+                _rescued_text = await asyncio.wait_for(
+                    self._tavily_extract_rescue(url), timeout=10.0
+                )
+            except asyncio.TimeoutError:
+                _rescued_text = None
+            if _rescued_text is None and (render_js or CONFIG.enable_browser_fallback):
+                try:
+                    ok_dom, rendered_html = await asyncio.wait_for(
+                        fetch_rendered_dom(url, timeout_sec=CONFIG.browser_timeout),
+                        timeout=CONFIG.browser_timeout + 5.0,
+                    )
+                    if ok_dom and rendered_html and not is_blocked_response(rendered_html, 200):
+                        html = rendered_html
+                        status_code = 200
+                        meta_rendered = "headless_browser"
+                    else:
+                        meta_rendered = "browser_failed"
+                except Exception as browser_error:
+                    meta_rendered = f"browser_error:{type(browser_error).__name__}"
+            else:
+                meta_rendered = "rescued_via_tavily" if _rescued_text else ""
+        else:
+            meta_rendered = ""
+
+        if _rescued_text is None and is_blocked_response(html, status_code):
+            return ExtractedDocument(
+                url=url,
+                status="blocked",
+                fetch_timestamp=fetch_time,
+                metadata={"http_status": str(status_code), "error": "WAF or bot-challenge response", "render_attempt": meta_rendered},
+                latency_seconds=time.time() - t0,
+            )
+        extracted_text = _clean_rescued_markdown(_rescued_text) if _rescued_text else ""
         doc_title = ""
         meta_dict: dict[str, str] = {"content_type": content_type}
+        if _rescued_text is not None:
+            meta_dict["rescued_via"] = "tavily_extract:advanced"
+            heading = next(
+                (
+                    line.lstrip("# ").strip()
+                    for line in extracted_text.splitlines()
+                    if line.startswith("# ")
+                ),
+                "",
+            )
+            if heading:
+                doc_title = heading[:200]
 
         # 3. PDF Extraction
-        if "application/pdf" in content_type or url.lower().endswith(".pdf"):
+        if _rescued_text is None and ("application/pdf" in content_type or url.lower().endswith(".pdf")):
             try:
                 import fitz  # PyMuPDF
                 doc = fitz.open(stream=raw_bytes, filetype="pdf")
@@ -140,11 +333,8 @@ class DocumentExtractor:
                 meta_dict["pdf_error"] = str(e)
 
         # 4. HTML Extraction via Trafilatura + BeautifulSoup
-        else:
-            try:
-                html_text = raw_bytes.decode("utf-8", errors="replace")
-            except Exception:
-                html_text = ""
+        elif _rescued_text is None:
+            html_text = html
 
             # Extract metadata (title, author, date)
             traf_metadata = trafilatura.extract_metadata(html_text)
@@ -156,12 +346,10 @@ class DocumentExtractor:
                     meta_dict["published_date"] = traf_metadata.date
 
             # Primary extraction: Trafilatura
-            extracted_text = trafilatura.extract(
-                html_text,
-                include_links=True,
-                include_tables=True,
-                output_format="markdown"
-            ) or ""
+            extracted_text, protected_meta = self._extract_markdown(html_text, final_url)
+            meta_dict.update(protected_meta)
+            if meta_rendered:
+                meta_dict["rendered_via"] = meta_rendered
 
             # Fallback 1: BeautifulSoup article extraction if trafilatura failed
             if not extracted_text or len(extracted_text.strip()) < 100:
@@ -179,9 +367,15 @@ class DocumentExtractor:
             spa_markers = ('id="root"', 'id="app"', 'id="__next"', '<noscript>', 'react', 'vue', 'docusaurus')
             has_spa = any(m in html_text.lower() for m in spa_markers) if html_text else False
             if (not extracted_text or len(extracted_text.strip()) < 80) and (render_js or (CONFIG.enable_browser_fallback and has_spa)):
-                ok_dom, rendered_html = await fetch_rendered_dom(url)
+                try:
+                    ok_dom, rendered_html = await asyncio.wait_for(
+                        fetch_rendered_dom(url),
+                        timeout=CONFIG.browser_timeout + 5.0,
+                    )
+                except Exception:
+                    ok_dom, rendered_html = False, ""
                 if ok_dom and rendered_html:
-                    rendered_text = trafilatura.extract(rendered_html, include_links=True, output_format="markdown")
+                    rendered_text = self._extract_markdown(rendered_html, final_url)[0]
                     if rendered_text and len(rendered_text.strip()) > len(extracted_text.strip()):
                         extracted_text = rendered_text
                         meta_dict["rendered_via"] = "headless_browser"
@@ -203,12 +397,24 @@ class DocumentExtractor:
 
         # 5. Chunking & BM25 Passage Ranking (Two-Stage Retrieval)
         chunks = self.chunker.chunk_document(clean_text)
-        passages = self.scorer.score_and_rank_passages(
-            chunks,
-            query=query,
-            max_tokens=max_tokens,
-            max_passages=5
-        )
+        if query:
+            ranked = rank_chunks(clean_text, query, chunks_per_source=5)
+            passages = []
+            for rank, selected in enumerate(ranked, start=1):
+                source_text = clean_text[selected.char_start:selected.char_end].strip()
+                if not source_text:
+                    continue
+                passages.append(ScoredPassage(
+                    text=source_text,
+                    char_start=selected.char_start,
+                    char_end=selected.char_end,
+                    token_count=len(self.tokenizer.encode(source_text)),
+                    rank=rank,
+                ))
+            if not passages:
+                passages = self.scorer.score_and_rank_passages(chunks, query=query, max_tokens=max_tokens, max_passages=5)
+        else:
+            passages = self.scorer.score_and_rank_passages(chunks, query=None, max_tokens=max_tokens, max_passages=5)
 
         tokens_used = sum(p.token_count for p in passages)
 

@@ -66,6 +66,56 @@ WebLens V10 evaluates four independently measured systems across 120 stratified 
 
 ---
 
+## Live Quality Arena Benchmark: MyWebEngine vs Tavily vs Gemini Grounding
+
+WebLens / MyWebEngine features an automated Live Quality Arena (`quality_arena.py`) evaluating retrieval precision, code/table fidelity, noise rejection, domain authority, and token efficiency against live commercial APIs on a strict 100-point deterministic rubric.
+
+### Empirical Results (`arena_report.json`)
+
+| Benchmark Case | Category | MyWebEngine MCP | Tavily Direct API | Gemini Grounding | Outcome |
+| :--- | :--- | :--- | :--- | :--- | :--- |
+| **tech_bug_async** | Coding Bug with Code Blocks | **85 / 100** | 69 / 100 | BLOCKED (No Key) | **MyWebEngine (+16 pts)** |
+| **compare_rebase_merge** | Comparison Table & Syntax | **90 / 100** | 68 / 100 | BLOCKED (No Key) | **MyWebEngine (+22 pts)** |
+| **latest_python_2026** | Breaking News Recency | **100 / 100** | 78 / 100 | BLOCKED (No Key) | **MyWebEngine (+22 pts)** |
+| **js_heavy_docs** | JS Documentation Extraction | **100 / 100** | 80 / 100 | BLOCKED (No Key) | **MyWebEngine (+20 pts)** |
+| **multipath_uv_pip** | Multi-Hop Deep Research | **78 / 100** | 66 / 100 | BLOCKED (No Key) | **MyWebEngine (+12 pts)** |
+| **OVERALL AVERAGE** | **All 5 Benchmark Categories** | **90.6 / 100** | **72.2 / 100** | **BLOCKED** | **MyWebEngine (+18.4 pts)** |
+
+- **Score Target ($\ge 90.0$)**: **PASSED (90.6 / 100)**
+- **Head-to-Head Win Rate**: **100% (5 out of 5 categories won against Tavily)**
+- **Information Density**: **114.2 vs 17.5 tokens per 1k** (MyWebEngine is **6.5x more token-dense** than Tavily Direct)
+- **Answer Completeness**: **100% across all 5 benchmark cases**
+- **Signal-to-Noise Score**: **20 / 20 (Zero SEO noise or navigation clutter)**
+
+---
+
+## Complete 5-Tool Tavily-Compatible MCP Architecture (`server.py`)
+
+MyWebEngine implements a complete 5-endpoint Model Context Protocol server matching and exceeding Tavily's core API capabilities while adding Firecrawl-style SPA extraction and Exa-style neural reranking:
+
+1. **`web_search`**: Multi-subquery consensus, authority domain boosting (+1.2 prior for primary docs), FlashRank neural cross-encoder reranking, and automatic Tavily hybrid fallback.
+2. **`extract_url`**: Tier 1 fast HTTP with atomic `<pre>/<code>` and `<table>` protection $\rightarrow$ Tier 2 Playwright stealth browser for SPAs $\rightarrow$ Tier 3 Tavily rescue for hard WAFs.
+3. **`web_map`**: Fast internal URL graph mapping combining XML sitemap discovery with bounded BFS link graph traversal and regex path filtering.
+4. **`crawl_website`**: Deep multi-page site ingestion with in-flight semantic passage pruning, robots.txt compliance, and token budgeting.
+5. **`deep_research`**: Autonomous multi-hop evidence discovery with query planning, parallel multi-angle search, gap analysis, and cited Markdown synthesis.
+
+To start the 5-tool MCP server:
+```bash
+# STDIO transport (for Claude Desktop / Cline / Roo Code)
+python server.py
+
+# Streamable HTTP transport
+python server.py --http --port 8765
+```
+
+To run the Live Quality Arena:
+```bash
+python quality_arena.py
+```
+
+
+---
+
 ## All Nine Product Applications
 
 WebLens includes nine built-in product applications, each verified live with 100% pass rates:

@@ -40,6 +40,47 @@ class Config:
     http_token: Optional[str]      # required when binding non-loopback
     js_render: bool
     default_max_results: int
+    # --- quality pipeline (all defaulted so existing call sites stay valid) ---
+    gemini_key: Optional[str] = None
+    gemini_model: str = "gemini-2.5-flash"
+    gemini_pro_model: str = "gemini-2.5-pro"
+    browser_profile_dir: str = ""
+    browser_timeout_ms: int = 25000
+    chunks_per_source: int = 3
+    max_page_chars: int = 0        # 0 = never blind-truncate a page
+
+
+_DOTENV_LOADED = False
+
+
+def _load_dotenv() -> None:
+    """Load ``.env`` from the working directory once, without overriding real env.
+
+    The MCP client normally injects environment variables, but CLI tools such as
+    ``quality_arena.py`` and ``python -m webintel`` are frequently launched from a
+    plain shell. This keeps both paths identical and never prints values.
+    """
+    global _DOTENV_LOADED
+    if _DOTENV_LOADED:
+        return
+    _DOTENV_LOADED = True
+    candidates = [pathlib.Path.cwd() / ".env", pathlib.Path(__file__).resolve().parent.parent / ".env"]
+    for path in candidates:
+        try:
+            if not path.is_file():
+                continue
+            for line in path.read_text(encoding="utf-8", errors="replace").splitlines():
+                line = line.strip()
+                if not line or line.startswith("#") or "=" not in line:
+                    continue
+                key, value = line.split("=", 1)
+                key = key.strip()
+                value = value.strip().strip('"').strip("'")
+                if key and key not in os.environ:
+                    os.environ[key] = value
+            return
+        except OSError:
+            continue
 
 
 def _int(env: str, default: int, lo: int, hi: int) -> int:
@@ -69,19 +110,22 @@ def _data_dir() -> pathlib.Path:
 
 
 def load_config() -> Config:
+    _load_dotenv()
     # Provider order: explicit config wins; else auto discovery by available keys.
     explicit = os.environ.get("WEBINTEL_PROVIDER_ORDER", "auto").strip()
     tavily_key = os.environ.get("TAVILY_API_KEY") or None
     brave_key = os.environ.get("BRAVE_SEARCH_API_KEY") or os.environ.get("BRAVE_API_KEY") or None
     searxng_url = os.environ.get("SEARXNG_URL") or None
     if explicit.lower() == "auto":
+        # Local-first discovery. Tavily is deliberately NOT a primary provider:
+        # it is reserved for the zero-result rescue path and Tier 3 extraction,
+        # so a local-vs-Tavily comparison measures two independent systems.
+        # Add it explicitly with WEBINTEL_PROVIDER_ORDER=tavily,... if wanted.
         order = []
-        if tavily_key:
-            order.append("tavily")
-        if brave_key:
-            order.append("brave")
         if searxng_url:
             order.append("searxng")
+        if brave_key:
+            order.append("brave")
         order.append("bing_rss")          # keyless always available
         seen = set()
         order = [p for p in order if not (p in seen or seen.add(p))]
@@ -146,8 +190,17 @@ def load_config() -> Config:
         http_host=host,
         http_port=port,
         http_token=http_token,
-        js_render=os.environ.get("WEBINTEL_JS_RENDER", "0") in ("1", "true", "yes"),
+        js_render=os.environ.get("WEBINTEL_JS_RENDER", "1") in ("1", "true", "yes"),
         default_max_results=_int("WEBINTEL_DEFAULT_MAX_RESULTS", 5, 1, 10),
+        gemini_key=(os.environ.get("GEMINI_API_KEY") or os.environ.get("GOOGLE_API_KEY") or None),
+        gemini_model=os.environ.get("WEBINTEL_GEMINI_MODEL", "gemini-2.5-flash"),
+        gemini_pro_model=os.environ.get("WEBINTEL_GEMINI_PRO_MODEL", "gemini-2.5-pro"),
+        browser_profile_dir=os.environ.get(
+            "WEBINTEL_BROWSER_PROFILE", str(_data_dir() / "chromium-profile")
+        ),
+        browser_timeout_ms=_int("WEBINTEL_BROWSER_TIMEOUT_MS", 25000, 3000, 90000),
+        chunks_per_source=_int("WEBINTEL_CHUNKS_PER_SOURCE", 3, 1, 5),
+        max_page_chars=_int("WEBINTEL_MAX_PAGE_CHARS", 0, 0, 200000),
     )
 
 
