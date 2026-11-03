@@ -76,14 +76,14 @@ WebLens / MyWebEngine features an automated Live Quality Arena (`quality_arena.p
 | :--- | :--- | :--- | :--- | :--- | :--- |
 | **tech_bug_async** | Coding Bug with Code Blocks | **85 / 100** | 69 / 100 | BLOCKED (No Key) | **MyWebEngine (+16 pts)** |
 | **compare_rebase_merge** | Comparison Table & Syntax | **90 / 100** | 68 / 100 | BLOCKED (No Key) | **MyWebEngine (+22 pts)** |
-| **latest_python_2026** | Breaking News Recency | **100 / 100** | 78 / 100 | BLOCKED (No Key) | **MyWebEngine (+22 pts)** |
+| **latest_python_2026** | Breaking News Recency | **100 / 100** | 80 / 100 | BLOCKED (No Key) | **MyWebEngine (+20 pts)** |
 | **js_heavy_docs** | JS Documentation Extraction | **100 / 100** | 80 / 100 | BLOCKED (No Key) | **MyWebEngine (+20 pts)** |
-| **multipath_uv_pip** | Multi-Hop Deep Research | **78 / 100** | 66 / 100 | BLOCKED (No Key) | **MyWebEngine (+12 pts)** |
-| **OVERALL AVERAGE** | **All 5 Benchmark Categories** | **90.6 / 100** | **72.2 / 100** | **BLOCKED** | **MyWebEngine (+18.4 pts)** |
+| **multipath_uv_pip** | Multi-Hop Deep Research | **85 / 100** | 68 / 100 | BLOCKED (No Key) | **MyWebEngine (+17 pts)** |
+| **OVERALL AVERAGE** | **All 5 Benchmark Categories** | **92.0 / 100** | **73.0 / 100** | **BLOCKED** | **MyWebEngine (+19.0 pts)** |
 
-- **Score Target ($\ge 90.0$)**: **PASSED (90.6 / 100)**
+- **Score Target ($\ge 90.0$)**: **PASSED (92.0 / 100)**
 - **Head-to-Head Win Rate**: **100% (5 out of 5 categories won against Tavily)**
-- **Information Density**: **114.2 vs 17.5 tokens per 1k** (MyWebEngine is **6.5x more token-dense** than Tavily Direct)
+- **Information Density**: **146.4 vs 17.7 tokens per 1k** (MyWebEngine is **8.3x more token-dense** than Tavily Direct)
 - **Answer Completeness**: **100% across all 5 benchmark cases**
 - **Signal-to-Noise Score**: **20 / 20 (Zero SEO noise or navigation clutter)**
 
