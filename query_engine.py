@@ -177,7 +177,7 @@ async def plan_query_fast(raw_query: str) -> QueryPlan:
             resp = await loop.run_in_executor(
                 None,
                 lambda: client.models.generate_content(
-                    model="gemini-2.5-flash",
+                    model="gemini-3.5-flash",
                     contents=prompt,
                     config={"response_mime_type": "application/json"},
                 ),

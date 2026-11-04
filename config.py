@@ -38,6 +38,17 @@ class AppConfig:
         or os.getenv("GEMINI_API_KEY_1", "")
         or os.getenv("GEMINI_API_KEY_2", "")
     )
+    nvidia_gpt_oss_20b_key: str = (
+        os.getenv("gpt-oss-20b_api_key _by_nividia", "")
+        or os.getenv("gpt-oss-20b_api_key_by_nvidia", "")
+        or os.getenv("NVIDIA_GPT_OSS_20B_KEY", "")
+    )
+    nvidia_mistral_large_key: str = (
+        os.getenv("Mistral_Large_4_api_key_by_nividia", "")
+        or os.getenv("Mistral_Large_4_api_key_by_nvidia", "")
+        or os.getenv("NVIDIA_MISTRAL_LARGE_KEY", "")
+    )
+    nvidia_base_url: str = os.getenv("NVIDIA_BASE_URL", "https://integrate.api.nvidia.com/v1")
     searxng_url: str = (
         os.getenv("SEARXNG_URL", "")
         or os.getenv("SEARXNG_BASE_URL", "")

@@ -18,7 +18,6 @@ from enum import StrEnum
 from pathlib import Path
 from typing import Literal
 
-from config import CONFIG
 from document_generator import DocumentGenerator
 from query_engine import plan_query_fast
 from schemas import ResearchResponse, SourceItem, UnifiedResponse
@@ -68,44 +67,18 @@ class DeepResearchEngine:
         sources: list[SourceItem],
         sub_queries: list[str],
         mode: str,
+        model: str | None = None,
     ) -> str:
         """Synthesize cited Markdown report with evidence anchors."""
-        # Check if Gemini is available for LLM synthesis
-        if CONFIG.gemini_api_key:
-            try:
-                from google import genai
-                client = genai.Client(api_key=CONFIG.gemini_api_key)
-
-                context_blocks: list[str] = []
-                for s in sources:
-                    context_blocks.append(
-                        f"### Source: [{s.title}]({s.url})\n{s.content}\n"
-                    )
-                context_str = "\n".join(context_blocks)[:18000]
-
-                system_prompt = (
-                    "You are a Principal Research Analyst. Produce a rigorous, comprehensive "
-                    "research report answering the user's prompt based strictly on the provided sources.\n"
-                    "Requirements:\n"
-                    "1. Every factual claim, benchmark, or statistic MUST have an inline markdown citation: [Source Title](URL).\n"
-                    "2. Include code blocks and Markdown comparison tables where applicable.\n"
-                    "3. Conclude with an 'Evidence & Findings Summary' section.\n"
-                    "4. If sources conflict or lack certain facts, explicitly state the gap."
-                )
-
-                loop = asyncio.get_running_loop()
-                model_name = "gemini-2.5-pro" if mode == "pro" else "gemini-2.5-flash"
-                resp = await loop.run_in_executor(
-                    None,
-                    lambda: client.models.generate_content(
-                        model=model_name,
-                        contents=f"{system_prompt}\n\nEvidence Sources:\n{context_str}\n\nUser Question:\n{prompt}",
-                    ),
-                )
-                if resp.text:
-                    return resp.text.strip()
-            except Exception:
-                pass
+        # Multi-model intelligence synthesis via NVIDIA NIM / Gemini
+        try:
+            from model_provider import model_client
+            source_dicts = [{"title": s.title, "url": s.url, "content": s.content} for s in sources]
+            res = await model_client.synthesize_research_report(prompt, source_dicts, mode=mode, model=model)
+            if res and res.content and len(res.content.strip()) > 50:
+                return res.content.strip()
+        except Exception:
+            pass
 
         # Algorithmic Synthesis Fallback (Deterministic & Grounded)
         lines: list[str] = [
@@ -139,6 +112,7 @@ class DeepResearchEngine:
         self,
         prompt: str,
         mode: Literal["mini", "pro"] = "mini",
+        model: str | None = None,
     ) -> ResearchResponse:
         """Execute autonomous multi-hop research pipeline."""
         t0 = time.perf_counter()
@@ -201,7 +175,7 @@ class DeepResearchEngine:
         top_sources = all_sources[: (8 if mode == "pro" else 5)]
 
         # Phase 4: Cited Synthesis
-        report = await self._synthesize_report(prompt, top_sources, sub_queries, mode)
+        report = await self._synthesize_report(prompt, top_sources, sub_queries, mode, model=model)
 
         elapsed = round(time.perf_counter() - t0, 3)
         return ResearchResponse(

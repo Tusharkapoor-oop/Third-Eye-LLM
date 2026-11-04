@@ -64,3 +64,4 @@ switch ($Target.ToLower()) {
         Write-Host "Usage: .\scripts\deploy.ps1 -Target [docker|cloudrun|compose] -Tag [tag]"
     }
 }
+

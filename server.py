@@ -207,6 +207,7 @@ async def crawl_website(
 async def deep_research(
     input_prompt: str,
     mode: str = "mini",
+    model: str = "",
 ) -> str:
     """Execute autonomous deep research pipeline."""
     res = await _recorded_operation(
@@ -214,6 +215,7 @@ async def deep_research(
         lambda: research_engine.conduct_research(
             prompt=input_prompt,
             mode=mode,
+            model=model or None,
         ),
     )
     return res.model_dump_json(indent=2)

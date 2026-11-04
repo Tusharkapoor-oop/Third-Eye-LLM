@@ -389,6 +389,7 @@ class SearchPipeline:
 
         # Step 3: Concurrent URL extraction with early-exit
         target_candidates = filtered_candidates[:max_results * 2]
+        extract_timeout = 6.0 if search_depth == "advanced" else 4.0
         extract_tasks = [
             asyncio.create_task(
                 asyncio.wait_for(
@@ -398,7 +399,7 @@ class SearchPipeline:
                         chunks_per_source=chunks_per_source,
                         force_tier2=(search_depth == "advanced"),
                     ),
-                    timeout=2.0,
+                    timeout=extract_timeout,
                 )
             )
             for u, _, _ in target_candidates
@@ -426,14 +427,13 @@ class SearchPipeline:
             if not t.done():
                 t.cancel()
 
-        # Step 4: If >50% failed due to WAF blocks, trigger Tavily rescue fallback
-        waf_blocks = sum(1 for f in failed_items if f.blocked_by_waf)
-        if len(extracted_sources) == 0 and waf_blocks > 0 and CONFIG.tavily_api_key:
+        # Step 4: If local extraction yielded 0 sources, trigger Tavily rescue fallback
+        if len(extracted_sources) == 0 and CONFIG.tavily_api_key:
             return await self._execute_tavily_fallback(
                 query=query,
                 max_results=max_results,
                 chunks_per_source=chunks_per_source,
-                search_depth="advanced",
+                search_depth="advanced" if search_depth == "advanced" else "basic",
             )
 
         # Sort final extracted sources by relevance score

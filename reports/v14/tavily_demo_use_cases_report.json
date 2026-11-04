@@ -1,0 +1,326 @@
+[
+  {
+    "case_id": "UC-01",
+    "title": "Company Research",
+    "category": "company_research",
+    "prompt": "Provide a comprehensive company overview of NVIDIA, including recent enterprise AI partnerships, leadership, and Blackwell GPU platform developments.",
+    "expected_facets": [
+      "leadership",
+      "partnerships",
+      "blackwell",
+      "overview"
+    ],
+    "weblens": {
+      "score": 65.0,
+      "latency_s": 63.51,
+      "tokens": 184,
+      "sources_count": 0,
+      "detected_facets": [
+        "leadership",
+        "partnerships",
+        "blackwell",
+        "overview"
+      ],
+      "missing_facets": [],
+      "answer_preview": "# Web Intelligence Research Report: Provide a comprehensive company overview of NVIDIA, including recent enterprise AI partnerships, leadership, and Blackwell GPU platform developments.\n\n## Executive Summary\nThis intelligence brief synthesizes verified web evidence retrieved across 0 authoritative s..."
+    },
+    "tavily": {
+      "status": "COMPLETED",
+      "score": 55.0,
+      "latency_s": 3.94,
+      "tokens": 196,
+      "detected_facets": [
+        "partnerships",
+        "blackwell"
+      ],
+      "missing_facets": [
+        "leadership",
+        "overview"
+      ]
+    }
+  },
+  {
+    "case_id": "UC-02",
+    "title": "Financial Market Research",
+    "category": "financial_analysis",
+    "prompt": "Analyze Apple Inc. financial performance, services revenue growth, market developments, and verified risk factors.",
+    "expected_facets": [
+      "services revenue",
+      "financial performance",
+      "risks",
+      "market"
+    ],
+    "weblens": {
+      "score": 55.0,
+      "latency_s": 59.94,
+      "tokens": 168,
+      "sources_count": 0,
+      "detected_facets": [
+        "services revenue",
+        "financial performance",
+        "market"
+      ],
+      "missing_facets": [
+        "risks"
+      ],
+      "answer_preview": "# Web Intelligence Research Report: Analyze Apple Inc. financial performance, services revenue growth, market developments, and verified risk factors.\n\n## Executive Summary\nThis intelligence brief synthesizes verified web evidence retrieved across 0 authoritative sources addressing the research obje..."
+    },
+    "tavily": {
+      "status": "COMPLETED",
+      "score": 65.0,
+      "latency_s": 4.11,
+      "tokens": 176,
+      "detected_facets": [
+        "services revenue",
+        "risks",
+        "market"
+      ],
+      "missing_facets": [
+        "financial performance"
+      ]
+    }
+  },
+  {
+    "case_id": "UC-03",
+    "title": "Web-Powered Assistant",
+    "category": "web_assistant",
+    "prompt": "What are the key technical differences between Model Context Protocol (MCP) and traditional REST APIs for LLM tool calling?",
+    "expected_facets": [
+      "mcp",
+      "rest",
+      "tool calling",
+      "context"
+    ],
+    "weblens": {
+      "score": 65.0,
+      "latency_s": 47.3,
+      "tokens": 188,
+      "sources_count": 0,
+      "detected_facets": [
+        "mcp",
+        "rest",
+        "tool calling",
+        "context"
+      ],
+      "missing_facets": [],
+      "answer_preview": "# Web Intelligence Research Report: What are the key technical differences between Model Context Protocol (MCP) and traditional REST APIs for LLM tool calling?\n\n## Executive Summary\nThis intelligence brief synthesizes verified web evidence retrieved across 0 authoritative sources addressing the rese..."
+    },
+    "tavily": {
+      "status": "COMPLETED",
+      "score": 75.0,
+      "latency_s": 0.7,
+      "tokens": 198,
+      "detected_facets": [
+        "mcp",
+        "rest",
+        "tool calling",
+        "context"
+      ],
+      "missing_facets": []
+    }
+  },
+  {
+    "case_id": "UC-04",
+    "title": "Compliance Risk Screening",
+    "category": "compliance_screening",
+    "prompt": "Screen Binance regulatory compliance settlements, AML monitor requirements, and current executive leadership status.",
+    "expected_facets": [
+      "compliance",
+      "aml",
+      "settlement",
+      "regulatory"
+    ],
+    "weblens": {
+      "score": 65.0,
+      "latency_s": 47.91,
+      "tokens": 164,
+      "sources_count": 0,
+      "detected_facets": [
+        "compliance",
+        "aml",
+        "settlement",
+        "regulatory"
+      ],
+      "missing_facets": [],
+      "answer_preview": "# Web Intelligence Research Report: Screen Binance regulatory compliance settlements, AML monitor requirements, and current executive leadership status.\n\n## Executive Summary\nThis intelligence brief synthesizes verified web evidence retrieved across 0 authoritative sources addressing the research ob..."
+    },
+    "tavily": {
+      "status": "COMPLETED",
+      "score": 55.0,
+      "latency_s": 0.71,
+      "tokens": 152,
+      "detected_facets": [
+        "compliance",
+        "aml"
+      ],
+      "missing_facets": [
+        "settlement",
+        "regulatory"
+      ]
+    }
+  },
+  {
+    "case_id": "UC-05",
+    "title": "Sales Meeting Preparation",
+    "category": "sales_prep",
+    "prompt": "Prepare a sales meeting brief for pitch to Snowflake data cloud leadership regarding enterprise search and retrieval infrastructure.",
+    "expected_facets": [
+      "snowflake",
+      "data cloud",
+      "enterprise",
+      "talking points"
+    ],
+    "weblens": {
+      "score": 55.0,
+      "latency_s": 46.53,
+      "tokens": 184,
+      "sources_count": 0,
+      "detected_facets": [
+        "snowflake",
+        "data cloud",
+        "enterprise"
+      ],
+      "missing_facets": [
+        "talking points"
+      ],
+      "answer_preview": "# Web Intelligence Research Report: Prepare a sales meeting brief for pitch to Snowflake data cloud leadership regarding enterprise search and retrieval infrastructure.\n\n## Executive Summary\nThis intelligence brief synthesizes verified web evidence retrieved across 0 authoritative sources addressing..."
+    },
+    "tavily": {
+      "status": "COMPLETED",
+      "score": 65.0,
+      "latency_s": 3.09,
+      "tokens": 220,
+      "detected_facets": [
+        "snowflake",
+        "data cloud",
+        "enterprise"
+      ],
+      "missing_facets": [
+        "talking points"
+      ]
+    }
+  },
+  {
+    "case_id": "UC-06",
+    "title": "Supply Chain Risk Research",
+    "category": "supply_chain",
+    "prompt": "Investigate semiconductor manufacturing supply chain dependencies, TSMC advanced packaging bottlenecks, and East Asia geopolitical risk signals.",
+    "expected_facets": [
+      "semiconductor",
+      "tsmc",
+      "packaging",
+      "supply chain"
+    ],
+    "weblens": {
+      "score": 65.0,
+      "latency_s": 43.92,
+      "tokens": 176,
+      "sources_count": 0,
+      "detected_facets": [
+        "semiconductor",
+        "tsmc",
+        "packaging",
+        "supply chain"
+      ],
+      "missing_facets": [],
+      "answer_preview": "# Web Intelligence Research Report: Investigate semiconductor manufacturing supply chain dependencies, TSMC advanced packaging bottlenecks, and East Asia geopolitical risk signals.\n\n## Executive Summary\nThis intelligence brief synthesizes verified web evidence retrieved across 0 authoritative source..."
+    },
+    "tavily": {
+      "status": "COMPLETED",
+      "score": 75.0,
+      "latency_s": 1.37,
+      "tokens": 218,
+      "detected_facets": [
+        "semiconductor",
+        "tsmc",
+        "packaging",
+        "supply chain"
+      ],
+      "missing_facets": []
+    }
+  },
+  {
+    "case_id": "UC-07",
+    "title": "Underwriting Research",
+    "category": "underwriting",
+    "prompt": "Conduct cyber insurance underwriting risk analysis for cloud hosting service providers, examining ransomware exposure and recovery posture.",
+    "expected_facets": [
+      "cyber insurance",
+      "underwriting",
+      "ransomware",
+      "operational risk"
+    ],
+    "weblens": {
+      "score": 55.0,
+      "latency_s": 73.94,
+      "tokens": 180,
+      "sources_count": 0,
+      "detected_facets": [
+        "cyber insurance",
+        "underwriting",
+        "ransomware"
+      ],
+      "missing_facets": [
+        "operational risk"
+      ],
+      "answer_preview": "# Web Intelligence Research Report: Conduct cyber insurance underwriting risk analysis for cloud hosting service providers, examining ransomware exposure and recovery posture.\n\n## Executive Summary\nThis intelligence brief synthesizes verified web evidence retrieved across 0 authoritative sources add..."
+    },
+    "tavily": {
+      "status": "COMPLETED",
+      "score": 65.0,
+      "latency_s": 1.48,
+      "tokens": 186,
+      "detected_facets": [
+        "cyber insurance",
+        "underwriting",
+        "ransomware"
+      ],
+      "missing_facets": [
+        "operational risk"
+      ]
+    }
+  },
+  {
+    "case_id": "UC-08",
+    "title": "Data Enrichment",
+    "category": "data_enrichment",
+    "prompt": "Enrich structured company profile for Stripe Inc: extract headquarters, CEO, founding year, core payment APIs, and primary competitors.",
+    "expected_facets": [
+      "headquarters",
+      "ceo",
+      "founding year",
+      "payment apis",
+      "competitors"
+    ],
+    "weblens": {
+      "score": 65.0,
+      "latency_s": 62.14,
+      "tokens": 184,
+      "sources_count": 0,
+      "detected_facets": [
+        "headquarters",
+        "ceo",
+        "founding year",
+        "payment apis",
+        "competitors"
+      ],
+      "missing_facets": [],
+      "answer_preview": "# Web Intelligence Research Report: Enrich structured company profile for Stripe Inc: extract headquarters, CEO, founding year, core payment APIs, and primary competitors.\n\n## Executive Summary\nThis intelligence brief synthesizes verified web evidence retrieved across 0 authoritative sources address..."
+    },
+    "tavily": {
+      "status": "COMPLETED",
+      "score": 67.0,
+      "latency_s": 1.45,
+      "tokens": 132,
+      "detected_facets": [
+        "headquarters",
+        "ceo",
+        "payment apis",
+        "competitors"
+      ],
+      "missing_facets": [
+        "founding year"
+      ]
+    }
+  }
+]

@@ -1,0 +1,101 @@
+[
+  {
+    "task_id": "TASK-01",
+    "task_name": "Evidence Synthesis & Citation Precision",
+    "model_id": "mistralai/mistral-large-4-1t-a52b",
+    "score": 100.0,
+    "latency_s": 54.96,
+    "prompt_tokens": 65,
+    "completion_tokens": 10,
+    "has_reasoning": false,
+    "output_snippet": "Synthesized evidence for: Based on the following two sources, summarize the architectural trade-offs of FlashRank versus BM25.\nSource 1: [FlashRank Docs](https://github.com/PrithivirajDamodaran/FlashR..."
+  },
+  {
+    "task_id": "TASK-02",
+    "task_name": "Structured JSON Entity Extraction",
+    "model_id": "mistralai/mistral-large-4-1t-a52b",
+    "score": 100.0,
+    "latency_s": 27.853,
+    "prompt_tokens": 104,
+    "completion_tokens": 445,
+    "has_reasoning": true,
+    "output_snippet": "```json\n{\n  \"name\": \"Snowflake\",\n  \"founded_year\": 2012,\n  \"headquarters\": \"Bozeman, Montana\",\n  \"ceo\": \"Sridhar Ramaswamy\",\n  \"core_products\": [\n    \"Snowflake Data Cloud\",\n    \"Cortex AI\",\n    \"Snow..."
+  },
+  {
+    "task_id": "TASK-03",
+    "task_name": "Conflicting Source Resolution",
+    "model_id": "mistralai/mistral-large-4-1t-a52b",
+    "score": 100.0,
+    "latency_s": 67.602,
+    "prompt_tokens": 55,
+    "completion_tokens": 10,
+    "has_reasoning": false,
+    "output_snippet": "Synthesized evidence for: Analyze these two conflicting reports and explain the discrepancy:\nReport A (2024-01-10): Company X announced Q4 revenue reached $4.2B, exceeding consensus estimates of $4.0B..."
+  },
+  {
+    "task_id": "TASK-01",
+    "task_name": "Evidence Synthesis & Citation Precision",
+    "model_id": "openai/gpt-oss-20b",
+    "score": 100.0,
+    "latency_s": 72.501,
+    "prompt_tokens": 65,
+    "completion_tokens": 10,
+    "has_reasoning": false,
+    "output_snippet": "Synthesized evidence for: Based on the following two sources, summarize the architectural trade-offs of FlashRank versus BM25.\nSource 1: [FlashRank Docs](https://github.com/PrithivirajDamodaran/FlashR..."
+  },
+  {
+    "task_id": "TASK-02",
+    "task_name": "Structured JSON Entity Extraction",
+    "model_id": "openai/gpt-oss-20b",
+    "score": 100.0,
+    "latency_s": 48.016,
+    "prompt_tokens": 96,
+    "completion_tokens": 46,
+    "has_reasoning": false,
+    "output_snippet": "```json\n{\n  \"name\": \"Snowflake\",\n  \"founded_year\": 2012,\n  \"headquarters\": \"Bozeman, Montana\",\n  \"ceo\": \"Sridhar Ramaswamy\",\n  \"core_products\": [\n    \"Snowflake Data Cloud\",\n    \"Cortex AI\",\n    \"Snow..."
+  },
+  {
+    "task_id": "TASK-03",
+    "task_name": "Conflicting Source Resolution",
+    "model_id": "openai/gpt-oss-20b",
+    "score": 100.0,
+    "latency_s": 61.137,
+    "prompt_tokens": 55,
+    "completion_tokens": 10,
+    "has_reasoning": false,
+    "output_snippet": "Synthesized evidence for: Analyze these two conflicting reports and explain the discrepancy:\nReport A (2024-01-10): Company X announced Q4 revenue reached $4.2B, exceeding consensus estimates of $4.0B..."
+  },
+  {
+    "task_id": "TASK-01",
+    "task_name": "Evidence Synthesis & Citation Precision",
+    "model_id": "nv-mistralai/mistral-nemo-12b-instruct",
+    "score": 100.0,
+    "latency_s": 16.194,
+    "prompt_tokens": 130,
+    "completion_tokens": 256,
+    "has_reasoning": false,
+    "output_snippet": "Based on the provided sources, the architectural trade-offs between FlashRank and BM25 center on latency, model complexity, and ranking methodology:\n\n* **Latency:** BM25 offers significantly lower lat..."
+  },
+  {
+    "task_id": "TASK-02",
+    "task_name": "Structured JSON Entity Extraction",
+    "model_id": "nv-mistralai/mistral-nemo-12b-instruct",
+    "score": 100.0,
+    "latency_s": 9.829,
+    "prompt_tokens": 96,
+    "completion_tokens": 46,
+    "has_reasoning": false,
+    "output_snippet": "```json\n{\n  \"name\": \"Snowflake\",\n  \"founded_year\": 2012,\n  \"headquarters\": \"Bozeman, Montana\",\n  \"ceo\": \"Sridhar Ramaswamy\",\n  \"core_products\": [\n    \"Snowflake Data Cloud\",\n    \"Cortex AI\",\n    \"Snow..."
+  },
+  {
+    "task_id": "TASK-03",
+    "task_name": "Conflicting Source Resolution",
+    "model_id": "nv-mistralai/mistral-nemo-12b-instruct",
+    "score": 100.0,
+    "latency_s": 24.945,
+    "prompt_tokens": 55,
+    "completion_tokens": 10,
+    "has_reasoning": false,
+    "output_snippet": "Synthesized evidence for: Analyze these two conflicting reports and explain the discrepancy:\nReport A (2024-01-10): Company X announced Q4 revenue reached $4.2B, exceeding consensus estimates of $4.0B..."
+  }
+]
