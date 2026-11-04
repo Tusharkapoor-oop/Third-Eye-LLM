@@ -122,20 +122,34 @@ Result file: `reports/local-security/local_security_results_v2.json`
   - Query length is rejected above 2000 chars in `WebLens.search`.
 - A public `https://example.com/` extraction control passed, proving SSRF checks are not blocking everything.
 
-### Deployed — measured before the current redeploy
+### Deployed — measured before and after remediation
 
 `run_security_audit_v2.py --skip-local`
 Result file: `reports/deployed-security/deployed_security_results_v2.json`
 
-- **17 PASS / 5 FAIL / 1 UNVERIFIED** after correcting harness false positives.
-- Real findings:
+Two revisions were measured:
+
+| Revision | PASS | FAIL | UNVERIFIED | UNSUPPORTED | What changed |
+|---|---:|---:|---:|---:|---|
+| `weblens-00003-l9q` (initial) | 17 | 5 | 1 | 0 | Older build; Crawl2RAG crashed, query cap missing |
+| `weblens-00005-mzl` (after first redeploy) | 18 | 5 | 0 | 0 | Crawl2RAG and query cap fixed; cross-tenant leak observed |
+| `weblens-00006-l9h` (current) | **18** | **4** | **0** | **1** | Stateful tools removed from public listener |
+
+Current real findings:
+
   1. **Unauthenticated MCP initialize succeeds** (high). The service is deployed with public `allUsers` invoker.
   2. **A bogus `Bearer` token is also accepted** (high). Same root cause: no authorization is enforced.
   3. **No application-level rate limit observed** in 20 cheap `tools/list` calls (medium). Cloud Run may still absorb abuse at the edge, but no 429 was visible.
   4. **No HSTS header** on the service root (low). Cloud Run may set transport policy at the edge; the app does not.
-  5. **Oversize query is accepted** by the older deployed build (low). The current local build rejects >2000 chars.
-- **UNVERIFIED:** cross-tenant Crawl2RAG isolation. The deployed old build returns `Error executing tool crawl2rag_index`, so the test could not create state to compare.
-- **Correction to the first v2 run:** private-URL extraction was reported as FAIL. Raw inspection shows the deployed server returns a structured `isError` with `non-public destination` and no page content. **SSRF blocking works**; the first result was a harness parsing bug, now fixed. The same applies to unknown-tool and missing-argument cases (MCP `isError` is a valid structured rejection, not a crash).
+
+Resolved after redeploy:
+
+  - **Oversize query** is now rejected by the current code path (the previous build accepted ~7.7k chars).
+  - **Crawl2RAG tool crash** is fixed (the old build referenced a removed `failures` field).
+  - **Cross-tenant leak** found on revision `00005`: a fresh HTTP client could query a document indexed by another client (`probe_visible_in_other_client: true`). Fixed by not registering `crawl2rag_index`, `crawl2rag_query`, or `research_chat` on a public unauthenticated listener. The deployed surface is now 10 stateless tools; local loopback keeps all 13.
+  - The cross-tenant check is `UNSUPPORTED` on revision `00006` because the stateful tool is intentionally absent. That is not a PASS for multi-tenant isolation; no per-user tenancy exists.
+
+**Correction to the first v2 run:** private-URL extraction was reported as FAIL. Raw inspection shows the deployed server returns a structured `isError` with `non-public destination` and no page content. **SSRF blocking works**; the first result was a harness parsing bug, now fixed. The same applies to unknown-tool and missing-argument cases (MCP `isError` is a valid structured rejection, not a crash).
 
 Authorization/scope: only the user's local process, the user's Cloud Run service, and the user's Tavily key were tested. No third-party targets, no destructive load, no credential values written to reports.
 
@@ -188,7 +202,9 @@ These are **not** reflected in the V10 numbers above. They are separately verifi
 | `weblens/src/weblens/apps/company.py` | Per-field fallback queries, official-domain ranking, aggregator demotion | Generic/incorrect company fields |
 | `weblens/src/weblens/apps/meeting.py` | Shorter fallback queries, deduped sources | Empty meeting briefs |
 | `weblens/src/weblens/security/injection.py` | Broader injection/exfiltration patterns | Two real prompt-injection misses |
-| `weblens-lab/security_lab/run_security_audit_v2.py` | Parse MCP `isError` before JSON; accept 400 + JSON-RPC error; GET root; read `ps[].x`; `_message_is_error` | Removed false positives that masked real results |
+| `weblens/src/weblens/mcp_server.py` | `build_server(..., allow_stateful=...)`; stateful tools register only on loopback or authenticated listeners | A public unauthenticated listener exposed a shared SQLite store, and a fresh client could read another client's Crawl2RAG probe |
+| `weblens/src/weblens/cli.py` | Passes `allow_stateful = loopback or bool(token)`; prints a warning when disabling them | Wire the isolation policy to the actual transport identity |
+| `weblens-lab/security_lab/run_security_audit_v2.py` | Parse MCP `isError` before JSON; accept 400 + JSON-RPC error; GET root; read `ps[].x`; `_message_is_error`; mark an absent stateful tool `UNSUPPORTED` | Removed false positives that masked real results, and avoided a false PASS for a removed surface |
 | `Dockerfile` | CMD runs `python -m weblens.cli serve ... --profile full` instead of the legacy root `server.py` | The deployed service is the `weblens` package; the root app is a different, older product |
 | `.gcloudignore` | Excludes reports/evidence/tests/labs from source upload | Smaller, secret-free Cloud Build upload |
 
@@ -205,9 +221,9 @@ Both `weblens/src/weblens/**` and the editable-install `src/weblens/**` were kep
 | Full `pytest tests` | **INCOMPLETE** | The full run progressed past ~93% then hung on a remaining test for >15 min and was terminated. It is not reported as a pass. Earlier in the session the same suite completed 248 passed; that result predates these edits. |
 | Nine applications runner | **9 PASS / 0 FAIL** | `reports/nine_applications_verification.json` |
 | Local security v2 | **38 PASS** | `reports/local-security/local_security_results_v2.json` |
-| Deployed security v2 | **17 PASS / 5 FAIL / 1 UNVERIFIED** | Pre-redeploy revision |
+| Deployed security v2 | **18 PASS / 4 FAIL / 1 UNSUPPORTED** | Current revision `00006`; four open findings are auth/rate-limit/HSTS configuration, not parser artifacts |
 
-The full-suite hang is itself a reliability finding: at least one live/network test can block indefinitely instead of timing out. It is recorded, not hidden.
+The full-suite hang is itself a reliability finding: the surviving process was running `tests/test_04_fuzz_and_chaos.py` after ~21 min (174 s CPU, 220 MB). The exact test case was not isolated. It is recorded, not hidden. The earlier 248-pass run predates these edits.
 
 ---
 
@@ -220,16 +236,49 @@ The full-suite hang is itself a reliability finding: at least one live/network t
 5. **Human relevance grading** — not performed. Deterministic domain/fact rubric only.
 6. **Repeated trials / variance** — one run per query. No confidence interval over repeated runs, only bootstrap over queries.
 7. **Code-version drift** — V10 numbers are the pre-fix baseline; the post-fix local system was not re-run across all 120 queries in this report.
-8. **Deployed revision** — measured pre-redeploy. A post-redeploy smoke benchmark is recorded separately if the redeploy succeeded; it does not retroactively change the V10 table.
+8. **Deployed revision** — the V10 table was measured on `weblens-00003-l9q`. A 10-query post-redeploy smoke run on `weblens-00006-l9h` is recorded separately (`analysis-post-deploy-smoke/`) and does not retroactively change the V10 table.
 
 ---
 
-## 11. Bottom line
+## 11. Official Tavily demo use-case coverage
+
+Harness: `weblens-lab/evaluations/run_tavily_use_cases_v10.py`
+Results: `reports/tavily-use-cases-v10/results.json`
+
+All eight official Tavily demo use cases (5.1–5.8) were run through real WebLens MCP tools. Tavily `/search` (5 results) was run on the same prompts as a retrieval baseline.
+
+| ID | Use case | WebLens tool | Local facet coverage | Tavily coverage |
+|---|---|---|---:|---:|
+| UC-01 | Company research | `company_research` | 0.25 | 0.75 |
+| UC-02 | Financial market research | `market_research` | 0.25 | 1.00 |
+| UC-03 | Web-powered assistant | `deep_research` | 0.50 | 1.00 |
+| UC-04 | Compliance risk screening | `deep_research` | 0.00 | 0.75 |
+| UC-05 | Sales meeting prep | `meeting_prep` | 0.50 | 0.75 |
+| UC-06 | Supply chain risk | `deep_research` | 0.00 | 0.75 |
+| UC-07 | Underwriting research | `deep_research` | 0.00 | 0.75 |
+| UC-08 | Data enrichment | `sheets_enrich` | 0.60 | 1.00 |
+
+| Aggregate | WebLens | Tavily |
+|---|---:|---:|
+| Mean facet coverage | 0.263 | 0.844 |
+| Mean tokens (`cl100k`) | 149.1 | 1,278.6 |
+| Mean latency | 9,102.4 ms | 332.3 ms |
+| Cases with evidence URLs | 4 / 8 | 8 / 8 |
+| Status | 7 ok (incl. 3 `no_reliable_result`), 1 `not_available`, 0 errors | 8 ok, 0 errors |
+
+**Not an apples-to-apples agent comparison.** Tavily `/search` returns snippets, not a synthesized answer; its coverage is a retrieval-only lower bound. Scoring counts only output evidence fields; query and input echoes are excluded. WebLens produced a report/app payload for company, assistant, meeting, and enrichment cases, but returned `no_reliable_result` for compliance, supply chain, and underwriting (0.00 coverage) and `not_available` for market research. The honest reading is that WebLens is far more token-efficient and much slower on these deep workflows, and materially weaker on facet coverage.
+
+**Scoring correction:** the first pass serialized the whole payload, so echo fields (`q`, `searched`) counted as evidence and inflated WebLens coverage to 0.700. The harness now excludes query/input keys; the table above is the corrected evidence-only result.
+
+---
+
+## 12. Bottom line
 
 WebLens V10 is a **real, reproducible three-system measurement**, not a claim of victory:
 
-- It is **faster** and **far more token-efficient** than Tavily.
-- It is **less relevant and less reliable** than Tavily on this 120-query dataset; the paired P@5 gap is statistically clear.
-- Security on the local system is strong after fixes (38/38). The deployed service has real exposure (public unauthenticated MCP, no visible rate limit, no HSTS) and an older, broken Crawl2RAG tool.
+- It is **faster** and **far more token-efficient** than Tavily on the 120-query search benchmark.
+- It is **less relevant and less reliable** than Tavily on that dataset; the paired P@5 gap is statistically clear.
+- On the eight official Tavily demo use cases, WebLens trails sharply on facet coverage (0.263 vs 0.844) while using ~8.6× fewer tokens and running ~27× slower. This is a retrieval proxy, not a full agent comparison.
+- Local security is strong after fixes (38/38). The deployed service still has real exposure (public unauthenticated MCP, bogus Bearer accepted, no visible rate limit, no HSTS); the cross-tenant state leak found on revision `00005` was removed by dropping stateful tools from the public listener, not by implementing tenancy.
 - Nine product workflows pass end-to-end with evidence.
 - Dataset-size and multi-model targets are **not met** and are reported as `BLOCKED`, not passed.

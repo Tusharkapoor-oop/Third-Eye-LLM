@@ -1,0 +1,550 @@
+{
+  "experiment": "tavily_official_demo_use_cases_v10",
+  "timestamp": "2026-11-04T18:09:12Z",
+  "method": {
+    "local": "real local WebLens MCP server, app/deep_research tool per case",
+    "tavily": "direct /search, 5 results; retrieval snippets only, no synthesis",
+    "scoring": "case-insensitive facet keyword coverage over output evidence fields only (query and input echoes excluded)",
+    "caveat": "Tavily /search is not its synthesized assistant; treat its coverage as a lower-bound retrieval baseline."
+  },
+  "summary": {
+    "n_cases": 8,
+    "systems": {
+      "local_weblens": {
+        "cases": 8,
+        "ok_cases": 7,
+        "error_cases": 0,
+        "mean_facet_coverage": 0.263,
+        "mean_latency_ms": 9102.4,
+        "mean_tokens": 149.1,
+        "cases_with_evidence_urls": 4
+      },
+      "tavily_direct": {
+        "cases": 8,
+        "ok_cases": 8,
+        "error_cases": 0,
+        "mean_facet_coverage": 0.844,
+        "mean_latency_ms": 332.3,
+        "mean_tokens": 1278.6,
+        "cases_with_evidence_urls": 8
+      }
+    },
+    "per_case": [
+      {
+        "id": "UC-01",
+        "title": "Company Research",
+        "local_coverage": 0.25,
+        "tavily_coverage": 0.75,
+        "local_tool": "company_research"
+      },
+      {
+        "id": "UC-02",
+        "title": "Financial Market Research",
+        "local_coverage": 0.25,
+        "tavily_coverage": 1.0,
+        "local_tool": "market_research"
+      },
+      {
+        "id": "UC-03",
+        "title": "Web-Powered Assistant",
+        "local_coverage": 0.5,
+        "tavily_coverage": 1.0,
+        "local_tool": "deep_research"
+      },
+      {
+        "id": "UC-04",
+        "title": "Compliance Risk Screening",
+        "local_coverage": 0.0,
+        "tavily_coverage": 0.75,
+        "local_tool": "deep_research"
+      },
+      {
+        "id": "UC-05",
+        "title": "Sales Meeting Preparation",
+        "local_coverage": 0.5,
+        "tavily_coverage": 0.75,
+        "local_tool": "meeting_prep"
+      },
+      {
+        "id": "UC-06",
+        "title": "Supply Chain Risk Research",
+        "local_coverage": 0.0,
+        "tavily_coverage": 0.75,
+        "local_tool": "deep_research"
+      },
+      {
+        "id": "UC-07",
+        "title": "Underwriting Research",
+        "local_coverage": 0.0,
+        "tavily_coverage": 0.75,
+        "local_tool": "deep_research"
+      },
+      {
+        "id": "UC-08",
+        "title": "Data Enrichment",
+        "local_coverage": 0.6,
+        "tavily_coverage": 1.0,
+        "local_tool": "sheets_enrich"
+      }
+    ]
+  },
+  "records": [
+    {
+      "id": "UC-01",
+      "title": "Company Research",
+      "prompt": "Provide a comprehensive company overview of NVIDIA, including recent enterprise AI partnerships, leadership, and Blackwell GPU platform developments.",
+      "facets": [
+        "leadership",
+        "partnership",
+        "blackwell",
+        "overview"
+      ],
+      "systems": {
+        "local_weblens": {
+          "tool": "company_research",
+          "status": "found",
+          "http_status": 200,
+          "latency_ms": 25430.6,
+          "wall_ms": 25430.8,
+          "tokens": 602,
+          "facet_checks": {
+            "leadership": false,
+            "partnership": false,
+            "blackwell": true,
+            "overview": false
+          },
+          "facet_coverage": 0.25,
+          "evidence_urls": [
+            "http://apple.slashdot.org/story/12/03/11/1657205/nvidia-challenges-apples-ipad-benchmarks",
+            "https://blogs.nvidia.com/blog/invest-in-mellanox/",
+            "https://en.wikipedia.org/wiki/AI_build-out_financing",
+            "https://en.wikipedia.org/wiki/Blackwell_%28microarchitecture%29",
+            "https://en.wikipedia.org/wiki/GeForce",
+            "https://en.wikipedia.org/wiki/Jensen_Huang",
+            "https://en.wikipedia.org/wiki/Nemotron",
+            "https://en.wikipedia.org/wiki/Nvidia",
+            "https://en.wikipedia.org/wiki/Nvidia_GTC",
+            "https://github.com/Trainmaster/website"
+          ],
+          "error": null
+        },
+        "tavily_direct": {
+          "tool": "search",
+          "status": "ok",
+          "http_status": 200,
+          "latency_ms": 433.1,
+          "wall_ms": 434.7,
+          "tokens": 1199,
+          "credits": 1.0,
+          "facet_checks": {
+            "leadership": true,
+            "partnership": true,
+            "blackwell": true,
+            "overview": false
+          },
+          "facet_coverage": 0.75,
+          "evidence_urls": [
+            "https://en.wikipedia.org/wiki/Nvidia",
+            "https://nvidianews.nvidia.com/news/nvidia-partners-ai-infrastructure-america",
+            "https://s201.q4cdn.com/141608511/files/doc_financials/2026/ar/2026-Annual-Report-Web.pdf",
+            "https://www.datainsightsreports.com/companies/NVDA",
+            "https://www.slideshare.net/slideshow/comprehensive-nvidia-corporate-profile-ai-platforms-and-financial-growth/288414129"
+          ],
+          "error": null
+        }
+      }
+    },
+    {
+      "id": "UC-02",
+      "title": "Financial Market Research",
+      "prompt": "Analyze Apple Inc. financial performance, services revenue growth, market developments, and verified risk factors.",
+      "facets": [
+        "services revenue",
+        "financial",
+        "risk",
+        "market"
+      ],
+      "systems": {
+        "local_weblens": {
+          "tool": "market_research",
+          "status": "not_available",
+          "http_status": 200,
+          "latency_ms": 3524.2,
+          "wall_ms": 3524.2,
+          "tokens": 38,
+          "facet_checks": {
+            "services revenue": false,
+            "financial": true,
+            "risk": false,
+            "market": false
+          },
+          "facet_coverage": 0.25,
+          "evidence_urls": [],
+          "error": null
+        },
+        "tavily_direct": {
+          "tool": "search",
+          "status": "ok",
+          "http_status": 200,
+          "latency_ms": 263.1,
+          "wall_ms": 264.8,
+          "tokens": 1611,
+          "credits": 1.0,
+          "facet_checks": {
+            "services revenue": true,
+            "financial": true,
+            "risk": true,
+            "market": true
+          },
+          "facet_coverage": 1.0,
+          "evidence_urls": [
+            "https://s2.q4cdn.com/470004039/files/doc_earnings/2026/q1/filing/10Q-Q1-2026-as-filed.pdf",
+            "https://sec-api.io/insights/financial-analysis-august-2026-apple-inc",
+            "https://www.linkedin.com/pulse/apple-inc-analysis-q1-2026-earnings-013026-0430-pm-investor-amjad-pz1ef",
+            "https://www.macrotrends.net/stocks/charts/AAPL/apple/revenue",
+            "https://www.sec.gov/Archives/edgar/data/320193/000032019326000005/a8-kex991q1202612272025.htm"
+          ],
+          "error": null
+        }
+      }
+    },
+    {
+      "id": "UC-03",
+      "title": "Web-Powered Assistant",
+      "prompt": "What are the key technical differences between Model Context Protocol (MCP) and traditional REST APIs for LLM tool calling?",
+      "facets": [
+        "mcp",
+        "rest",
+        "tool calling",
+        "context"
+      ],
+      "systems": {
+        "local_weblens": {
+          "tool": "deep_research",
+          "status": "partial",
+          "http_status": 200,
+          "latency_ms": 5155.5,
+          "wall_ms": 5155.5,
+          "tokens": 159,
+          "facet_checks": {
+            "mcp": true,
+            "rest": false,
+            "tool calling": false,
+            "context": true
+          },
+          "facet_coverage": 0.5,
+          "evidence_urls": [
+            "https://about.gitlab.com/topics/ai/model-context-protocol/",
+            "https://github.com/modelcontextprotocol"
+          ],
+          "error": null
+        },
+        "tavily_direct": {
+          "tool": "search",
+          "status": "ok",
+          "http_status": 200,
+          "latency_ms": 306.2,
+          "wall_ms": 307.7,
+          "tokens": 1251,
+          "credits": 1.0,
+          "facet_checks": {
+            "mcp": true,
+            "rest": true,
+            "tool calling": true,
+            "context": true
+          },
+          "facet_coverage": 1.0,
+          "evidence_urls": [
+            "https://www.codexifysolutions.com/blog/mcp-vs-traditional-apis-model-context-protocol-ai-agent-integrations-2026",
+            "https://www.dash0.com/knowledge/mcp-vs-api",
+            "https://www.linkedin.com/posts/aishwarya-srinivasan_if-youve-been-trying-to-figure-out-mcp-vs-activity-7319034125380673540-NbKK",
+            "https://www.reddit.com/r/mcp/comments/1lxg4qx/i_am_still_confused_on_the_difference_between",
+            "https://www.scalekit.com/blog/mcp-vs-apis-how-are-they-different"
+          ],
+          "error": null
+        }
+      }
+    },
+    {
+      "id": "UC-04",
+      "title": "Compliance Risk Screening",
+      "prompt": "Screen Binance regulatory compliance settlements, AML monitor requirements, and current executive leadership status.",
+      "facets": [
+        "compliance",
+        "aml",
+        "settlement",
+        "regulatory"
+      ],
+      "systems": {
+        "local_weblens": {
+          "tool": "deep_research",
+          "status": "no_reliable_result",
+          "http_status": 200,
+          "latency_ms": 3524.4,
+          "wall_ms": 3524.4,
+          "tokens": 1,
+          "facet_checks": {
+            "compliance": false,
+            "aml": false,
+            "settlement": false,
+            "regulatory": false
+          },
+          "facet_coverage": 0.0,
+          "evidence_urls": [],
+          "error": null
+        },
+        "tavily_direct": {
+          "tool": "search",
+          "status": "ok",
+          "http_status": 200,
+          "latency_ms": 276.5,
+          "wall_ms": 281.7,
+          "tokens": 1242,
+          "credits": 1.0,
+          "facet_checks": {
+            "compliance": true,
+            "aml": true,
+            "settlement": true,
+            "regulatory": false
+          },
+          "facet_coverage": 0.75,
+          "evidence_urls": [
+            "https://eco.com/support/en/articles/15183698-binance-us-access-reserves-and-regulation-in-2026",
+            "https://globalinvestigationsreview.com/guide/the-guide-monitorships/fifth-edition/article/financial-services-industry-monitorships-and-their-impact-cryptocurrency",
+            "https://home.treasury.gov/news/press-releases/jy1925",
+            "https://www.fincen.gov/system/files/enforcement_action/2023-11-21/FinCEN_Consent_Order_2023-04_FINAL508.pdf",
+            "https://www.wsj.com/articles/binance-gets-two-compliance-monitors-in-settlements-with-u-s-authorities-5ec6c22a"
+          ],
+          "error": null
+        }
+      }
+    },
+    {
+      "id": "UC-05",
+      "title": "Sales Meeting Preparation",
+      "prompt": "Prepare a sales meeting brief for pitch to Snowflake data cloud leadership regarding enterprise search and retrieval infrastructure.",
+      "facets": [
+        "snowflake",
+        "data cloud",
+        "enterprise",
+        "talking points"
+      ],
+      "systems": {
+        "local_weblens": {
+          "tool": "meeting_prep",
+          "status": "ok",
+          "http_status": 200,
+          "latency_ms": 10545.4,
+          "wall_ms": 10545.4,
+          "tokens": 165,
+          "facet_checks": {
+            "snowflake": true,
+            "data cloud": true,
+            "enterprise": false,
+            "talking points": false
+          },
+          "facet_coverage": 0.5,
+          "evidence_urls": [
+            "https://en.wikipedia.org/wiki/Aladdin_%28BlackRock%29",
+            "https://en.wikipedia.org/wiki/ShinyHunters",
+            "https://www.bleepingcomputer.com/tag/snowflake/",
+            "https://www.insurancejournal.com/topics/snowflake/"
+          ],
+          "error": null
+        },
+        "tavily_direct": {
+          "tool": "search",
+          "status": "ok",
+          "http_status": 200,
+          "latency_ms": 310.9,
+          "wall_ms": 312.1,
+          "tokens": 1317,
+          "credits": 1.0,
+          "facet_checks": {
+            "snowflake": true,
+            "data cloud": true,
+            "enterprise": true,
+            "talking points": false
+          },
+          "facet_coverage": 0.75,
+          "evidence_urls": [
+            "https://coastalcloud.us/resources/snowflake-summit-2026-key-takeaways-for-your-business",
+            "https://dataopsleadership.substack.com/p/everything-you-need-to-know-about",
+            "https://futurumgroup.com/insights/snowflake-summit-2026-four-infrastructure-bets-that-determine-whether-the-agentic-enterprise-delivers",
+            "https://tavily.com/knowledge/company/djDDSbEHOp6f",
+            "https://www.youtube.com/watch?v=WFR07HIvCrQ"
+          ],
+          "error": null
+        }
+      }
+    },
+    {
+      "id": "UC-06",
+      "title": "Supply Chain Risk Research",
+      "prompt": "Investigate semiconductor manufacturing supply chain dependencies, TSMC advanced packaging bottlenecks, and East Asia geopolitical risk signals.",
+      "facets": [
+        "semiconductor",
+        "tsmc",
+        "packaging",
+        "supply chain"
+      ],
+      "systems": {
+        "local_weblens": {
+          "tool": "deep_research",
+          "status": "no_reliable_result",
+          "http_status": 200,
+          "latency_ms": 3516.9,
+          "wall_ms": 3516.9,
+          "tokens": 1,
+          "facet_checks": {
+            "semiconductor": false,
+            "tsmc": false,
+            "packaging": false,
+            "supply chain": false
+          },
+          "facet_coverage": 0.0,
+          "evidence_urls": [],
+          "error": null
+        },
+        "tavily_direct": {
+          "tool": "search",
+          "status": "ok",
+          "http_status": 200,
+          "latency_ms": 372.1,
+          "wall_ms": 374.2,
+          "tokens": 1050,
+          "credits": 1.0,
+          "facet_checks": {
+            "semiconductor": true,
+            "tsmc": true,
+            "packaging": false,
+            "supply chain": true
+          },
+          "facet_coverage": 0.75,
+          "evidence_urls": [
+            "https://digitalcollections.sit.edu/isp_collection/3592",
+            "https://jgbc.scholasticahq.com/article/134052",
+            "https://sourceability.com/post/hidden-semiconductor-supply-chain-risks-are-starting-to-emerge",
+            "https://www.semiconductors.org/strengthening-the-global-semiconductor-supply-chain-in-an-uncertain-era",
+            "https://www.verdantix.com/client-portal/blog/war-games-and-wafers-the-semiconductor-industry-on-a-geopolitical-edge"
+          ],
+          "error": null
+        }
+      }
+    },
+    {
+      "id": "UC-07",
+      "title": "Underwriting Research",
+      "prompt": "Conduct cyber insurance underwriting risk analysis for cloud hosting service providers, examining ransomware exposure and recovery posture.",
+      "facets": [
+        "cyber insurance",
+        "underwriting",
+        "ransomware",
+        "operational risk"
+      ],
+      "systems": {
+        "local_weblens": {
+          "tool": "deep_research",
+          "status": "no_reliable_result",
+          "http_status": 200,
+          "latency_ms": 3524.6,
+          "wall_ms": 3524.6,
+          "tokens": 1,
+          "facet_checks": {
+            "cyber insurance": false,
+            "underwriting": false,
+            "ransomware": false,
+            "operational risk": false
+          },
+          "facet_coverage": 0.0,
+          "evidence_urls": [],
+          "error": null
+        },
+        "tavily_direct": {
+          "tool": "search",
+          "status": "ok",
+          "http_status": 200,
+          "latency_ms": 264.1,
+          "wall_ms": 265.5,
+          "tokens": 1079,
+          "credits": 1.0,
+          "facet_checks": {
+            "cyber insurance": true,
+            "underwriting": true,
+            "ransomware": true,
+            "operational risk": false
+          },
+          "facet_coverage": 0.75,
+          "evidence_urls": [
+            "https://advisorytechs.com/cyber-insurance-requirements-2026",
+            "https://blog.cyberadvisors.com/cyber-insurance-in-2026-the-controls-underwriters-expect-and-how-to-prove-them",
+            "https://pmc.ncbi.nlm.nih.gov/articles/PMC9841933",
+            "https://www.c-risk.com/cyber-insurance",
+            "https://www.kovrr.com/cyber-insurance"
+          ],
+          "error": null
+        }
+      }
+    },
+    {
+      "id": "UC-08",
+      "title": "Data Enrichment",
+      "prompt": "Enrich structured company profile for Stripe Inc: extract headquarters, CEO, founding year, core payment APIs, and primary competitors.",
+      "facets": [
+        "headquarters",
+        "ceo",
+        "founding",
+        "payment",
+        "competitor"
+      ],
+      "systems": {
+        "local_weblens": {
+          "tool": "sheets_enrich",
+          "status": "ok",
+          "http_status": 200,
+          "latency_ms": 17597.2,
+          "wall_ms": 17597.5,
+          "tokens": 226,
+          "facet_checks": {
+            "headquarters": false,
+            "ceo": true,
+            "founding": false,
+            "payment": true,
+            "competitor": true
+          },
+          "facet_coverage": 0.6,
+          "evidence_urls": [
+            "https://en.wikipedia.org/wiki/DTS%2C_Inc.",
+            "https://en.wikipedia.org/wiki/Stripe%2C_Inc."
+          ],
+          "error": null
+        },
+        "tavily_direct": {
+          "tool": "search",
+          "status": "ok",
+          "http_status": 200,
+          "latency_ms": 432.4,
+          "wall_ms": 435.3,
+          "tokens": 1480,
+          "credits": 1.0,
+          "facet_checks": {
+            "headquarters": true,
+            "ceo": true,
+            "founding": true,
+            "payment": true,
+            "competitor": true
+          },
+          "facet_coverage": 1.0,
+          "evidence_urls": [
+            "https://derrick-app.com/company/stripe",
+            "https://en.wikipedia.org/wiki/Stripe,_Inc.",
+            "https://sacra.com/c/stripe",
+            "https://tavily.com/knowledge/company/igPwhNOUwEGy",
+            "https://www.globaldata.com/company-profile/stripe-inc"
+          ],
+          "error": null
+        }
+      }
+    }
+  ]
+}

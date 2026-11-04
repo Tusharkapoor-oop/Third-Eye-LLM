@@ -43,7 +43,7 @@ def _tool_json(payload: dict) -> str:
     return text
 
 
-def build_server(service: WebLens, profile: str | None = None) -> MCPServer:
+def build_server(service: WebLens, profile: str | None = None, *, allow_stateful: bool = True) -> MCPServer:
     prof = profile or getattr(service.s, "mcp_profile", "core")
     server = MCPServer(
         name="weblens",
@@ -181,34 +181,8 @@ def build_server(service: WebLens, profile: str | None = None) -> MCPServer:
         from .apps.sheets import SheetsEnricher
         from .apps.tutorial_101 import run_tutorial
 
-        kb = Crawl2RAG(service)
         meeting_agent = MeetingPrepAgent(service)
         sheets_enricher = SheetsEnricher(service)
-        chat_agent = PersistentResearchChat(service)
-
-        @server.tool(
-            name="crawl2rag_index",
-            description="Crawl and index a website or documentation URL into local RAG knowledge base.",
-            annotations=READ_ONLY,
-            structured_output=False,
-        )
-        async def crawl2rag_index(
-            url: Annotated[str, Field(description="Target site or documentation URL to index")],
-            max_pages: Annotated[int, Field(ge=1, le=20, description="Maximum pages to crawl and index")] = 5,
-        ) -> str:
-            return _tool_json(await kb.ingest(url, max_pages=max_pages))
-
-        @server.tool(
-            name="crawl2rag_query",
-            description="Query local Crawl2RAG knowledge base with BM25 ranking and cited passage spans.",
-            annotations=READ_ONLY,
-            structured_output=False,
-        )
-        async def crawl2rag_query(
-            question: Annotated[str, Field(description="Question for local knowledge base")],
-            top_k: Annotated[int, Field(ge=1, le=10, description="Top passages to return")] = 5,
-        ) -> str:
-            return _tool_json(await kb.query(question, top_k=top_k))
 
         @server.tool(
             name="meeting_prep",
@@ -237,27 +211,59 @@ def build_server(service: WebLens, profile: str | None = None) -> MCPServer:
         ) -> str:
             return _tool_json(await sheets_enricher.enrich_records(rows, column_prompts))
 
-        @server.tool(
-            name="research_chat",
-            description="Multi-turn research dialogue with SQLite session persistence and citation extraction.",
-            annotations=READ_ONLY,
-            structured_output=False,
-        )
-        async def research_chat(
-            message: Annotated[str, Field(description="User research query or follow-up")],
-            session_id: Annotated[str | None, Field(description="Session ID for multi-turn continuity")] = None,
-        ) -> str:
-            active_chat = PersistentResearchChat(service, session_id=session_id) if session_id else chat_agent
-            reply = await active_chat.send_query(message)
-            return _tool_json({
-                "status": "ok",
-                "session_id": active_chat.session_id,
-                "message_id": reply.id,
-                "role": reply.role,
-                "content": reply.content,
-                "citations": reply.citations,
-                "tokens_used": reply.tokens_used,
-            })
+        # Stateful tools share a process-wide SQLite store. On a public,
+        # unauthenticated endpoint that would let one caller read another
+        # caller's crawled documents or chat history. Register them only when
+        # the transport is loopback or authenticated.
+        if allow_stateful:
+            kb = Crawl2RAG(service)
+            chat_agent = PersistentResearchChat(service)
+
+            @server.tool(
+                name="crawl2rag_index",
+                description="Crawl and index a website or documentation URL into local RAG knowledge base.",
+                annotations=READ_ONLY,
+                structured_output=False,
+            )
+            async def crawl2rag_index(
+                url: Annotated[str, Field(description="Target site or documentation URL to index")],
+                max_pages: Annotated[int, Field(ge=1, le=20, description="Maximum pages to crawl and index")] = 5,
+            ) -> str:
+                return _tool_json(await kb.ingest(url, max_pages=max_pages))
+
+            @server.tool(
+                name="crawl2rag_query",
+                description="Query local Crawl2RAG knowledge base with BM25 ranking and cited passage spans.",
+                annotations=READ_ONLY,
+                structured_output=False,
+            )
+            async def crawl2rag_query(
+                question: Annotated[str, Field(description="Question for local knowledge base")],
+                top_k: Annotated[int, Field(ge=1, le=10, description="Top passages to return")] = 5,
+            ) -> str:
+                return _tool_json(await kb.query(question, top_k=top_k))
+
+            @server.tool(
+                name="research_chat",
+                description="Multi-turn research dialogue with SQLite session persistence and citation extraction.",
+                annotations=READ_ONLY,
+                structured_output=False,
+            )
+            async def research_chat(
+                message: Annotated[str, Field(description="User research query or follow-up")],
+                session_id: Annotated[str | None, Field(description="Session ID for multi-turn continuity")] = None,
+            ) -> str:
+                active_chat = PersistentResearchChat(service, session_id=session_id) if session_id else chat_agent
+                reply = await active_chat.send_query(message)
+                return _tool_json({
+                    "status": "ok",
+                    "session_id": active_chat.session_id,
+                    "message_id": reply.id,
+                    "role": reply.role,
+                    "content": reply.content,
+                    "citations": reply.citations,
+                    "tokens_used": reply.tokens_used,
+                })
 
         @server.tool(
             name="tutorial_101",

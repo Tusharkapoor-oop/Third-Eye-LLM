@@ -952,8 +952,28 @@ async def audit_deployed_security(endpoint: str = DEPLOYED_MCP) -> dict[str, Any
         )
         all_bodies.append(index["text"])
         index_data = _tool_payload(index)
+        index_msg = str(index_data.get("msg") or "").lower()
+        tool_absent = index_data.get("status") == "error" and (
+            "unknown tool" in index_msg or "not found" in index_msg
+        )
         indexed = index_data.get("pages_indexed", 0)
-        if indexed:
+        if tool_absent:
+            tests.append(
+                result(
+                    "deployed_cross_tenant_crawl2rag",
+                    "cross_tenant_isolation",
+                    "live_deployed",
+                    "UNSUPPORTED",
+                    evidence={"index_data": index_data, "probe_url": probe_url},
+                    notes=(
+                        "Stateful tools are intentionally not registered on an "
+                        "unauthenticated public listener, so there is no shared "
+                        "Crawl2RAG store to test. This is not a pass for isolation; "
+                        "it is a deliberate removal of the exposed surface."
+                    ),
+                )
+            )
+        elif indexed:
             # New HTTP client => new TCP connection, no shared client state.
             async with httpx.AsyncClient(timeout=30.0, follow_redirects=False) as fresh:
                 fresh_init = await _rpc(fresh, endpoint, {**init_payload, "id": "fresh-init"})

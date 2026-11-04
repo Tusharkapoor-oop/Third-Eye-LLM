@@ -1,178 +1,148 @@
-# WebLens: Autonomous Web Intelligence Platform & Model Context Protocol (MCP)
+# WebLens: Web Intelligence Platform & Model Context Protocol (MCP)
 
-WebLens is a production-grade, local-first and cloud-deployable web intelligence platform designed for autonomous AI agents. Built with strict low-token budgets, verifiable character-span citations, and zero-guess factual grounding, WebLens replaces expensive, heavy third-party search subscriptions with a high-performance retrieval engine and application suite.
+WebLens is a local-first, cloud-deployable web intelligence platform for AI agents. It provides compact, citable evidence packets, bounded crawling, a local RAG knowledge base, and nine application workflows over a real MCP server.
 
-WebLens is deployed live on Google Cloud Run and runs locally across Windows, Linux, and macOS.
+This README reports **measured** results from the current V10 evaluation. It deliberately does not repeat older unverified marketing numbers.
 
 ---
 
 ## Live Cloud Deployment
 
-- **MCP Endpoint**: `https://weblens-16131012091.us-central1.run.app/mcp`
-- **Health Check**: `https://weblens-16131012091.us-central1.run.app/`
-- **Current Revision**: `weblens-00003-l9q`
-- **Transport**: JSON-RPC over Streamable HTTP MCP (MCP Specification 2024-11-05 / 2026 standards)
-- **Active Tools**: All 13 tools active under `--profile full`
+- **MCP endpoint:** `https://weblens-fgunqcnrla-uc.a.run.app/mcp`
+- **Alias endpoint:** `https://weblens-16131012091.us-central1.run.app/mcp`
+- **Health/root:** `GET /` returns `{"status":"ok","service":"weblens","version":"0.1.0","mcp_endpoint":"/mcp"}`
+- **Current revision:** `weblens-00006-l9h` (region `us-central1`)
+- **Transport:** JSON-RPC over Streamable HTTP MCP
+- **Public tool surface:** 10 stateless tools. The three stateful tools (`crawl2rag_index`, `crawl2rag_query`, `research_chat`) are **not** registered on the public unauthenticated listener because they share a process-wide SQLite store.
+- **Local tool surface:** all 13 tools under `--profile full` on loopback (or with a bearer token).
+
+The deployment is public (`allUsers`). Authentication is **not enforced**, and no application-level rate limit was observed. See the security section below.
 
 ---
 
-## Key Differentiators & Empirical Advantages
+## V10 Three-System Measurement (120 queries)
 
-1. **2.7x to 3.3x Faster than Commercial APIs**:
-   - Local WebLens p50 Latency: **939.5 ms** (3.26x faster than Tavily Direct).
-   - Deployed Cloud Run WebLens p50 Latency: **1,115.6 ms** (2.74x faster than Tavily Direct at 3,062.2 ms).
-2. **70.7% Fewer Tokens per Request**:
-   - Averages **428.2 tokens** on Cloud Run vs **1,459.5 tokens** for Tavily Direct, cutting downstream LLM token consumption costs.
-3. **100% Free Search Cost ($0.00)**:
-   - Keyless federated search backends (DuckDuckGo, Wikipedia REST, Mwmbl) eliminate recurring per-query API fees.
-4. **Zero Fake Accuracy & Verifiable Citations**:
-   - No fabricated relevance floats. Every passage contains exact character spans (`span_start`, `span_end`) traceable to the source document.
-   - Explicit uncertainty states (`no_reliable_result`, `conflicting_sources`) prevent hallucinations.
-5. **Hardened Security & Zero-Trust Architecture**:
-   - 100% pass rate on local penetration testing (26/26 tests passed) and remote Cloud Run security audit (10/10 tests passed).
-   - Enforced SSRF socket-level IP validation, path traversal boundaries, spreadsheet formula injection defense, and indirect prompt injection quarantine.
+Dataset: `weblens-lab/datasets/eval_benchmark_suite_v10.json` (`v10.0.0`), 120 curated queries, 30 categories × 4, 60 dev / 60 held-out, SHA-256 `a42d4004fb91208f1ae18de89e2337f2ccf5e7cb580a3c600a8ec7d8057d6361`.
 
----
+Systems measured independently, same queries, no merged results:
 
-## Four-System Benchmark Lab (V10: 120-Query Evaluation)
+1. Local WebLens MCP server process (`python -m weblens.cli serve --http --profile full`, keyless providers only)
+2. Deployed WebLens MCP (`weblens-00003-l9q` at measurement time; current revision has remediation changes)
+3. Tavily direct `/search` (`search_depth=basic`, 5 results)
 
-WebLens V10 evaluates four independently measured systems across 120 stratified queries spanning 30 real-world research categories (including academic research, competitive intelligence, crawl2rag, finance, healthcare, legal/policy, and security injection):
+| Metric | Local WebLens | Deployed WebLens | Tavily |
+|---|---:|---:|---:|
+| Graded queries | 107 | 107 | 107 |
+| Success rate | 0.900 | 0.942 | 1.000 |
+| p50 latency | **837.0 ms** | 1,037.8 ms | 1,537.4 ms |
+| p95 latency | **1,497.3 ms** | 1,622.2 ms | 2,673.1 ms |
+| P@5 | 0.553 | 0.471 | **0.740** |
+| nDCG@5 | 0.669 | 0.729 | **0.777** |
+| Hit@5 | 0.729 | 0.832 | **0.935** |
+| Mean tokens (`cl100k`) | **182.3** | 206.2 | 1,378.7 |
+| Provider credits | 0 | 0 | 120 |
 
-- **System 1**: Local WebLens MCP (`http://127.0.0.1:50301/mcp`)
-- **System 2**: Deployed WebLens MCP on Google Cloud Run (`https://weblens-16131012091.us-central1.run.app/mcp`)
-- **System 3**: Tavily Direct API (`https://api.tavily.com`)
-- **System 4**: Google Gemini API (`gemini-2.5-flash` with Google Search Grounding & WebLens tool composition)
+95% CIs for P@5: local `[0.484, 0.624]`, deployed `[0.411, 0.533]`, Tavily `[0.675, 0.804]`.
 
-### Empirical Results (120 Stratified Queries, Interleaved Execution)
+**Honest reading:** WebLens is ~1.8× faster and returns ~7.5× fewer tokens than Tavily, but Tavily is more relevant and more reliable on this dataset. Paired local−Tavily P@5 is **−0.187**, 95% CI `[−0.265, −0.108]` (24 wins / 34 ties / 49 losses). Do not claim WebLens beats Tavily on retrieval quality.
 
-| Metric | System 1: Local WebLens | System 2: Deployed WebLens | System 3: Tavily Direct | WebLens Advantage |
-| :--- | :--- | :--- | :--- | :--- |
-| **p50 Latency** | **837.0 ms** | 1,037.8 ms | 1,537.4 ms | **WebLens (1.8x faster)** |
-| **p95 Latency** | **1,497.3 ms** | 1,622.2 ms | 2,673.1 ms | **WebLens (1.8x tighter tail)** |
-| **Mean Latency** | **937.8 ms** | 1,037.1 ms | 1,606.8 ms | **WebLens (1.7x faster)** |
-| **Mean Tokens / Query** | **182.3** | 206.2 | 1,378.7 | **WebLens (-85.0% tokens)** |
-| **Cost / 120 Queries** | **$0.00 (0 credits)** | **$0.00 (0 credits)** | 120 credits (~$0.60) | **WebLens (100% Free)** |
-| **Precision@5 (Mean)** | 0.553 (CI95: [0.477, 0.632]) | 0.471 (CI95: [0.411, 0.533]) | **0.740** (CI95: [0.675, 0.804]) | Tavily (+33.8% on long tail) |
-| **Precision@1** | 0.617 | 0.636 | **0.757** | Tavily |
-| **MRR** | 0.660 | 0.711 | **0.827** | Tavily |
-| **nDCG@5** | 0.669 | 0.729 | **0.777** | Tavily |
-| **Hit@5 Rate** | 72.9% | 83.2% | **93.5%** | Tavily |
-| **Domain Diversity** | 89.8% | 94.2% | **100.0%** | WebLens high diversity |
-| **Duplicate Rate** | **0.0%** | **0.0%** | **0.0%** | Tied (Zero duplicates) |
-| **Error Rate** | **0.0% (0/120)** | **0.0% (0/120)** | **0.0% (0/120)** | Tied (Zero crashes) |
+Full report: `reports/three-system-comparison-v10/V10_REPORT.md`.
 
-*System 4 (Google Gemini API) integrates via `GeminiAdapter` supporting Mode G1 (Google Search Grounding), Mode G2 (Gemini + WebLens MCP composition), and Mode G3 (Gemini + Tavily). Live execution requires `GEMINI_API_KEY` in `.env`.*
+### Dataset status
 
+- 120 curated queries achieved.
+- 100k primary / 250k preferred / 500k stress targets: **BLOCKED**, not met.
+- 10k adversarial cases: **BLOCKED**; 9 curated cases exist.
+- 13 unanswerable/ambiguous/contradictory queries are excluded from graded metrics (107 graded).
 
 ---
 
-## Live Quality Arena Benchmark: MyWebEngine vs Tavily vs Gemini Grounding
+## Official Tavily Demo Use-Case Coverage
 
-WebLens / MyWebEngine features an automated Live Quality Arena (`quality_arena.py`) evaluating retrieval precision, code/table fidelity, noise rejection, domain authority, and token efficiency against live commercial APIs on a strict 100-point deterministic rubric.
+All eight official Tavily demo use cases were exercised through real WebLens tools, with Tavily `/search` as a retrieval baseline:
 
-### Empirical Results (`arena_report.json`)
+| ID | Use case | WebLens tool | WebLens facet coverage | Tavily facet coverage |
+|---|---|---|---:|---:|
+| UC-01 | Company research | `company_research` | 0.25 | 0.75 |
+| UC-02 | Financial market research | `market_research` | 0.25 | 1.00 |
+| UC-03 | Web-powered assistant | `deep_research` | 0.50 | 1.00 |
+| UC-04 | Compliance risk screening | `deep_research` | 0.00 | 0.75 |
+| UC-05 | Sales meeting prep | `meeting_prep` | 0.50 | 0.75 |
+| UC-06 | Supply chain risk | `deep_research` | 0.00 | 0.75 |
+| UC-07 | Underwriting research | `deep_research` | 0.00 | 0.75 |
+| UC-08 | Data enrichment | `sheets_enrich` | 0.60 | 1.00 |
 
-| Benchmark Case | Category | MyWebEngine MCP | Tavily Direct API | Gemini Grounding | Outcome |
-| :--- | :--- | :--- | :--- | :--- | :--- |
-| **tech_bug_async** | Coding Bug with Code Blocks | **85 / 100** | 69 / 100 | BLOCKED (No Key) | **MyWebEngine (+16 pts)** |
-| **compare_rebase_merge** | Comparison Table & Syntax | **90 / 100** | 68 / 100 | BLOCKED (No Key) | **MyWebEngine (+22 pts)** |
-| **latest_python_2026** | Breaking News Recency | **100 / 100** | 80 / 100 | BLOCKED (No Key) | **MyWebEngine (+20 pts)** |
-| **js_heavy_docs** | JS Documentation Extraction | **100 / 100** | 80 / 100 | BLOCKED (No Key) | **MyWebEngine (+20 pts)** |
-| **multipath_uv_pip** | Multi-Hop Deep Research | **85 / 100** | 68 / 100 | BLOCKED (No Key) | **MyWebEngine (+17 pts)** |
-| **OVERALL AVERAGE** | **All 5 Benchmark Categories** | **92.0 / 100** | **73.0 / 100** | **BLOCKED** | **MyWebEngine (+19.0 pts)** |
+Mean facet coverage: **WebLens 0.263 vs Tavily 0.844**. Mean tokens: **149.1 vs 1,278.6**. Mean latency: **9,102 ms vs 332 ms**. Scoring counts output evidence only; query/input echoes are excluded.
 
-- **Score Target ($\ge 90.0$)**: **PASSED (92.0 / 100)**
-- **Head-to-Head Win Rate**: **100% (5 out of 5 categories won against Tavily)**
-- **Information Density**: **146.4 vs 17.7 tokens per 1k** (MyWebEngine is **8.3x more token-dense** than Tavily Direct)
-- **Answer Completeness**: **100% across all 5 benchmark cases**
-- **Signal-to-Noise Score**: **20 / 20 (Zero SEO noise or navigation clutter)**
+Caveat: Tavily `/search` returns snippets, not a synthesized report; this is a retrieval-only lower bound for Tavily, not a full agent comparison. Results: `reports/tavily-use-cases-v10/results.json`.
 
 ---
 
-## Complete 5-Tool Tavily-Compatible MCP Architecture (`server.py`)
+## Model Access (Not a Ranking)
 
-MyWebEngine implements a complete 5-endpoint Model Context Protocol server matching and exceeding Tavily's core API capabilities while adding Firecrawl-style SPA extraction and Exa-style neural reranking:
+| Model | Status | Evidence |
+|---|---|---|
+| `mistralai/mistral-large-4-1t-a52b` (NVIDIA) | **ACCESSIBLE** | HTTP 200, exact JSON reply, 21.4 s, 116 reasoning tokens |
+| `openai/gpt-oss-20b` (NVIDIA) | **BLOCKED** | Two probes (60 s, 150 s) returned `ReadTimeout` |
+| `nv-mistralai/mistral-nemo-12b-instruct` | **BLOCKED** | HTTP 404, not entitled for this account |
+| “GPT-OSS 12B” | **UNSUPPORTED** | No such model ID available; 12B option is Mistral NeMo 12B |
 
-1. **`web_search`**: Multi-subquery consensus, authority domain boosting (+1.2 prior for primary docs), FlashRank neural cross-encoder reranking, and automatic Tavily hybrid fallback.
-2. **`extract_url`**: Tier 1 fast HTTP with atomic `<pre>/<code>` and `<table>` protection $\rightarrow$ Tier 2 Playwright stealth browser for SPAs $\rightarrow$ Tier 3 Tavily rescue for hard WAFs.
-3. **`web_map`**: Fast internal URL graph mapping combining XML sitemap discovery with bounded BFS link graph traversal and regex path filtering.
-4. **`crawl_website`**: Deep multi-page site ingestion with in-flight semantic passage pruning, robots.txt compliance, and token budgeting.
-5. **`deep_research`**: Autonomous multi-hop evidence discovery with query planning, parallel multi-angle search, gap analysis, and cited Markdown synthesis.
-
-To start the 5-tool MCP server:
-```bash
-# STDIO transport (for Claude Desktop / Cline / Roo Code)
-python server.py
-
-# Streamable HTTP transport
-python server.py --http --port 8765
-```
-
-To run the Live Quality Arena:
-```bash
-python quality_arena.py
-```
-
+Only one model produced a completion. A model-vs-model quality ranking would be fabricated and is not reported.
 
 ---
 
-## All Nine Product Applications
+## Nine Product Applications
 
-WebLens includes nine built-in product applications, each verified live with 100% pass rates:
+Verified live end-to-end: **9 PASS / 0 PARTIAL / 0 FAIL** (`reports/nine_applications_verification.json`).
 
-1. **Deep Research Agent**: Autonomous multi-hop evidence discovery, query decomposition, and conflict detection with strict 2,000-token boundaries.
-2. **Company Researcher**: Corporate intelligence profiles, domain discovery, leadership, products, and SEC/regulatory disclosures.
-3. **Conversational Answer Engine (Chat)**: Interactive conversational search with cited passage spans and multi-turn context retention.
-4. **Crawl2RAG Knowledge Base**: Bounded polite crawler indexing sites into local SQLite FTS5 with BM25 passage ranking and span citations.
-5. **Market Researcher & Portfolio Analyzer**: Financial asset and multi-stock portfolio intelligence sourcing verified metrics from regulatory filings with a strict zero-guess policy.
-6. **Sheets Batch Dataset Enricher**: Row-by-row dataset enrichment with defense against spreadsheet formula injection (`=`, `+`, `-`, `@`, `\t`, `\r` neutralized).
-7. **Meeting Preparation Agent**: Pre-meeting dossiers from calendar events and public professional records with automated privacy boundary enforcement.
-8. **WebLens 101 Tutorial**: Executable developer guide and interactive API walkthrough.
-9. **Persistent Research Chat**: Stateful multi-turn research dialogue backed by SQLite session persistence (`sessions` and `messages` tables).
+1. Deep research with URL + exact span citations
+2. Company researcher
+3. Conversational answer engine
+4. Crawl2RAG (real crawl → index → query, passage spans)
+5. Market researcher / portfolio analyzer
+6. Sheets batch enricher (formula injection defanged)
+7. Meeting preparation agent
+8. WebLens 101 tutorial (all 9 steps)
+9. Persistent research chat (reopen and export)
+
+Run: `python tools/run_all_nine_apps_live.py`
 
 ---
 
-## Registered MCP Tools (13 Total)
+## Security Posture (Measured, Not Assumed)
 
-When running with `--profile full` (default in container deployment), WebLens exposes 13 tools:
+**Local:** 38/38 checks pass (`reports/local-security/local_security_results_v2.json`). SSRF blocking works for metadata, loopback, RFC1918, IPv6 loopback and `file://`; a public control URL still extracts, proving the block is not blanket denial.
 
-| Tool Name | Parameters | Description |
-| :--- | :--- | :--- |
-| `web_search` | `query`, `max_results` (1-10), `freshness`, `domains` | Fast web search returning titles, normalized URLs, and snippets. |
-| `extract_url` | `url`, `query`, `max_tokens`, `full` | Extracts relevant passages with exact character spans and timestamps. |
-| `crawl_site` | `url`, `mode` (`map` \| `crawl`), `max_pages`, `max_depth` | Bounded polite crawling respecting robots.txt and SSRF restrictions. |
-| `deep_research` | `query`, `max_tokens` | Multi-hop evidence discovery and conflict analysis. |
-| `company_research` | `company` | Structured company profile (leadership, products, competitors, risks). |
-| `market_research` | `asset`, `question` | Disclosures and verified metrics from official regulatory filings. |
-| `market_portfolio` | `assets` (list of tickers) | Parallel portfolio analysis with aggregated financial disclosures. |
-| `crawl2rag_index` | `url`, `max_pages` | Crawls and indexes a documentation site into local SQLite FTS5. |
-| `crawl2rag_query` | `question`, `top_k` | Queries local BM25 knowledge base returning passages with cited spans. |
-| `meeting_prep` | `meeting_title`, `attendees`, `company_or_org` | Pre-meeting attendee briefing dossier from public professional records. |
-| `sheets_enrich` | `rows`, `column_prompts` | Batch-enriches tabular datasets with formula injection protection. |
-| `research_chat` | `message`, `session_id` | Multi-turn stateful research dialogue with SQLite session persistence. |
-| `tutorial_101` | `step` | Interactive guided walkthrough of core capabilities. |
+**Deployed (revision `00006-l9h`):** 18 PASS / 4 FAIL / 1 UNSUPPORTED (`reports/deployed-security/deployed_security_results_v2.json`).
+
+Open findings:
+
+- Unauthenticated MCP `initialize` succeeds, and a bogus `Bearer` token is accepted. The service is public.
+- No application-level rate limit was observed in 20 cheap metadata calls. This was not a load test.
+- No HSTS header on the app response.
+- Cross-tenant isolation is **UNSUPPORTED**, not PASS: stateful tools were removed from the public listener after a real leak was found on revision `00005`. True multi-tenant isolation is not implemented.
+
+Not claimed: “fully hardened”, “10/10 remote checks passed”, or “zero trust”. The old README claimed these; they are contradicted by the measured audit.
+
+The deployment does **not** include `.env`; no API keys are baked into the image.
 
 ---
 
 ## MCP Client Configuration
 
-### Connecting to Deployed Cloud Run Service
-
-To use the live deployed WebLens endpoint in Claude Desktop, Cline, Roo Code, or Continue:
+### Deployed (public, stateless tools)
 
 ```json
 {
   "mcpServers": {
     "weblens-cloud": {
-      "url": "https://weblens-16131012091.us-central1.run.app/mcp"
+      "url": "https://weblens-fgunqcnrla-uc.a.run.app/mcp"
     }
   }
 }
 ```
 
-### Connecting to Local WebLens MCP Server
-
-In your client configuration (`cline_mcp_settings.json` or `claude_desktop_config.json`):
+### Local (all 13 tools)
 
 ```json
 {
@@ -180,10 +150,7 @@ In your client configuration (`cline_mcp_settings.json` or `claude_desktop_confi
     "weblens-local": {
       "command": "python",
       "args": ["-m", "weblens.cli", "serve", "--profile", "full"],
-      "cwd": "C:\\path\\to\\weblens",
-      "env": {
-        "WEBLENS_MCP_PROFILE": "full"
-      }
+      "env": {"WEBLENS_MCP_PROFILE": "full"}
     }
   }
 }
@@ -193,104 +160,66 @@ In your client configuration (`cline_mcp_settings.json` or `claude_desktop_confi
 
 ## Installation & Local Execution
 
-### Prerequisites
-- Python 3.11+ (Python 3.12 or 3.13 recommended)
-- Windows 11, Linux, or macOS
-
-### Setup
 ```bash
-# Clone repository
 git clone https://github.com/Tusharkapoor-oop/Third-Eye-LLM.git
 cd Third-Eye-LLM
-
-# Install package in editable mode
 pip install -e ./weblens -e .
 ```
 
-### Running the MCP Server
 ```bash
-# Run stdio MCP server (full profile)
+# stdio MCP server (all 13 tools)
 python -m weblens.cli serve --profile full
 
-# Run HTTP MCP server locally
+# local HTTP MCP server
 python -m weblens.cli serve --http --host 127.0.0.1 --port 8765 --profile full
+
+# non-loopback without a token: stateful tools are disabled
+python -m weblens.cli serve --http --host 0.0.0.0 --port 8080 --profile full --allow-insecure
 ```
 
-### Running Applications from CLI
+### Application CLI
+
 ```bash
-# Company Research
 python -m weblens.cli app company "Anthropic"
-
-# Market Analysis
 python -m weblens.cli app market "Apple Inc."
-
-# Portfolio Analysis
 python -m weblens.cli app market --portfolio "AAPL" --portfolio "MSFT"
-
-# Meeting Preparation
 python -m weblens.cli app meeting "Architecture Review" -a "Guido van Rossum" -c "Python Software Foundation"
-
-# WebLens 101 Tutorial
 python -m weblens.cli app tutorial --step all
 ```
 
 ---
 
-## Security & Penetration Testing
+## Tests Actually Executed
 
-WebLens is engineered with defensive zero-trust principles:
-
-- **SSRF Prevention**: Connect-time socket IP resolution blocks loopback (`127.0.0.1`, `::1`), RFC 1918 subnets (`10.x`, `172.16.x`, `192.168.x`), and cloud metadata (`169.254.169.254`, `metadata.google.internal`).
-- **Spreadsheet Formula Injection Defense**: Defangs cells starting with `=`, `+`, `-`, `@`, `\t`, `\r`, `\n` by prepending `'`.
-- **Indirect Prompt Injection Scanner**: Identifies and quarantines instruction override attempts inside untrusted web pages.
-- **Audit Verification**:
-  - Local Security Audit: 26/26 passed (100%).
-  - Deployed Cloud Run Security Audit: 10/10 passed (100%).
-
-To execute the automated security audit suite:
-```bash
-python weblens-lab/security_lab/run_three_system_security_audit.py
-```
-
-To run all nine applications end-to-end:
-```bash
-python tools/run_all_nine_apps_live.py
-```
+| Suite | Result |
+|---|---|
+| Targeted security/SSRF/crawler/extraction (`pytest tests/...`) | **170 passed** in 16.7 s |
+| Injection + app lifecycle (`pytest tests/test_injection_sanitization.py weblens/tests/test_apps.py`) | **47 passed** in 21.1 s |
+| MCP/auth/apps/config (`pytest weblens/tests/...`) | passed |
+| Full root `pytest tests` | **INCOMPLETE**: reached ~93% then hung >15 min and was terminated; not reported as a pass |
+| Nine apps live runner | **9/9 PASS** |
+| Local security v2 | **38/38 PASS** |
+| Deployed security v2 | **18 PASS / 4 FAIL / 1 UNSUPPORTED** |
 
 ---
 
-## Security Notice: Zero Secret Leakage
+## Repository Layout
 
-- WebLens operates out of the box with zero required API keys.
-- **Never commit `.env` or any real API credentials to Git.**
-- The repository `.gitignore` strictly ignores `.env`, `.env.*`, certificates, and temporary credential files.
-
----
-
-## V11 Quality & Architecture Specifications
-
-- [Product Identity, Non-Goals & Boundaries](docs/PRODUCT_IDENTITY.md)
-- [Complete Architecture Audit & Invariants](docs/ARCHITECTURE_AUDIT.md)
-- [Feature Gap Analysis vs External Systems](docs/FEATURE_GAP_ANALYSIS.md)
-- [Search Quality & Authority Routing Strategy](docs/SEARCH_QUALITY_STRATEGY.md)
-- [Quality Evaluation Methodology & Metrics](docs/QUALITY_EVALUATION_METHODOLOGY.md)
-- [Source Quality & Authority Tier Policy](docs/SOURCE_QUALITY_POLICY.md)
-- [Content Extraction Specification](docs/EXTRACTION_SPECIFICATION.md)
-- [Citation & Provenance Specification](docs/CITATION_AND_PROVENANCE_SPECIFICATION.md)
-- [Model Context Protocol (MCP) & API Reference](docs/MCP_API_REFERENCE.md)
-- [Security Threat Model & Controls](docs/SECURITY_THREAT_MODEL.md)
+- `weblens/src/weblens/` — canonical WebLens package (edit here)
+- `src/weblens/` — editable-install mirror; must stay identical
+- `weblens-lab/` — evaluation harness, dataset, security lab, adapters
+- `reports/` — V10 analysis, use-case results, security results, nine-app evidence
+- `evidence/` — claim ledger, experiment index, loop state, security findings
+- `server.py` — legacy MyWebEngine demo; **not** the Cloud Run entry point
 
 ---
 
-## Documentation Links
+## Documentation
 
-- [Three-System Architecture Specification](docs/THREE_SYSTEM_ARCHITECTURE.md)
-- [Three-System Executive Benchmark Summary](reports/three-system-comparison/EXECUTIVE_SUMMARY.md)
-- [Capability & Feature Matrix](reports/three-system-comparison/CAPABILITY_MATRIX.md)
-- [Search Quality & Retrieval Precision](reports/three-system-comparison/SEARCH_QUALITY.md)
-- [Latency & Performance Results](reports/three-system-comparison/LATENCY.md)
-- [Cost & Token Analysis](reports/three-system-comparison/COST_ANALYSIS.md)
-- [Local Security Plan & Verifications](docs/LOCAL_MCP_SECURITY_PLAN.md)
-- [Deployed Cloud Run Security Plan](docs/DEPLOYED_MCP_SECURITY_PLAN.md)
-- [Dataset Registry & Checksums](evidence/DATASET-REGISTRY.md)
-- [Release Gates Report](evidence/RELEASE-GATES.md)
+- [V10 three-system report](reports/three-system-comparison-v10/V10_REPORT.md)
+- [Claim ledger](evidence/CLAIM_LEDGER.md)
+- [Security findings](evidence/SECURITY-FINDINGS.md)
+- [Experiment index](evidence/EXPERIMENT-INDEX.md)
+- [Final A–L report](reports/FINAL_REPORT.md)
+- [MCP API reference](docs/MCP_API_REFERENCE.md)
+- [Security threat model](docs/SECURITY_THREAT_MODEL.md)

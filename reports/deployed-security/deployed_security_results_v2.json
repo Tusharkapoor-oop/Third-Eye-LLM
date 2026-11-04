@@ -1,12 +1,12 @@
 {
   "suite": "deployed_security_audit_v2",
-  "timestamp": "2026-11-04T17:28:15.379856+00:00",
+  "timestamp": "2026-11-04T18:00:26.258853+00:00",
   "overall_status": "FAIL",
   "total_tests": 23,
   "status_counts": {
-    "PASS": 17,
-    "FAIL": 5,
-    "UNVERIFIED": 1
+    "PASS": 18,
+    "FAIL": 4,
+    "UNSUPPORTED": 1
   },
   "findings": [
     {
@@ -43,18 +43,6 @@
       }
     },
     {
-      "id": "deployed_search_oversize_query",
-      "category": "input_validation",
-      "severity": "low",
-      "status": "FAIL",
-      "notes": "",
-      "evidence": {
-        "status": 200,
-        "tool_status": "no_reliable_result",
-        "results": 0
-      }
-    },
-    {
       "id": "deployed_rate_limit_metadata",
       "category": "rate_limiting",
       "severity": "medium",
@@ -66,21 +54,6 @@
           200
         ],
         "saw_429": false
-      }
-    },
-    {
-      "id": "deployed_cross_tenant_crawl2rag",
-      "category": "cross_tenant_isolation",
-      "severity": "info",
-      "status": "UNVERIFIED",
-      "notes": "Indexing example.com failed, so cross-client visibility could not be tested.",
-      "evidence": {
-        "index_data": {
-          "status": "error",
-          "msg": "Error executing tool crawl2rag_index",
-          "is_error": true
-        },
-        "probe_url": "https://example.com/?weblens_tenant_probe=wlprobe0fb83a001e"
       }
     }
   ],
@@ -142,7 +115,7 @@
       "severity": "info",
       "evidence": {
         "status": 200,
-        "tool_count": 13,
+        "tool_count": 10,
         "tools": [
           "web_search",
           "extract_url",
@@ -151,11 +124,8 @@
           "company_research",
           "market_research",
           "market_portfolio",
-          "crawl2rag_index",
-          "crawl2rag_query",
           "meeting_prep",
           "sheets_enrich",
-          "research_chat",
           "tutorial_101"
         ]
       },
@@ -344,11 +314,11 @@
       "id": "deployed_search_oversize_query",
       "category": "input_validation",
       "layer": "live_deployed",
-      "status": "FAIL",
+      "status": "PASS",
       "severity": "low",
       "evidence": {
         "status": 200,
-        "tool_status": "no_reliable_result",
+        "tool_status": "error",
         "results": 0
       },
       "notes": ""
@@ -396,17 +366,17 @@
       "id": "deployed_cross_tenant_crawl2rag",
       "category": "cross_tenant_isolation",
       "layer": "live_deployed",
-      "status": "UNVERIFIED",
+      "status": "UNSUPPORTED",
       "severity": "info",
       "evidence": {
         "index_data": {
           "status": "error",
-          "msg": "Error executing tool crawl2rag_index",
+          "msg": "Unknown tool: crawl2rag_index",
           "is_error": true
         },
-        "probe_url": "https://example.com/?weblens_tenant_probe=wlprobe0fb83a001e"
+        "probe_url": "https://example.com/?weblens_tenant_probe=wlprobee12f40e8dc"
       },
-      "notes": "Indexing example.com failed, so cross-client visibility could not be tested."
+      "notes": "Stateful tools are intentionally not registered on an unauthenticated public listener, so there is no shared Crawl2RAG store to test. This is not a pass for isolation; it is a deliberate removal of the exposed surface."
     },
     {
       "id": "deployed_secret_disclosure",
@@ -415,7 +385,7 @@
       "status": "PASS",
       "severity": "critical",
       "evidence": {
-        "secrets_checked": 2,
+        "secrets_checked": 0,
         "secret_hits": [],
         "contains_traceback": false,
         "contains_local_path": false

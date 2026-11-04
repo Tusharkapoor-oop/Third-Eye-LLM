@@ -1,7 +1,7 @@
 {
   "session": "weblens-v10-2026-11-04",
-  "status": "OPEN-REMEDIATION",
-  "updated_at": "2026-11-04T23:30:00Z",
+  "status": "CHECKPOINT",
+  "updated_at": "2026-11-05T00:20:00Z",
   "objective": "Real three-system evaluation + product/security fixes; no fabricated success.",
   "dataset": {
     "path": "weblens-lab/datasets/eval_benchmark_suite_v10.json",
@@ -16,6 +16,12 @@
     "excluded_queries": 13,
     "exclusion_reason": "unanswerable / ambiguous / contradictory / adversarial items without a gradeable expected result set"
   },
+  "adversarial": {
+    "cases_achieved": 9,
+    "target": 10000,
+    "status": "BLOCKED",
+    "reason": "Only curated adversarial cases exist; no synthetic inflation."
+  },
   "systems": {
     "local_weblens": {
       "kind": "real local MCP subprocess",
@@ -28,11 +34,12 @@
     "deployed_weblens": {
       "kind": "real Cloud Run MCP",
       "revision_measured": "weblens-00003-l9q",
+      "current_revision": "weblens-00006-l9h",
       "p5": 0.471, "ndcg5": 0.729, "hit5": 0.832,
       "p50_ms": 1037.8, "p95_ms": 1622.2,
       "success_rate": 0.942,
       "mean_tokens": 206.2,
-      "status": "MEASURED_PRE_REDEPLOY"
+      "status": "MEASURED_PRE_REMEDIATION"
     },
     "tavily_direct": {
       "kind": "live Tavily API",
@@ -48,6 +55,21 @@
     "local_minus_tavily_p5": {"mean": -0.187, "ci95": [-0.265, -0.108], "w_t_l": [24, 34, 49]},
     "deployed_minus_local_p5": {"mean": -0.082, "ci95": [-0.142, -0.024], "w_t_l": [25, 36, 46]}
   },
+  "post_deploy_smoke_10": {
+    "artifact": "reports/three-system-comparison-v10/analysis-post-deploy-smoke/analysis.json",
+    "note": "First 10 dataset queries, not the full held-out sample; directional only.",
+    "local_weblens": {"p5": 0.62, "ndcg5": 0.867, "hit5": 0.9, "p50_ms": 3522.4, "tokens": 206.0, "success_rate": 1.0},
+    "deployed_weblens": {"revision": "weblens-00006-l9h", "p5": 0.8, "ndcg5": 0.932, "hit5": 1.0, "p50_ms": 1211.5, "tokens": 266.4, "success_rate": 1.0},
+    "tavily_direct": {"p5": 0.92, "ndcg5": 0.908, "hit5": 1.0, "p50_ms": 2324.8, "tokens": 1367.4, "success_rate": 1.0, "credits": 10}
+  },
+  "tavily_official_use_cases": {
+    "artifact": "reports/tavily-use-cases-v10/results.json",
+    "cases": 8,
+    "local_weblens": {"ok_cases": 7, "error_cases": 0, "mean_facet_coverage": 0.263, "mean_latency_ms": 9102.4, "mean_tokens": 149.1, "cases_with_evidence_urls": 4},
+    "tavily_direct_search": {"ok_cases": 8, "error_cases": 0, "mean_facet_coverage": 0.844, "mean_latency_ms": 332.3, "mean_tokens": 1278.6, "cases_with_evidence_urls": 8},
+    "caveat": "Tavily /search returns snippets, not a synthesized agent answer; retrieval-only baseline, not an apples-to-apples agent comparison. Scoring counts only output evidence fields; query/input echoes are excluded.",
+    "status": "MEASURED"
+  },
   "product": {
     "nine_apps": {"passed": 9, "partial": 0, "failed": 0, "artifact": "reports/nine_applications_verification.json"},
     "status": "PASS"
@@ -55,18 +77,25 @@
   "security": {
     "local": {"pass": 38, "fail": 0, "unverified": 0, "artifact": "reports/local-security/local_security_results_v2.json", "status": "PASS"},
     "deployed": {
-      "pass": 17, "fail": 5, "unverified": 1,
+      "revision": "weblens-00006-l9h",
+      "pass": 18, "fail": 4, "unverified": 0, "unsupported": 1,
       "artifact": "reports/deployed-security/deployed_security_results_v2.json",
       "status": "FAIL",
       "findings": [
         "public unauthenticated MCP initialize",
         "bogus Bearer accepted",
         "no application-level rate limit visible in 20 calls",
-        "no HSTS header",
-        "oversize query accepted by old build",
-        "cross-tenant Crawl2RAG UNVERIFIED because crawl2rag_index errors"
+        "no HSTS header"
       ],
-      "note": "SSRF blocking verified working; earlier SSRF FAIL was a harness parsing bug."
+      "resolved": [
+        "oversize query now rejected",
+        "Crawl2RAG failure fixed",
+        "cross-tenant shared state removed from public listener"
+      ],
+      "unsupported": [
+        "cross-tenant Crawl2RAG isolation is UNSUPPORTED because the stateful tools are intentionally absent from the public listener"
+      ],
+      "note": "SSRF blocking verified working; earlier SSRF FAIL was a harness parsing bug. Public listener is 10 stateless tools; local loopback keeps 13."
     }
   },
   "models": {
@@ -79,20 +108,31 @@
   "tests": {
     "targeted_root": {"passed": 170, "failed": 0, "duration_s": 16.7},
     "injection_plus_apps": {"passed": 47, "failed": 0, "duration_s": 21.1},
-    "full_root_suite": {"status": "INCOMPLETE", "reason": "hung after ~93% for >15 min; terminated"},
+    "weblens_mcp_auth_apps_config": {"status": "PASS", "note": "26 tests selected; suite printed all dots"},
+    "full_root_suite": {"status": "INCOMPLETE", "reason": "hung after ~93%; surviving process was tests/test_04_fuzz_and_chaos.py after ~21 min (174 s CPU, 220 MB); terminated"},
     "note": "Earlier 248-pass full run predates the edits in this session."
   },
   "deployment": {
-    "current_ready_revision": "weblens-00003-l9q",
-    "dockerfile_changed_to": "python -m weblens.cli serve --http --host 0.0.0.0 --port $PORT --profile full --allow-insecure",
-    "redeploy_status": "IN_PROGRESS_OR_BLOCKED",
-    "post_deploy_verification": "PENDING"
+    "current_ready_revision": "weblens-00006-l9h",
+    "public_url": "https://weblens-fgunqcnrla-uc.a.run.app",
+    "dockerfile_entrypoint": "python -m weblens.cli serve --http --host 0.0.0.0 --port $PORT --profile full --allow-insecure",
+    "tool_surface": {"public": 10, "loopback": 13, "stateful_public": 0},
+    "post_deploy_verification": "DONE"
   },
+  "blocked": [
+    "100k/250k/500k dataset targets (achieved 120)",
+    "10k adversarial cases (achieved 9)",
+    "GPT-OSS 20B and Mistral NeMo 12B access",
+    "internal Cloud Run configuration inspection beyond gcloud-visible settings",
+    "local Docker build (daemon unavailable); Cloud Build succeeded",
+    "full root pytest completion"
+  ],
   "next_actions": [
-    "Confirm or cancel the Cloud Run redeploy; if deployed, rerun deployed security audit and a smoke benchmark.",
-    "Re-run the full root suite with per-test timeouts from a fresh process; identify the test that hangs.",
-    "Add --systems support to the V10 runner and A/B the query-normalization change on the 60-query dev split.",
-    "Obtain valid credentials/entitlements for GPT-OSS 20B and Mistral NeMo 12B before attempting a model comparison.",
-    "Do not claim 100k/10k dataset targets or a hardened deployment."
+    "Decide whether to keep the public unauthenticated deployment or require IAM/token auth; document cost/abuse risk either way.",
+    "Add --systems to the V10 runner and A/B query normalization on the 60-query dev split.",
+    "Isolate the hanging root test with per-test timeouts from a fresh process.",
+    "Add per-tenant identity and separate stores before claiming multi-tenant isolation.",
+    "Obtain valid entitlements for GPT-OSS 20B and Mistral NeMo 12B before any model comparison.",
+    "Do not claim 100k/10k dataset targets or a fully hardened deployment."
   ]
 }

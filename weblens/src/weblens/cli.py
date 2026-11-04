@@ -169,7 +169,17 @@ def _serve_http(args: argparse.Namespace) -> int:
         )
 
     service = WebLens(settings)
-    server = build_server(service, profile=args.profile)
+    # Stateful tools (Crawl2RAG, research chat) share one SQLite store. A
+    # public, unauthenticated listener has no tenant identity, so exposing them
+    # would let one caller read another caller's documents. Keep them available
+    # on loopback or when the listener is authenticated.
+    allow_stateful = loopback or bool(token)
+    if not allow_stateful:
+        print(
+            "stateful tools disabled: non-loopback listener without a bearer token",
+            file=sys.stderr,
+        )
+    server = build_server(service, profile=args.profile, allow_stateful=allow_stateful)
     app = server.streamable_http_app(
         stateless_http=not args.stateful,
         json_response=False,

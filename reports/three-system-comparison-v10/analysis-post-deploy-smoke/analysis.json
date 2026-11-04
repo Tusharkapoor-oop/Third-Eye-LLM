@@ -1,0 +1,400 @@
+{
+  "run_file": "reports\\three-system-comparison-v10\\raw\\post_deploy_smoke_10.jsonl\\run_post_deploy_smoke_10.jsonl",
+  "records": 10,
+  "dataset_versions": [
+    "v10.0.0"
+  ],
+  "systems": {
+    "local_weblens": {
+      "n": 10,
+      "n_graded": 10,
+      "success_rate": 1.0,
+      "p50_ms": 3522.4,
+      "p95_ms": 3649.0,
+      "mean_ms": 3544.3,
+      "p5": 0.62,
+      "p1": 0.8,
+      "mrr": 0.85,
+      "ndcg5": 0.867,
+      "hit5": 0.9,
+      "tokens": 206.0,
+      "credits": 0.0,
+      "p5_ci95": [
+        0.42,
+        0.8
+      ],
+      "ndcg5_ci95": [
+        0.665,
+        0.999
+      ]
+    },
+    "deployed_weblens": {
+      "n": 10,
+      "n_graded": 10,
+      "success_rate": 1.0,
+      "p50_ms": 1211.5,
+      "p95_ms": 1622.6,
+      "mean_ms": 1257.2,
+      "p5": 0.8,
+      "p1": 0.8,
+      "mrr": 0.9,
+      "ndcg5": 0.932,
+      "hit5": 1.0,
+      "tokens": 266.4,
+      "credits": 0.0,
+      "p5_ci95": [
+        0.68,
+        0.92
+      ],
+      "ndcg5_ci95": [
+        0.838,
+        0.996
+      ]
+    },
+    "tavily_direct": {
+      "n": 10,
+      "n_graded": 10,
+      "success_rate": 1.0,
+      "p50_ms": 2324.8,
+      "p95_ms": 2725.8,
+      "mean_ms": 2359.3,
+      "p5": 0.92,
+      "p1": 1.0,
+      "mrr": 1.0,
+      "ndcg5": 0.908,
+      "hit5": 1.0,
+      "tokens": 1367.4,
+      "credits": 10.0,
+      "p5_ci95": [
+        0.8,
+        1.0
+      ],
+      "ndcg5_ci95": [
+        0.85,
+        0.967
+      ]
+    }
+  },
+  "paired": {
+    "local_minus_tavily_p5": {
+      "n_pairs": 10,
+      "mean_delta": -0.3,
+      "ci95": [
+        -0.44,
+        -0.16
+      ],
+      "wins": 0,
+      "ties": 3,
+      "losses": 7
+    },
+    "local_minus_tavily_ndcg5": {
+      "n_pairs": 10,
+      "mean_delta": -0.041,
+      "ci95": [
+        -0.271,
+        0.109
+      ],
+      "wins": 4,
+      "ties": 4,
+      "losses": 2
+    },
+    "deployed_minus_local_p5": {
+      "n_pairs": 10,
+      "mean_delta": 0.18,
+      "ci95": [
+        0.06,
+        0.32
+      ],
+      "wins": 5,
+      "ties": 5,
+      "losses": 0
+    },
+    "local_minus_deployed_p5": {
+      "n_pairs": 10,
+      "mean_delta": -0.18,
+      "ci95": [
+        -0.32,
+        -0.06
+      ],
+      "wins": 0,
+      "ties": 5,
+      "losses": 5
+    }
+  },
+  "categories": [
+    {
+      "category": "current_events_news",
+      "n": 4,
+      "local_weblens_p5": 0.65,
+      "local_weblens_ndcg5": 0.75,
+      "local_weblens_p50_ms": 3522.4,
+      "local_weblens_tokens": 167.5,
+      "deployed_weblens_p5": 0.9,
+      "deployed_weblens_ndcg5": 0.915,
+      "deployed_weblens_p50_ms": 1260.3,
+      "deployed_weblens_tokens": 278.0,
+      "tavily_direct_p5": 0.85,
+      "tavily_direct_ndcg5": 0.941,
+      "tavily_direct_p50_ms": 2280.2,
+      "tavily_direct_tokens": 1457.0
+    },
+    {
+      "category": "general_factual",
+      "n": 4,
+      "local_weblens_p5": 0.65,
+      "local_weblens_ndcg5": 0.998,
+      "local_weblens_p50_ms": 3523.9,
+      "local_weblens_tokens": 233.8,
+      "deployed_weblens_p5": 0.8,
+      "deployed_weblens_ndcg5": 0.995,
+      "deployed_weblens_p50_ms": 1363.1,
+      "deployed_weblens_tokens": 263.2,
+      "tavily_direct_p5": 1.0,
+      "tavily_direct_ndcg5": 0.935,
+      "tavily_direct_p50_ms": 2329.6,
+      "tavily_direct_tokens": 1383.8
+    },
+    {
+      "category": "technical_research",
+      "n": 2,
+      "local_weblens_p5": 0.5,
+      "local_weblens_ndcg5": 0.84,
+      "local_weblens_p50_ms": 3523.0,
+      "local_weblens_tokens": 227.5,
+      "deployed_weblens_p5": 0.6,
+      "deployed_weblens_ndcg5": 0.837,
+      "deployed_weblens_p50_ms": 1006.5,
+      "deployed_weblens_tokens": 249.5,
+      "tavily_direct_p5": 0.9,
+      "tavily_direct_ndcg5": 0.791,
+      "tavily_direct_p50_ms": 2472.2,
+      "tavily_direct_tokens": 1155.5
+    }
+  ],
+  "largest_local_vs_tavily_gaps": [
+    {
+      "id": "general_factual_q02",
+      "category": "general_factual",
+      "query": "What is the capital city of Australia?",
+      "local_p5": 0.4,
+      "tavily_p5": 1.0,
+      "gap": 0.6,
+      "local_grades": [
+        2,
+        2,
+        0,
+        0,
+        0
+      ],
+      "tavily_grades": [
+        2,
+        1,
+        1,
+        1,
+        1
+      ],
+      "local_status": "partial"
+    },
+    {
+      "id": "general_factual_q03",
+      "category": "general_factual",
+      "query": "How many bones are in the adult human body?",
+      "local_p5": 0.4,
+      "tavily_p5": 1.0,
+      "gap": 0.6,
+      "local_grades": [
+        2,
+        2,
+        0,
+        0,
+        0
+      ],
+      "tavily_grades": [
+        2,
+        1,
+        1,
+        2,
+        1
+      ],
+      "local_status": "partial"
+    },
+    {
+      "id": "current_events_news_q01",
+      "category": "current_events_news",
+      "query": "What major announcements were made regarding Google Gemini in late 2024 and 2025?",
+      "local_p5": 0.0,
+      "tavily_p5": 0.4,
+      "gap": 0.4,
+      "local_grades": [
+        0
+      ],
+      "tavily_grades": [
+        2,
+        0,
+        1,
+        0,
+        0
+      ],
+      "local_status": "partial"
+    },
+    {
+      "id": "current_events_news_q02",
+      "category": "current_events_news",
+      "query": "Which company developed the GPT-4 model released in March 2023?",
+      "local_p5": 0.6,
+      "tavily_p5": 1.0,
+      "gap": 0.4,
+      "local_grades": [
+        2,
+        2,
+        2
+      ],
+      "tavily_grades": [
+        1,
+        1,
+        2,
+        1,
+        1
+      ],
+      "local_status": "partial"
+    },
+    {
+      "id": "technical_research_q01",
+      "category": "technical_research",
+      "query": "What is Python PEP 703 and how does it propose to make the Global Interpreter Lock optional?",
+      "local_p5": 0.4,
+      "tavily_p5": 0.8,
+      "gap": 0.4,
+      "local_grades": [
+        0,
+        2,
+        2,
+        0,
+        0
+      ],
+      "tavily_grades": [
+        1,
+        2,
+        0,
+        1,
+        1
+      ],
+      "local_status": "partial"
+    },
+    {
+      "id": "technical_research_q02",
+      "category": "technical_research",
+      "query": "What does the HTTP 429 status code indicate?",
+      "local_p5": 0.6,
+      "tavily_p5": 1.0,
+      "gap": 0.4,
+      "local_grades": [
+        2,
+        2,
+        0,
+        1,
+        0
+      ],
+      "tavily_grades": [
+        1,
+        1,
+        1,
+        2,
+        1
+      ],
+      "local_status": "partial"
+    },
+    {
+      "id": "general_factual_q04",
+      "category": "general_factual",
+      "query": "What is the tallest mountain above sea level on Earth?",
+      "local_p5": 0.8,
+      "tavily_p5": 1.0,
+      "gap": 0.2,
+      "local_grades": [
+        2,
+        2,
+        1,
+        0,
+        1
+      ],
+      "tavily_grades": [
+        2,
+        1,
+        1,
+        1,
+        1
+      ],
+      "local_status": "partial"
+    },
+    {
+      "id": "current_events_news_q03",
+      "category": "current_events_news",
+      "query": "What was the name of the NASA mission that first landed humans on the Moon in July 1969?",
+      "local_p5": 1.0,
+      "tavily_p5": 1.0,
+      "gap": 0.0,
+      "local_grades": [
+        2,
+        2,
+        2,
+        1,
+        1
+      ],
+      "tavily_grades": [
+        2,
+        2,
+        2,
+        2,
+        2
+      ],
+      "local_status": "partial"
+    },
+    {
+      "id": "current_events_news_q04",
+      "category": "current_events_news",
+      "query": "Which city hosted the 2024 Summer Olympic Games?",
+      "local_p5": 1.0,
+      "tavily_p5": 1.0,
+      "gap": 0.0,
+      "local_grades": [
+        2,
+        2,
+        1,
+        1,
+        1
+      ],
+      "tavily_grades": [
+        2,
+        2,
+        1,
+        1,
+        1
+      ],
+      "local_status": "partial"
+    },
+    {
+      "id": "general_factual_q01",
+      "category": "general_factual",
+      "query": "What year was the Python programming language first released by Guido van Rossum?",
+      "local_p5": 1.0,
+      "tavily_p5": 1.0,
+      "gap": 0.0,
+      "local_grades": [
+        2,
+        2,
+        2,
+        2,
+        2
+      ],
+      "tavily_grades": [
+        1,
+        2,
+        1,
+        1,
+        2
+      ],
+      "local_status": "partial"
+    }
+  ]
+}

@@ -132,16 +132,16 @@ Deployed report: `reports/deployed-security/deployed_security_results_v2.json`
 ## SEC-V10-006 — Oversize query accepted by the old deployed build
 
 - **Severity:** Low
-- **Status:** FIXED LOCALLY; deployed revision predates the fix
-- **Evidence:** A ~7.7k-character query returned `no_reliable_result` instead of a validation error. Current `WebLens.search` rejects `len(query) > 2000`.
-- **Retest:** `local_search_oversize_query` passes (structured rejection).
+- **Status:** FIXED; verified on revision `weblens-00006-l9h`
+- **Evidence (pre-fix):** A ~7.7k-character query returned `no_reliable_result` instead of a validation error. Current `WebLens.search` rejects `len(query) > 2000`.
+- **Retest:** `local_search_oversize_query` passes (structured rejection); the deployed audit on revision `00006` also rejects it.
 
 ## SEC-V10-007 — Crawl2RAG tool crashed on the old deployed build
 
 - **Severity:** Medium (functional break + cross-tenant isolation could not be verified)
-- **Status:** FIXED LOCALLY; redeploy required
-- **Evidence:** Deployed `crawl2rag_index` returned `Error executing tool crawl2rag_index` for a public URL. The old build still references `CrawlOutcome.failures`, which no longer exists.
-- **Consequence:** `deployed_cross_tenant_crawl2rag` is `UNVERIFIED`, not PASS.
+- **Status:** FIXED; verified on revision `weblens-00006-l9h`
+- **Evidence (pre-fix):** Deployed `crawl2rag_index` returned `Error executing tool crawl2rag_index` for a public URL. The old build still references `CrawlOutcome.failures`, which no longer exists.
+- **Consequence (historical):** On the old build, `deployed_cross_tenant_crawl2rag` was `UNVERIFIED`, not PASS. On revision `00005` the test then produced a real leak; on revision `00006` the stateful tool is intentionally absent and the result is `UNSUPPORTED` (see SEC-V10-008).
 
 ## Harness corrections (false positives found and fixed)
 
@@ -154,6 +154,17 @@ The first v2 deployed run reported 14 FAIL. Several were harness bugs, not produ
 5. Unknown tool / missing argument are valid MCP `isError` results, not transport crashes.
 
 After correction, the deployed result is **17 PASS / 5 FAIL / 1 UNVERIFIED**: the five real findings above (auth ×2 counted separately, rate limit, HSTS, oversize query) plus the Crawl2RAG-blocked unverified isolation test. SSRF blocking itself is verified working on both local and deployed.
+
+After the stateful-tool fix and redeploy to revision `weblens-00006-l9h`, the deployed result is **18 PASS / 4 FAIL / 1 UNSUPPORTED**. The four remaining failures are HSTS, unauthenticated initialize, bogus Bearer acceptance, and no visible application rate limit. The cross-tenant test is `UNSUPPORTED` because the stateful tools are deliberately not registered on a public unauthenticated listener.
+
+## SEC-V10-008 — Cross-tenant data exposure through shared stateful tools (pre-fix)
+
+- **Severity:** High (one caller could read another caller's crawled documents and chat history)
+- **Status:** FIXED by removing the exposed surface on public unauthenticated listeners
+- **Evidence (pre-fix):** On revision `weblens-00005-mzl`, the audit indexed a unique probe URL as one client, then a fresh HTTP client queried `crawl2rag_query` and received the probe (`probe_visible_in_other_client: true`). `Crawl2RAG` and `PersistentResearchChat` were constructed once per process with a shared SQLite database and no tenant identity.
+- **Fix:** `build_server(..., allow_stateful=...)` registers `crawl2rag_index`, `crawl2rag_query`, and `research_chat` only when the listener is loopback or authenticated. `weblens cli serve` passes `allow_stateful = loopback or bool(token)` and prints a warning when it disables them. Local MCP clients keep all 13 tools; the public Cloud Run listener exposes 10 stateless tools.
+- **Retest:** Local probe: loopback 13 tools including all 3 stateful tools; `0.0.0.0 --allow-insecure` 10 tools, none stateful. Deployed tools/list: exactly the 10 stateless tools. Deployed audit: cross-tenant check `UNSUPPORTED` (tool absent), not a false PASS.
+- **Residual risk:** If an operator later enables a token, all holders of that single token are still one tenant. True multi-user tenancy requires per-user identity and per-tenant databases. Do not describe the current public deployment as multi-tenant.
 
 ## Local campaign result
 

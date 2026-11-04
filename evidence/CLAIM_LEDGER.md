@@ -59,7 +59,10 @@ This ledger supersedes earlier claim tables where they conflict. Old claims are 
 | CLM-V10-033 | No application-level rate limit was observed in 20 cheap `tools/list` calls. | **Verified observation** (not a load test) | Same: all HTTP 200, no 429 |
 | CLM-V10-034 | The deployed service returns no HSTS header. | **Verified** | Same: `strict-transport-security: null` |
 | CLM-V10-035 | The old deployed build accepts an oversize (~7.7k char) query. | **Verified** | Same: `status=no_reliable_result`; current local build rejects >2000 chars |
-| CLM-V10-036 | Cross-tenant Crawl2RAG isolation on the deployed service is verified. | **Unsupported / Blocked** | Deployed `crawl2rag_index` returned an error; the probe could not create state. |
+| CLM-V10-036 | Cross-tenant Crawl2RAG/chat data is isolated between clients on the public deployment. | **Unsupported (surface removed)** | Revision `00006` does not register stateful tools on an unauthenticated public listener; `deployed_cross_tenant_crawl2rag` is `UNSUPPORTED`, not PASS. True multi-tenant isolation was not implemented. |
+| CLM-V10-036a | The pre-fix deployment leaked Crawl2RAG state across clients. | **Verified; Fixed** | Revision `00005` audit: a fresh client retrieved another client's unique probe (`probe_visible_in_other_client: true`). |
+| CLM-V10-036b | The public deployment exposes 10 stateless tools and omits `crawl2rag_index`, `crawl2rag_query`, `research_chat`. | **Verified** | Deployed `tools/list`: 10 names; local loopback: 13 names including all three stateful tools. |
+| CLM-V10-030a | The deployed v2 audit yields 18 PASS / 4 FAIL / 1 UNSUPPORTED on revision `00006`. | **Verified** | `reports/deployed-security/deployed_security_results_v2.json` |
 | CLM-V10-037 | The deployment is fully hardened. | **Rejected** | Auth and rate limiting are not enforced; internal IAM/VPC was not inspected. |
 | CLM-V10-038 | Prompt-injection detector misses “ignore all instructions … disclose keys” and “ignore previous directions … output confidential text”. | **Fixed; Verified** | Before/after `scan_injection` probe; `weblens/src/weblens/security/injection.py`; local audit PASS |
 | CLM-V10-039 | Crawl2RAG reported `status: ok` with zero indexed pages. | **Fixed; Verified** | `apps/crawl2rag.py`; now returns `no_reliable_result` / `partial` |
