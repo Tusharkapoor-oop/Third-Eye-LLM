@@ -1,10 +1,10 @@
-# WebLens Container for Google Cloud Run
+# WebLens Container for Google Cloud Run and Production MCP Deployment
 FROM python:3.11-slim
 
 # Prevent python from writing pyc files and buffering stdout/stderr
 ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
-    PYTHONPATH=/app/weblens/src:/app/src \
+    PYTHONPATH=/app/weblens/src:/app/src:/app \
     PORT=8080 \
     WEBLENS_HTTP_HOST=0.0.0.0 \
     WEBLENS_HTTP_PORT=8080 \
@@ -16,18 +16,24 @@ WORKDIR /app
 RUN apt-get update && apt-get install -y --no-install-recommends \
     build-essential \
     curl \
+    sqlite3 \
     && rm -rf /var/lib/apt/lists/*
 
-# Copy pyproject, README, and source files
+# Copy configuration and manifests
 COPY README.md pyproject.toml /app/
 COPY weblens/ /app/weblens/
 COPY src/ /app/src/
+COPY *.py /app/
 
 # Install weblens and root package with all dependencies
 RUN pip install --no-cache-dir ./weblens .
 
-# Expose Cloud Run port
+# Expose Cloud Run / HTTP port
 EXPOSE 8080
 
-# Run WebLens in HTTP MCP mode, dynamically reading $PORT assigned by Cloud Run
-CMD ["sh", "-c", "python -m weblens.cli serve --http --host 0.0.0.0 --port ${PORT:-8080} --profile full --allow-insecure"]
+# Health check endpoint
+HEALTHCHECK --interval=30s --timeout=5s --start-period=5s --retries=3 \
+    CMD curl -f http://localhost:${PORT:-8080}/ || exit 1
+
+# Run WebLens in Streamable HTTP MCP mode, dynamically reading $PORT assigned by Cloud Run
+CMD ["sh", "-c", "python server.py --http --host 0.0.0.0 --port ${PORT:-8080}"]

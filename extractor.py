@@ -11,14 +11,14 @@ from __future__ import annotations
 
 import asyncio
 import re
-from typing import Any
-from bs4 import BeautifulSoup, Tag
+
 import trafilatura
+from bs4 import BeautifulSoup, Tag
 
 from config import CONFIG
-from schemas import SourceItem, FailedItem
-from security import safe_fetch_url, sanitize_untrusted_content, SecurityValidationError
 from reranker import TwoStageReranker
+from schemas import FailedItem, SourceItem
+from security import SecurityValidationError, safe_fetch_url, sanitize_untrusted_content
 
 
 def html_table_to_markdown(table: Tag) -> str:
@@ -53,6 +53,35 @@ def html_table_to_markdown(table: Tag) -> str:
     return "\n" + "\n".join(md_lines) + "\n"
 
 
+def strip_hidden_dom_elements(soup: BeautifulSoup) -> None:
+    """Strip hidden DOM elements and comments used for indirect prompt injection."""
+    from bs4 import Comment
+
+    # Strip HTML comments
+    for comment in soup.find_all(string=lambda text: isinstance(text, Comment)):
+        comment.extract()
+
+    # Strip tags with hidden styling or hidden attributes
+    for el in soup.find_all(True):
+        if el.has_attr("hidden") or el.get("aria-hidden") == "true":
+            el.decompose()
+            continue
+        style = (el.get("style") or "").lower().replace(" ", "")
+        if (
+            "display:none" in style
+            or "visibility:hidden" in style
+            or "opacity:0" in style
+            or "font-size:0" in style
+        ):
+            el.decompose()
+            continue
+
+
+def wrap_untrusted_provenance(text: str, url: str) -> str:
+    """Wrap untrusted web text in provenance boundaries."""
+    return f'<untrusted_source_content url="{url}">\n{text.strip()}\n</untrusted_source_content>'
+
+
 def protect_code_and_tables(html_content: str) -> str:
     """Pre-protect <pre>, <code>, and <table> elements before feeding to readability extractors.
 
@@ -60,6 +89,9 @@ def protect_code_and_tables(html_content: str) -> str:
     """
     try:
         soup = BeautifulSoup(html_content, "html.parser")
+
+        # Strip hidden injection vectors before processing
+        strip_hidden_dom_elements(soup)
 
         # Protect <table> elements
         for table in soup.find_all("table"):
@@ -86,6 +118,23 @@ def protect_code_and_tables(html_content: str) -> str:
         return str(soup)
     except Exception:
         return html_content
+
+
+def extract_markdown(html_content: str) -> str:
+    """Extract clean Markdown from HTML with code fence and identifier restoration."""
+    protected_html = protect_code_and_tables(html_content)
+    extracted = trafilatura.extract(
+        protected_html,
+        output_format="markdown",
+        include_tables=True,
+        include_formatting=True,
+        include_links=True,
+    ) or ""
+    # Restore code fences escaped by trafilatura: \`\`\` -> ```
+    extracted = re.sub(r"\\`\\`\\`", "```", extracted)
+    # Restore escaped underscores in identifiers: foo\_bar -> foo_bar
+    extracted = re.sub(r"\\_", "_", extracted)
+    return extracted
 
 
 def is_blocked_or_spa(html_content: str, text_content: str, status_code: int) -> tuple[bool, str]:
@@ -146,11 +195,32 @@ class TieredExtractor:
         """Cleanly close persistent browser resources."""
         async with self._browser_lock:
             if self._browser is not None:
-                await self._browser.close()
+                try:
+                    await self._browser.close()
+                except Exception:
+                    pass
                 self._browser = None
             if self._playwright is not None:
-                await self._playwright.stop()
+                try:
+                    await self._playwright.stop()
+                except Exception:
+                    pass
                 self._playwright = None
+
+            try:
+                import psutil
+                killed = []
+                for child in psutil.Process().children(recursive=True):
+                    if any(b in child.name().lower() for b in ("chrome", "chromium", "playwright")):
+                        try:
+                            child.kill()
+                            killed.append(child)
+                        except Exception:
+                            pass
+                if killed:
+                    psutil.wait_procs(killed, timeout=3.0)
+            except Exception:
+                pass
 
     async def _extract_tier2_playwright(self, url: str) -> tuple[str, str, str | None]:
         """Tier 2: Render dynamic SPA using persistent warm Playwright browser."""
@@ -178,15 +248,7 @@ class TieredExtractor:
             title = await page.title()
             html_content = await page.content()
 
-            # Pre-protect code and tables on dynamic DOM
-            protected_html = protect_code_and_tables(html_content)
-            extracted_md = trafilatura.extract(
-                protected_html,
-                output_format="markdown",
-                include_tables=True,
-                include_formatting=True,
-                include_links=True,
-            ) or ""
+            extracted_md = extract_markdown(html_content)
 
             return title, extracted_md, None
         finally:
@@ -228,7 +290,6 @@ class TieredExtractor:
         """Execute tiered extraction pipeline with automatic WAF fallback."""
         title = ""
         markdown_text = ""
-        engine_used = "tier1_http"
 
         try:
             if not force_tier2:
@@ -236,21 +297,12 @@ class TieredExtractor:
                 status, headers, body = await safe_fetch_url(url)
                 html_text = body.decode("utf-8", errors="replace")
 
-                # Pre-protect <code> and <table>
-                protected_html = protect_code_and_tables(html_text)
-
                 # Extract title via BeautifulSoup
                 soup = BeautifulSoup(html_text, "html.parser")
                 title_tag = soup.find("title")
                 title = title_tag.get_text().strip() if title_tag else ""
 
-                markdown_text = trafilatura.extract(
-                    protected_html,
-                    output_format="markdown",
-                    include_tables=True,
-                    include_formatting=True,
-                    include_links=True,
-                ) or ""
+                markdown_text = extract_markdown(html_text)
 
                 # Check if Tier 1 hit a WAF or empty SPA skeleton
                 is_blocked, reason = is_blocked_or_spa(html_text, markdown_text, status)
@@ -261,7 +313,6 @@ class TieredExtractor:
                         if len(text_t2.strip()) > len(markdown_text.strip()):
                             title = title_t2 or title
                             markdown_text = text_t2
-                            engine_used = "tier2_playwright"
                     except Exception:
                         # If Tier 2 failed, attempt Tier 3 Tavily rescue
                         if CONFIG.tavily_api_key:
@@ -269,13 +320,11 @@ class TieredExtractor:
                                 title_t3, text_t3, _ = await self._extract_tier3_tavily(url)
                                 title = title_t3 or title
                                 markdown_text = text_t3
-                                engine_used = "tier3_tavily"
                             except Exception:
                                 pass
             else:
                 # Direct Tier 2 request
                 title, markdown_text, _ = await self._extract_tier2_playwright(url)
-                engine_used = "tier2_playwright"
 
             if not markdown_text.strip():
                 return FailedItem(url=url, error="Empty page content after all tiers", blocked_by_waf=False)

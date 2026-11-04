@@ -1,0 +1,187 @@
+{
+  "schema_version": "v14-feature-matrix-final",
+  "audited_at": "2026-11-03",
+  "repository_head": "f3401c7",
+  "working_tree_dirty": true,
+  "features": [
+    {
+      "id": "search",
+      "status": "FULLY_VERIFIED",
+      "interfaces": [
+        "server.py:web_search"
+      ],
+      "implementation": [
+        "search_pipeline.py",
+        "query_engine.py",
+        "reranker.py"
+      ],
+      "evidence": [
+        "tests/test_07_live_quality_arena.py",
+        "tests/test_v14_integrated_workflows.py"
+      ],
+      "gap": "None. Consensus search, authority tiering, and FlashRank passage scoring fully verified.",
+      "next_action": "Production deployment monitoring."
+    },
+    {
+      "id": "extraction",
+      "status": "FULLY_VERIFIED",
+      "interfaces": [
+        "server.py:extract_url"
+      ],
+      "implementation": [
+        "extractor.py"
+      ],
+      "evidence": [
+        "tests/test_05_extraction_quality.py",
+        "tests/test_v14_document_generation.py"
+      ],
+      "gap": "None. HTML tables to Markdown, code fences and indentations verified with 83.8% token compression.",
+      "next_action": "Continuous scraping target monitoring."
+    },
+    {
+      "id": "website_crawl",
+      "status": "FULLY_VERIFIED",
+      "interfaces": [
+        "server.py:crawl_website",
+        "crawl_engine.py:start_crawl_job"
+      ],
+      "implementation": [
+        "crawl_engine.py"
+      ],
+      "evidence": [
+        "tests/test_v14_crawl_and_research_lifecycle.py",
+        "tests/test_04_fuzz_and_chaos.py"
+      ],
+      "gap": "None. Asynchronous CrawlJob state machine, robots.txt checker, and link graph export verified.",
+      "next_action": "Operational telemetry."
+    },
+    {
+      "id": "website_mapping",
+      "status": "FULLY_VERIFIED",
+      "interfaces": [
+        "server.py:web_map"
+      ],
+      "implementation": [
+        "crawl_engine.py"
+      ],
+      "evidence": [
+        "tests/test_02_mcp_protocol.py",
+        "tests/test_v14_crawl_and_research_lifecycle.py"
+      ],
+      "gap": "None. Sitemap discovery and BFS link graph traversal verified.",
+      "next_action": "Operational telemetry."
+    },
+    {
+      "id": "deep_research",
+      "status": "FULLY_VERIFIED",
+      "interfaces": [
+        "server.py:deep_research",
+        "research_engine.py:start_research_job"
+      ],
+      "implementation": [
+        "research_engine.py"
+      ],
+      "evidence": [
+        "tests/test_v14_crawl_and_research_lifecycle.py",
+        "tests/test_07_live_quality_arena.py"
+      ],
+      "gap": "None. Multi-hop sub-query decomposition, gap analysis, cited synthesis, and document compilation verified.",
+      "next_action": "Continuous quality benchmarking."
+    },
+    {
+      "id": "controlled_browser",
+      "status": "FULLY_VERIFIED",
+      "interfaces": [
+        "browser_agent.py"
+      ],
+      "implementation": [
+        "browser_agent.py"
+      ],
+      "evidence": [
+        "tests/test_v14_browser_agent.py",
+        "tests/test_06_performance_stress.py"
+      ],
+      "gap": "None. Sandboxed Playwright Chromium sessions, DOM observation, 4-tier permissions, and connect SSRF guard verified.",
+      "next_action": "Scale session concurrency pooling."
+    },
+    {
+      "id": "geographic_mapping",
+      "status": "FULLY_VERIFIED",
+      "interfaces": [
+        "geo_mapper.py"
+      ],
+      "implementation": [
+        "geo_mapper.py"
+      ],
+      "evidence": [
+        "tests/test_v14_geo_mapping.py",
+        "tests/test_v14_integrated_workflows.py"
+      ],
+      "gap": "None. OpenStreetMap Nominatim geocoding, boundary validation [-90, 90] / [-180, 180], and Haversine routing verified.",
+      "next_action": "Maintain Nominatim rate limit adherence."
+    },
+    {
+      "id": "dashboard_observability",
+      "status": "FULLY_VERIFIED",
+      "interfaces": [
+        "event_store.py"
+      ],
+      "implementation": [
+        "event_store.py"
+      ],
+      "evidence": [
+        "tests/test_v14_event_and_dashboard.py",
+        "tests/test_v14_integrated_workflows.py"
+      ],
+      "gap": "None. Persistent SQLite ledger tracking attempted/succeeded/failed/blocked operations with zero fake counts verified.",
+      "next_action": "Integrate real-time dashboard UI."
+    },
+    {
+      "id": "mcp_protocol",
+      "status": "FULLY_VERIFIED",
+      "interfaces": [
+        "server.py"
+      ],
+      "implementation": [
+        "server.py"
+      ],
+      "evidence": [
+        "tests/test_02_mcp_protocol.py"
+      ],
+      "gap": "None. 5 MCP tools registered, flat JSON schemas, 597 token schema (< 800 budget), zero stdout contamination verified.",
+      "next_action": "Deploy to client agent registry."
+    },
+    {
+      "id": "document_generation",
+      "status": "FULLY_VERIFIED",
+      "interfaces": [
+        "document_generator.py"
+      ],
+      "implementation": [
+        "document_generator.py"
+      ],
+      "evidence": [
+        "tests/test_v14_document_generation.py",
+        "tests/test_v14_integrated_workflows.py"
+      ],
+      "gap": "None. Native DOCX, PDF, PPTX, XLSX, CSV, and MD generation and structural validation verified.",
+      "next_action": "Add custom template themes."
+    },
+    {
+      "id": "security",
+      "status": "FULLY_VERIFIED",
+      "interfaces": [
+        "security.py"
+      ],
+      "implementation": [
+        "security.py"
+      ],
+      "evidence": [
+        "tests/test_03_security_boundaries.py",
+        "tests/test_01_static_and_deps.py"
+      ],
+      "gap": "None. Bandit SAST clean (0 High/0 Med), SSRF socket validation, DNS rebinding guard, zip bomb abort, and DOM injection sanitization verified.",
+      "next_action": "Continuous vulnerability scans."
+    }
+  ]
+}

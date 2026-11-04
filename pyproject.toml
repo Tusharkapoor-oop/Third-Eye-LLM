@@ -30,7 +30,11 @@ dependencies = [
     "flashrank>=0.2.10",
     "playwright>=1.49.0",
     "aiosqlite>=0.22.1",
-    "rich>=15.0.0"
+    "rich>=15.0.0",
+    "python-docx>=1.2.0",
+    "reportlab>=5.1.0",
+    "openpyxl>=3.1.5",
+    "python-pptx>=1.0.2",
 ]
 
 [project.optional-dependencies]
@@ -64,3 +68,17 @@ target-version = "py311"
 [tool.ruff.lint]
 select = ["E", "F", "I", "W", "UP"]
 ignore = ["E501"]
+
+[dependency-groups]
+dev = [
+    "bandit>=1.9.4",
+    "hypothesis>=6.170.14",
+    "inline-snapshot>=0.36.1",
+    "mypy>=2.4.1",
+    "pytest>=9.1.1",
+    "pytest-asyncio>=1.4.0",
+    "pytest-cov>=7.1.0",
+    "pytest-timeout>=2.4.0",
+    "respx>=0.23.1",
+    "ruff>=0.17.3",
+]

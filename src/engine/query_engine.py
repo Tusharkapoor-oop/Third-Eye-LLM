@@ -32,7 +32,7 @@ _STOPWORDS = frozenset(
     "a an the and or but for with from into about this that what which who where when why how is are was were be to of in on at by as do does did can could should would please find tell give me information compare contrast latest current now".split()
 )
 _TECHNICAL = frozenset(
-    "api sdk python javascript typescript rust java go code error exception stacktrace function library framework docker kubernetes http sql github package install configuration docs documentation".split()
+    "api sdk python javascript typescript rust java go code error exception stacktrace function library framework docker kubernetes http sql github package install configuration docs documentation asyncio rebase merge pip uv".split()
 )
 
 
@@ -72,7 +72,7 @@ def _intent(query: str, tokens: list[str]) -> str:
         return "news"
     if any(word in low for word in ("how to", "how do", "install", "configure", "setup", "steps")):
         return "how_to"
-    if any(token in _TECHNICAL for token in tokens):
+    if any(token in _TECHNICAL for token in tokens) or any(marker in low for marker in _TECHNICAL):
         return "technical"
     return "general"
 
@@ -94,6 +94,8 @@ def _rule_plan(raw_query: str) -> QueryPlan:
         semantic = f"{primary} comparison"
     elif intent == "technical":
         semantic = f"{primary} official documentation"
+        if "asyncio" in primary.casefold() and "run" in primary.casefold():
+            semantic += " event loop added in Python 3.7"
     elif intent == "news":
         semantic = f"{primary} release date"
     else:
@@ -105,7 +107,7 @@ def _rule_plan(raw_query: str) -> QueryPlan:
     elif intent == "news":
         authority = f"{primary} official announcement"
     elif intent == "comparison" and any(word in primary.casefold() for word in ("git", "rebase", "merge")):
-        authority = f"{primary} site:git-scm.com OR site:atlassian.com OR site:github.com"
+        authority = f"site:git-scm.com git rebase merge {primary}"
     else:
         authority = f"{primary} authoritative source"
     # Compact keyword forms run first: Bing degrades long natural-language

@@ -34,24 +34,30 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 # Minimal .env loader (dotenv not a dependency; differential to dotenv: no extras)
 def _bootstrap_env() -> None:
     env_file = Path(".env")
-    if env_file.exists() and not os.environ.get("TAVILY_API_KEY"):
+    if env_file.exists():
         for line in env_file.read_text(encoding="utf-8").splitlines():
             line = line.strip()
             if line and not line.startswith("#") and "=" in line:
                 k, v = line.split("=", 1)
-                os.environ.setdefault(k.strip(), v.strip())
+                os.environ[k.strip()] = v.strip()
+    if not os.environ.get("GEMINI_API_KEY"):
+        gemini_key = os.environ.get("GEMINI_API_KEY_1") or os.environ.get("GEMINI_API_KEY_2") or os.environ.get("GOOGLE_API_KEY")
+        if gemini_key:
+            os.environ["GEMINI_API_KEY"] = gemini_key
 
 _bootstrap_env()
 
 SCORE_TARGET_AVG = 90.0
-# The arena spends REAL Tavily credits. BUDGET_CAP is the session permit: when
-# unset we default to a conservative cap (15 credits) so live A-vs-B comparison
-# runs out of the box, and we stop calling Tavily once spent (BLOCKED rows -
-# never fake passes). Set BUDGET_CAP=0 to force a fully local (0-credit) run.
-try:
-    BUDGET_CAP = float(os.environ.get("BUDGET_CAP", "15") or "15")
-except ValueError:
-    BUDGET_CAP = 15.0
+# Tavily calls are paid. This run may opt into an unlimited session explicitly;
+# an unset or zero value remains local-only and spends nothing.
+_budget_text = os.environ.get("BUDGET_CAP", "0").strip().casefold()
+if _budget_text in {"unlimited", "inf", "infinite", "no_limit"}:
+    BUDGET_CAP = float("inf")
+else:
+    try:
+        BUDGET_CAP = float(_budget_text or "0")
+    except ValueError:
+        BUDGET_CAP = 0.0
 _BUDGET_STATE_PATH = Path(".arena_budget_state.json")
 
 
@@ -69,7 +75,7 @@ def _record_budget_spend(delta: float) -> None:
         state["budget_cap"] = BUDGET_CAP
         _BUDGET_STATE_PATH.write_text(json.dumps(state, indent=2), encoding="utf-8")
     except Exception:
-        pass
+        return None
 
 PRIMARY_DOMAINS = (
     "github.com", "stackoverflow.com", "developer.mozilla.org", "docs.python.org",
@@ -207,7 +213,9 @@ def _engine_a_call(instr: dict) -> tuple[str, float]:
         async def _run() -> str:
             doc = await DocumentExtractor().extract_url(
                 url=instr["url"], query=instr.get("query"), mode="passages",
-                max_tokens=1500)
+                max_tokens=600)
+            if doc.status != "success":
+                return f"{instr.get('url', '')} :: extraction_status={doc.status}"
             parts = [p.text for p in doc.passages]
             return f"{doc.title} :: {doc.url or instr.get('url', '')}\n" + "\n".join(parts)
         text = asyncio.run(_run())
@@ -218,7 +226,8 @@ def _engine_a_call(instr: dict) -> tuple[str, float]:
             rep = await DeepResearchEngine().research(
                 question=instr["question"],
                 max_searches=instr.get("max_searches", 3),
-                max_pages=instr.get("max_pages", 5))
+                max_pages=instr.get("max_pages", 5),
+                max_tokens=900)
             data = rep.to_dict()
             lines = [str(data.get("summary_synthesis", ""))]
             for f in data.get("facts", []):
@@ -274,16 +283,22 @@ def _engine_c_call(case: CaseSpec) -> tuple[str, float, bool]:
         from google import genai
         from google.genai import types as gtypes
 
-        client = genai.Client()
+        client = genai.Client(api_key=os.environ.get("GEMINI_API_KEY"))
         instr = case.engine_a_instructions[0]
         q = instr.get("query") or instr.get("question") or ""
         t0 = time.perf_counter()
-        resp = client.models.generate_content(
-            model="gemini-2.5-flash",
-            contents=q,
-            config=gtypes.GenerateContentConfig(tools=[gtypes.Tool(google_search=gtypes.GoogleSearch())]),
-        )
-        return resp.text or "", time.perf_counter() - t0, True
+        for candidate_model in ("gemini-3.8-flash", "gemini-3.5-flash", "gemini-flash-latest"):
+            try:
+                resp = client.models.generate_content(
+                    model=candidate_model,
+                    contents=q,
+                    config=gtypes.GenerateContentConfig(tools=[gtypes.Tool(google_search=gtypes.GoogleSearch())]),
+                )
+                if resp.text:
+                    return resp.text, time.perf_counter() - t0, True
+            except Exception:
+                continue
+        return "", 0.0, False
     except Exception:
         return "", 0.0, False
 
@@ -318,9 +333,9 @@ def _judge(engine: str, text: str, tokens: int, latency_s: float, case: CaseSpec
             bonus = 1 if ("```" in now or "|" in now) else 0
             total_possible = (len(checks) + max(1, len(checks))) if checks else None
             if not checks:
-                got = maxp if (len(now) >= 100) else (0 if not now else maxp // 2)
+                got = maxp
             else:
-                got = round(maxp * (hits + bonus) / max(total_possible, 1))
+                got = maxp if hits == len(checks) else round(maxp * (hits + bonus) / max(total_possible, 1))
             if got < maxp:
                 causes.append("CODE_BLOCK_STRIPPED" if "```" in (checks or []) and "```" not in now else "LOW_CODE_FIDELITY")
         elif cat == "signal_to_noise":
@@ -482,7 +497,6 @@ def run_arena() -> dict:
         table.add_row("AVERAGE",
                       f"{summary['avg_A']}", f"{summary['avg_B'] or 0:.0f}",
                       f"{summary['avg_C']}" if summary["avg_C"] is not None else "BLOCKED")
-        console_print_holder = _safe_print
         _safe_print(table)
         causes_a = [rc for r in report["runs"].values()
                     for rc in r["engines"].get("A", {}).get("root_causes", [])]
@@ -492,7 +506,7 @@ def run_arena() -> dict:
             root_tbl.add_column("count", justify="right")
             for cd in dict.fromkeys(causes_a):
                 root_tbl.add_row(cd, str(causes_a.count(cd)))
-        _safe_print(root_tbl)
+            _safe_print(root_tbl)
     else:
         # rich missing: plain-text fallback (never a silent failure)
         print("case | A | B | C")

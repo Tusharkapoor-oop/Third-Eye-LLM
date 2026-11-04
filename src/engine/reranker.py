@@ -205,6 +205,23 @@ def _bm25_scores(chunks: list[RankedChunk], query: str) -> list[float]:
     return [value / maximum if maximum else 0.0 for value in scores]
 
 
+_RANKER = None
+
+
+def _get_ranker():
+    """Load the cross-encoder once per process instead of once per request."""
+    global _RANKER
+    if _RANKER is None:
+        from flashrank import Ranker
+
+        _RANKER = Ranker(model_name="ms-marco-MiniLM-L-12-v2")
+    return _RANKER
+
+
+def _is_structured(text: str) -> bool:
+    return "```" in text or ("\n|" in text and "---" in text)
+
+
 def rank_chunks(markdown: str, query: str, chunks_per_source: int = 3, max_candidates: int = 15) -> list[RankedChunk]:
     """Rank lexical candidates, optionally apply FlashRank, and return reading order."""
     limit = max(1, min(int(chunks_per_source), 5))
@@ -213,11 +230,19 @@ def rank_chunks(markdown: str, query: str, chunks_per_source: int = 3, max_candi
         return []
     scores = _bm25_scores(chunks, query)
     candidates = sorted(range(len(chunks)), key=lambda index: (-scores[index], chunks[index].char_start))[:max_candidates]
+    # Guarantee that code and table evidence survives the lexical gate. A
+    # prose-only candidate set can never surface the runnable example, even
+    # when the query explicitly asks for one.
+    if candidates and not any(_is_structured(chunks[index].text) for index in candidates):
+        structured = [index for index, chunk in enumerate(chunks) if _is_structured(chunk.text)]
+        if structured:
+            candidates[-1] = max(structured, key=lambda index: scores[index])
+            candidates = list(dict.fromkeys(candidates))
     neural_scores: dict[int, float] = {}
     try:
-        from flashrank import Ranker, RerankRequest
+        from flashrank import RerankRequest
 
-        ranker = Ranker(model_name="ms-marco-MiniLM-L-12-v2")
+        ranker = _get_ranker()
         passages = [{"id": index, "text": chunks[index].text} for index in candidates]
         ranked = ranker.rerank(RerankRequest(query=query, passages=passages))
         raw_scores = [float(item.get("score", 0.0)) for item in ranked]
@@ -236,4 +261,9 @@ def rank_chunks(markdown: str, query: str, chunks_per_source: int = 3, max_candi
         chunk = chunks[index]
         scored.append(RankedChunk(chunk.text, combined, chunk.char_start, chunk.char_end, chunk.section))
     scored.sort(key=lambda item: (-item.score, item.char_start))
-    return sorted(scored[:limit], key=lambda item: item.char_start)
+    top = scored[:limit]
+    if limit > 1 and not any(_is_structured(item.text) for item in top):
+        extra = next((item for item in scored if _is_structured(item.text)), None)
+        if extra is not None:
+            top[-1] = extra
+    return sorted(top, key=lambda item: item.char_start)

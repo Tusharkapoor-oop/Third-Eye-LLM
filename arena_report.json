@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-11-03T16:17:40Z",
+  "generated_at": "2026-11-04T03:46:54Z",
   "engines": {
     "A": "local engine via src.engine",
     "B": "tavily live",
@@ -12,35 +12,31 @@
       "engines": {
         "A": {
           "status": "ok",
-          "score": 85,
-          "latency_s": 47.312,
-          "tokens": 893,
+          "score": 96,
+          "latency_s": 16.491,
+          "tokens": 931,
           "breakdown": {
-            "answer_completeness": 20,
-            "code_and_table_fidelity": 15,
+            "answer_completeness": 30,
+            "code_and_table_fidelity": 20,
             "signal_to_noise": 20,
             "source_authority": 15,
-            "token_efficiency": 15
+            "token_efficiency": 11
           },
-          "root_causes": [
-            "QUERY_RECALLEED_PARTIAL",
-            "LOW_CODE_FIDELITY"
-          ]
+          "root_causes": []
         },
         "B": {
           "status": "ok",
-          "score": 69,
-          "latency_s": 5.553,
-          "tokens": 3969,
+          "score": 74,
+          "latency_s": 3.504,
+          "tokens": 4389,
           "breakdown": {
             "answer_completeness": 30,
-            "code_and_table_fidelity": 15,
+            "code_and_table_fidelity": 20,
             "signal_to_noise": 14,
             "source_authority": 8,
             "token_efficiency": 2
           },
           "root_causes": [
-            "LOW_CODE_FIDELITY",
             "SEO_NOISE_PRESENT"
           ]
         },
@@ -59,34 +55,31 @@
       "engines": {
         "A": {
           "status": "ok",
-          "score": 90,
-          "latency_s": 23.089,
-          "tokens": 712,
+          "score": 94,
+          "latency_s": 11.782,
+          "tokens": 701,
           "breakdown": {
             "answer_completeness": 30,
-            "code_and_table_fidelity": 15,
+            "code_and_table_fidelity": 20,
             "signal_to_noise": 20,
-            "source_authority": 10,
+            "source_authority": 9,
             "token_efficiency": 15
           },
-          "root_causes": [
-            "LOW_CODE_FIDELITY"
-          ]
+          "root_causes": []
         },
         "B": {
           "status": "ok",
-          "score": 68,
-          "latency_s": 4.733,
-          "tokens": 3147,
+          "score": 75,
+          "latency_s": 4.063,
+          "tokens": 2940,
           "breakdown": {
             "answer_completeness": 30,
-            "code_and_table_fidelity": 15,
+            "code_and_table_fidelity": 20,
             "signal_to_noise": 17,
-            "source_authority": 4,
+            "source_authority": 6,
             "token_efficiency": 2
           },
           "root_causes": [
-            "LOW_CODE_FIDELITY",
             "SEO_NOISE_PRESENT",
             "LOW_AUTHORITY_DOMAIN"
           ]
@@ -107,7 +100,7 @@
         "A": {
           "status": "ok",
           "score": 100,
-          "latency_s": 2.899,
+          "latency_s": 3.665,
           "tokens": 421,
           "breakdown": {
             "answer_completeness": 30,
@@ -121,8 +114,8 @@
         "B": {
           "status": "ok",
           "score": 80,
-          "latency_s": 3.288,
-          "tokens": 3875,
+          "latency_s": 5.45,
+          "tokens": 3617,
           "breakdown": {
             "answer_completeness": 30,
             "code_and_table_fidelity": 20,
@@ -148,8 +141,8 @@
         "A": {
           "status": "ok",
           "score": 100,
-          "latency_s": 26.139,
-          "tokens": 389,
+          "latency_s": 6.891,
+          "tokens": 392,
           "breakdown": {
             "answer_completeness": 30,
             "code_and_table_fidelity": 20,
@@ -162,7 +155,7 @@
         "B": {
           "status": "ok",
           "score": 80,
-          "latency_s": 3.12,
+          "latency_s": 9.437,
           "tokens": 5673,
           "breakdown": {
             "answer_completeness": 30,
@@ -190,35 +183,31 @@
       "engines": {
         "A": {
           "status": "ok",
-          "score": 85,
-          "latency_s": 26.778,
-          "tokens": 728,
+          "score": 93,
+          "latency_s": 49.926,
+          "tokens": 499,
           "breakdown": {
             "answer_completeness": 30,
-            "code_and_table_fidelity": 10,
+            "code_and_table_fidelity": 20,
             "signal_to_noise": 20,
-            "source_authority": 10,
+            "source_authority": 8,
             "token_efficiency": 15
           },
-          "root_causes": [
-            "LOW_CODE_FIDELITY"
-          ]
+          "root_causes": []
         },
         "B": {
           "status": "ok",
-          "score": 68,
-          "latency_s": 3.389,
-          "tokens": 3939,
+          "score": 76,
+          "latency_s": 4.084,
+          "tokens": 3844,
           "breakdown": {
             "answer_completeness": 30,
-            "code_and_table_fidelity": 15,
-            "signal_to_noise": 17,
+            "code_and_table_fidelity": 20,
+            "signal_to_noise": 20,
             "source_authority": 4,
             "token_efficiency": 2
           },
           "root_causes": [
-            "LOW_CODE_FIDELITY",
-            "SEO_NOISE_PRESENT",
             "LOW_AUTHORITY_DOMAIN"
           ]
         },
@@ -234,13 +223,13 @@
     }
   },
   "summary": {
-    "avg_A": 92.0,
-    "avg_B": 73.0,
+    "avg_A": 96.6,
+    "avg_B": 77.0,
     "avg_C": null,
-    "latency_A_s": 126.217,
-    "latency_B_s": 20.083,
-    "info_density_A_per_1k_tokens": 146.357,
-    "info_density_B_per_1k_tokens": 17.716,
+    "latency_A_s": 88.755,
+    "latency_B_s": 26.538,
+    "info_density_A_per_1k_tokens": 164.062,
+    "info_density_B_per_1k_tokens": 18.814,
     "meets_avg_target": true,
     "beats_tavily_density": true
   }

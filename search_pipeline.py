@@ -10,15 +10,17 @@ Implements:
 from __future__ import annotations
 
 import asyncio
-import re
 import time
+from typing import Any
 from urllib.parse import parse_qs, urlencode, urlparse, urlsplit, urlunparse
+
 import httpx
 
+from cache import SQLiteCache
 from config import CONFIG
-from schemas import ChunkResult, FailedItem, SourceItem, UnifiedResponse
 from extractor import TieredExtractor
 from query_engine import QueryPlan, plan_query_fast
+from schemas import ChunkResult, FailedItem, SourceItem, UnifiedResponse
 
 
 def normalize_url(raw_url: str) -> str:
@@ -197,8 +199,20 @@ async def execute_multi_search(
 class SearchPipeline:
     """End-to-end multi-query search and passage extraction engine."""
 
-    def __init__(self, extractor: TieredExtractor | None = None):
+    def __init__(self, extractor: TieredExtractor | None = None, cache: SQLiteCache | None = None):
         self.extractor = extractor or TieredExtractor()
+        self.cache = cache or SQLiteCache()
+
+    async def close(self) -> None:
+        """Cleanly close pipeline cache and extractor resources."""
+        try:
+            await self.cache.close()
+        except Exception:
+            pass
+        try:
+            await self.extractor.close()
+        except Exception:
+            pass
 
     async def _execute_tavily_fallback(
         self,
@@ -209,20 +223,54 @@ class SearchPipeline:
     ) -> UnifiedResponse:
         """Call Tavily API directly and normalize into UnifiedResponse."""
         t0 = time.perf_counter()
+        if not query or not query.strip():
+            return UnifiedResponse(
+                query=query or "",
+                answer="No query provided.",
+                results=[],
+                failed_results=[],
+                response_time=0.0,
+                source_engine="local_live",
+            )
+
         from tavily import TavilyClient
+
+        max_results = max(1, min(int(max_results or 5), 50))
+        chunks_per_source = max(1, min(int(chunks_per_source or 3), 10))
+
+        cache_key = f"search:{query.strip()}:{search_depth}:{max_results}"
+        try:
+            cached = await self.cache.get(cache_key)
+            if cached:
+                res = UnifiedResponse.model_validate_json(cached)
+                res.source_engine = "local_cache"
+                res.response_time = round(time.perf_counter() - t0, 4)
+                return res
+        except Exception:
+            pass
 
         client = TavilyClient(api_key=CONFIG.tavily_api_key)
         loop = asyncio.get_running_loop()
 
-        res = await loop.run_in_executor(
-            None,
-            lambda: client.search(
+        try:
+            res = await loop.run_in_executor(
+                None,
+                lambda: client.search(
+                    query=query,
+                    search_depth=search_depth,
+                    max_results=max_results,
+                    include_answer="advanced",
+                ),
+            )
+        except Exception as exc:
+            return UnifiedResponse(
                 query=query,
-                search_depth=search_depth,
-                max_results=max_results,
-                include_answer="advanced",
-            ),
-        )
+                answer=f"Fallback search error: {exc}",
+                results=[],
+                failed_results=[FailedItem(url="tavily_fallback", error=str(exc), blocked_by_waf=False)],
+                response_time=round(time.perf_counter() - t0, 3),
+                source_engine="tavily_fallback",
+            )
 
         sources: list[SourceItem] = []
         for r in res.get("results", []):
@@ -263,6 +311,29 @@ class SearchPipeline:
     ) -> UnifiedResponse:
         """Execute full search pipeline with query planning, overfetching, and passage ranking."""
         t0 = time.perf_counter()
+        if not query or not query.strip():
+            return UnifiedResponse(
+                query=query or "",
+                answer="No query provided.",
+                results=[],
+                failed_results=[],
+                response_time=0.0,
+                source_engine="local_live",
+            )
+
+        max_results = max(1, min(int(max_results or 5), 50))
+        chunks_per_source = max(1, min(int(chunks_per_source or 3), 10))
+
+        cache_key = f"search:{query.strip()}:{search_depth}:{max_results}"
+        try:
+            cached = await self.cache.get(cache_key)
+            if cached:
+                res = UnifiedResponse.model_validate_json(cached)
+                res.source_engine = "local_cache"
+                res.response_time = round(time.perf_counter() - t0, 4)
+                return res
+        except Exception:
+            pass
 
         # Step 1: Query Intelligence & Sub-query planning
         plan: QueryPlan = await plan_query_fast(query)
@@ -302,14 +373,33 @@ class SearchPipeline:
                 search_depth="advanced" if search_depth == "advanced" else "basic",
             )
 
+        max_results = max(1, min(int(max_results or 5), 50))
+        chunks_per_source = max(1, min(int(chunks_per_source or 3), 10))
+
+        cache_key = f"search:{query.strip()}:{search_depth}:{max_results}"
+        try:
+            cached = await self.cache.get(cache_key)
+            if cached:
+                res = UnifiedResponse.model_validate_json(cached)
+                res.source_engine = "local_cache"
+                res.response_time = round(time.perf_counter() - t0, 4)
+                return res
+        except Exception:
+            pass
+
         # Step 3: Concurrent URL extraction with early-exit
         target_candidates = filtered_candidates[:max_results * 2]
         extract_tasks = [
-            self.extractor.extract_url(
-                u,
-                query=query,
-                chunks_per_source=chunks_per_source,
-                force_tier2=(search_depth == "advanced"),
+            asyncio.create_task(
+                asyncio.wait_for(
+                    self.extractor.extract_url(
+                        u,
+                        query=query,
+                        chunks_per_source=chunks_per_source,
+                        force_tier2=(search_depth == "advanced"),
+                    ),
+                    timeout=2.0,
+                )
             )
             for u, _, _ in target_candidates
         ]
@@ -329,7 +419,12 @@ class SearchPipeline:
                 elif isinstance(res, FailedItem):
                     failed_items.append(res)
             except Exception as e:
-                failed_items.append(FailedItem(url="unknown", error=str(e), blocked_by_waf=False))
+                failed_items.append(FailedItem(url="timeout_or_error", error=str(e), blocked_by_waf=False))
+
+        # Cleanly cancel any pending stragglers
+        for t in extract_tasks:
+            if not t.done():
+                t.cancel()
 
         # Step 4: If >50% failed due to WAF blocks, trigger Tavily rescue fallback
         waf_blocks = sum(1 for f in failed_items if f.blocked_by_waf)
@@ -345,7 +440,7 @@ class SearchPipeline:
         extracted_sources.sort(key=lambda s: s.score, reverse=True)
 
         elapsed = round(time.perf_counter() - t0, 3)
-        return UnifiedResponse(
+        final_res = UnifiedResponse(
             query=query,
             answer=None,
             results=extracted_sources[:max_results],
@@ -353,4 +448,9 @@ class SearchPipeline:
             response_time=elapsed,
             source_engine="local_live",
         )
+        try:
+            await self.cache.set(cache_key, final_res.model_dump_json())
+        except Exception:
+            pass
+        return final_res
 

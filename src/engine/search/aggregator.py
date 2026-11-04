@@ -269,7 +269,7 @@ class SearchAggregator:
                         self.providers[fallback_name].search(query, count=max(count * 2, count + 3), time_filter=time_filter, domains=domains),
                         timeout=6.0
                     )
-                    if not raw_results or not check_result_relevance(raw_results) or specialist_needed:
+                    if not raw_results or not check_result_relevance(raw_results):
                         raw_results = fb_res
                     elif fb_res:
                         raw_results.extend(fb_res)

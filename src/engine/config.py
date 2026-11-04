@@ -23,6 +23,16 @@ def _bootstrap_env() -> None:
 _bootstrap_env()
 
 
+def _budget_cap() -> float:
+    value = os.getenv("BUDGET_CAP", "0").strip().casefold()
+    if value in {"unlimited", "inf", "infinite", "no_limit"}:
+        return float("inf")
+    try:
+        return float(value or "0")
+    except ValueError:
+        return 0.0
+
+
 @dataclass(frozen=True)
 class EngineConfig:
     # Server metadata
@@ -61,7 +71,7 @@ class EngineConfig:
     browser_timeout: float = float(os.getenv("BROWSER_TIMEOUT_SECONDS", "12.0"))
     browser_profile_dir: str = os.getenv("BROWSER_PROFILE_DIR", ".crawl4ai_profile")
     max_concurrent_fetches: int = int(os.getenv("MAX_CONCURRENT_FETCHES", "8"))
-    arena_budget_cap: float = float(os.getenv("BUDGET_CAP", "0"))
+    arena_budget_cap: float = _budget_cap()
 
     # User Agent
     user_agent: str = (

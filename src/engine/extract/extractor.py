@@ -187,6 +187,26 @@ class DocumentExtractor:
 
         return re.sub(r"```[^\n]*\n.*?\n```", repair, markdown, flags=re.DOTALL)
 
+    @staticmethod
+    def _normalize_prose(markdown: str) -> str:
+        """Strip permalink artifacts and inline link markup outside code fences."""
+        lines: list[str] = []
+        in_fence = False
+        for line in (markdown or "").split("\n"):
+            if line.lstrip().startswith(("```", "~~~")):
+                in_fence = not in_fence
+                lines.append(line.rstrip())
+                continue
+            if in_fence:
+                lines.append(line)
+                continue
+            cleaned = line.replace("\u00b6", "")
+            cleaned = re.sub(r"!\[[^\]]*\]\([^)]*\)", "", cleaned)
+            cleaned = re.sub(r"\[([^\]]+)\]\([^)]*\)", r"\1", cleaned)
+            cleaned = re.sub(r"[ \t]{2,}", " ", cleaned).rstrip()
+            lines.append(cleaned)
+        return re.sub(r"\n{3,}", "\n\n", "\n".join(lines)).strip()
+
     @classmethod
     def _extract_markdown(cls, html: str, url: str) -> tuple[str, dict[str, str]]:
         """Extract readable content and append structured blocks not retained by the parser."""
@@ -200,7 +220,7 @@ class DocumentExtractor:
             additions = [block for block in structured.split("\n\n") if block.casefold() not in existing]
             if additions:
                 extracted = "\n\n".join(part for part in (extracted, "\n\n".join(additions)) if part)
-        return cls._normalize_code_blocks(extracted.strip()), {}
+        return cls._normalize_code_blocks(cls._normalize_prose(extracted)).strip(), {}
 
     async def extract_url(
         self,
@@ -385,6 +405,22 @@ class DocumentExtractor:
         if has_inj:
             meta_dict["security_note"] = "Potential prompt injection keywords neutralized in source"
 
+        low_quality_markers = (
+            "javascript is disabled in your browser",
+            "a required part of this site couldn’t load",
+            "a required part of this site couldn't load",
+            "please enable javascript to proceed",
+        )
+        if any(marker in clean_text.casefold() for marker in low_quality_markers):
+            return ExtractedDocument(
+                url=final_url,
+                status="thin_content_js",
+                title=doc_title,
+                fetch_timestamp=fetch_time,
+                metadata={**meta_dict, "error": "challenge or incomplete client-rendered content"},
+                latency_seconds=time.time() - t0,
+            )
+
         if not clean_text or not clean_text.strip():
             return ExtractedDocument(
                 url=final_url,
@@ -398,21 +434,41 @@ class DocumentExtractor:
         # 5. Chunking & BM25 Passage Ranking (Two-Stage Retrieval)
         chunks = self.chunker.chunk_document(clean_text)
         if query:
-            ranked = rank_chunks(clean_text, query, chunks_per_source=5)
+            ranking_query = query
+            try:
+                from src.engine.query_engine import optimize_query
+
+                plan = optimize_query(query)
+                ranking_query = " ".join(plan.get("sub_queries", [])) or query
+            except (ImportError, TypeError, ValueError):
+                ranking_query = query
+            ranked = rank_chunks(clean_text, ranking_query, chunks_per_source=5)
             passages = []
+            used_tokens = 0
             for rank, selected in enumerate(ranked, start=1):
                 source_text = clean_text[selected.char_start:selected.char_end].strip()
                 if not source_text:
                     continue
+                passage_tokens = len(self.tokenizer.encode(source_text))
+                if passages and used_tokens + passage_tokens > max_tokens:
+                    continue
+                if passage_tokens > max_tokens:
+                    source_text = self.tokenizer.decode(
+                        self.tokenizer.encode(source_text)[:max_tokens]
+                    )
+                    passage_tokens = len(self.tokenizer.encode(source_text))
                 passages.append(ScoredPassage(
                     text=source_text,
                     char_start=selected.char_start,
                     char_end=selected.char_end,
-                    token_count=len(self.tokenizer.encode(source_text)),
+                    token_count=passage_tokens,
                     rank=rank,
                 ))
+                used_tokens += passage_tokens
+                if used_tokens >= max_tokens:
+                    break
             if not passages:
-                passages = self.scorer.score_and_rank_passages(chunks, query=query, max_tokens=max_tokens, max_passages=5)
+                passages = self.scorer.score_and_rank_passages(chunks, query=ranking_query, max_tokens=max_tokens, max_passages=5)
         else:
             passages = self.scorer.score_and_rank_passages(chunks, query=None, max_tokens=max_tokens, max_passages=5)
 

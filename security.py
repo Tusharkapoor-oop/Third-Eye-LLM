@@ -9,11 +9,12 @@ from __future__ import annotations
 import ipaddress
 import re
 import socket
+from pathlib import Path
 from urllib.parse import urlsplit
+
 import httpx
 
 from config import CONFIG
-
 
 # Private and Cloud Metadata IP Networks
 BLOCKED_NETWORKS = (
@@ -103,6 +104,43 @@ def validate_url_security(url: str) -> tuple[str, int]:
     return host, port
 
 
+def validate_public_url(url: str) -> tuple[str, int]:
+    """Validate that URL is safe, public, and not pointing to loopback or private networks."""
+    return validate_url_security(url)
+
+
+async def on_redirect_hook(response: httpx.Response) -> None:
+    """Event hook to re-validate destination URL before following any HTTP redirect."""
+    if response.is_redirect:
+        location = response.headers.get("location")
+        if location:
+            from urllib.parse import urljoin
+            target = urljoin(str(response.url), location)
+            validate_public_url(target)
+
+
+def safe_resolve_path(path_str: str, base_dir: Path | None = None) -> Path:
+    """Validate and resolve a path preventing directory traversal and Windows device names.
+
+    Raises:
+        SecurityValidationError: if path escapes base directory or matches device names.
+    """
+    base = (base_dir or Path.cwd()).resolve()
+    # Check for Windows reserved device names
+    clean_stem = Path(path_str).stem.upper()
+    reserved_devices = {"CON", "PRN", "AUX", "NUL"} | {f"COM{i}" for i in range(1, 10)} | {f"LPT{i}" for i in range(1, 10)}
+    if clean_stem in reserved_devices:
+        raise SecurityValidationError(f"Forbidden Windows reserved device name: {clean_stem}")
+
+    candidate = (base / path_str).resolve()
+    try:
+        candidate.relative_to(base)
+    except ValueError as exc:
+        raise SecurityValidationError(f"Path traversal detected: {path_str} escapes {base}") from exc
+
+    return candidate
+
+
 def resolve_and_verify_host(host: str, port: int) -> str:
     """Resolve hostname and ensure all returned IP addresses are public and safe.
 
@@ -163,28 +201,32 @@ async def safe_fetch_url(
             host, port = validate_url_security(current_url)
             resolve_and_verify_host(host, port)
 
-            resp = await client.get(current_url, headers=req_headers)
+            async with client.stream("GET", current_url, headers=req_headers) as resp:
+                if resp.status_code in (301, 302, 303, 307, 308):
+                    location = resp.headers.get("location")
+                    if not location:
+                        break
+                    from urllib.parse import urljoin
+                    target_url = urljoin(current_url, location)
+                    validate_public_url(target_url)
+                    current_url = target_url
+                    continue
 
-            if resp.status_code in (301, 302, 303, 307, 308):
-                location = resp.headers.get("location")
-                if not location:
-                    break
-                # Resolve relative redirects
-                from urllib.parse import urljoin
-                current_url = urljoin(current_url, location)
-                continue
+                content_length = resp.headers.get("content-length")
+                if content_length and int(content_length) > limit_bytes:
+                    raise SecurityValidationError(f"Response size {content_length} exceeds limit of {limit_bytes} bytes")
 
-            # Stream body with byte limit
-            content_length = resp.headers.get("content-length")
-            if content_length and int(content_length) > limit_bytes:
-                raise SecurityValidationError(f"Response size {content_length} exceeds limit of {limit_bytes} bytes")
+                chunks: list[bytes] = []
+                total_bytes = 0
+                async for chunk in resp.aiter_bytes():
+                    total_bytes += len(chunk)
+                    if total_bytes > limit_bytes:
+                        raise SecurityValidationError(f"Response body exceeded maximum limit of {limit_bytes} bytes")
+                    chunks.append(chunk)
 
-            body = resp.content
-            if len(body) > limit_bytes:
-                body = body[:limit_bytes]
-
-            resp_headers = {k.lower(): v for k, v in resp.headers.items()}
-            return resp.status_code, resp_headers, body
+                body = b"".join(chunks)
+                resp_headers = {k.lower(): v for k, v in resp.headers.items()}
+                return resp.status_code, resp_headers, body
 
     raise SecurityValidationError("Too many redirects")
 

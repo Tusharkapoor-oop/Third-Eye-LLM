@@ -1,0 +1,25 @@
+services:
+  weblens-mcp:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: weblens-mcp-server
+    environment:
+      - PORT=8080
+      - WEBLENS_HTTP_HOST=0.0.0.0
+      - WEBLENS_HTTP_PORT=8080
+      - WEBLENS_MCP_PROFILE=full
+      - TAVILY_API_KEY=${TAVILY_API_KEY:-}
+      - GEMINI_API_KEY_1=${GEMINI_API_KEY_1:-}
+      - GEMINI_API_KEY_2=${GEMINI_API_KEY_2:-}
+    ports:
+      - "8080:8080"
+    restart: unless-stopped
+    security_opt:
+      - no-new-privileges:true
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 5s

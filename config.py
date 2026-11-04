@@ -7,8 +7,9 @@ domain authority lists, anti-bot signatures, and timeout controls.
 from __future__ import annotations
 
 import os
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from pathlib import Path
+
 from dotenv import load_dotenv
 
 # Load local .env if present
@@ -34,6 +35,8 @@ class AppConfig:
     gemini_api_key: str = (
         os.getenv("GEMINI_API_KEY", "")
         or os.getenv("GOOGLE_API_KEY", "")
+        or os.getenv("GEMINI_API_KEY_1", "")
+        or os.getenv("GEMINI_API_KEY_2", "")
     )
     searxng_url: str = (
         os.getenv("SEARXNG_URL", "")
@@ -146,4 +149,3 @@ class AppConfig:
 
 
 CONFIG = AppConfig()
-

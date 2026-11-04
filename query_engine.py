@@ -10,8 +10,8 @@ import asyncio
 import json
 import re
 from dataclasses import dataclass, field
-from config import CONFIG
 
+from config import CONFIG
 
 # Conversational filler phrases to strip from raw search prompts
 CONVERSATIONAL_FILLERS = (

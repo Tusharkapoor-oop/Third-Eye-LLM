@@ -121,6 +121,21 @@ def _chunk(idx: int, start: int, end: int, text: str, heading: str | None) -> Ch
     return Chunk(idx=idx, start=start, end=end, text=text, heading=heading, tokens=toks, tf=tf)
 
 
+
+
+def spread_chunks(chunks: list[Chunk], limit: int) -> list[Chunk]:
+    """Evenly spaced chunks including the first and last.
+
+    Used when no query is supplied so that facts near the tail of a long page
+    remain reachable without query guidance.
+    """
+    if limit <= 0 or len(chunks) <= limit:
+        return chunks
+    if limit == 1:
+        return [chunks[0]]
+    indices = sorted({round(i * (len(chunks) - 1) / (limit - 1)) for i in range(limit)})
+    return [chunks[i] for i in indices]
+
 def score_chunks(chunks: list[Chunk], query: str, title: str = "") -> None:
     """Annotate chunk scores in place. Not exposed to callers."""
     terms, phrases = query_terms(query)
@@ -192,7 +207,7 @@ def select_passages(
         pool = full if full else [c for c in chunks if getattr(c, "_coverage", 0.0) > 0]
         ordered = sorted(pool, key=lambda c: (-getattr(c, "_score", 0.0), c.idx))
     else:
-        ordered = chunks
+        ordered = spread_chunks(chunks, max_passages)
         best_cov = 0.0
 
     selected: list[Chunk] = []

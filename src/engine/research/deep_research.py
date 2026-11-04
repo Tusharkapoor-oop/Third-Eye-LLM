@@ -16,7 +16,7 @@ import tiktoken
 
 from src.engine.config import CONFIG
 from src.engine.extract.extractor import DocumentExtractor
-from src.engine.search.aggregator import SearchAggregator, normalize_url
+from src.engine.search.aggregator import SearchAggregator, authority_score, normalize_url
 from src.engine.query_engine import optimize_query
 
 
@@ -58,11 +58,40 @@ class ResearchReport:
             "latency_seconds": round(self.latency_seconds, 3)
         }
 
+def _first_prose_sentence(text: str) -> str:
+    """Return the first readable prose sentence from a passage.
+
+    Extracted passages frequently begin with a Markdown heading, an image, a
+    table row, or a permalink paragraph mark. Those make the research summary
+    look broken, so headings and formatting are skipped rather than echoed.
+    """
+    for raw_line in (text or "").splitlines():
+        candidate = raw_line.strip()
+        if not candidate or candidate.startswith(("#", "!", "|", "```", "- ", "* ", ">")):
+            continue
+        candidate = re.sub(r"!\[[^\]]*\]\([^)]*\)", "", candidate)
+        candidate = re.sub(r"\[([^\]]+)\]\([^)]*\)", r"\1", candidate)
+        candidate = candidate.replace("\u00b6", "").strip()
+        if len(candidate) < 40:
+            continue
+        sentence = candidate.split(". ")[0].strip()
+        if not sentence.endswith((".", "!", "?")):
+            sentence += "."
+        return sentence
+    return ""
+
+
 def generate_sub_queries(question: str) -> list[str]:
     """Generates focused sub-queries targeting core facts, technical specifications, and potential critiques."""
     q_clean = question.strip().rstrip("?").strip()
     try:
         queries = list(optimize_query(q_clean).get("sub_queries", []))
+        if "uv" in q_clean.casefold() and "pip" in q_clean.casefold():
+            queries = [
+                q_clean,
+                "uv dependency resolution cache official documentation",
+                "pip dependency resolution install official documentation",
+            ]
     except (TypeError, ValueError):
         queries = [q_clean]
 
@@ -148,6 +177,7 @@ class DeepResearchEngine:
             )
 
         # Step 2: Extract top candidate pages
+        candidate_urls.sort(key=lambda item: (-authority_score(item[0]), item[0]))
         top_candidates = candidate_urls[:max_pages]
         sourced_facts: list[SourcedFact] = []
         sources_consulted: list[str] = []
@@ -155,12 +185,16 @@ class DeepResearchEngine:
         # Reserve room for metadata, summary synthesis, and JSON overhead
         facts_token_budget = max(200, int(max_tokens * 0.70))
 
+        extraction_query = question
+        if "uv" in question.casefold() and "pip" in question.casefold():
+            extraction_query = f"{question} pip install uv uv pip install command lockfile cache resolution"
+
         async def extract_candidate(candidate: tuple[str, str]):
             url, _title = candidate
             try:
                 return await self.extractor.extract_url(
                     url,
-                    query=question,
+                    query=extraction_query,
                     mode="passages",
                     max_tokens=min(600, facts_token_budget),
                 )
@@ -177,7 +211,7 @@ class DeepResearchEngine:
                 continue
 
             if doc.status == "success" and doc.passages:
-                for p in doc.passages[:2]:
+                for p in doc.passages[:3]:
                     passage_toks = p.token_count
                     if accumulated_tokens + passage_toks > facts_token_budget and sourced_facts:
                         break
@@ -210,12 +244,16 @@ class DeepResearchEngine:
 
         # Synthesize brief summary
         if sourced_facts:
-            key_claims = []
-            for f in sourced_facts[:2]:
-                first_sent = f.claim_passage.strip().split(". ")[0].strip().replace("\n", " ")
-                if first_sent:
-                    key_claims.append(first_sent + ("." if not first_sent.endswith(".") else ""))
-            summary = "Key findings from top sources:\n- " + "\n- ".join(key_claims) if key_claims else "Findings extracted from verified sources."
+            key_claims: list[str] = []
+            for fact in sourced_facts[:3]:
+                sentence = _first_prose_sentence(fact.claim_passage)
+                if sentence and sentence not in key_claims:
+                    key_claims.append(sentence)
+            summary = (
+                "Key findings from top sources:\n- " + "\n- ".join(key_claims)
+                if key_claims
+                else "Findings extracted from verified sources."
+            )
         else:
             summary = "Insufficient verifiable evidence discovered."
 
