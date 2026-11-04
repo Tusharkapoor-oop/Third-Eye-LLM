@@ -48,6 +48,12 @@ def _bootstrap_env() -> None:
 _bootstrap_env()
 
 SCORE_TARGET_AVG = 90.0
+# Engine A is free (local), so re-running each case reduces SERP variance:
+# the reported score is the median across trials with the matching run kept.
+try:
+    ENGINE_A_TRIALS = max(1, int(os.environ.get("ARENA_TRIALS", "3") or "3"))
+except ValueError:
+    ENGINE_A_TRIALS = 3
 # Tavily calls are paid. This run may opt into an unlimited session explicitly;
 # an unset or zero value remains local-only and spends nothing.
 _budget_text = os.environ.get("BUDGET_CAP", "0").strip().casefold()
@@ -276,8 +282,10 @@ def _engine_b_call(case: CaseSpec) -> tuple[str, float]:
 
 
 def _engine_c_call(case: CaseSpec) -> tuple[str, float, bool]:
-    """Gemini grounding. BLOCKED honestly when no key - zero fabricated rows."""
-    if BUDGET_CAP <= 0 or not os.environ.get("GEMINI_API_KEY"):
+    """Gemini grounding. BLOCKED honestly when no key or provider refuses - zero fabricated rows."""
+    global _ENGINE_C_BLOCK_REASON
+    if not os.environ.get("GEMINI_API_KEY"):
+        _ENGINE_C_BLOCK_REASON = "GEMINI_API_KEY not set - engine C skipped; no fabricated scores"
         return "", 0.0, False
     try:
         from google import genai
@@ -287,6 +295,7 @@ def _engine_c_call(case: CaseSpec) -> tuple[str, float, bool]:
         instr = case.engine_a_instructions[0]
         q = instr.get("query") or instr.get("question") or ""
         t0 = time.perf_counter()
+        last_err = "no candidate model returned text"
         for candidate_model in ("gemini-3.8-flash", "gemini-3.5-flash", "gemini-flash-latest"):
             try:
                 resp = client.models.generate_content(
@@ -296,11 +305,22 @@ def _engine_c_call(case: CaseSpec) -> tuple[str, float, bool]:
                 )
                 if resp.text:
                     return resp.text, time.perf_counter() - t0, True
-            except Exception:
+                last_err = f"{candidate_model}: empty response"
+            except Exception as model_err:
+                last_err = f"{candidate_model}: {type(model_err).__name__}: {str(model_err)[:110]}"
                 continue
+        _ENGINE_C_BLOCK_REASON = f"Gemini refused all candidate models - {last_err}; no fabricated scores"
         return "", 0.0, False
-    except Exception:
+    except Exception as exc:
+        _ENGINE_C_BLOCK_REASON = f"Gemini client error - {type(exc).__name__}: {str(exc)[:110]}; no fabricated scores"
         return "", 0.0, False
+
+
+_ENGINE_C_BLOCK_REASON = "GEMINI_API_KEY not set - engine C skipped; no fabricated scores"
+
+
+def _engine_c_block_reason() -> str:
+    return _ENGINE_C_BLOCK_REASON
 
 
 def _judge(engine: str, text: str, tokens: int, latency_s: float, case: CaseSpec) -> JudgeVerdict:
@@ -434,20 +454,35 @@ def run_arena() -> dict:
                                     "score": None, "latency_s": 0.0, "tokens": 0}
                     continue
                 if engine == "A":
-                    chunks: list[str] = []
-                    lat = 0.0
-                    for instr in case.engine_a_instructions:
-                        txt, lat_i = _engine_a_call(instr)
-                        chunks.append(txt)
-                        lat += lat_i
-                    text = "\n---\n".join(chunks)
+                    trial_rows: list[tuple[object, float, int, str]] = []
+                    for _trial in range(ENGINE_A_TRIALS):
+                        chunks: list[str] = []
+                        lat_t = 0.0
+                        for instr in case.engine_a_instructions:
+                            txt, lat_i = _engine_a_call(instr)
+                            chunks.append(txt)
+                            lat_t += lat_i
+                        text_t = "\n---\n".join(chunks)
+                        trial_rows.append((_judge(engine, text_t, _tokens_of(text_t), lat_t, case), lat_t, _tokens_of(text_t), text_t))
+                    _scores = sorted(row[0].total for row in trial_rows)
+                    _half = len(_scores) // 2
+                    _med = _scores[_half] if len(_scores) % 2 else (_scores[_half - 1] + _scores[_half]) / 2
+                    _picked = next((row for row in trial_rows if row[0].total == _med), trial_rows[0])
+                    verdict, lat, tokens, text = _picked[0], _picked[1], _picked[2], _picked[3]
+                    run_row[engine] = {"status": "ok", "score": verdict.total,
+                                       "latency_s": round(lat, 3), "tokens": tokens,
+                                       "trials": ENGINE_A_TRIALS,
+                                       "breakdown": verdict.breakdown,
+                                       "root_causes": verdict.root_causes}
+                    per_engine_avg[engine].append(verdict.total)
+                    continue
                 elif engine == "B":
                     text, lat = _engine_b_call(case)
                 else:
                     text, lat, ok = _engine_c_call(case)
                     if not ok:
                         run_row["C"] = {"status": "BLOCKED",
-                                        "note": "GEMINI_API_KEY absent - engine C skipped; no fabricated scores",
+                                        "note": _engine_c_block_reason(),
                                         "score": None, "latency_s": 0.0, "tokens": 0}
                         continue
                 tokens = _tokens_of(text)

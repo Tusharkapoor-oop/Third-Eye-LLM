@@ -233,6 +233,17 @@ def _rpc_is_error(message: Any) -> bool:
     return isinstance(message, dict) and "error" in message
 
 
+def _message_is_error(message: Any) -> bool:
+    """True for a JSON-RPC error or an MCP tool-level isError result."""
+    if _rpc_is_error(message):
+        return True
+    if isinstance(message, dict):
+        result_obj = message.get("result")
+        if isinstance(result_obj, dict) and result_obj.get("isError"):
+            return True
+    return False
+
+
 async def _mcp_call(
     client: httpx.AsyncClient,
     endpoint: str,
@@ -264,12 +275,22 @@ def _tool_payload(response: dict[str, Any]) -> dict[str, Any]:
     if not content or not isinstance(content[0], dict):
         return {}
     text = content[0].get("text") or ""
+    is_error = bool(result_obj.get("isError"))
     try:
         data = json.loads(text)
     except Exception:
-        return {"status": "unparsed", "text": text}
-    if result_obj.get("isError"):
-        return {"status": "error", "msg": str(data.get("msg") or data)[:500], "raw": data}
+        # MCP returns tool failures as human-readable text with isError=true.
+        # Classify that as a structured rejection, not as extracted content.
+        if is_error:
+            return {"status": "error", "msg": text[:500], "is_error": True}
+        return {"status": "unparsed", "text": text, "is_error": False}
+    if is_error:
+        return {
+            "status": "error",
+            "msg": str(data.get("msg") or data)[:500],
+            "raw": data,
+            "is_error": True,
+        }
     return data if isinstance(data, dict) else {"status": "unparsed", "data": data}
 
 
@@ -580,14 +601,15 @@ async def audit_deployed_security(endpoint: str = DEPLOYED_MCP) -> dict[str, Any
     try:
         # --- TLS / redirect / headers ---
         http_url = endpoint.replace("https://", "http://").replace("/mcp", "/")
-        https_root = await _rpc(client, endpoint.replace("/mcp", "/"), "")
+        root_resp = await client.get(endpoint.replace("/mcp", "/"))
         tests.append(
             result(
                 "deployed_https_reachable",
                 "transport_tls",
                 "live_deployed",
-                "PASS" if https_root["http_status"] == 200 else "FAIL",
-                evidence={"status": https_root["http_status"], "transport_error": https_root["transport_error"]},
+                "PASS" if root_resp.status_code == 200 else "FAIL",
+                evidence={"status": root_resp.status_code, "method": "GET", "body_prefix": root_resp.text[:120]},
+                notes="The MCP endpoint accepts POST; the service root is checked with GET.",
             )
         )
         redirect = await _rpc(client, http_url, "")
@@ -604,7 +626,7 @@ async def audit_deployed_security(endpoint: str = DEPLOYED_MCP) -> dict[str, Any
                 evidence={"status": redirect["http_status"], "location": redirect["headers"].get("location")},
             )
         )
-        hsts = https_root["headers"].get("strict-transport-security")
+        hsts = root_resp.headers.get("strict-transport-security")
         tests.append(
             result(
                 "deployed_hsts_header",
@@ -731,7 +753,12 @@ async def audit_deployed_security(endpoint: str = DEPLOYED_MCP) -> dict[str, Any
         for label, payload, _expected in rpc_cases:
             resp = await _rpc(client, endpoint, payload, session_id=session_id)
             all_bodies.append(resp["text"])
-            graceful = resp["http_status"] == 200 and _rpc_is_error(resp["message"])
+            # MCP allows either a JSON-RPC error or a tool-level isError result.
+            # HTTP 400 is valid for a request-level protocol error.
+            graceful = (
+                resp["http_status"] in (200, 400)
+                and _message_is_error(resp["message"])
+            )
             tests.append(
                 result(
                     f"deployed_jsonrpc_{label}",
@@ -741,9 +768,14 @@ async def audit_deployed_security(endpoint: str = DEPLOYED_MCP) -> dict[str, Any
                     evidence={
                         "status": resp["http_status"],
                         "jsonrpc_error": _rpc_error_code(resp["message"]),
+                        "tool_is_error": bool(
+                            isinstance(resp["message"], dict)
+                            and isinstance(resp["message"].get("result"), dict)
+                            and resp["message"]["result"].get("isError")
+                        ),
                         "transport_error": resp["transport_error"],
                     },
-                    notes="Expected a JSON-RPC error object with HTTP 200, not a 5xx crash.",
+                    notes="Expected a JSON-RPC error object or tool-level isError, not a 5xx crash.",
                 )
             )
 
@@ -770,21 +802,24 @@ async def audit_deployed_security(endpoint: str = DEPLOYED_MCP) -> dict[str, Any
             resp = await _mcp_call(client, endpoint, session_id, f"ssrf-{label}", "extract_url", {"url": url})
             all_bodies.append(resp["text"])
             data = _tool_payload(resp)
-            is_error = _rpc_is_error(resp["message"]) or data.get("status") == "error"
+            is_error = _message_is_error(resp["message"]) or data.get("status") == "error"
             blocked = is_error or _contains_block_signal(data)
+            returned_text = _extract_text(data)
             tests.append(
                 result(
                     f"deployed_extract_blocks_{label}",
                     "ssrf_live_tool",
                     "live_deployed",
-                    "PASS" if blocked and not data.get("text") else "FAIL",
+                    "PASS" if blocked and not returned_text else "FAIL",
                     severity="high",
                     evidence={
                         "status": resp["http_status"],
                         "jsonrpc_error": _rpc_error_code(resp["message"]),
                         "tool_status": data.get("status"),
-                        "returned_text_length": len(str(data.get("text") or "")),
+                        "error_msg": str(data.get("msg") or "")[:200],
+                        "returned_text_length": len(returned_text),
                     },
+                    notes="A structured tool error with no page content counts as a block; a 5xx or leaked content does not.",
                 )
             )
 
@@ -794,19 +829,22 @@ async def audit_deployed_security(endpoint: str = DEPLOYED_MCP) -> dict[str, Any
         )
         all_bodies.append(control["text"])
         control_data = _tool_payload(control)
+        control_text = _extract_text(control_data)
         tests.append(
             result(
                 "deployed_extract_public_control",
                 "ssrf_live_tool_control",
                 "live_deployed",
                 "PASS"
-                if control_data.get("status") == "ok" and len(control_data.get("text") or "") > 50
+                if control_data.get("status") == "ok" and len(control_text) > 50
                 else "UNVERIFIED",
                 evidence={
                     "status": control["http_status"],
                     "tool_status": control_data.get("status"),
-                    "text_length": len(control_data.get("text") or ""),
+                    "text_length": len(control_text),
+                    "schema_fields": sorted(control_data.keys()),
                 },
+                notes="Proves the extractor is not blocking every URL.",
             )
         )
 

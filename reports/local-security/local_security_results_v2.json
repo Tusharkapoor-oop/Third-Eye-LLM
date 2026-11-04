@@ -1,6 +1,6 @@
 {
   "suite": "local_security_audit_v2",
-  "timestamp": "2026-11-02T18:37:19.502206+00:00",
+  "timestamp": "2026-11-04T17:27:46.151231+00:00",
   "overall_status": "PASS",
   "total_tests": 38,
   "status_counts": {
@@ -317,7 +317,7 @@
       "status": "PASS",
       "severity": "info",
       "evidence": {
-        "endpoint": "http://127.0.0.1:57214/mcp",
+        "endpoint": "http://127.0.0.1:49980/mcp",
         "tools": [
           "web_search",
           "extract_url",
@@ -347,7 +347,7 @@
         "url": "http://169.254.169.254/latest/meta-data/",
         "transport_error": null,
         "returned_text_length": 0,
-        "latency_ms": 8.0
+        "latency_ms": 3.8
       },
       "notes": ""
     },
@@ -362,7 +362,7 @@
         "url": "http://metadata.google.internal/computeMetadata/v1/",
         "transport_error": null,
         "returned_text_length": 0,
-        "latency_ms": 8.3
+        "latency_ms": 4.1
       },
       "notes": ""
     },
@@ -374,10 +374,10 @@
       "severity": "high",
       "evidence": {
         "tool": "extract_url",
-        "url": "http://127.0.0.1:57214/",
+        "url": "http://127.0.0.1:49980/",
         "transport_error": null,
         "returned_text_length": 0,
-        "latency_ms": 9.6
+        "latency_ms": 6.1
       },
       "notes": ""
     },
@@ -389,10 +389,10 @@
       "severity": "high",
       "evidence": {
         "tool": "extract_url",
-        "url": "http://[::1]:57214/",
+        "url": "http://[::1]:49980/",
         "transport_error": null,
         "returned_text_length": 0,
-        "latency_ms": 8.3
+        "latency_ms": 10.6
       },
       "notes": ""
     },
@@ -407,7 +407,7 @@
         "url": "http://10.0.0.1/",
         "transport_error": null,
         "returned_text_length": 0,
-        "latency_ms": 7.0
+        "latency_ms": 6.1
       },
       "notes": ""
     },
@@ -422,7 +422,7 @@
         "url": "file:///C:/Windows/win.ini",
         "transport_error": null,
         "returned_text_length": 0,
-        "latency_ms": 7.4
+        "latency_ms": 5.5
       },
       "notes": ""
     },

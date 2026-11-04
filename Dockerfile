@@ -36,4 +36,8 @@ HEALTHCHECK --interval=30s --timeout=5s --start-period=5s --retries=3 \
     CMD curl -f http://localhost:${PORT:-8080}/ || exit 1
 
 # Run WebLens in Streamable HTTP MCP mode, dynamically reading $PORT assigned by Cloud Run
-CMD ["sh", "-c", "python server.py --http --host 0.0.0.0 --port ${PORT:-8080}"]
+# Run the canonical WebLens MCP server (weblens package), not the legacy root app.
+# The deployed revision before this change was also the weblens package; the
+# root server.py is the older MyWebEngine demo and must not silently replace it.
+# --allow-insecure preserves the existing public endpoint; see docs/security.
+CMD ["sh", "-c", "python -m weblens.cli serve --http --host 0.0.0.0 --port ${PORT:-8080} --profile full --allow-insecure"]

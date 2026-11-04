@@ -114,8 +114,8 @@ def _rule_plan(raw_query: str) -> QueryPlan:
     # queries to their first common word. Keep the untouched request last (and
     # only when short) so phrase intent still has a chance to contribute.
     sub_queries = _unique([primary, semantic, authority], 3)
-    if stripped.casefold() != primary.casefold() and len(stripped.split()) <= 12:
-        sub_queries = _unique([*sub_queries, stripped], 4)
+    if stripped.casefold() != primary.casefold() and len(stripped.split()) <= 12 and len(sub_queries) < 3:
+        sub_queries = _unique([*sub_queries, stripped], 3)
     return QueryPlan(
         raw_query=query,
         primary_keyword_query=primary,

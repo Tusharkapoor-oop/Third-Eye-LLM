@@ -159,15 +159,28 @@ class Crawl2RAG:
             conn.commit()
 
         elapsed_ms = int((time.perf_counter() - t0) * 1000)
+        page_failures = [
+            {"url": p.url, "status": p.status, "warnings": list(p.warnings)}
+            for p in crawl_out.pages
+            if isinstance(getattr(p, "status", None), str) and p.status != "ok"
+        ]
+        raw_warnings = getattr(crawl_out, "warnings", None)
+        crawl_warnings = list(raw_warnings) if isinstance(raw_warnings, list) else []
+        if indexed_pages == 0 and skipped_unchanged == 0:
+            status = "no_reliable_result"
+        elif page_failures or crawl_warnings:
+            status = "partial"
+        else:
+            status = "ok"
         return {
-            "status": "ok",
+            "status": status,
             "url": start_url,
             "pages_crawled": len(crawl_out.pages),
             "pages_indexed": indexed_pages,
             "passages_indexed": indexed_passages,
             "skipped_unchanged": skipped_unchanged,
-            "failures": getattr(crawl_out, "failures", None)
-            or getattr(crawl_out, "warnings", []),
+            "failures": crawl_warnings,
+            "page_failures": page_failures,
             "ms": elapsed_ms,
             "db_path": str(self.db_path),
         }

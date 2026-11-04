@@ -1,25 +1,14 @@
 {
   "suite": "deployed_security_audit_v2",
-  "timestamp": "2026-11-02T17:25:03.847533+00:00",
+  "timestamp": "2026-11-04T17:28:15.379856+00:00",
   "overall_status": "FAIL",
   "total_tests": 23,
   "status_counts": {
-    "FAIL": 14,
-    "PASS": 7,
-    "UNVERIFIED": 2
+    "PASS": 17,
+    "FAIL": 5,
+    "UNVERIFIED": 1
   },
   "findings": [
-    {
-      "id": "deployed_https_reachable",
-      "category": "transport_tls",
-      "severity": "info",
-      "status": "FAIL",
-      "notes": "",
-      "evidence": {
-        "status": 405,
-        "transport_error": null
-      }
-    },
     {
       "id": "deployed_hsts_header",
       "category": "transport_tls",
@@ -51,119 +40,6 @@
       "evidence": {
         "status": 200,
         "jsonrpc_error": null
-      }
-    },
-    {
-      "id": "deployed_jsonrpc_invalid_jsonrpc_version",
-      "category": "mcp_protocol",
-      "severity": "info",
-      "status": "FAIL",
-      "notes": "Expected a JSON-RPC error object with HTTP 200, not a 5xx crash.",
-      "evidence": {
-        "status": 400,
-        "jsonrpc_error": -32602,
-        "transport_error": null
-      }
-    },
-    {
-      "id": "deployed_jsonrpc_unknown_tool",
-      "category": "mcp_protocol",
-      "severity": "info",
-      "status": "FAIL",
-      "notes": "Expected a JSON-RPC error object with HTTP 200, not a 5xx crash.",
-      "evidence": {
-        "status": 200,
-        "jsonrpc_error": null,
-        "transport_error": null
-      }
-    },
-    {
-      "id": "deployed_jsonrpc_missing_required_argument",
-      "category": "mcp_protocol",
-      "severity": "info",
-      "status": "FAIL",
-      "notes": "Expected a JSON-RPC error object with HTTP 200, not a 5xx crash.",
-      "evidence": {
-        "status": 200,
-        "jsonrpc_error": null,
-        "transport_error": null
-      }
-    },
-    {
-      "id": "deployed_extract_blocks_aws_metadata",
-      "category": "ssrf_live_tool",
-      "severity": "high",
-      "status": "FAIL",
-      "notes": "",
-      "evidence": {
-        "status": 200,
-        "jsonrpc_error": null,
-        "tool_status": "unparsed",
-        "returned_text_length": 134
-      }
-    },
-    {
-      "id": "deployed_extract_blocks_gcp_metadata",
-      "category": "ssrf_live_tool",
-      "severity": "high",
-      "status": "FAIL",
-      "notes": "",
-      "evidence": {
-        "status": 200,
-        "jsonrpc_error": null,
-        "tool_status": "unparsed",
-        "returned_text_length": 137
-      }
-    },
-    {
-      "id": "deployed_extract_blocks_loopback",
-      "category": "ssrf_live_tool",
-      "severity": "high",
-      "status": "FAIL",
-      "notes": "",
-      "evidence": {
-        "status": 200,
-        "jsonrpc_error": null,
-        "tool_status": "unparsed",
-        "returned_text_length": 128
-      }
-    },
-    {
-      "id": "deployed_extract_blocks_ipv6_loopback",
-      "category": "ssrf_live_tool",
-      "severity": "high",
-      "status": "FAIL",
-      "notes": "",
-      "evidence": {
-        "status": 200,
-        "jsonrpc_error": null,
-        "tool_status": "unparsed",
-        "returned_text_length": 122
-      }
-    },
-    {
-      "id": "deployed_extract_blocks_file_scheme",
-      "category": "ssrf_live_tool",
-      "severity": "high",
-      "status": "FAIL",
-      "notes": "",
-      "evidence": {
-        "status": 200,
-        "jsonrpc_error": null,
-        "tool_status": "unparsed",
-        "returned_text_length": 104
-      }
-    },
-    {
-      "id": "deployed_extract_public_control",
-      "category": "ssrf_live_tool_control",
-      "severity": "info",
-      "status": "UNVERIFIED",
-      "notes": "",
-      "evidence": {
-        "status": 200,
-        "tool_status": "ok",
-        "text_length": 0
       }
     },
     {
@@ -200,10 +76,11 @@
       "notes": "Indexing example.com failed, so cross-client visibility could not be tested.",
       "evidence": {
         "index_data": {
-          "status": "unparsed",
-          "text": "Error executing tool crawl2rag_index"
+          "status": "error",
+          "msg": "Error executing tool crawl2rag_index",
+          "is_error": true
         },
-        "probe_url": "https://example.com/?weblens_tenant_probe=wlprobe2b473dcc5b"
+        "probe_url": "https://example.com/?weblens_tenant_probe=wlprobe0fb83a001e"
       }
     }
   ],
@@ -212,13 +89,14 @@
       "id": "deployed_https_reachable",
       "category": "transport_tls",
       "layer": "live_deployed",
-      "status": "FAIL",
+      "status": "PASS",
       "severity": "info",
       "evidence": {
-        "status": 405,
-        "transport_error": null
+        "status": 200,
+        "method": "GET",
+        "body_prefix": "{\"status\":\"ok\",\"service\":\"weblens\",\"version\":\"0.1.0\",\"mcp_endpoint\":\"/mcp\"}"
       },
-      "notes": ""
+      "notes": "The MCP endpoint accepts POST; the service root is checked with GET."
     },
     {
       "id": "deployed_http_redirects_to_https",
@@ -304,48 +182,52 @@
       "evidence": {
         "status": 200,
         "jsonrpc_error": -32601,
+        "tool_is_error": false,
         "transport_error": null
       },
-      "notes": "Expected a JSON-RPC error object with HTTP 200, not a 5xx crash."
+      "notes": "Expected a JSON-RPC error object or tool-level isError, not a 5xx crash."
     },
     {
       "id": "deployed_jsonrpc_invalid_jsonrpc_version",
       "category": "mcp_protocol",
       "layer": "live_deployed",
-      "status": "FAIL",
+      "status": "PASS",
       "severity": "info",
       "evidence": {
         "status": 400,
         "jsonrpc_error": -32602,
+        "tool_is_error": false,
         "transport_error": null
       },
-      "notes": "Expected a JSON-RPC error object with HTTP 200, not a 5xx crash."
+      "notes": "Expected a JSON-RPC error object or tool-level isError, not a 5xx crash."
     },
     {
       "id": "deployed_jsonrpc_unknown_tool",
       "category": "mcp_protocol",
       "layer": "live_deployed",
-      "status": "FAIL",
+      "status": "PASS",
       "severity": "info",
       "evidence": {
         "status": 200,
         "jsonrpc_error": null,
+        "tool_is_error": true,
         "transport_error": null
       },
-      "notes": "Expected a JSON-RPC error object with HTTP 200, not a 5xx crash."
+      "notes": "Expected a JSON-RPC error object or tool-level isError, not a 5xx crash."
     },
     {
       "id": "deployed_jsonrpc_missing_required_argument",
       "category": "mcp_protocol",
       "layer": "live_deployed",
-      "status": "FAIL",
+      "status": "PASS",
       "severity": "info",
       "evidence": {
         "status": 200,
         "jsonrpc_error": null,
+        "tool_is_error": true,
         "transport_error": null
       },
-      "notes": "Expected a JSON-RPC error object with HTTP 200, not a 5xx crash."
+      "notes": "Expected a JSON-RPC error object or tool-level isError, not a 5xx crash."
     },
     {
       "id": "deployed_malformed_json",
@@ -362,84 +244,101 @@
       "id": "deployed_extract_blocks_aws_metadata",
       "category": "ssrf_live_tool",
       "layer": "live_deployed",
-      "status": "FAIL",
+      "status": "PASS",
       "severity": "high",
       "evidence": {
         "status": 200,
         "jsonrpc_error": null,
-        "tool_status": "unparsed",
-        "returned_text_length": 134
+        "tool_status": "error",
+        "error_msg": "Error executing tool extract_url: {\"status\":\"error\",\"err\":\"blocked_url\",\"msg\":\"non-public destination: 169.254.169.254\",\"retry\":false}",
+        "returned_text_length": 0
       },
-      "notes": ""
+      "notes": "A structured tool error with no page content counts as a block; a 5xx or leaked content does not."
     },
     {
       "id": "deployed_extract_blocks_gcp_metadata",
       "category": "ssrf_live_tool",
       "layer": "live_deployed",
-      "status": "FAIL",
+      "status": "PASS",
       "severity": "high",
       "evidence": {
         "status": 200,
         "jsonrpc_error": null,
-        "tool_status": "unparsed",
-        "returned_text_length": 137
+        "tool_status": "error",
+        "error_msg": "Error executing tool extract_url: {\"status\":\"error\",\"err\":\"blocked_url\",\"msg\":\"blocked hostname: metadata.google.internal\",\"retry\":false}",
+        "returned_text_length": 0
       },
-      "notes": ""
+      "notes": "A structured tool error with no page content counts as a block; a 5xx or leaked content does not."
     },
     {
       "id": "deployed_extract_blocks_loopback",
       "category": "ssrf_live_tool",
       "layer": "live_deployed",
-      "status": "FAIL",
+      "status": "PASS",
       "severity": "high",
       "evidence": {
         "status": 200,
         "jsonrpc_error": null,
-        "tool_status": "unparsed",
-        "returned_text_length": 128
+        "tool_status": "error",
+        "error_msg": "Error executing tool extract_url: {\"status\":\"error\",\"err\":\"blocked_url\",\"msg\":\"non-public destination: 127.0.0.1\",\"retry\":false}",
+        "returned_text_length": 0
       },
-      "notes": ""
+      "notes": "A structured tool error with no page content counts as a block; a 5xx or leaked content does not."
     },
     {
       "id": "deployed_extract_blocks_ipv6_loopback",
       "category": "ssrf_live_tool",
       "layer": "live_deployed",
-      "status": "FAIL",
+      "status": "PASS",
       "severity": "high",
       "evidence": {
         "status": 200,
         "jsonrpc_error": null,
-        "tool_status": "unparsed",
-        "returned_text_length": 122
+        "tool_status": "error",
+        "error_msg": "Error executing tool extract_url: {\"status\":\"error\",\"err\":\"blocked_url\",\"msg\":\"non-public destination: ::1\",\"retry\":false}",
+        "returned_text_length": 0
       },
-      "notes": ""
+      "notes": "A structured tool error with no page content counts as a block; a 5xx or leaked content does not."
     },
     {
       "id": "deployed_extract_blocks_file_scheme",
       "category": "ssrf_live_tool",
       "layer": "live_deployed",
-      "status": "FAIL",
+      "status": "PASS",
       "severity": "high",
       "evidence": {
         "status": 200,
         "jsonrpc_error": null,
-        "tool_status": "unparsed",
-        "returned_text_length": 104
+        "tool_status": "error",
+        "error_msg": "Error executing tool extract_url: {\"status\":\"error\",\"err\":\"bad_input\",\"msg\":\"invalid URL\",\"retry\":false}",
+        "returned_text_length": 0
       },
-      "notes": ""
+      "notes": "A structured tool error with no page content counts as a block; a 5xx or leaked content does not."
     },
     {
       "id": "deployed_extract_public_control",
       "category": "ssrf_live_tool_control",
       "layer": "live_deployed",
-      "status": "UNVERIFIED",
+      "status": "PASS",
       "severity": "info",
       "evidence": {
         "status": 200,
         "tool_status": "ok",
-        "text_length": 0
+        "text_length": 156,
+        "schema_fields": [
+          "at",
+          "ms",
+          "ps",
+          "sha",
+          "src",
+          "status",
+          "t",
+          "tok",
+          "u",
+          "warn"
+        ]
       },
-      "notes": ""
+      "notes": "Proves the extractor is not blocking every URL."
     },
     {
       "id": "deployed_search_oversize_query",
@@ -501,10 +400,11 @@
       "severity": "info",
       "evidence": {
         "index_data": {
-          "status": "unparsed",
-          "text": "Error executing tool crawl2rag_index"
+          "status": "error",
+          "msg": "Error executing tool crawl2rag_index",
+          "is_error": true
         },
-        "probe_url": "https://example.com/?weblens_tenant_probe=wlprobe2b473dcc5b"
+        "probe_url": "https://example.com/?weblens_tenant_probe=wlprobe0fb83a001e"
       },
       "notes": "Indexing example.com failed, so cross-client visibility could not be tested."
     },
@@ -515,7 +415,7 @@
       "status": "PASS",
       "severity": "critical",
       "evidence": {
-        "secrets_checked": 0,
+        "secrets_checked": 2,
         "secret_hits": [],
         "contains_traceback": false,
         "contains_local_path": false

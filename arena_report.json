@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-11-04T03:46:54Z",
+  "generated_at": "2026-11-04T17:32:02Z",
   "engines": {
     "A": "local engine via src.engine",
     "B": "tavily live",
@@ -12,23 +12,26 @@
       "engines": {
         "A": {
           "status": "ok",
-          "score": 96,
-          "latency_s": 16.491,
-          "tokens": 931,
+          "score": 87,
+          "latency_s": 24.734,
+          "tokens": 899,
+          "trials": 3,
           "breakdown": {
-            "answer_completeness": 30,
+            "answer_completeness": 20,
             "code_and_table_fidelity": 20,
             "signal_to_noise": 20,
-            "source_authority": 15,
-            "token_efficiency": 11
+            "source_authority": 12,
+            "token_efficiency": 15
           },
-          "root_causes": []
+          "root_causes": [
+            "QUERY_RECALLEED_PARTIAL"
+          ]
         },
         "B": {
           "status": "ok",
           "score": 74,
-          "latency_s": 3.504,
-          "tokens": 4389,
+          "latency_s": 0.821,
+          "tokens": 4366,
           "breakdown": {
             "answer_completeness": 30,
             "code_and_table_fidelity": 20,
@@ -42,7 +45,7 @@
         },
         "C": {
           "status": "BLOCKED",
-          "note": "GEMINI_API_KEY absent - engine C skipped; no fabricated scores",
+          "note": "Gemini refused all candidate models - gemini-flash-latest: ClientError: 429 RESOURCE_EXHAUSTED. {'error': {'code': 429, 'message': 'You exceeded your current quota, please check your; no fabricated scores",
           "score": null,
           "latency_s": 0.0,
           "tokens": 0
@@ -56,8 +59,9 @@
         "A": {
           "status": "ok",
           "score": 94,
-          "latency_s": 11.782,
+          "latency_s": 2.374,
           "tokens": 701,
+          "trials": 3,
           "breakdown": {
             "answer_completeness": 30,
             "code_and_table_fidelity": 20,
@@ -69,14 +73,14 @@
         },
         "B": {
           "status": "ok",
-          "score": 75,
-          "latency_s": 4.063,
-          "tokens": 2940,
+          "score": 73,
+          "latency_s": 0.657,
+          "tokens": 3023,
           "breakdown": {
             "answer_completeness": 30,
             "code_and_table_fidelity": 20,
             "signal_to_noise": 17,
-            "source_authority": 6,
+            "source_authority": 4,
             "token_efficiency": 2
           },
           "root_causes": [
@@ -86,7 +90,7 @@
         },
         "C": {
           "status": "BLOCKED",
-          "note": "GEMINI_API_KEY absent - engine C skipped; no fabricated scores",
+          "note": "Gemini refused all candidate models - gemini-flash-latest: ClientError: 429 RESOURCE_EXHAUSTED. {'error': {'code': 429, 'message': 'You exceeded your current quota, please check your; no fabricated scores",
           "score": null,
           "latency_s": 0.0,
           "tokens": 0
@@ -99,23 +103,26 @@
       "engines": {
         "A": {
           "status": "ok",
-          "score": 100,
-          "latency_s": 3.665,
-          "tokens": 421,
+          "score": 84,
+          "latency_s": 11.155,
+          "tokens": 520,
+          "trials": 3,
           "breakdown": {
-            "answer_completeness": 30,
+            "answer_completeness": 15,
             "code_and_table_fidelity": 20,
             "signal_to_noise": 20,
-            "source_authority": 15,
+            "source_authority": 14,
             "token_efficiency": 15
           },
-          "root_causes": []
+          "root_causes": [
+            "QUERY_RECALLEED_PARTIAL"
+          ]
         },
         "B": {
           "status": "ok",
           "score": 80,
-          "latency_s": 5.45,
-          "tokens": 3617,
+          "latency_s": 1.175,
+          "tokens": 4841,
           "breakdown": {
             "answer_completeness": 30,
             "code_and_table_fidelity": 20,
@@ -127,7 +134,7 @@
         },
         "C": {
           "status": "BLOCKED",
-          "note": "GEMINI_API_KEY absent - engine C skipped; no fabricated scores",
+          "note": "Gemini refused all candidate models - gemini-flash-latest: ClientError: 429 RESOURCE_EXHAUSTED. {'error': {'code': 429, 'message': 'You exceeded your current quota, please check your; no fabricated scores",
           "score": null,
           "latency_s": 0.0,
           "tokens": 0
@@ -141,8 +148,9 @@
         "A": {
           "status": "ok",
           "score": 100,
-          "latency_s": 6.891,
+          "latency_s": 2.33,
           "tokens": 392,
+          "trials": 3,
           "breakdown": {
             "answer_completeness": 30,
             "code_and_table_fidelity": 20,
@@ -155,7 +163,7 @@
         "B": {
           "status": "ok",
           "score": 80,
-          "latency_s": 9.437,
+          "latency_s": 1.871,
           "tokens": 5673,
           "breakdown": {
             "answer_completeness": 30,
@@ -170,7 +178,7 @@
         },
         "C": {
           "status": "BLOCKED",
-          "note": "GEMINI_API_KEY absent - engine C skipped; no fabricated scores",
+          "note": "Gemini refused all candidate models - gemini-flash-latest: ClientError: 429 RESOURCE_EXHAUSTED. {'error': {'code': 429, 'message': 'You exceeded your current quota, please check your; no fabricated scores",
           "score": null,
           "latency_s": 0.0,
           "tokens": 0
@@ -183,28 +191,29 @@
       "engines": {
         "A": {
           "status": "ok",
-          "score": 93,
-          "latency_s": 49.926,
-          "tokens": 499,
+          "score": 100,
+          "latency_s": 29.795,
+          "tokens": 687,
+          "trials": 3,
           "breakdown": {
             "answer_completeness": 30,
             "code_and_table_fidelity": 20,
             "signal_to_noise": 20,
-            "source_authority": 8,
+            "source_authority": 15,
             "token_efficiency": 15
           },
           "root_causes": []
         },
         "B": {
           "status": "ok",
-          "score": 76,
-          "latency_s": 4.084,
-          "tokens": 3844,
+          "score": 78,
+          "latency_s": 2.519,
+          "tokens": 3896,
           "breakdown": {
             "answer_completeness": 30,
             "code_and_table_fidelity": 20,
             "signal_to_noise": 20,
-            "source_authority": 4,
+            "source_authority": 6,
             "token_efficiency": 2
           },
           "root_causes": [
@@ -213,7 +222,7 @@
         },
         "C": {
           "status": "BLOCKED",
-          "note": "GEMINI_API_KEY absent - engine C skipped; no fabricated scores",
+          "note": "Gemini refused all candidate models - gemini-flash-latest: ClientError: 429 RESOURCE_EXHAUSTED. {'error': {'code': 429, 'message': 'You exceeded your current quota, please check your; no fabricated scores",
           "score": null,
           "latency_s": 0.0,
           "tokens": 0
@@ -223,13 +232,13 @@
     }
   },
   "summary": {
-    "avg_A": 96.6,
+    "avg_A": 93.0,
     "avg_B": 77.0,
     "avg_C": null,
-    "latency_A_s": 88.755,
-    "latency_B_s": 26.538,
-    "info_density_A_per_1k_tokens": 164.062,
-    "info_density_B_per_1k_tokens": 18.814,
+    "latency_A_s": 70.388,
+    "latency_B_s": 7.043,
+    "info_density_A_per_1k_tokens": 145.358,
+    "info_density_B_per_1k_tokens": 17.661,
     "meets_avg_target": true,
     "beats_tavily_density": true
   }

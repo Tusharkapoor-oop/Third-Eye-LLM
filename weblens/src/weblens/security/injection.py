@@ -32,8 +32,8 @@ _PATTERNS: list[tuple[str, re.Pattern[str]]] = [
     (
         "exfiltration",
         re.compile(
-            r"\b(?:send|post|upload|transmit|forward|reveal|print|leak|disclose|dump)\b.{0,80}"
-            r"\b(?:api[ _-]?keys?|tokens?|passwords?|secrets?|credentials?|"
+            r"\b(?:send|post|upload|transmit|forward|reveal|print|leak|disclose|dump|output|email|exfiltrate|share)\b.{0,80}"
+            r"\b(?:api[ _-]?keys?|keys?|tokens?|passwords?|secrets?|credentials?|"
             r"environment variables?|\.env|confidential\s+(?:text|data|information)|"
             r"sensitive\s+(?:text|data|information))\b",
             re.I | re.S,
