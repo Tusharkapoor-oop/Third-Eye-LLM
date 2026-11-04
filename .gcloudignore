@@ -1,0 +1,22 @@
+# Keep Cloud Build source upload small and secret-free.
+.git
+.gcloudignore
+.env
+.env*
+.venv
+weblens/.venv
+__pycache__
+*.pyc
+*.pyo
+reports
+evidence
+docs
+benchmarks
+tools
+weblens-lab
+tests
+weblens/tests
+test-results
+*.bak
+*.pem
+*.key
