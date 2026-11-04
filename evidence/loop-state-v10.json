@@ -1,0 +1,98 @@
+{
+  "session": "weblens-v10-2026-11-04",
+  "status": "OPEN-REMEDIATION",
+  "updated_at": "2026-11-04T23:30:00Z",
+  "objective": "Real three-system evaluation + product/security fixes; no fabricated success.",
+  "dataset": {
+    "path": "weblens-lab/datasets/eval_benchmark_suite_v10.json",
+    "sha256": "a42d4004fb91208f1ae18de89e2337f2ccf5e7cb580a3c600a8ec7d8057d6361",
+    "records_achieved": 120,
+    "categories": 30,
+    "split": {"dev": 60, "heldout": 60},
+    "targets": {"primary": 100000, "preferred": 250000, "stress": 500000},
+    "target_status": "BLOCKED",
+    "reason": "120 curated queries achieved; inflating with paraphrases/placeholders would be dishonest.",
+    "graded_queries": 107,
+    "excluded_queries": 13,
+    "exclusion_reason": "unanswerable / ambiguous / contradictory / adversarial items without a gradeable expected result set"
+  },
+  "systems": {
+    "local_weblens": {
+      "kind": "real local MCP subprocess",
+      "p5": 0.553, "ndcg5": 0.669, "hit5": 0.729,
+      "p50_ms": 837.0, "p95_ms": 1497.3,
+      "success_rate": 0.9,
+      "mean_tokens": 182.3,
+      "status": "MEASURED"
+    },
+    "deployed_weblens": {
+      "kind": "real Cloud Run MCP",
+      "revision_measured": "weblens-00003-l9q",
+      "p5": 0.471, "ndcg5": 0.729, "hit5": 0.832,
+      "p50_ms": 1037.8, "p95_ms": 1622.2,
+      "success_rate": 0.942,
+      "mean_tokens": 206.2,
+      "status": "MEASURED_PRE_REDEPLOY"
+    },
+    "tavily_direct": {
+      "kind": "live Tavily API",
+      "p5": 0.74, "ndcg5": 0.777, "hit5": 0.935,
+      "p50_ms": 1537.4, "p95_ms": 2673.1,
+      "success_rate": 1.0,
+      "mean_tokens": 1378.7,
+      "credits": 120,
+      "status": "MEASURED"
+    }
+  },
+  "paired": {
+    "local_minus_tavily_p5": {"mean": -0.187, "ci95": [-0.265, -0.108], "w_t_l": [24, 34, 49]},
+    "deployed_minus_local_p5": {"mean": -0.082, "ci95": [-0.142, -0.024], "w_t_l": [25, 36, 46]}
+  },
+  "product": {
+    "nine_apps": {"passed": 9, "partial": 0, "failed": 0, "artifact": "reports/nine_applications_verification.json"},
+    "status": "PASS"
+  },
+  "security": {
+    "local": {"pass": 38, "fail": 0, "unverified": 0, "artifact": "reports/local-security/local_security_results_v2.json", "status": "PASS"},
+    "deployed": {
+      "pass": 17, "fail": 5, "unverified": 1,
+      "artifact": "reports/deployed-security/deployed_security_results_v2.json",
+      "status": "FAIL",
+      "findings": [
+        "public unauthenticated MCP initialize",
+        "bogus Bearer accepted",
+        "no application-level rate limit visible in 20 calls",
+        "no HSTS header",
+        "oversize query accepted by old build",
+        "cross-tenant Crawl2RAG UNVERIFIED because crawl2rag_index errors"
+      ],
+      "note": "SSRF blocking verified working; earlier SSRF FAIL was a harness parsing bug."
+    }
+  },
+  "models": {
+    "mistral_large_4": {"status": "ACCESSIBLE", "http": 200, "latency_ms": 21448.9, "completion_tokens": 134, "reasoning_tokens": 116},
+    "gpt_oss_20b": {"status": "BLOCKED", "reason": "ReadTimeout after 150s"},
+    "mistral_nemo_12b": {"status": "BLOCKED", "reason": "HTTP 404 for account"},
+    "gpt_oss_12b": {"status": "UNSUPPORTED", "reason": "no such model ID available"},
+    "ranking": "REJECTED - only one model produced output"
+  },
+  "tests": {
+    "targeted_root": {"passed": 170, "failed": 0, "duration_s": 16.7},
+    "injection_plus_apps": {"passed": 47, "failed": 0, "duration_s": 21.1},
+    "full_root_suite": {"status": "INCOMPLETE", "reason": "hung after ~93% for >15 min; terminated"},
+    "note": "Earlier 248-pass full run predates the edits in this session."
+  },
+  "deployment": {
+    "current_ready_revision": "weblens-00003-l9q",
+    "dockerfile_changed_to": "python -m weblens.cli serve --http --host 0.0.0.0 --port $PORT --profile full --allow-insecure",
+    "redeploy_status": "IN_PROGRESS_OR_BLOCKED",
+    "post_deploy_verification": "PENDING"
+  },
+  "next_actions": [
+    "Confirm or cancel the Cloud Run redeploy; if deployed, rerun deployed security audit and a smoke benchmark.",
+    "Re-run the full root suite with per-test timeouts from a fresh process; identify the test that hangs.",
+    "Add --systems support to the V10 runner and A/B the query-normalization change on the 60-query dev split.",
+    "Obtain valid credentials/entitlements for GPT-OSS 20B and Mistral NeMo 12B before attempting a model comparison.",
+    "Do not claim 100k/10k dataset targets or a hardened deployment."
+  ]
+}
