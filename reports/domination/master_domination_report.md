@@ -4,7 +4,7 @@
 **Date:** 2026-11-05  
 **Git Commit:** `044cf4a` (origin/main)  
 **Repository:** `C:\Users\ACER\Downloads\Broswer for ai agnets`  
-**Cloud Run:** `weblens-00007-jck` at `https://weblens-16131012091.us-central1.run.app`  
+**Cloud Run:** `weblens-00008-t5p` at `https://weblens-16131012091.us-central1.run.app` (HTTP 200 live verified)  
 **Test Infrastructure:** Python 3.14.0, pytest 9.1.1, 350 collected tests across 39 files
 
 ---
@@ -228,3 +228,4 @@ See `reports/domination/domination_summary.json` (generated separately).
 - Tavily Engine B scores blocked by budget cap (comparison limited to cached/prior results).
 
 **Recommendation:** Accept for local/private MCP host deployment. Track arena recency gap and Cloud Run hardening as P1 follow-up items.
+

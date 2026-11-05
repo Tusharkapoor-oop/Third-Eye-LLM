@@ -14,10 +14,12 @@
   },
   "cloud_run": {
     "service": "weblens",
-    "revision": "weblens-00007-jck",
+    "revision": "weblens-00008-t5p",
     "project": "sewasetu-prod-2026",
     "region": "us-central1",
-    "url": "https://weblens-16131012091.us-central1.run.app"
+    "url": "https://weblens-16131012091.us-central1.run.app",
+    "status": "LIVE_HEALTHY",
+    "probe_http_status": 200
   },
   "test_collection": {
     "total_files": 39,
@@ -128,3 +130,4 @@
   "final_verdict": "PASS_WITH_LIMITATIONS",
   "verdict_rationale": "Production-ready for local/private MCP hosts. Public Cloud Run requires ingress auth and HSTS. Arena recency quality gap tracked as P1."
 }
+

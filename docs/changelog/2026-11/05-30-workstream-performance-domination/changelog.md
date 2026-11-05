@@ -40,9 +40,18 @@ Executed a 30-workstream performance domination evaluation covering architecture
 - WebLens outperforms Tavily on factual density (8.23x), token efficiency (85%), deep research quality (+22 pts)
 - Tavily outperforms WebLens on raw P@5 snippet retrieval and multi-hop latency
 
+## Deployment Status
+
+- **Cloud Run Service:** `weblens`
+- **Revision:** `weblens-00008-t5p` (serving 100% traffic)
+- **Endpoint:** `https://weblens-16131012091.us-central1.run.app/`
+- **Health Check:** HTTP 200 OK (`{"status":"ok","service":"weblens","version":"0.1.0","mcp_endpoint":"/mcp"}`)
+- **Container Image:** `gcr.io/sewasetu-prod-2026/weblens:b3a0b62` (built via Cloud Build `8a8dc86f-893a-41cf-a36d-e4e279904a15`)
+
 ## Remaining Gaps
 
 - Arena recency query quality (P1)
 - Cloud Run ingress authentication (P1)
 - HSTS headers (P2)
 - Non-root container user (P3)
+
