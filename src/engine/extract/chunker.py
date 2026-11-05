@@ -201,7 +201,9 @@ class DocumentChunker:
             # Chunk includes paragraphs from start_idx to end_idx-1 (inclusive)
             # Text runs from actual start of paragraph start_idx to actual end of paragraph (end_idx-1)
             if end_idx - 1 >= start_idx:
-                chunk_text = text[paragraphs[start_idx][1] : paragraphs[end_idx - 1][2]]
+                chunk_start = paragraphs[start_idx][1]
+                chunk_end = paragraphs[end_idx - 1][2]
+                chunk_text = text[chunk_start : chunk_end]
                 chunk_token_count = len(
                     self.tokenizer.encode(chunk_text)
                 )
@@ -211,9 +213,10 @@ class DocumentChunker:
                 if i == len(sorted_indices) - 2:
                     # Extend chunk text to include through the last paragraph
                     last_para_end = paragraphs[n_paragraphs - 1][2]
-                    remaining_text = text[paragraphs[start_idx][1] + len(chunk_text) : last_para_end]
+                    remaining_text = text[chunk_start + len(chunk_text) : last_para_end]
                     if remaining_text.strip():
                         chunk_text = chunk_text + remaining_text
+                        chunk_end = last_para_end
                     chunk_token_count = len(
                         self.tokenizer.encode(chunk_text)
                     )
@@ -221,8 +224,8 @@ class DocumentChunker:
                 chunks.append(
                     DocumentChunk(
                         text=chunk_text,
-                        char_start=paragraphs[start_idx][1],
-                        char_end=paragraphs[end_idx - 1][2],
+                        char_start=chunk_start,
+                        char_end=chunk_end,
                         token_count=chunk_token_count,
                     )
                 )
