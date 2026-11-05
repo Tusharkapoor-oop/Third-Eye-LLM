@@ -7,6 +7,7 @@ Enforces token limits and extracts exact text span attributions.
 from __future__ import annotations
 
 import asyncio
+import os
 import re
 import time
 from dataclasses import dataclass, field
@@ -291,7 +292,7 @@ class DocumentExtractor:
                 _rescued_text = await asyncio.wait_for(
                     self._tavily_extract_rescue(url), timeout=10.0
                 )
-            except asyncio.TimeoutError:
+            except TimeoutError:
                 _rescued_text = None
             if _rescued_text is None and (render_js or CONFIG.enable_browser_fallback):
                 try:

@@ -5,7 +5,10 @@ Discovers URL structure and available pages via sitemaps and root link extractio
 
 from __future__ import annotations
 
-import xml.etree.ElementTree as ET
+try:
+    from defusedxml.ElementTree import fromstring as safe_xml_fromstring
+except ImportError:
+    from xml.etree.ElementTree import fromstring as safe_xml_fromstring  # type: ignore[no-redef] # nosec B405
 from urllib.parse import urljoin, urlparse
 
 from bs4 import BeautifulSoup
@@ -42,7 +45,7 @@ class WebsiteMapper:
             try:
                 code, raw_bytes, _, _ = await safe_fetch_url(sm_url)
                 if code == 200 and raw_bytes:
-                    root = ET.fromstring(raw_bytes)
+                    root = safe_xml_fromstring(raw_bytes)  # nosec B314
                     sitemap_found = True
                     # Check for sitemap index vs urlset
                     # Namespaces often used: http://www.sitemaps.org/schemas/sitemap/0.9

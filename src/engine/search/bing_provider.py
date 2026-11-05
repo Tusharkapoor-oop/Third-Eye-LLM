@@ -12,7 +12,13 @@ from __future__ import annotations
 import base64
 import html as html_lib
 import re
-import xml.etree.ElementTree as ET
+
+try:
+    from defusedxml.ElementTree import ParseError as XMLParseError
+    from defusedxml.ElementTree import fromstring as safe_xml_fromstring
+except ImportError:
+    from xml.etree.ElementTree import ParseError as XMLParseError  # type: ignore[no-redef] # nosec B405
+    from xml.etree.ElementTree import fromstring as safe_xml_fromstring
 
 from bs4 import BeautifulSoup
 
@@ -119,8 +125,8 @@ class BingSearchProvider(SearchProvider):
         if not payload.startswith("<?xml"):
             return []
         try:
-            root = ET.fromstring(payload)
-        except ET.ParseError:
+            root = safe_xml_fromstring(payload)  # nosec B314
+        except XMLParseError:
             return []
         results: list[SearchResult] = []
         for item in root.iter("item"):

@@ -40,4 +40,4 @@ HEALTHCHECK --interval=30s --timeout=5s --start-period=5s --retries=3 \
 # The deployed revision before this change was also the weblens package; the
 # root server.py is the older MyWebEngine demo and must not silently replace it.
 # --allow-insecure preserves the existing public endpoint; see docs/security.
-CMD ["sh", "-c", "python -m weblens.cli serve --http --host 0.0.0.0 --port ${PORT:-8080} --profile full --allow-insecure"]
+CMD ["sh", "-c", "exec python -m weblens.cli serve --http --host 0.0.0.0 --port ${PORT:-8080} --profile full --allow-insecure"]

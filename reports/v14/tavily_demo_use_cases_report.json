@@ -11,9 +11,9 @@
       "overview"
     ],
     "weblens": {
-      "score": 65.0,
-      "latency_s": 63.51,
-      "tokens": 184,
+      "score": 70.0,
+      "latency_s": 66.54,
+      "tokens": 648,
       "sources_count": 0,
       "detected_facets": [
         "leadership",
@@ -22,13 +22,13 @@
         "overview"
       ],
       "missing_facets": [],
-      "answer_preview": "# Web Intelligence Research Report: Provide a comprehensive company overview of NVIDIA, including recent enterprise AI partnerships, leadership, and Blackwell GPU platform developments.\n\n## Executive Summary\nThis intelligence brief synthesizes verified web evidence retrieved across 0 authoritative s..."
+      "answer_preview": "# Research Report: NVIDIA Company Overview, Enterprise AI Partnerships, Leadership, and Blackwell GPU Platform\n\n## Executive Summary\n\nThis research report was prepared to deliver an evidence-grounded analysis of NVIDIA Corporation, covering its executive leadership, recent enterprise AI partnerships..."
     },
     "tavily": {
       "status": "COMPLETED",
       "score": 55.0,
-      "latency_s": 3.94,
-      "tokens": 196,
+      "latency_s": 1.89,
+      "tokens": 194,
       "detected_facets": [
         "partnerships",
         "blackwell"
@@ -52,7 +52,7 @@
     ],
     "weblens": {
       "score": 55.0,
-      "latency_s": 59.94,
+      "latency_s": 55.35,
       "tokens": 168,
       "sources_count": 0,
       "detected_facets": [
@@ -67,16 +67,16 @@
     },
     "tavily": {
       "status": "COMPLETED",
-      "score": 65.0,
-      "latency_s": 4.11,
-      "tokens": 176,
+      "score": 45.0,
+      "latency_s": 0.31,
+      "tokens": 246,
       "detected_facets": [
-        "services revenue",
-        "risks",
-        "market"
+        "services revenue"
       ],
       "missing_facets": [
-        "financial performance"
+        "financial performance",
+        "risks",
+        "market"
       ]
     }
   },
@@ -93,7 +93,7 @@
     ],
     "weblens": {
       "score": 65.0,
-      "latency_s": 47.3,
+      "latency_s": 51.68,
       "tokens": 188,
       "sources_count": 0,
       "detected_facets": [
@@ -108,8 +108,8 @@
     "tavily": {
       "status": "COMPLETED",
       "score": 75.0,
-      "latency_s": 0.7,
-      "tokens": 198,
+      "latency_s": 0.29,
+      "tokens": 220,
       "detected_facets": [
         "mcp",
         "rest",
@@ -132,7 +132,7 @@
     ],
     "weblens": {
       "score": 65.0,
-      "latency_s": 47.91,
+      "latency_s": 45.47,
       "tokens": 164,
       "sources_count": 0,
       "detected_facets": [
@@ -146,15 +146,15 @@
     },
     "tavily": {
       "status": "COMPLETED",
-      "score": 55.0,
-      "latency_s": 0.71,
-      "tokens": 152,
+      "score": 65.0,
+      "latency_s": 0.72,
+      "tokens": 248,
       "detected_facets": [
         "compliance",
-        "aml"
+        "aml",
+        "settlement"
       ],
       "missing_facets": [
-        "settlement",
         "regulatory"
       ]
     }
@@ -172,7 +172,7 @@
     ],
     "weblens": {
       "score": 55.0,
-      "latency_s": 46.53,
+      "latency_s": 68.79,
       "tokens": 184,
       "sources_count": 0,
       "detected_facets": [
@@ -188,8 +188,8 @@
     "tavily": {
       "status": "COMPLETED",
       "score": 65.0,
-      "latency_s": 3.09,
-      "tokens": 220,
+      "latency_s": 0.3,
+      "tokens": 194,
       "detected_facets": [
         "snowflake",
         "data cloud",
@@ -213,7 +213,7 @@
     ],
     "weblens": {
       "score": 65.0,
-      "latency_s": 43.92,
+      "latency_s": 49.26,
       "tokens": 176,
       "sources_count": 0,
       "detected_facets": [
@@ -228,8 +228,8 @@
     "tavily": {
       "status": "COMPLETED",
       "score": 75.0,
-      "latency_s": 1.37,
-      "tokens": 218,
+      "latency_s": 0.28,
+      "tokens": 220,
       "detected_facets": [
         "semiconductor",
         "tsmc",
@@ -252,7 +252,7 @@
     ],
     "weblens": {
       "score": 55.0,
-      "latency_s": 73.94,
+      "latency_s": 51.5,
       "tokens": 180,
       "sources_count": 0,
       "detected_facets": [
@@ -268,8 +268,8 @@
     "tavily": {
       "status": "COMPLETED",
       "score": 65.0,
-      "latency_s": 1.48,
-      "tokens": 186,
+      "latency_s": 0.47,
+      "tokens": 188,
       "detected_facets": [
         "cyber insurance",
         "underwriting",
@@ -294,7 +294,7 @@
     ],
     "weblens": {
       "score": 65.0,
-      "latency_s": 62.14,
+      "latency_s": 67.79,
       "tokens": 184,
       "sources_count": 0,
       "detected_facets": [
@@ -309,16 +309,16 @@
     },
     "tavily": {
       "status": "COMPLETED",
-      "score": 67.0,
-      "latency_s": 1.45,
-      "tokens": 132,
+      "score": 59.0,
+      "latency_s": 6.41,
+      "tokens": 120,
       "detected_facets": [
         "headquarters",
-        "ceo",
         "payment apis",
         "competitors"
       ],
       "missing_facets": [
+        "ceo",
         "founding year"
       ]
     }
