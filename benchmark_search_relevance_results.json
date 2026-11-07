@@ -1,0 +1,687 @@
+{
+  "timestamp": "2026-11-05T07:52:25Z",
+  "total_elapsed_s": 152.452,
+  "tracking_tests": [
+    {
+      "raw": "https://example.com/article?utm_source=twitter&utm_medium=social&utm_campaign=launch&id=42#header",
+      "description": "utm_* and fragment",
+      "engine_aggregator": "https://example.com/article?id=42",
+      "search_pipeline": "https://example.com/article?id=42",
+      "weblens_urls": "https://example.com/article?id=42",
+      "weblens_strip": "https://example.com/article?id=42",
+      "webintel_canonicalize": "https://example.com/article?id=42"
+    },
+    {
+      "raw": "https://docs.python.org/3/library/asyncio.html?fbclid=IwAR12345&gclid=67890&ref=google",
+      "description": "fbclid, gclid, ref",
+      "engine_aggregator": "https://docs.python.org/3/library/asyncio.html",
+      "search_pipeline": "https://docs.python.org/3/library/asyncio.html",
+      "weblens_urls": "https://docs.python.org/3/library/asyncio.html",
+      "weblens_strip": "https://docs.python.org/3/library/asyncio.html",
+      "webintel_canonicalize": "https://docs.python.org/3/library/asyncio.html?ref=google"
+    },
+    {
+      "raw": "https://github.com/astral-sh/uv/releases?mc_cid=abc12345&mc_eid=def67890&_ga=GA1.2.12345",
+      "description": "mailchimp & google analytics",
+      "engine_aggregator": "https://github.com/astral-sh/uv/releases",
+      "search_pipeline": "https://github.com/astral-sh/uv/releases?mc_cid=abc12345&_ga=GA1.2.12345",
+      "weblens_urls": "https://github.com/astral-sh/uv/releases",
+      "weblens_strip": "https://github.com/astral-sh/uv/releases",
+      "webintel_canonicalize": "https://github.com/astral-sh/uv/releases"
+    },
+    {
+      "raw": "https://arstechnica.com/gadgets/2026/01/new-chip/?source=rss&ref_src=twsrc&si=trackid",
+      "description": "source, ref_src, si",
+      "engine_aggregator": "https://arstechnica.com/gadgets/2026/01/new-chip?source=rss&si=trackid",
+      "search_pipeline": "https://arstechnica.com/gadgets/2026/01/new-chip?si=trackid",
+      "weblens_urls": "https://arstechnica.com/gadgets/2026/01/new-chip/",
+      "weblens_strip": "https://arstechnica.com/gadgets/2026/01/new-chip/",
+      "webintel_canonicalize": "https://arstechnica.com/gadgets/2026/01/new-chip?source=rss&si=trackid"
+    }
+  ],
+  "subquery_tests": [
+    {
+      "prompt": "What is the difference between git rebase and git merge in team workflows with linear history?",
+      "src_engine_subqueries_count": 3,
+      "src_engine_subqueries": [
+        "difference between git rebase merge team workflows linear history",
+        "difference between git rebase merge team workflows linear history comparison",
+        "site:git-scm.com git rebase merge difference between git rebase merge team workflows linear history"
+      ],
+      "src_engine_intent": "comparison",
+      "src_engine_locks": [],
+      "root_subqueries_count": 1,
+      "root_subqueries": [
+        "git rebase and git merge in team workflows with linear history"
+      ],
+      "webintel_subqueries_count": 3,
+      "webintel_subqueries": [
+        "What is the difference between git rebase and git merge in team workflows with linear history",
+        "What is the difference between git rebase and git merge in team workflows with linear history comparison benchmark",
+        "What is the difference between git rebase and git merge in team workflows with linear history (site:github.com OR site:docs.* OR site:arxiv.org)"
+      ]
+    },
+    {
+      "prompt": "Can you please tell me how to resolve TypeError: unhashable type: 'list' when building dictionary in Python 3.11",
+      "src_engine_subqueries_count": 2,
+      "src_engine_subqueries": [
+        "list Python 3.11 resolve typeerror unhashable type building dictionary python 3.11",
+        "list Python 3.11 resolve typeerror unhashable type building dictionary python 3.11 authoritative source"
+      ],
+      "src_engine_intent": "how_to",
+      "src_engine_locks": [
+        "list",
+        "Python 3.11"
+      ],
+      "root_subqueries_count": 1,
+      "root_subqueries": [
+        "resolve TypeError: unhashable type: 'list' when building dictionary in Python 3.11"
+      ],
+      "webintel_subqueries_count": 3,
+      "webintel_subqueries": [
+        "please tell me how to resolve TypeError: unhashable type: 'list' when building dictionary in Python 3.11",
+        "please tell me how to resolve TypeError: unhashable type: 'list' when building dictionary in Python 3.11 TypeError 3.11 working example",
+        "please tell me how to resolve TypeError: unhashable type: 'list' when building dictionary in Python 3.11 (site:github.com OR site:stackoverflow.com OR site:developer.mozilla.org OR site:docs.python.org OR site:learn.microsoft.com)"
+      ]
+    },
+    {
+      "prompt": "Compare uv and pip for Python packaging caching performance and dependency resolution speed",
+      "src_engine_subqueries_count": 3,
+      "src_engine_subqueries": [
+        "uv pip python packaging caching performance dependency resolution speed",
+        "uv pip python packaging caching performance dependency resolution speed comparison",
+        "uv pip python packaging caching performance dependency resolution speed authoritative source"
+      ],
+      "src_engine_intent": "comparison",
+      "src_engine_locks": [],
+      "root_subqueries_count": 1,
+      "root_subqueries": [
+        "Compare uv and pip for Python packaging caching performance and dependency resolution speed"
+      ],
+      "webintel_subqueries_count": 3,
+      "webintel_subqueries": [
+        "Compare uv and pip for Python packaging caching performance and dependency resolution speed",
+        "Compare uv and pip for Python packaging caching performance and dependency resolution speed comparison versus comparison benchmark",
+        "Compare uv and pip for Python packaging caching performance and dependency resolution speed (site:github.com OR site:docs.* OR site:arxiv.org)"
+      ]
+    },
+    {
+      "prompt": "Latest stable release features of Linux kernel 6.12 with LTS roadmap",
+      "src_engine_subqueries_count": 3,
+      "src_engine_subqueries": [
+        "6.12 stable release features linux kernel lts roadmap",
+        "6.12 stable release features linux kernel lts roadmap release date",
+        "6.12 stable release features linux kernel lts roadmap official announcement"
+      ],
+      "src_engine_intent": "news",
+      "src_engine_locks": [
+        "6.12"
+      ],
+      "root_subqueries_count": 1,
+      "root_subqueries": [
+        "Latest stable release features of Linux kernel 6.12 with LTS roadmap"
+      ],
+      "webintel_subqueries_count": 3,
+      "webintel_subqueries": [
+        "Latest stable release features of Linux kernel 6.12 with LTS roadmap",
+        "Latest stable release features of Linux kernel 6.12 with LTS roadmap latest release changelog 6.12",
+        "Latest stable release features of Linux kernel 6.12 with LTS roadmap (site:github.com OR site:stackoverflow.com OR site:developer.mozilla.org OR site:docs.python.org OR site:learn.microsoft.com)"
+      ]
+    },
+    {
+      "prompt": "Simple quick query",
+      "src_engine_subqueries_count": 2,
+      "src_engine_subqueries": [
+        "simple quick query",
+        "simple quick query authoritative source"
+      ],
+      "src_engine_intent": "general",
+      "src_engine_locks": [],
+      "root_subqueries_count": 1,
+      "root_subqueries": [
+        "Simple quick query"
+      ],
+      "webintel_subqueries_count": 2,
+      "webintel_subqueries": [
+        "Simple quick query",
+        "Simple quick query (site:github.com OR site:arxiv.org OR site:docs.*)"
+      ]
+    }
+  ],
+  "stopword_tests": [
+    {
+      "raw_query": "Can you please tell me about Python asyncio event loop",
+      "src_engine_primary": "python asyncio event loop",
+      "src_engine_bm25_tokens": [
+        "python",
+        "asyncio",
+        "event",
+        "loop"
+      ],
+      "root_clean": "about Python asyncio event loop",
+      "weblens_clean": "please tell me about Python asyncio event loop",
+      "weblens_terms": [
+        "please",
+        "tell",
+        "me",
+        "python",
+        "asyncio",
+        "event",
+        "loop"
+      ]
+    },
+    {
+      "raw_query": "Could you please explain what is the difference between git rebase and git merge",
+      "src_engine_primary": "explain difference between git rebase merge",
+      "src_engine_bm25_tokens": [
+        "explain",
+        "difference",
+        "between",
+        "git",
+        "rebase",
+        "merge"
+      ],
+      "root_clean": "git rebase and git merge",
+      "weblens_clean": "git rebase and git merge",
+      "weblens_terms": [
+        "please",
+        "explain",
+        "difference",
+        "git",
+        "rebase",
+        "merge"
+      ]
+    },
+    {
+      "raw_query": "I want to know how to install and configure Docker container on Ubuntu 24.04",
+      "src_engine_primary": "24.04 install configure docker container ubuntu",
+      "src_engine_bm25_tokens": [
+        "24.04",
+        "install",
+        "configure",
+        "docker",
+        "container",
+        "ubuntu"
+      ],
+      "root_clean": "know how to install and configure Docker container on Ubuntu 24.04",
+      "weblens_clean": "know how to install and configure Docker container on Ubuntu 24.04",
+      "weblens_terms": [
+        "want",
+        "know",
+        "install",
+        "configure",
+        "docker",
+        "container",
+        "ubuntu",
+        "24.04"
+      ]
+    },
+    {
+      "raw_query": "Give me information on latest breaking news about OpenAI GPT-5 release date",
+      "src_engine_primary": "breaking news openai gpt-5 release date",
+      "src_engine_bm25_tokens": [
+        "breaking",
+        "news",
+        "openai",
+        "gpt-5",
+        "release",
+        "date"
+      ],
+      "root_clean": "Give me information on latest breaking news about OpenAI GPT-5 release date",
+      "weblens_clean": "Give me information on latest breaking news about OpenAI GPT-5 release date",
+      "weblens_terms": [
+        "give",
+        "me",
+        "information",
+        "latest",
+        "breaking",
+        "news",
+        "openai",
+        "gpt-5",
+        "gpt",
+        "release",
+        "date"
+      ]
+    }
+  ],
+  "domain_authority_tests": [
+    {
+      "url": "https://docs.python.org/3/library/asyncio.html",
+      "category": "Official Python Docs",
+      "engine_authority_score": 1.2,
+      "engine_authority_tier": 1.2,
+      "pipeline_domain_authority": 0.5,
+      "weblens_authority": 3.0,
+      "webintel_authority_score": 1.5,
+      "webintel_authority_label": "primary-docs"
+    },
+    {
+      "url": "https://developer.mozilla.org/en-US/docs/Web/JavaScript",
+      "category": "MDN Web Docs",
+      "engine_authority_score": 1.2,
+      "engine_authority_tier": 1.2,
+      "pipeline_domain_authority": 0.5,
+      "weblens_authority": 3.0,
+      "webintel_authority_score": 1.95,
+      "webintel_authority_label": "primary-docs"
+    },
+    {
+      "url": "https://learn.microsoft.com/en-us/azure/",
+      "category": "Microsoft Learn",
+      "engine_authority_score": 1.2,
+      "engine_authority_tier": 1.0,
+      "pipeline_domain_authority": 0.0,
+      "weblens_authority": 2.5,
+      "webintel_authority_score": 1.4,
+      "webintel_authority_label": "primary-docs"
+    },
+    {
+      "url": "https://github.com/python/cpython",
+      "category": "GitHub Repository",
+      "engine_authority_score": 1.2,
+      "engine_authority_tier": 1.2,
+      "pipeline_domain_authority": 0.5,
+      "weblens_authority": 2.0,
+      "webintel_authority_score": 0.95,
+      "webintel_authority_label": "authoritative"
+    },
+    {
+      "url": "https://arxiv.org/abs/1706.03762",
+      "category": "arXiv Research",
+      "engine_authority_score": 1.2,
+      "engine_authority_tier": 1.0,
+      "pipeline_domain_authority": 0.5,
+      "weblens_authority": 1.5,
+      "webintel_authority_score": 1.2,
+      "webintel_authority_label": "primary-docs"
+    },
+    {
+      "url": "https://www.cdc.gov/flu/weekly/",
+      "category": "US Government (.gov)",
+      "engine_authority_score": 0.85,
+      "engine_authority_tier": 0.0,
+      "pipeline_domain_authority": 0.5,
+      "weblens_authority": 2.0,
+      "webintel_authority_score": 0.6,
+      "webintel_authority_label": "authoritative"
+    },
+    {
+      "url": "https://cs.stanford.edu/research",
+      "category": "University (.edu)",
+      "engine_authority_score": 0.85,
+      "engine_authority_tier": 0.0,
+      "pipeline_domain_authority": 0.5,
+      "weblens_authority": 2.0,
+      "webintel_authority_score": 0.6,
+      "webintel_authority_label": "authoritative"
+    },
+    {
+      "url": "https://www.cam.ac.uk/research",
+      "category": "UK Academic (.ac.uk)",
+      "engine_authority_score": 0.0,
+      "engine_authority_tier": 0.0,
+      "pipeline_domain_authority": 0.5,
+      "weblens_authority": 0.0,
+      "webintel_authority_score": 0.6,
+      "webintel_authority_label": "authoritative"
+    },
+    {
+      "url": "https://www.reuters.com/technology/",
+      "category": "Reuters Technology",
+      "engine_authority_score": 0.0,
+      "engine_authority_tier": 0.0,
+      "pipeline_domain_authority": 0.5,
+      "weblens_authority": 0.0,
+      "webintel_authority_score": 0.6,
+      "webintel_authority_label": "authoritative"
+    },
+    {
+      "url": "https://arstechnica.com/gadgets/",
+      "category": "Ars Technica",
+      "engine_authority_score": 0.0,
+      "engine_authority_tier": 0.0,
+      "pipeline_domain_authority": 0.2,
+      "weblens_authority": 0.0,
+      "webintel_authority_score": 0.5,
+      "webintel_authority_label": "credible"
+    },
+    {
+      "url": "https://www.w3schools.com/python/",
+      "category": "W3Schools",
+      "engine_authority_score": 0.0,
+      "engine_authority_tier": 0.0,
+      "pipeline_domain_authority": -0.6,
+      "weblens_authority": 0.0,
+      "webintel_authority_score": -0.5,
+      "webintel_authority_label": "low-signal"
+    },
+    {
+      "url": "https://www.geeksforgeeks.org/python-list/",
+      "category": "GeeksForGeeks",
+      "engine_authority_score": 0.0,
+      "engine_authority_tier": 0.0,
+      "pipeline_domain_authority": -0.6,
+      "weblens_authority": 0.0,
+      "webintel_authority_score": -0.3,
+      "webintel_authority_label": "low-signal"
+    },
+    {
+      "url": "https://www.quora.com/What-is-Python",
+      "category": "Quora",
+      "engine_authority_score": -0.7,
+      "engine_authority_tier": 0.0,
+      "pipeline_domain_authority": 0.0,
+      "weblens_authority": 0.0,
+      "webintel_authority_score": -0.8,
+      "webintel_authority_label": "seo-farm"
+    },
+    {
+      "url": "https://www.pinterest.com/pin/12345",
+      "category": "Pinterest",
+      "engine_authority_score": -0.7,
+      "engine_authority_tier": 0.0,
+      "pipeline_domain_authority": 0.0,
+      "weblens_authority": 0.0,
+      "webintel_authority_score": -1.0,
+      "webintel_authority_label": "seo-farm"
+    },
+    {
+      "url": "https://best10deals.online/article",
+      "category": "Low quality TLD .online",
+      "engine_authority_score": 0.0,
+      "engine_authority_tier": -1.0,
+      "pipeline_domain_authority": 0.0,
+      "weblens_authority": 0.0,
+      "webintel_authority_score": 0.0,
+      "webintel_authority_label": "neutral"
+    },
+    {
+      "url": "https://supercheapproducts.xyz/download",
+      "category": "Low quality TLD .xyz",
+      "engine_authority_score": 0.0,
+      "engine_authority_tier": -1.0,
+      "pipeline_domain_authority": 0.0,
+      "weblens_authority": 0.0,
+      "webintel_authority_score": 0.0,
+      "webintel_authority_label": "neutral"
+    },
+    {
+      "url": "https://spamtutorial.site/guide",
+      "category": "Low quality TLD .site",
+      "engine_authority_score": 0.0,
+      "engine_authority_tier": -1.0,
+      "pipeline_domain_authority": 0.0,
+      "weblens_authority": 0.0,
+      "webintel_authority_score": 0.0,
+      "webintel_authority_label": "neutral"
+    }
+  ],
+  "held_out_queries": [
+    {
+      "id": "Q1_TECH_BUG",
+      "category": "technical_bug",
+      "query": "TypeError: unhashable type: 'list' Python dictionary key fix",
+      "status": "success",
+      "latency_s": 2.164,
+      "results_count": 3,
+      "unique_domains_count": 3,
+      "max_per_domain": 1,
+      "domain_cap_respected": true,
+      "total_snippet_tokens": 135,
+      "total_response_tokens": 284,
+      "relevance_precision_at_k": 1.0,
+      "average_authority_score": 0.0,
+      "plan_intent": "technical",
+      "plan_subqueries": [
+        "list typeerror unhashable type python dictionary key fix",
+        "list typeerror unhashable type python dictionary key fix official documentation",
+        "list typeerror unhashable type python dictionary key fix site:python.org OR site:docs.python.org OR site:packaging.python.org"
+      ],
+      "plan_lexical_locks": [
+        "list"
+      ],
+      "hit_urls": [
+        "https://www.thefreedictionary.com/list",
+        "https://www.geeksforgeeks.org/python/python-lists",
+        "https://www.w3schools.com/python/python_lists.asp"
+      ]
+    },
+    {
+      "id": "Q2_TECH_DOCS",
+      "category": "official_documentation",
+      "query": "Python asyncio TaskGroup create_task example usage 3.11",
+      "status": "no_reliable_result",
+      "latency_s": 19.292,
+      "results_count": 0,
+      "unique_domains_count": 0,
+      "max_per_domain": 0,
+      "domain_cap_respected": true,
+      "total_snippet_tokens": 0,
+      "total_response_tokens": 39,
+      "relevance_precision_at_k": 0.0,
+      "average_authority_score": 0.0,
+      "plan_intent": "technical",
+      "plan_subqueries": [
+        "3.11 python asyncio taskgroup create_task example usage",
+        "3.11 python asyncio taskgroup create_task example usage official documentation",
+        "3.11 python asyncio taskgroup create_task example usage site:python.org OR site:docs.python.org OR site:packaging.python.org"
+      ],
+      "plan_lexical_locks": [
+        "3.11"
+      ],
+      "hit_urls": []
+    },
+    {
+      "id": "Q3_COMPARISON",
+      "category": "comparison",
+      "query": "PostgreSQL vs MySQL performance differences MVCC concurrency",
+      "status": "success",
+      "latency_s": 8.01,
+      "results_count": 5,
+      "unique_domains_count": 5,
+      "max_per_domain": 1,
+      "domain_cap_respected": true,
+      "total_snippet_tokens": 237,
+      "total_response_tokens": 520,
+      "relevance_precision_at_k": 1.0,
+      "average_authority_score": 0.0,
+      "plan_intent": "comparison",
+      "plan_subqueries": [
+        "postgresql vs mysql performance differences mvcc concurrency",
+        "postgresql vs mysql performance differences mvcc concurrency comparison",
+        "postgresql vs mysql performance differences mvcc concurrency authoritative source"
+      ],
+      "plan_lexical_locks": [],
+      "hit_urls": [
+        "https://technolila.com/mysql-vs-postgresql-performance-differences-2026.html",
+        "https://kernelmaker.github.io/mysql-vs-pg-mvcc",
+        "https://mindo.web.id/articles/mysql-vs-postgresql-mvcc-locking-mechanics-concurrency-deep-dive"
+      ]
+    },
+    {
+      "id": "Q4_CONVERSATIONAL",
+      "category": "conversational_filler",
+      "query": "Can you please tell me how to configure FastAPI CORS middleware in Python application",
+      "status": "no_reliable_result",
+      "latency_s": 1.424,
+      "results_count": 0,
+      "unique_domains_count": 0,
+      "max_per_domain": 0,
+      "domain_cap_respected": true,
+      "total_snippet_tokens": 0,
+      "total_response_tokens": 43,
+      "relevance_precision_at_k": 0.0,
+      "average_authority_score": 0.0,
+      "plan_intent": "how_to",
+      "plan_subqueries": [
+        "configure fastapi cors middleware python application",
+        "configure fastapi cors middleware python application authoritative source",
+        "tell me how to configure FastAPI CORS middleware in Python application"
+      ],
+      "plan_lexical_locks": [],
+      "hit_urls": []
+    },
+    {
+      "id": "Q5_RECENCY_NEWS",
+      "category": "news_recency",
+      "query": "Linux kernel 6.12 release notes features LTS roadmap",
+      "status": "no_reliable_result",
+      "latency_s": 56.017,
+      "results_count": 0,
+      "unique_domains_count": 0,
+      "max_per_domain": 0,
+      "domain_cap_respected": true,
+      "total_snippet_tokens": 0,
+      "total_response_tokens": 39,
+      "relevance_precision_at_k": 0.0,
+      "average_authority_score": 0.0,
+      "plan_intent": "general",
+      "plan_subqueries": [
+        "6.12 linux kernel release notes features lts roadmap",
+        "6.12 linux kernel release notes features lts roadmap authoritative source",
+        "Linux kernel 6.12 release notes features LTS roadmap"
+      ],
+      "plan_lexical_locks": [
+        "6.12"
+      ],
+      "hit_urls": []
+    },
+    {
+      "id": "Q6_LEXICAL_LOCKS",
+      "category": "lexical_locks",
+      "query": "Pydantic v2.0 \"BaseSettings\" model_dump json migration",
+      "status": "success",
+      "latency_s": 46.977,
+      "results_count": 5,
+      "unique_domains_count": 3,
+      "max_per_domain": 2,
+      "domain_cap_respected": true,
+      "total_snippet_tokens": 296,
+      "total_response_tokens": 551,
+      "relevance_precision_at_k": 1.0,
+      "average_authority_score": 0.94,
+      "plan_intent": "general",
+      "plan_subqueries": [
+        "BaseSettings v2.0 pydantic model_dump json migration",
+        "BaseSettings v2.0 pydantic model_dump json migration authoritative source",
+        "Pydantic v2.0 \"BaseSettings\" model_dump json migration"
+      ],
+      "plan_lexical_locks": [
+        "BaseSettings",
+        "v2.0"
+      ],
+      "hit_urls": [
+        "https://stackoverflow.com/questions/77879279/pydantic-v2-migrate-json-loads-json-dumps",
+        "https://github.com/pydantic/pydantic/blob/main/docs/migration.md",
+        "https://github.com/pydantic/pydantic/discussions/7701"
+      ]
+    },
+    {
+      "id": "Q7_SECURITY_CVE",
+      "category": "security_cve",
+      "query": "CVE-2024-38077 Windows Remote Desktop Licensing service RCE",
+      "status": "success",
+      "latency_s": 8.013,
+      "results_count": 5,
+      "unique_domains_count": 5,
+      "max_per_domain": 1,
+      "domain_cap_respected": true,
+      "total_snippet_tokens": 243,
+      "total_response_tokens": 558,
+      "relevance_precision_at_k": 1.0,
+      "average_authority_score": 0.24,
+      "plan_intent": "general",
+      "plan_subqueries": [
+        "CVE-2024-38077 windows remote desktop licensing service rce",
+        "CVE-2024-38077 windows remote desktop licensing service rce authoritative source"
+      ],
+      "plan_lexical_locks": [
+        "CVE-2024-38077"
+      ],
+      "hit_urls": [
+        "https://github.com/razureink/cve-2024-38077-madlicense_reproduction",
+        "https://www.cve.org/cverecord?id=CVE-2024-38077",
+        "https://notcve.org/cve/cve-2024-38077"
+      ]
+    },
+    {
+      "id": "Q8_ACADEMIC_RESEARCH",
+      "category": "academic_research",
+      "query": "Attention Is All You Need Transformer architecture Vaswani 1706.03762",
+      "status": "success",
+      "latency_s": 8.022,
+      "results_count": 3,
+      "unique_domains_count": 2,
+      "max_per_domain": 2,
+      "domain_cap_respected": true,
+      "total_snippet_tokens": 372,
+      "total_response_tokens": 586,
+      "relevance_precision_at_k": 1.0,
+      "average_authority_score": 1.2,
+      "plan_intent": "general",
+      "plan_subqueries": [
+        "1706.03762 attention all you need transformer architecture vaswani",
+        "1706.03762 attention all you need transformer architecture vaswani authoritative source",
+        "Attention Is All You Need Transformer architecture Vaswani 1706.03762"
+      ],
+      "plan_lexical_locks": [
+        "1706.03762"
+      ],
+      "hit_urls": [
+        "https://ar5iv.labs.arxiv.org/html/1706.03762",
+        "https://arxiv.org/abs/1706.03762",
+        "https://arxiv.org/pdf/1706.03762"
+      ]
+    },
+    {
+      "id": "Q9_CLI_ERROR",
+      "category": "cli_error",
+      "query": "git push --force-with-lease rejected remote contains work that you do not have locally",
+      "status": "success",
+      "latency_s": 1.007,
+      "results_count": 1,
+      "unique_domains_count": 1,
+      "max_per_domain": 1,
+      "domain_cap_respected": true,
+      "total_snippet_tokens": 40,
+      "total_response_tokens": 116,
+      "relevance_precision_at_k": 1.0,
+      "average_authority_score": 0.0,
+      "plan_intent": "general",
+      "plan_subqueries": [
+        "git push force-with-lease rejected remote contains work you not have locally",
+        "git push force-with-lease rejected remote contains work you not have locally authoritative source"
+      ],
+      "plan_lexical_locks": [],
+      "hit_urls": [
+        "https://www.w3schools.com/git/default.asp"
+      ]
+    },
+    {
+      "id": "Q10_HOAX_ZERO_ACCURACY",
+      "category": "zero_fake_accuracy_gate",
+      "query": "Windows 14 official release date ISO download requirements",
+      "status": "success",
+      "latency_s": 0.849,
+      "results_count": 5,
+      "unique_domains_count": 3,
+      "max_per_domain": 2,
+      "domain_cap_respected": true,
+      "total_snippet_tokens": 283,
+      "total_response_tokens": 505,
+      "relevance_precision_at_k": 1.0,
+      "average_authority_score": 0.0,
+      "plan_intent": "general",
+      "plan_subqueries": [
+        "windows 14 official release date iso download requirements",
+        "windows 14 official release date iso download requirements authoritative source"
+      ],
+      "plan_lexical_locks": [],
+      "hit_urls": [
+        "https://support.microsoft.com/en-us/windows/deployment/install-upgrade/create-installation-media-for-windows",
+        "https://www.microsoft.com/en-us/software-download/windows10",
+        "https://www.microsoft.com/en-us/software-download"
+      ]
+    }
+  ]
+}

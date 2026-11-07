@@ -1,0 +1,281 @@
+[
+  {
+    "model": "openai/gpt-oss-20b",
+    "key_label": "Mistral_Key",
+    "http_status": 401,
+    "ok": false,
+    "latency_ms": 1153.3,
+    "usage": {},
+    "content": "",
+    "reasoning": null,
+    "error_body": "{\"status\":401,\"title\":\"Unauthorized\",\"detail\":\"Invalid JWT serialization: Missing dot delimiter(s)\"}"
+  },
+  {
+    "model": "openai/gpt-oss-12b",
+    "key_label": "Mistral_Key",
+    "http_status": 404,
+    "ok": false,
+    "latency_ms": 384.8,
+    "usage": {},
+    "content": "",
+    "reasoning": null,
+    "error_body": "404 page not found\n"
+  },
+  {
+    "model": "gpt-oss-12b",
+    "key_label": "Mistral_Key",
+    "http_status": 404,
+    "ok": false,
+    "latency_ms": 355.3,
+    "usage": {},
+    "content": "",
+    "reasoning": null,
+    "error_body": "404 page not found\n"
+  },
+  {
+    "model": "nv-mistralai/mistral-nemo-12b-instruct",
+    "key_label": "Mistral_Key",
+    "http_status": 401,
+    "ok": false,
+    "latency_ms": 343.5,
+    "usage": {},
+    "content": "",
+    "reasoning": null,
+    "error_body": "{\"status\":401,\"title\":\"Unauthorized\",\"detail\":\"Invalid JWT serialization: Missing dot delimiter(s)\"}"
+  },
+  {
+    "model": "mistralai/mistral-large-4-1t-a52b",
+    "key_label": "Mistral_Key",
+    "http_status": 401,
+    "ok": false,
+    "latency_ms": 337.9,
+    "usage": {},
+    "content": "",
+    "reasoning": null,
+    "error_body": "{\"status\":401,\"title\":\"Unauthorized\",\"detail\":\"Invalid JWT serialization: Missing dot delimiter(s)\"}"
+  },
+  {
+    "model": "google/gemma-3-12b-it",
+    "key_label": "Mistral_Key",
+    "http_status": 401,
+    "ok": false,
+    "latency_ms": 336.0,
+    "usage": {},
+    "content": "",
+    "reasoning": null,
+    "error_body": "{\"status\":401,\"title\":\"Unauthorized\",\"detail\":\"Invalid JWT serialization: Missing dot delimiter(s)\"}"
+  },
+  {
+    "model": "meta/llama-guard-4-12b",
+    "key_label": "Mistral_Key",
+    "http_status": 401,
+    "ok": false,
+    "latency_ms": 531.4,
+    "usage": {},
+    "content": "",
+    "reasoning": null,
+    "error_body": "{\"status\":401,\"title\":\"Unauthorized\",\"detail\":\"Invalid JWT serialization: Missing dot delimiter(s)\"}"
+  },
+  {
+    "model": "meta/llama-3.2-11b-vision-instruct",
+    "key_label": "Mistral_Key",
+    "http_status": 401,
+    "ok": false,
+    "latency_ms": 250.1,
+    "usage": {},
+    "content": "",
+    "reasoning": null,
+    "error_body": "{\"status\":401,\"title\":\"Unauthorized\",\"detail\":\"Invalid JWT serialization: Missing dot delimiter(s)\"}"
+  },
+  {
+    "model": "nvidia/mistral-nemo-minitron-8b-8k-instruct",
+    "key_label": "Mistral_Key",
+    "http_status": 401,
+    "ok": false,
+    "latency_ms": 289.1,
+    "usage": {},
+    "content": "",
+    "reasoning": null,
+    "error_body": "{\"status\":401,\"title\":\"Unauthorized\",\"detail\":\"Invalid JWT serialization: Missing dot delimiter(s)\"}"
+  },
+  {
+    "model": "mistralai/mistral-7b-instruct-v0.3",
+    "key_label": "Mistral_Key",
+    "http_status": 401,
+    "ok": false,
+    "latency_ms": 1845.5,
+    "usage": {},
+    "content": "",
+    "reasoning": null,
+    "error_body": "{\"status\":401,\"title\":\"Unauthorized\",\"detail\":\"Invalid JWT serialization: Missing dot delimiter(s)\"}"
+  },
+  {
+    "model": "deepseek-ai/deepseek-v4.1-flash",
+    "key_label": "Mistral_Key",
+    "http_status": 401,
+    "ok": false,
+    "latency_ms": 432.9,
+    "usage": {},
+    "content": "",
+    "reasoning": null,
+    "error_body": "{\"status\":401,\"title\":\"Unauthorized\",\"detail\":\"Invalid JWT serialization: Missing dot delimiter(s)\"}"
+  },
+  {
+    "model": "ibm/granite-3.0-8b-instruct",
+    "key_label": "Mistral_Key",
+    "http_status": 401,
+    "ok": false,
+    "latency_ms": 962.7,
+    "usage": {},
+    "content": "",
+    "reasoning": null,
+    "error_body": "{\"status\":401,\"title\":\"Unauthorized\",\"detail\":\"Invalid JWT serialization: Missing dot delimiter(s)\"}"
+  },
+  {
+    "model": "openai/gpt-oss-20b",
+    "key_label": "GPT_OSS_Key",
+    "http_status": null,
+    "ok": false,
+    "latency_ms": 30003.9,
+    "usage": {},
+    "content": "",
+    "reasoning": null,
+    "error_body": "ReadTimeout: "
+  },
+  {
+    "model": "openai/gpt-oss-12b",
+    "key_label": "GPT_OSS_Key",
+    "http_status": 404,
+    "ok": false,
+    "latency_ms": 1073.5,
+    "usage": {},
+    "content": "",
+    "reasoning": null,
+    "error_body": "404 page not found\n"
+  },
+  {
+    "model": "gpt-oss-12b",
+    "key_label": "GPT_OSS_Key",
+    "http_status": 404,
+    "ok": false,
+    "latency_ms": 366.8,
+    "usage": {},
+    "content": "",
+    "reasoning": null,
+    "error_body": "404 page not found\n"
+  },
+  {
+    "model": "nv-mistralai/mistral-nemo-12b-instruct",
+    "key_label": "GPT_OSS_Key",
+    "http_status": 404,
+    "ok": false,
+    "latency_ms": 332.0,
+    "usage": {},
+    "content": "",
+    "reasoning": null,
+    "error_body": "{\"status\":404,\"title\":\"Not Found\",\"detail\":\"Function 'f8c05193-d2e2-4f0f-bb4d-7ad70070002b': Not found for account 'd5HKuKmOAPRaRd4C3Y_Iq12IcsNQiiUWO5KTL3W3zJk'\"}"
+  },
+  {
+    "model": "mistralai/mistral-large-4-1t-a52b",
+    "key_label": "GPT_OSS_Key",
+    "http_status": 200,
+    "ok": true,
+    "latency_ms": 7363.7,
+    "usage": {
+      "prompt_tokens": 33,
+      "completion_tokens": 150,
+      "total_tokens": 183,
+      "prompt_tokens_details": {
+        "cached_tokens": 0
+      },
+      "completion_tokens_details": {
+        "reasoning_tokens": 148
+      }
+    },
+    "content": "{\"",
+    "reasoning": "The user wants me to reply with exactly one JSON object: {\"status\":\"ok\",\"model_verified\":true}\n\nI need to output exactly that JSON string without any additional text, explanations, or markdown formatt",
+    "error_body": ""
+  },
+  {
+    "model": "google/gemma-3-12b-it",
+    "key_label": "GPT_OSS_Key",
+    "http_status": 404,
+    "ok": false,
+    "latency_ms": 214.7,
+    "usage": {},
+    "content": "",
+    "reasoning": null,
+    "error_body": "{\"status\":404,\"title\":\"Not Found\",\"detail\":\"Function 'ee47df99-c92b-4dc9-b3a7-f3fb0f087b73': Not found for account 'd5HKuKmOAPRaRd4C3Y_Iq12IcsNQiiUWO5KTL3W3zJk'\"}"
+  },
+  {
+    "model": "meta/llama-guard-4-12b",
+    "key_label": "GPT_OSS_Key",
+    "http_status": 200,
+    "ok": true,
+    "latency_ms": 452.5,
+    "usage": {
+      "prompt_tokens": 219,
+      "total_tokens": 221,
+      "completion_tokens": 2,
+      "prompt_tokens_details": null
+    },
+    "content": "safe",
+    "reasoning": null,
+    "error_body": ""
+  },
+  {
+    "model": "meta/llama-3.2-11b-vision-instruct",
+    "key_label": "GPT_OSS_Key",
+    "http_status": 404,
+    "ok": false,
+    "latency_ms": 249.0,
+    "usage": {},
+    "content": "",
+    "reasoning": null,
+    "error_body": "{\"status\":404,\"title\":\"Not Found\",\"detail\":\"Function id '9fa6fd04-ba2c-4bb3-90b7-ede407a9290f' version 'null': Specified function in account 'd5HKuKmOAPRaRd4C3Y_Iq12IcsNQiiUWO5KTL3W3zJk' is not found\"}"
+  },
+  {
+    "model": "nvidia/mistral-nemo-minitron-8b-8k-instruct",
+    "key_label": "GPT_OSS_Key",
+    "http_status": 404,
+    "ok": false,
+    "latency_ms": 242.5,
+    "usage": {},
+    "content": "",
+    "reasoning": null,
+    "error_body": "{\"status\":404,\"title\":\"Not Found\",\"detail\":\"Function '5aa06dd2-0a02-4a5d-be4c-bf88e956965d': Not found for account 'd5HKuKmOAPRaRd4C3Y_Iq12IcsNQiiUWO5KTL3W3zJk'\"}"
+  },
+  {
+    "model": "mistralai/mistral-7b-instruct-v0.3",
+    "key_label": "GPT_OSS_Key",
+    "http_status": 404,
+    "ok": false,
+    "latency_ms": 629.0,
+    "usage": {},
+    "content": "",
+    "reasoning": null,
+    "error_body": "{\"status\":404,\"title\":\"Not Found\",\"detail\":\"Function 'cd89bd68-13e3-47a9-861e-9a62e6e14b05': Not found for account 'd5HKuKmOAPRaRd4C3Y_Iq12IcsNQiiUWO5KTL3W3zJk'\"}"
+  },
+  {
+    "model": "deepseek-ai/deepseek-v4.1-flash",
+    "key_label": "GPT_OSS_Key",
+    "http_status": null,
+    "ok": false,
+    "latency_ms": 30008.0,
+    "usage": {},
+    "content": "",
+    "reasoning": null,
+    "error_body": "ReadTimeout: "
+  },
+  {
+    "model": "ibm/granite-3.0-8b-instruct",
+    "key_label": "GPT_OSS_Key",
+    "http_status": 404,
+    "ok": false,
+    "latency_ms": 1047.4,
+    "usage": {},
+    "content": "",
+    "reasoning": null,
+    "error_body": "{\"status\":404,\"title\":\"Not Found\",\"detail\":\"Function '5a24a4f0-2d59-46b3-ac65-42307f2633d1': Not found for account 'd5HKuKmOAPRaRd4C3Y_Iq12IcsNQiiUWO5KTL3W3zJk'\"}"
+  }
+]

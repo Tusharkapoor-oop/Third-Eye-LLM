@@ -46,6 +46,30 @@ def _free_port() -> int:
         return int(sock.getsockname()[1])
 
 
+def _extract_text(data: dict[str, Any]) -> str:
+    """Read both the compact MCP passage schema and older text-shaped replies."""
+
+    passages = data.get("ps") or []
+    texts = [
+        str(p.get("x") or "").strip()
+        for p in passages
+        if isinstance(p, dict) and str(p.get("x") or "").strip()
+    ]
+    if texts:
+        return "\n\n".join(texts)
+    text = data.get("text") or data.get("markdown") or ""
+    return str(text).strip()
+
+
+def _finding_value(finding: dict[str, Any], short: str, long: str) -> Any:
+    return finding.get(short) if finding.get(short) is not None else finding.get(long)
+
+
+def _findings(data: dict[str, Any]) -> list[dict[str, Any]]:
+    found = data.get("f") or data.get("key_findings") or []
+    return [f for f in found if isinstance(f, dict)]
+
+
 class LocalMCPAdapter(ResearchProvider):
     """Adapter for a real local WebLens MCP server process."""
 
@@ -295,15 +319,18 @@ class LocalMCPAdapter(ResearchProvider):
                     "extract_url",
                     {"url": url, "full": bool(options.get("full", False))},
                 )
-                text = data.get("text") or ""
+                text = _extract_text(data)
                 total_tokens += int(data.get("tok") or 0)
+                ok = data.get("status") == "ok" and bool(text)
                 items.append(
                     ExtractItem(
                         url=url,
                         raw_content=text,
                         markdown=text,
-                        status="ok" if data.get("status") == "ok" and text else "failed",
-                        error=data.get("msg") if data.get("status") != "ok" else None,
+                        status="ok" if ok else "failed",
+                        error=None
+                        if ok
+                        else str(data.get("msg") or "extract returned no passages"),
                     )
                 )
             elapsed_ms = (time.perf_counter() - t0) * 1000.0
@@ -376,10 +403,14 @@ class LocalMCPAdapter(ResearchProvider):
             data, _meta, elapsed_ms = await self._call(
                 "deep_research", {"query": query, "max_tokens": 1500}
             )
-            findings = data.get("key_findings") or []
-            summary = data.get("executive_summary") or ""
+            findings = _findings(data)
+            summary = data.get("summary") or data.get("executive_summary") or ""
             citations = [
-                {"url": f.get("url"), "title": f.get("claim"), "span": f.get("span")}
+                {
+                    "url": _finding_value(f, "u", "url"),
+                    "title": _finding_value(f, "c", "claim"),
+                    "span": _finding_value(f, "s", "span"),
+                }
                 for f in findings
             ]
             tokens = int((data.get("methodology") or {}).get("tokens_returned") or data.get("tok") or 0)
@@ -420,21 +451,33 @@ class LocalMCPAdapter(ResearchProvider):
             data, _meta, elapsed_ms = await self._call(
                 "deep_research", {"query": query, "max_tokens": 2500}
             )
-            findings = data.get("key_findings") or []
-            summary = data.get("executive_summary") or ""
+            findings = _findings(data)
+            summary = data.get("summary") or data.get("executive_summary") or ""
             methodology = data.get("methodology") or {}
+            gaps = data.get("gaps") or []
+            searched = data.get("searched") or methodology.get("subqueries_searched") or [query]
             tokens = int(methodology.get("tokens_returned") or data.get("tok") or 0)
             self._usage.successful_requests += 1
             self._usage.output_tokens += tokens
             report = f"### Executive Summary\n{summary}\n\n### Findings\n"
-            report += "\n".join(f"- {f.get('claim')} ({f.get('url')})" for f in findings)
+            report += "\n".join(
+                f"- {_finding_value(f, 'c', 'claim')} ({_finding_value(f, 'u', 'url')})"
+                for f in findings
+            )
+            if gaps:
+                report += "\n\n### Gaps\n" + "\n".join(f"- {gap}" for gap in gaps)
             return ResearchResponse(
                 provider=self.name,
                 query=query,
                 report_markdown=report,
-                subqueries=methodology.get("subqueries_searched") or [query],
+                subqueries=list(searched),
                 sources=[
-                    {"url": f.get("url"), "title": f.get("claim"), "span": f.get("span")}
+                    {
+                        "url": _finding_value(f, "u", "url"),
+                        "title": _finding_value(f, "c", "claim"),
+                        "heading": _finding_value(f, "h", "heading"),
+                        "span": _finding_value(f, "s", "span"),
+                    }
                     for f in findings
                 ],
                 contradictions=data.get("contradictions") or [],

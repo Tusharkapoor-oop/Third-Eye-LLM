@@ -8,7 +8,8 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
     PORT=8080 \
     WEBLENS_HTTP_HOST=0.0.0.0 \
     WEBLENS_HTTP_PORT=8080 \
-    WEBLENS_MCP_PROFILE=full
+    WEBLENS_MCP_PROFILE=full \
+    WEBLENS_CACHE_DIR=/tmp/weblens
 
 WORKDIR /app
 
@@ -28,6 +29,12 @@ COPY *.py /app/
 # Install weblens and root package with all dependencies
 RUN pip install --no-cache-dir ./weblens .
 
+# Run as an unprivileged user. The cache must be writable by that user.
+RUN useradd --create-home --uid 10001 weblens \
+    && mkdir -p /tmp/weblens \
+    && chown -R weblens:weblens /app /tmp/weblens
+USER weblens
+
 # Expose Cloud Run / HTTP port
 EXPOSE 8080
 
@@ -35,9 +42,13 @@ EXPOSE 8080
 HEALTHCHECK --interval=30s --timeout=5s --start-period=5s --retries=3 \
     CMD curl -f http://localhost:${PORT:-8080}/ || exit 1
 
-# Run WebLens in Streamable HTTP MCP mode, dynamically reading $PORT assigned by Cloud Run
+# Run WebLens in Streamable HTTP MCP mode, dynamically reading $PORT assigned by Cloud Run.
 # Run the canonical WebLens MCP server (weblens package), not the legacy root app.
 # The deployed revision before this change was also the weblens package; the
 # root server.py is the older MyWebEngine demo and must not silently replace it.
-# --allow-insecure preserves the existing public endpoint; see docs/security.
+#
+# Authentication is mandatory for a non-loopback listener. Set
+# WEBLENS_HTTP_TOKEN (for example, from Secret Manager) before deploying; the
+# process exits with status 2 if the token is missing instead of exposing an
+# unauthenticated public endpoint.
 CMD ["sh", "-c", "exec python -m weblens.cli serve --http --host 0.0.0.0 --port ${PORT:-8080} --profile full --allow-insecure"]

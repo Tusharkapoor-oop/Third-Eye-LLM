@@ -1,0 +1,12 @@
+﻿{
+    "run_id":  "weblens-gh-run-20261105",
+    "date":  "2026-11-05T23:13:52.7353173+05:30",
+    "git_version":  "git version 2.55.0.windows.5",
+    "uv_version":  "uv 0.13.7 (316c827e0 2026-11-03 x86_64-pc-windows-msvc)",
+    "system_python":  "Python 3.13.15",
+    "os":  "Microsoft Windows NT 10.0.26300.0",
+    "powershell":  "5.1.26100.9711",
+    "code_page":  "Active code page: 437",
+    "user":  "ACER",
+    "cache_dir_env":  "C:\\Users\\ACER\\AppData\\Local\\Temp\\opencode\\weblens-gh-run-20261105\\cache"
+}

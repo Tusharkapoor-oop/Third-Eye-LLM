@@ -11,12 +11,15 @@ from __future__ import annotations
 
 import asyncio
 from pathlib import Path
+from unittest.mock import AsyncMock, patch
+
 import pytest
 import respx
 import httpx
 
 from crawl_engine import CrawlEngine, CrawlJobStatus, RobotsChecker
 from document_generator import validate_document
+from model_provider import ModelResult, model_client
 from research_engine import DeepResearchEngine, ResearchJobStatus
 from schemas import ChunkResult, SourceItem, UnifiedResponse
 
@@ -125,12 +128,30 @@ async def test_research_job_lifecycle_and_document_export(tmp_path: Path):
 
     research_engine = DeepResearchEngine(search_pipeline=MockSearchPipeline())
 
-    # Launch research job
-    job = research_engine.start_research_job("AI Agent Architectures 2026", mode="mini")
-    assert job.status in (ResearchJobStatus.CREATED, ResearchJobStatus.RUNNING)
+    # Keep the synthesis step offline (live provider calls are not part of this suite).
+    stub_report = ModelResult(
+        content=(
+            "# Research Report: AI Agent Architectures 2026\n\n"
+            "Verified findings from [Source on AI Agent Architectures 2026]"
+            "(https://source.example.com/AI_Agent_Architectures_2026).\n"
+        ),
+        reasoning_content=None,
+        model_name="test-model",
+        provider="local_algorithmic",
+        prompt_tokens=10,
+        completion_tokens=10,
+        latency_ms=1.0,
+    )
 
-    # Await completion
-    await job._task
+    with patch.object(
+        model_client, "synthesize_research_report", new=AsyncMock(return_value=stub_report)
+    ):
+        # Launch research job
+        job = research_engine.start_research_job("AI Agent Architectures 2026", mode="mini")
+        assert job.status in (ResearchJobStatus.CREATED, ResearchJobStatus.RUNNING)
+
+        # Await completion
+        await job._task
     assert job.status == ResearchJobStatus.COMPLETED
     assert job.progress_step == "completed"
     assert job.report is not None

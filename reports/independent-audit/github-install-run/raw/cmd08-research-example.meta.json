@@ -1,0 +1,20 @@
+﻿{
+    "id":  "cmd08-research-example",
+    "exe":  "C:\\Users\\ACER\\AppData\\Local\\Temp\\opencode\\weblens-gh-run-20261105\\clone\\.venv\\Scripts\\weblens.exe",
+    "args":  [
+                 "research",
+                 "What is the purpose of example.com?",
+                 "--max-tokens",
+                 "500",
+                 "--pretty"
+             ],
+    "command_line":  "\"C:\\Users\\ACER\\AppData\\Local\\Temp\\opencode\\weblens-gh-run-20261105\\clone\\.venv\\Scripts\\weblens.exe\" research \"What is the purpose of example.com?\" --max-tokens 500 --pretty",
+    "exit_code":  0,
+    "wall_seconds":  10.483,
+    "started_at":  "2026-11-05T23:12:54.4924357+05:30",
+    "finished_at":  "2026-11-05T23:13:05.0569681+05:30",
+    "stdout_file":  "C:\\Users\\ACER\\Downloads\\Broswer for ai agnets\\reports\\independent-audit\\github-install-run\\raw\\cmd08-research-example.stdout.txt",
+    "stderr_file":  "C:\\Users\\ACER\\Downloads\\Broswer for ai agnets\\reports\\independent-audit\\github-install-run\\raw\\cmd08-research-example.stderr.txt",
+    "stdout_bytes":  2170,
+    "stderr_bytes":  0
+}

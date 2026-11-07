@@ -1,0 +1,29 @@
+﻿[
+    {
+        "url":  "https://en.wikipedia.org/wiki/Example.com",
+        "http":  200,
+        "bytes":  118474,
+        "wall":  0.93,
+        "illustrative":  true,
+        "iana":  true,
+        "xxx_note":  false
+    },
+    {
+        "url":  "https://en.wikipedia.org/wiki/.xxx",
+        "http":  200,
+        "bytes":  224735,
+        "wall":  0.39,
+        "illustrative":  false,
+        "iana":  true,
+        "xxx_note":  true
+    },
+    {
+        "url":  "https://handwiki.org/wiki/Example.com",
+        "http":  200,
+        "bytes":  40859,
+        "wall":  1.54,
+        "illustrative":  true,
+        "iana":  false,
+        "xxx_note":  false
+    }
+]

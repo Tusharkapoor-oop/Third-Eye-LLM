@@ -34,10 +34,10 @@ PROMPT = (
 )
 
 
-async def probe(model: str, key: str) -> dict:
+async def probe(model: str, key: str, timeout: float = 60.0) -> dict:
     started = time.perf_counter()
     try:
-        async with httpx.AsyncClient(timeout=150.0) as client:
+        async with httpx.AsyncClient(timeout=timeout) as client:
             resp = await client.post(
                 f"{CONFIG.nvidia_base_url.rstrip('/')}/chat/completions",
                 headers={"Authorization": f"Bearer {key}", "Content-Type": "application/json"},
@@ -51,19 +51,29 @@ async def probe(model: str, key: str) -> dict:
         latency_ms = round((time.perf_counter() - started) * 1000, 1)
         body = resp.json() if resp.headers.get("content-type", "").startswith("application/json") else {}
         content = ""
+        reasoning_content = ""
         usage = {}
         if isinstance(body, dict):
             choices = body.get("choices") or []
             if choices:
-                content = (choices[0].get("message") or {}).get("content") or ""
+                msg = choices[0].get("message") or {}
+                content = msg.get("content") or ""
+                reasoning_content = msg.get("reasoning_content") or ""
             usage = body.get("usage") or {}
+        reasoning_tokens = (
+            (usage.get("completion_tokens_details") or {}).get("reasoning_tokens")
+            if isinstance(usage, dict)
+            else None
+        )
         return {
             "model": model,
             "http_status": resp.status_code,
             "ok": resp.status_code == 200 and bool(content),
             "latency_ms": latency_ms,
             "usage": usage,
+            "reasoning_tokens": reasoning_tokens,
             "content_prefix": content[:200],
+            "reasoning_content_prefix": reasoning_content[:200],
             "error_prefix": "" if resp.status_code == 200 else resp.text[:300],
         }
     except Exception as exc:
@@ -73,7 +83,9 @@ async def probe(model: str, key: str) -> dict:
             "ok": False,
             "latency_ms": round((time.perf_counter() - started) * 1000, 1),
             "usage": {},
+            "reasoning_tokens": None,
             "content_prefix": "",
+            "reasoning_content_prefix": "",
             "error_prefix": f"{type(exc).__name__}: {str(exc)[:300]}",
         }
 
@@ -88,7 +100,15 @@ async def main() -> int:
         for model, _label in MODELS:
             print(json.dumps({"model": model, "ok": False, "error_prefix": "no NVIDIA key in config"}, indent=2))
         return 1
-    for model, _label in MODELS:
+
+    models_to_probe = MODELS
+    if len(sys.argv) > 1:
+        filter_str = sys.argv[1].lower()
+        matched = [(m, label) for m, label in MODELS if filter_str in m.lower() or filter_str in label.lower()]
+        if matched:
+            models_to_probe = matched
+
+    for model, _label in models_to_probe:
         print(json.dumps(await probe(model, key), indent=2), flush=True)
     return 0
 

@@ -1,0 +1,29 @@
+{
+  "status": "ok",
+  "u": "https://docs.python.org/3/library/asyncio.html",
+  "n": 5,
+  "urls": [
+    {
+      "u": "https://docs.python.org/3/library/asyncio.html",
+      "t": "asyncio — Asynchronous I/O — Python 3.15.2 documentation"
+    },
+    {
+      "u": "https://docs.python.org/3/library/ipc.html",
+      "t": "Networking and Interprocess Communication"
+    },
+    {
+      "u": "https://docs.python.org/3/library/sys.html",
+      "t": "auditing event"
+    },
+    {
+      "u": "https://docs.python.org/3/library/index.html",
+      "t": "The Python standard library"
+    },
+    {
+      "u": "https://docs.python.org/3/library/intro.html",
+      "t": "Availability"
+    }
+  ],
+  "ms": 774,
+  "tok": 148
+}

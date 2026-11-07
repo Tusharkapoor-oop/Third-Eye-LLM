@@ -1,0 +1,24 @@
+{
+  "status": "ok",
+  "u": "https://example.com/",
+  "t": "Example Domain",
+  "at": "2026-11-05T17:41:41Z",
+  "sha": "0a080719be9fbb82",
+  "src": "html",
+  "ps": [
+    {
+      "u": "https://example.com/",
+      "at": "2026-11-05T17:41:41Z",
+      "x": "This domain is for use in documentation examples without needing permission. This is not a service; avoid relying on it for testing and monitoring purposes.",
+      "s": [
+        0,
+        156
+      ]
+    }
+  ],
+  "tok": 127,
+  "warn": [
+    "low_content"
+  ],
+  "ms": 1537
+}

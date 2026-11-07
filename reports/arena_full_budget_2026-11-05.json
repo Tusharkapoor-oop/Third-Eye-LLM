@@ -1,0 +1,204 @@
+{
+  "generated_at": "2026-11-05T16:21:25Z",
+  "engines": {
+    "A": "local engine via src.engine",
+    "B": "tavily live",
+    "C": "gemini grounding (BLOCKED if no key)"
+  },
+  "judges": "deterministic-rubric",
+  "runs": {
+    "tech_bug_async": {
+      "category": "technical_coding_bug_with_code",
+      "engines": {
+        "A": {
+          "status": "ok",
+          "score": 90,
+          "latency_s": 5.365,
+          "tokens": 680,
+          "trials": 3,
+          "breakdown": {
+            "answer_completeness": 20,
+            "code_and_table_fidelity": 20,
+            "signal_to_noise": 20,
+            "source_authority": 15,
+            "token_efficiency": 15
+          },
+          "root_causes": [
+            "QUERY_RECALLEED_PARTIAL"
+          ]
+        },
+        "B": {
+          "status": "BLOCKED",
+          "note": "BUDGET_CAP is not positive; Tavily was not called",
+          "score": null,
+          "latency_s": 0.0,
+          "tokens": 0
+        },
+        "C": {
+          "status": "BLOCKED",
+          "note": "Gemini refused all candidate models - gemini-flash-latest: ClientError: 429 RESOURCE_EXHAUSTED. {'error': {'code': 429, 'message': 'You exceeded your current quota, please check your; no fabricated scores",
+          "score": null,
+          "latency_s": 0.0,
+          "tokens": 0
+        }
+      },
+      "intent": "Exact version fact (asyncio.run added in Python 3.7)"
+    },
+    "compare_rebase_merge": {
+      "category": "comparison_table",
+      "engines": {
+        "A": {
+          "status": "ok",
+          "score": 82,
+          "latency_s": 2.314,
+          "tokens": 232,
+          "trials": 3,
+          "breakdown": {
+            "answer_completeness": 12,
+            "code_and_table_fidelity": 20,
+            "signal_to_noise": 20,
+            "source_authority": 15,
+            "token_efficiency": 15
+          },
+          "root_causes": [
+            "QUERY_RECALLEED_PARTIAL"
+          ]
+        },
+        "B": {
+          "status": "BLOCKED",
+          "note": "BUDGET_CAP is not positive; Tavily was not called",
+          "score": null,
+          "latency_s": 0.0,
+          "tokens": 0
+        },
+        "C": {
+          "status": "BLOCKED",
+          "note": "Gemini refused all candidate models - gemini-flash-latest: ClientError: 429 RESOURCE_EXHAUSTED. {'error': {'code': 429, 'message': 'You exceeded your current quota, please check your; no fabricated scores",
+          "score": null,
+          "latency_s": 0.0,
+          "tokens": 0
+        }
+      },
+      "intent": "Comparison + command fidelity"
+    },
+    "latest_python_2026": {
+      "category": "breaking_recent_news",
+      "engines": {
+        "A": {
+          "status": "ok",
+          "score": 36,
+          "latency_s": 4.328,
+          "tokens": 0,
+          "trials": 3,
+          "breakdown": {
+            "answer_completeness": 0,
+            "code_and_table_fidelity": 20,
+            "signal_to_noise": 16,
+            "source_authority": 0,
+            "token_efficiency": 0
+          },
+          "root_causes": [
+            "QUERY_TOO_NARROW",
+            "SEO_NOISE_PRESENT",
+            "LOW_AUTHORITY_DOMAIN",
+            "EMPTY_OUTPUT"
+          ]
+        },
+        "B": {
+          "status": "BLOCKED",
+          "note": "BUDGET_CAP is not positive; Tavily was not called",
+          "score": null,
+          "latency_s": 0.0,
+          "tokens": 0
+        },
+        "C": {
+          "status": "BLOCKED",
+          "note": "Gemini refused all candidate models - gemini-flash-latest: ClientError: 429 RESOURCE_EXHAUSTED. {'error': {'code': 429, 'message': 'You exceeded your current quota, please check your; no fabricated scores",
+          "score": null,
+          "latency_s": 0.0,
+          "tokens": 0
+        }
+      },
+      "intent": "Recency + exact version string"
+    },
+    "js_heavy_docs": {
+      "category": "js_heavy_documentation_extraction",
+      "engines": {
+        "A": {
+          "status": "ok",
+          "score": 100,
+          "latency_s": 1.435,
+          "tokens": 392,
+          "trials": 3,
+          "breakdown": {
+            "answer_completeness": 30,
+            "code_and_table_fidelity": 20,
+            "signal_to_noise": 20,
+            "source_authority": 15,
+            "token_efficiency": 15
+          },
+          "root_causes": []
+        },
+        "B": {
+          "status": "BLOCKED",
+          "note": "BUDGET_CAP is not positive; Tavily was not called",
+          "score": null,
+          "latency_s": 0.0,
+          "tokens": 0
+        },
+        "C": {
+          "status": "BLOCKED",
+          "note": "Gemini refused all candidate models - gemini-flash-latest: ClientError: 429 RESOURCE_EXHAUSTED. {'error': {'code': 429, 'message': 'You exceeded your current quota, please check your; no fabricated scores",
+          "score": null,
+          "latency_s": 0.0,
+          "tokens": 0
+        }
+      },
+      "intent": "Docs page usability without full dump"
+    },
+    "multipath_uv_pip": {
+      "category": "multi_hop_deep_research",
+      "engines": {
+        "A": {
+          "status": "ok",
+          "score": 100,
+          "latency_s": 31.777,
+          "tokens": 677,
+          "trials": 3,
+          "breakdown": {
+            "answer_completeness": 30,
+            "code_and_table_fidelity": 20,
+            "signal_to_noise": 20,
+            "source_authority": 15,
+            "token_efficiency": 15
+          },
+          "root_causes": []
+        },
+        "B": {
+          "status": "BLOCKED",
+          "note": "BUDGET_CAP is not positive; Tavily was not called",
+          "score": null,
+          "latency_s": 0.0,
+          "tokens": 0
+        },
+        "C": {
+          "status": "BLOCKED",
+          "note": "Gemini refused all candidate models - gemini-flash-latest: ClientError: 429 RESOURCE_EXHAUSTED. {'error': {'code': 429, 'message': 'You exceeded your current quota, please check your; no fabricated scores",
+          "score": null,
+          "latency_s": 0.0,
+          "tokens": 0
+        }
+      },
+      "intent": "Multi-source synthesis with distinct facts per engine"
+    }
+  },
+  "summary": {
+    "avg_A": 81.6,
+    "avg_B": null,
+    "avg_C": null,
+    "latency_A_s": 45.219,
+    "latency_B_s": 0.0,
+    "meets_avg_target": false,
+    "beats_tavily_density": null
+  }
+}

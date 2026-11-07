@@ -1,0 +1,28 @@
+﻿{
+    "id":  "cmd07-crawl-asyncio",
+    "exe":  "C:\\Users\\ACER\\AppData\\Local\\Temp\\opencode\\weblens-gh-run-20261105\\clone\\.venv\\Scripts\\weblens.exe",
+    "args":  [
+                 "crawl",
+                 "https://docs.python.org/3/library/asyncio.html",
+                 "--mode",
+                 "crawl",
+                 "--max-pages",
+                 "3",
+                 "--max-depth",
+                 "1",
+                 "-q",
+                 "How does asyncio work?",
+                 "--max-tokens",
+                 "600",
+                 "--pretty"
+             ],
+    "command_line":  "\"C:\\Users\\ACER\\AppData\\Local\\Temp\\opencode\\weblens-gh-run-20261105\\clone\\.venv\\Scripts\\weblens.exe\" crawl https://docs.python.org/3/library/asyncio.html --mode crawl --max-pages 3 --max-depth 1 -q \"How does asyncio work?\" --max-tokens 600 --pretty",
+    "exit_code":  0,
+    "wall_seconds":  7.455,
+    "started_at":  "2026-11-05T23:12:40.2841056+05:30",
+    "finished_at":  "2026-11-05T23:12:47.8186766+05:30",
+    "stdout_file":  "C:\\Users\\ACER\\Downloads\\Broswer for ai agnets\\reports\\independent-audit\\github-install-run\\raw\\cmd07-crawl-asyncio.stdout.txt",
+    "stderr_file":  "C:\\Users\\ACER\\Downloads\\Broswer for ai agnets\\reports\\independent-audit\\github-install-run\\raw\\cmd07-crawl-asyncio.stderr.txt",
+    "stdout_bytes":  2570,
+    "stderr_bytes":  0
+}

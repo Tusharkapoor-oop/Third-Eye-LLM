@@ -1,0 +1,22 @@
+﻿{
+    "id":  "rr04-extract-example-full",
+    "exe":  "C:\\Users\\ACER\\AppData\\Local\\Temp\\opencode\\weblens-gh-run-20261105\\clone\\.venv\\Scripts\\weblens.exe",
+    "args":  [
+                 "extract",
+                 "https://example.com",
+                 "--full",
+                 "--max-tokens",
+                 "300",
+                 "--pretty"
+             ],
+    "command_line":  "\"C:\\Users\\ACER\\AppData\\Local\\Temp\\opencode\\weblens-gh-run-20261105\\clone\\.venv\\Scripts\\weblens.exe\" extract https://example.com --full --max-tokens 300 --pretty",
+    "exit_code":  0,
+    "wall_seconds":  5.278,
+    "started_at":  "2026-11-05T23:20:00.0757025+05:30",
+    "cache_dir":  "C:\\Users\\ACER\\Downloads\\Broswer for ai agnets\\reports\\independent-audit\\github-install-review\\review-cache\\rr04-extract-example-full",
+    "cache_preexisting_entries":  0,
+    "stdout_file":  "C:\\Users\\ACER\\Downloads\\Broswer for ai agnets\\reports\\independent-audit\\github-install-review\\review-raw\\rr04-extract-example-full.stdout.txt",
+    "stderr_file":  "C:\\Users\\ACER\\Downloads\\Broswer for ai agnets\\reports\\independent-audit\\github-install-review\\review-raw\\rr04-extract-example-full.stderr.txt",
+    "stdout_bytes":  449,
+    "stderr_bytes":  0
+}

@@ -20,3 +20,8 @@ def test_unknown_provider_is_rejected():
 def test_provider_order_is_normalized():
     settings = Settings(search_providers=" DDG, Mwmbl ,wikipedia ")
     assert settings.provider_list == ["ddg", "mwmbl", "wikipedia"]
+
+
+def test_optional_yahoo_provider_is_accepted():
+    settings = Settings(search_providers="ddg,yahoo")
+    assert settings.provider_list == ["ddg", "yahoo"]

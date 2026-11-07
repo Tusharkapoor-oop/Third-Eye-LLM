@@ -1,0 +1,32 @@
+{
+  "ok": true,
+  "version": "0.1.0",
+  "python": "3.13.15",
+  "platform": "Windows 11",
+  "providers": [
+    "ddg",
+    "mwmbl",
+    "wikipedia"
+  ],
+  "unavailable": {},
+  "browser": false,
+  "cache": {
+    "enabled": true,
+    "hits": 0,
+    "misses": 0,
+    "hit_rate_pct": 0.0,
+    "errors": 0,
+    "evictions": 0,
+    "entries": 0,
+    "bytes": 0,
+    "file_bytes": 24728,
+    "max_bytes": 536870912
+  },
+  "cache_dir": "C:\\Users\\ACER\\Downloads\\Broswer for ai agnets\\reports\\independent-audit\\github-install-review\\review-cache\\rr01-doctor",
+  "tokenizer": "cl100k_base",
+  "budgets": {
+    "search": 600,
+    "extract": 1500,
+    "research": 2000
+  }
+}

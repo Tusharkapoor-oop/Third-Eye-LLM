@@ -1,0 +1,23 @@
+﻿{
+    "id":  "rr03-extract-example-q",
+    "exe":  "C:\\Users\\ACER\\AppData\\Local\\Temp\\opencode\\weblens-gh-run-20261105\\clone\\.venv\\Scripts\\weblens.exe",
+    "args":  [
+                 "extract",
+                 "https://example.com",
+                 "-q",
+                 "What is this page?",
+                 "--max-tokens",
+                 "300",
+                 "--pretty"
+             ],
+    "command_line":  "\"C:\\Users\\ACER\\AppData\\Local\\Temp\\opencode\\weblens-gh-run-20261105\\clone\\.venv\\Scripts\\weblens.exe\" extract https://example.com -q \"What is this page?\" --max-tokens 300 --pretty",
+    "exit_code":  0,
+    "wall_seconds":  5.297,
+    "started_at":  "2026-11-05T23:19:54.7783120+05:30",
+    "cache_dir":  "C:\\Users\\ACER\\Downloads\\Broswer for ai agnets\\reports\\independent-audit\\github-install-review\\review-cache\\rr03-extract-example-q",
+    "cache_preexisting_entries":  0,
+    "stdout_file":  "C:\\Users\\ACER\\Downloads\\Broswer for ai agnets\\reports\\independent-audit\\github-install-review\\review-raw\\rr03-extract-example-q.stdout.txt",
+    "stderr_file":  "C:\\Users\\ACER\\Downloads\\Broswer for ai agnets\\reports\\independent-audit\\github-install-review\\review-raw\\rr03-extract-example-q.stderr.txt",
+    "stdout_bytes":  282,
+    "stderr_bytes":  0
+}

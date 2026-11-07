@@ -18,6 +18,13 @@ from .passages import Passage, select_passages
 
 FRESH_QUERY = ("latest", "current", "today", "now", "2026", "2025", "price", "release", "news")
 
+# A short page is often a complete answer on its own (for example,
+# example.com's "documentation examples" stub). Returning zero passages from
+# such a page loses evidence that the caller can verify verbatim. Long pages
+# with no query match remain "no_reliable_result" so unrelated content is not
+# mistaken for an answer.
+SHORT_PAGE_FALLBACK_CHARS = 600
+
 
 @dataclass
 class ExtractOutcome:
@@ -173,10 +180,24 @@ class ExtractionService:
         q = (query or "").strip()
         if q:
             if not passages or coverage == 0:
-                out.status = "no_reliable_result"
-                out.warnings.append("no_query_match")
-                out.passages = []
-                return self._finish(out, started)
+                # A short page is complete evidence even when the query does
+                # not share its vocabulary. Fall back to the whole page rather
+                # than returning an empty successful-looking extraction.
+                if len(doc.text.strip()) <= SHORT_PAGE_FALLBACK_CHARS:
+                    passages, _ = select_passages(
+                        doc.text,
+                        None,
+                        title=doc.title,
+                        max_passages=4,
+                        max_chars=9000,
+                    )
+                if not passages:
+                    out.status = "no_reliable_result"
+                    out.warnings.append("no_query_match")
+                    out.passages = []
+                    return self._finish(out, started)
+                out.status = "partial"
+                out.warnings.extend(["low_query_match", "short_page_fallback"])
             elif coverage < 0.34:
                 out.status = "partial"
                 out.warnings.append("low_query_match")

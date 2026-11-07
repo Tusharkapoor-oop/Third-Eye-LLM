@@ -352,11 +352,12 @@ class SearchAggregator:
                 from src.engine.extract.extractor import DocumentExtractor
 
                 extractor = DocumentExtractor()
-                for result in raw_results[:3]:
+
+                async def _extract_for_locks(url: str):
                     try:
-                        document = await asyncio.wait_for(
+                        return await asyncio.wait_for(
                             extractor.extract_url(
-                                result.url,
+                                url,
                                 query=query,
                                 mode="passages",
                                 max_tokens=350,
@@ -364,6 +365,17 @@ class SearchAggregator:
                             timeout=15.0,
                         )
                     except Exception:
+                        return None
+
+                # Fetch all candidate documents concurrently: wall clock is the
+                # slowest single extraction instead of the sum of them. Evidence
+                # is still consumed in priority order (first result that contains
+                # any missing lock wins) so ranking semantics are unchanged.
+                fetched = await asyncio.gather(
+                    *(_extract_for_locks(result.url) for result in raw_results[:3])
+                )
+                for result, document in zip(raw_results, fetched):
+                    if document is None:
                         continue
                     chunks = [passage.text for passage in document.passages]
                     if document.full_text:

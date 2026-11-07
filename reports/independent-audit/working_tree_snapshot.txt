@@ -1,0 +1,32 @@
+﻿ M arena_report.json
+ M config.py
+ M docs/changelog/2026-11/05-20-agent-verification-and-remediation/changelog.md
+ M evidence/raw/quality-loop-20261102/extraction_battery.jsonl
+ M reports/EXTRACTION_FIDELITY_REPORT.md
+ M src/engine/extract/chunker.py
+ M src/engine/search/aggregator.py
+ M src/weblens/extract/passages.py
+ M weblens-lab/model_eval/probe_model_access.py
+?? bench/calc_extraction_metrics.py
+?? benchmark_search_relevance.py
+?? benchmark_search_relevance_results.json
+?? benchmarks/deep_research_efficiency_benchmark.py
+?? benchmarks/profile_search_performance.py
+?? benchmarks/run_adversarial_grounding_benchmark.py
+?? evidence/adversarial_grounding_results.json
+?? evidence/agent27_load_stress_metrics.json
+?? evidence/extraction_performance_metrics.json
+?? reports/domination/
+?? reports/independent-audit/
+?? scratch/
+?? tests/test_adversarial_grounding.py
+?? tests/test_apps.py
+?? tests/test_model_fallback_cascade.py
+?? tools/benchmark_crawl_map.py
+?? tools/profile_extraction_performance.py
+?? tools/profile_load_reliability.py
+?? weblens-lab/model_eval/benchmark_agent17_mistral_large.py
+?? weblens-lab/model_eval/inspect_task1.py
+?? weblens-lab/model_eval/probe_oss_detailed.py
+?? weblens-lab/model_eval/probe_oss_detailed_results.json
+?? weblens-lab/model_eval/test_mistral_deep.py

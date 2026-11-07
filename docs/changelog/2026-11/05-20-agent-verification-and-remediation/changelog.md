@@ -37,3 +37,4 @@ Surgically remediated 4 architectural and security defects uncovered by the task
 ## Alternatives Considered and Rejected
 - **Silencing Bandit B314 via global ignore:** Rejected. Integrating `defusedxml` hardens against XML entity expansion attacks at root cause level.
 - **Claiming multi-tenancy on Cloud Run without per-tenant database isolation:** Rejected. Retained `allow_stateful = False` on unauthenticated Cloud Run listeners to prevent cross-tenant data bleed until per-tenant database partitioning is introduced.
+

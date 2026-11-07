@@ -10,6 +10,7 @@ Implements:
 from __future__ import annotations
 
 import asyncio
+import time
 import json
 import time
 import uuid
@@ -57,6 +58,12 @@ class EventStore:
         self.db_path = safe_resolve_path(db_path)
         self._db: aiosqlite.Connection | None = None
         self._lock = asyncio.Lock()
+        # Commit coalescing: uncommitted batch count and a time gate. Writes
+        # flush at most every _COMMIT_INTERVAL_S or every _COMMIT_BATCH insert,
+        # and always before any read/close so readers remain truthful.
+        self._dirty = 0
+        self._last_commit = 0.0
+        self._COMMIT_INTERVAL_S = 2.0
 
     async def _get_conn(self) -> aiosqlite.Connection:
         if self._db is None:
@@ -91,7 +98,12 @@ class EventStore:
         return self._db
 
     async def record_event(self, event: OperationEvent) -> None:
-        """Persist an operation event with details."""
+        """Buffer an operation event; flush the write-ahead batch periodically.
+
+        Each insert stays durable inside SQLite's WAL; the batched commit only
+        moves the fsync checkpoint. Any reader calls _flush() first, so metrics
+        and late queries still observe every event that was accepted.
+        """
         conn = await self._get_conn()
         await conn.execute(
             """
@@ -111,7 +123,18 @@ class EventStore:
                 json.dumps(event.details),
             ),
         )
-        await conn.commit()
+        self._dirty += 1
+        now = time.monotonic()
+        if self._dirty >= 8 or now - self._last_commit >= self._COMMIT_INTERVAL_S:
+            await conn.commit()
+            self._dirty = 0
+            self._last_commit = now
+
+    async def _flush(self) -> None:
+        if self._db is not None and self._dirty:
+            await self._db.commit()
+            self._dirty = 0
+            self._last_commit = time.monotonic()
 
     async def get_dashboard_metrics(self) -> dict[str, Any]:
         """Aggregate truthful platform capability counts and operational metrics.
@@ -120,6 +143,7 @@ class EventStore:
         - Implemented capabilities vs. Executed operations vs. Successes vs. Failures vs. Blocked
         """
         conn = await self._get_conn()
+        await self._flush()
 
         implemented_capabilities = [
             "search",
@@ -174,6 +198,7 @@ class EventStore:
         """Close database connection."""
         async with self._lock:
             if self._db is not None:
+                await self._flush()
                 await self._db.close()
                 self._db = None
 

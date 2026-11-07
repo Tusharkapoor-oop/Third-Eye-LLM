@@ -1,0 +1,22 @@
+﻿{
+    "id":  "cmd05-extract-python314",
+    "exe":  "C:\\Users\\ACER\\AppData\\Local\\Temp\\opencode\\weblens-gh-run-20261105\\clone\\.venv\\Scripts\\weblens.exe",
+    "args":  [
+                 "extract",
+                 "https://docs.python.org/3/whatsnew/3.14.html",
+                 "-q",
+                 "What are the major new features in Python 3.14?",
+                 "--max-tokens",
+                 "500",
+                 "--pretty"
+             ],
+    "command_line":  "\"C:\\Users\\ACER\\AppData\\Local\\Temp\\opencode\\weblens-gh-run-20261105\\clone\\.venv\\Scripts\\weblens.exe\" extract https://docs.python.org/3/whatsnew/3.14.html -q \"What are the major new features in Python 3.14?\" --max-tokens 500 --pretty",
+    "exit_code":  0,
+    "wall_seconds":  6.358,
+    "started_at":  "2026-11-05T23:12:16.3898529+05:30",
+    "finished_at":  "2026-11-05T23:12:22.8541620+05:30",
+    "stdout_file":  "C:\\Users\\ACER\\Downloads\\Broswer for ai agnets\\reports\\independent-audit\\github-install-run\\raw\\cmd05-extract-python314.stdout.txt",
+    "stderr_file":  "C:\\Users\\ACER\\Downloads\\Broswer for ai agnets\\reports\\independent-audit\\github-install-run\\raw\\cmd05-extract-python314.stderr.txt",
+    "stdout_bytes":  2026,
+    "stderr_bytes":  0
+}

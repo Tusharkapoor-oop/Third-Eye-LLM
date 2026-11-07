@@ -1,0 +1,15 @@
+{
+  "status": "no_reliable_result",
+  "u": "https://example.com/",
+  "t": "Example Domain",
+  "at": "2026-11-05T17:41:41Z",
+  "sha": "0a080719be9fbb82",
+  "src": "html",
+  "ps": [],
+  "tok": 74,
+  "warn": [
+    "low_content",
+    "no_query_match"
+  ],
+  "ms": 2097
+}

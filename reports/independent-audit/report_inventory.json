@@ -1,0 +1,242 @@
+[
+  {
+    "file": "agent01_architecture_audit.md",
+    "mtime": "2026-11-05T13:20:40",
+    "verdict": "- Root Decision: Consolidate the repository under the canonical WebLens domain architecture (`src/weblens`) and eliminate legacy shadow implementations (`webintel`, root-level duplicate modules, and dead scratch files).",
+    "mentions_legacy": true,
+    "mentions_canonical": true,
+    "bytes": 16410
+  },
+  {
+    "file": "agent02_search_relevance.md",
+    "mtime": "2026-11-05T21:31:09",
+    "verdict": "**Verdict:** **PASS (100% Functional & Relevance Verification)**",
+    "mentions_legacy": true,
+    "mentions_canonical": true,
+    "bytes": 2971
+  },
+  {
+    "file": "agent03_search_performance.md",
+    "mtime": "2026-11-05T21:31:09",
+    "verdict": "**Verdict:** **PASS (Performance Profiled & Verified)**",
+    "mentions_legacy": true,
+    "mentions_canonical": true,
+    "bytes": 2363
+  },
+  {
+    "file": "agent04_retrieval_reranking.md",
+    "mtime": "2026-11-05T21:31:09",
+    "verdict": "**Verdict:** **PASS (100% Retrieval & Reranker Verification)**",
+    "mentions_legacy": true,
+    "mentions_canonical": false,
+    "bytes": 2770
+  },
+  {
+    "file": "agent05_extraction_accuracy.md",
+    "mtime": "2026-11-05T21:31:09",
+    "verdict": "**Verdict:** **PASS (100% Extraction Accuracy Verification)**",
+    "mentions_legacy": true,
+    "mentions_canonical": true,
+    "bytes": 2393
+  },
+  {
+    "file": "agent06_extraction_performance.md",
+    "mtime": "2026-11-05T21:31:09",
+    "verdict": "**Verdict:** **PASS (Performance & High-Load Extraction Verified)**",
+    "mentions_legacy": true,
+    "mentions_canonical": false,
+    "bytes": 2036
+  },
+  {
+    "file": "agent07_crawl_engine.md",
+    "mtime": "2026-11-05T13:21:29",
+    "verdict": "| **Test Suite Status** | **21 PASS, 0 FAIL (100%)** | Fully functional in stack comparison suite | **4 PASS, 0 FAIL (100%)** | `tests/test_crawler.py`, `tests/test_crawler_traps.py` |",
+    "mentions_legacy": true,
+    "mentions_canonical": true,
+    "bytes": 29851
+  },
+  {
+    "file": "agent08_site_mapping.md",
+    "mtime": "2026-11-05T13:19:48",
+    "verdict": "**Decision:** PASS - All site mapping, link graph construction, sitemap.xml discovery, and robots.txt exclusion mechanisms operate within verified engineering specifications, with zero regressions and complete defense against XML entity att",
+    "mentions_legacy": true,
+    "mentions_canonical": true,
+    "bytes": 10454
+  },
+  {
+    "file": "agent09_crawl_scalability.md",
+    "mtime": "2026-11-05T21:31:09",
+    "verdict": "**Verdict:** **PASS (Crawl Concurrency & Memory Bounds Verified)**",
+    "mentions_legacy": true,
+    "mentions_canonical": true,
+    "bytes": 2084
+  },
+  {
+    "file": "agent10_deep_research_quality.md",
+    "mtime": "2026-11-05T21:31:10",
+    "verdict": "**Verdict:** **PASS (100% Quality & Multi-Hop Research Verification)**",
+    "mentions_legacy": true,
+    "mentions_canonical": true,
+    "bytes": 3040
+  },
+  {
+    "file": "agent11_deep_research_efficiency.md",
+    "mtime": "2026-11-05T21:31:10",
+    "verdict": "**Verdict:** **PASS (Efficiency & Bounded Execution Verified)**",
+    "mentions_legacy": true,
+    "mentions_canonical": false,
+    "bytes": 1959
+  },
+  {
+    "file": "agent12_citation_verification.md",
+    "mtime": "2026-11-05T21:31:10",
+    "verdict": "**Verdict:** **PASS (100% Citation Integrity & Zero Span Drift)**",
+    "mentions_legacy": false,
+    "mentions_canonical": true,
+    "bytes": 3053
+  },
+  {
+    "file": "agent13_hallucination_abstention.md",
+    "mtime": "2026-11-05T21:31:10",
+    "verdict": "**Verdict:** **PASS (100% Calibrated Abstention & Zero Hallucination)**",
+    "mentions_legacy": false,
+    "mentions_canonical": true,
+    "bytes": 2505
+  },
+  {
+    "file": "agent14_prompt_injection.md",
+    "mtime": "2026-11-05T13:21:27",
+    "verdict": "- **Decision**: PASS. All indirect prompt injection defenses, content sanitization routines, HTML comment smuggling detectors, invisible Unicode filters, and canary secret protections are verified operational.",
+    "mentions_legacy": true,
+    "mentions_canonical": true,
+    "bytes": 17906
+  },
+  {
+    "file": "agent15_gpt_oss_12b.md",
+    "mtime": "2026-11-05T13:21:34",
+    "verdict": "- **Status**: Complete / Empirical Audit Verified",
+    "mentions_legacy": false,
+    "mentions_canonical": false,
+    "bytes": 13085
+  },
+  {
+    "file": "agent16_gpt_oss_20b.md",
+    "mtime": "2026-11-05T21:31:10",
+    "verdict": "**Verdict:** **BLOCKED (Upstream Queue Saturation & ReadTimeouts)**",
+    "mentions_legacy": false,
+    "mentions_canonical": false,
+    "bytes": 2379
+  },
+  {
+    "file": "agent17_mistral_large.md",
+    "mtime": "2026-11-05T21:31:10",
+    "verdict": "**Verdict:** **PASS (Operational with Reasoning Token Extraction)**",
+    "mentions_legacy": true,
+    "mentions_canonical": false,
+    "bytes": 1848
+  },
+  {
+    "file": "agent18_model_orchestration.md",
+    "mtime": "2026-11-05T21:31:10",
+    "verdict": "**Verdict:** **PASS (Resilient Multi-Tier Cascading Fallback Verified)**",
+    "mentions_legacy": true,
+    "mentions_canonical": true,
+    "bytes": 1910
+  },
+  {
+    "file": "agent19_tavily_search.md",
+    "mtime": "2026-11-05T13:15:55",
+    "verdict": "| **Test Suite Verification Status** | **3 PASS, 0 FAIL (100%)** | N/A | **PASS in 3.26s / 5.51s** | `tests/test_07_live_quality_arena.py` |",
+    "mentions_legacy": true,
+    "mentions_canonical": true,
+    "bytes": 18082
+  },
+  {
+    "file": "agent20_tavily_extract.md",
+    "mtime": "2026-11-05T13:21:51",
+    "verdict": "",
+    "mentions_legacy": true,
+    "mentions_canonical": false,
+    "bytes": 21288
+  },
+  {
+    "file": "agent21_tavily_crawl_map.md",
+    "mtime": "2026-11-05T21:31:10",
+    "verdict": "**Verdict:** **PASS (Equivalent & Extended Crawl/Map Capabilities Verified)**",
+    "mentions_legacy": true,
+    "mentions_canonical": false,
+    "bytes": 2241
+  },
+  {
+    "file": "agent22_tavily_deep_research.md",
+    "mtime": "2026-11-05T13:18:26",
+    "verdict": "### Verdict: WEBLENS DOMINATES IN GROUNDED REASONING, CONTEXT EFFICIENCY, AND SOURCE AUTHORITY; TAVILY MAINTAINS ADVANTAGE IN SINGLE-TURN RETRIEVAL LATENCY",
+    "mentions_legacy": true,
+    "mentions_canonical": true,
+    "bytes": 21758
+  },
+  {
+    "file": "agent23_tavily_applications.md",
+    "mtime": "2026-11-05T21:31:10",
+    "verdict": "**Verdict:** **PASS (Enterprise Workflows Validated; Abstention Disclosed)**",
+    "mentions_legacy": false,
+    "mentions_canonical": true,
+    "bytes": 3262
+  },
+  {
+    "file": "agent24_mcp_api_correctness.md",
+    "mtime": "2026-11-05T21:31:10",
+    "verdict": "**Verdict:** **PASS (100% MCP Protocol & Schema Conformance)**",
+    "mentions_legacy": false,
+    "mentions_canonical": true,
+    "bytes": 2687
+  },
+  {
+    "file": "agent25_security_architecture.md",
+    "mtime": "2026-11-05T21:31:10",
+    "verdict": "**Verdict:** **PASS (Zero SAST High/Medium Vulnerabilities, Verified Secret & Tenant Compartmentalization)**",
+    "mentions_legacy": true,
+    "mentions_canonical": true,
+    "bytes": 4018
+  },
+  {
+    "file": "agent26_penetration_testing.md",
+    "mtime": "2026-11-05T21:31:11",
+    "verdict": "**Verdict:** **PASS (100% Boundary Enforcement Across 100 Penetration Attack Vectors)**",
+    "mentions_legacy": true,
+    "mentions_canonical": true,
+    "bytes": 3810
+  },
+  {
+    "file": "agent27_performance_reliability.md",
+    "mtime": "2026-11-05T13:19:55",
+    "verdict": "**Final Verdict: PASS (100% Performance, Reliability, and Safety Compliance)**",
+    "mentions_legacy": true,
+    "mentions_canonical": false,
+    "bytes": 13700
+  },
+  {
+    "file": "agent28_test_infrastructure.md",
+    "mtime": "2026-11-05T22:58:40",
+    "verdict": "**Verdict:** **PASS WITH LIMITATIONS (350 Tests Collected, Core Suites 100% Pass, 2 Arena Gate Failures Documented)**",
+    "mentions_legacy": false,
+    "mentions_canonical": false,
+    "bytes": 4849
+  },
+  {
+    "file": "agent29_evidence_reproducibility.md",
+    "mtime": "2026-11-05T22:58:40",
+    "verdict": "**Verdict:** **PASS (46-Block SHA-256 Chain Verified, All 30 Reports Exist, Artifacts Authentic)**",
+    "mentions_legacy": false,
+    "mentions_canonical": false,
+    "bytes": 5799
+  },
+  {
+    "file": "master_domination_report.md",
+    "mtime": "2026-11-05T22:58:42",
+    "verdict": "",
+    "mentions_legacy": true,
+    "mentions_canonical": true,
+    "bytes": 12984
+  }
+]

@@ -353,6 +353,36 @@ def _register_extended_tools() -> None:
 _register_extended_tools()
 
 
+async def shutdown_services() -> None:
+    """Close every SQLite-backed singleton in the process.
+
+    aiosqlite worker threads are non-daemon, so a connection that is left open
+    keeps the interpreter alive after the event loop stops (observed as a hang
+    after "N passed" in the test suite). The cache connections owned by
+    search_pipeline and geo_mapper therefore have to be closed explicitly, not
+    just the event store.
+    """
+    async def _close(name: str, closer) -> None:
+        # Shutdown must never block the caller: a lock or socket belonging to an
+        # event loop that has already been torn down would otherwise await
+        # forever and hang interpreter exit.
+        try:
+            await asyncio.wait_for(closer(), timeout=10)
+        except Exception as e:
+            print(f"[shutdown] {name}: {type(e).__name__}: {e}", file=sys.stderr)
+
+    await _close("search_pipeline", search_pipeline.close)
+
+    async def _close_geo() -> None:
+        from geo_mapper import geo_mapper  # lazily imported by the extended tool profile
+
+        await geo_mapper.close()
+
+    await _close("geo_mapper", _close_geo)
+    await _close("extractor", extractor.close)
+    await _close("event_store", event_store.close)
+
+
 async def run_server() -> None:
     """Run MCP server over STDIO or Streamable HTTP."""
     parser = argparse.ArgumentParser(description="MyWebEngine MCP Server")
@@ -372,8 +402,7 @@ async def run_server() -> None:
         else:
             await mcp.run_stdio_async()
     finally:
-        await extractor.close()
-        await event_store.close()
+        await shutdown_services()
 
 
 def main() -> None:

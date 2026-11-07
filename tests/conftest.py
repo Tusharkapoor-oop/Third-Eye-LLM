@@ -11,3 +11,9 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
+
+# tests/test_apps.py and tests/test_adversarial_grounding.py exercise the bundled
+# `weblens` package, which lives in an src/ layout and is not installed here.
+WEBLENS_SRC = ROOT / "weblens" / "src"
+if WEBLENS_SRC.is_dir() and str(WEBLENS_SRC) not in sys.path:
+    sys.path.append(str(WEBLENS_SRC))

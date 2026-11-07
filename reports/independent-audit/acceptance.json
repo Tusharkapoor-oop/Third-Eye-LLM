@@ -1,0 +1,667 @@
+{
+  "audit_id": "agent30-independent-audit-20261105",
+  "timestamp": "2026-11-05T23:28:51+05:30",
+  "commit": "044cf4a17a06ef1641051623885dd73bc0db0bbc (original audit); b3a0b62 (campaign synthesis); 4e0885d (latest main, docs-only)",
+  "working_tree": "dirty; campaign changes plus independent-audit artifacts; the two GitHub-install subagents used an isolated temp clone",
+  "verdict": "FAIL - NOT ACCEPTED",
+  "subagent_statement": "This session launched 2 genuine independent subagents as requested: Subagent 1 cloned/installed the canonical package from GitHub and ran real capabilities; Subagent 2 independently re-ran key commands and audited all raw evidence. This session did not launch 30 specialist subagents; the harness exposes only explore/general. The 30-workstream campaign is audited separately, and its 100% labels are not accepted where they test legacy code or lack held-out measurements.",
+  "campaign_snapshot": {
+    "reports_present": [
+      "agent01_architecture_audit.md",
+      "agent02_search_relevance.md",
+      "agent03_search_performance.md",
+      "agent04_retrieval_reranking.md",
+      "agent05_extraction_accuracy.md",
+      "agent06_extraction_performance.md",
+      "agent07_crawl_engine.md",
+      "agent08_site_mapping.md",
+      "agent09_crawl_scalability.md",
+      "agent10_deep_research_quality.md",
+      "agent11_deep_research_efficiency.md",
+      "agent12_citation_verification.md",
+      "agent13_hallucination_abstention.md",
+      "agent14_prompt_injection.md",
+      "agent15_gpt_oss_12b.md",
+      "agent16_gpt_oss_20b.md",
+      "agent17_mistral_large.md",
+      "agent18_model_orchestration.md",
+      "agent19_tavily_search.md",
+      "agent20_tavily_extract.md",
+      "agent21_tavily_crawl_map.md",
+      "agent22_tavily_deep_research.md",
+      "agent23_tavily_applications.md",
+      "agent27_performance_reliability.md",
+      "agent24_mcp_api_correctness.md",
+      "agent25_security_architecture.md",
+      "agent26_penetration_testing.md",
+      "agent28_test_infrastructure.md",
+      "agent29_evidence_reproducibility.md",
+      "master_domination_report.md"
+    ],
+    "reports_missing_at_snapshot": [
+      "independent_agent30"
+    ],
+    "status": "29 numbered reports + master synthesis; no independent agent30",
+    "last_report": "agent24_mcp_api_correctness.md at 2026-11-05T21:26:16+05:30",
+    "note": "Agent28 claims fuzz passed in 31.43 s, but direct observation showed the same test still running >4 minutes; conflicting. Agent29 says all 30 reports exist, but there are 29 numbered reports plus a master synthesis.",
+    "active_processes": []
+  },
+  "decisive_measurements": {
+    "v10_120_queries_107_graded": {
+      "local_weblens": {
+        "success_rate": 0.9,
+        "p50_ms": 837.0,
+        "p_at_5": 0.553,
+        "ndcg_at_5": 0.669,
+        "hit_at_5": 0.729,
+        "tokens": 182.3
+      },
+      "deployed_weblens": {
+        "success_rate": 0.942,
+        "p50_ms": 1037.8,
+        "p_at_5": 0.471,
+        "ndcg_at_5": 0.729,
+        "hit_at_5": 0.832,
+        "tokens": 206.2
+      },
+      "tavily_direct": {
+        "success_rate": 1.0,
+        "p50_ms": 1537.4,
+        "p_at_5": 0.74,
+        "ndcg_at_5": 0.777,
+        "hit_at_5": 0.935,
+        "tokens": 1378.7
+      },
+      "paired_local_minus_tavily_p_at_5": {
+        "delta": -0.187,
+        "ci95": [
+          -0.265,
+          -0.108
+        ],
+        "wins_ties_losses": [
+          24,
+          34,
+          49
+        ]
+      }
+    },
+    "tavily_use_cases_v10_evidence_only": {
+      "weblens_mean_facet_coverage": 0.263,
+      "weblens_tokens": 149.1,
+      "weblens_latency_ms": 9102.4,
+      "weblens_cases_with_evidence_urls": 4,
+      "tavily_mean_facet_coverage": 0.844,
+      "tavily_tokens": 1278.6,
+      "tavily_latency_ms": 332.3,
+      "tavily_cases_with_evidence_urls": 8,
+      "total_cases": 8
+    },
+    "stale_v14_use_case_report": {
+      "path": "reports/v14/tavily_demo_use_cases_report.json",
+      "weblens_cases": 8,
+      "weblens_cases_with_zero_sources": 8,
+      "note": "All 8 WebLens cases report sources_count 0. The 55-70 scores are not evidence-grounded."
+    },
+    "canonical_search_probe": {
+      "path": "reports/independent-audit/canonical_search_probe.json",
+      "queries": 5,
+      "p50_ms": 1489.0,
+      "min_ms": 480.3,
+      "max_ms": 1818.1,
+      "statuses": {
+        "partial": 4,
+        "no_reliable_result": 1
+      },
+      "note": "DDG failed on all five queries in this run. The canonical p50 contradicts agent03's 3,870 ms legacy-aggregator figure."
+    },
+    "deployed_security_v2": {
+      "pass": 18,
+      "fail": 4,
+      "unsupported": 1,
+      "high": [
+        "unauthenticated MCP initialize succeeded",
+        "bogus Bearer token still initialized"
+      ],
+      "medium": [
+        "20 tools/list calls produced no visible 429 rate limit"
+      ],
+      "low": [
+        "no HSTS header"
+      ],
+      "revision": "weblens-00006-l9h",
+      "stale": true,
+      "note": "Superseded by deployed_security_current_00007. The old findings reproduce on 00007."
+    },
+    "fuzz_timeout_observation": {
+      "path": "reports/independent-audit/fuzz_timeout_observation.json",
+      "observed_at": "2026-11-05T21:34:30+05:30",
+      "pids": [
+        19884,
+        20408
+      ],
+      "started_at": "2026-11-05T21:30:51+05:30",
+      "elapsed_minutes": 3.6,
+      "addopts_timeout_seconds": 60,
+      "clean_timeout_result": false,
+      "status": "UNVERIFIED / HUNG"
+    },
+    "deployed_security_00007_first_test": {
+      "revision": "weblens-00007-jck",
+      "endpoint": "https://weblens-fgunqcnrla-uc.a.run.app",
+      "unauthenticated_initialize_status": 200,
+      "bogus_bearer_initialize_status": 200,
+      "tools": [
+        "web_search",
+        "extract_url",
+        "crawl_site",
+        "deep_research",
+        "company_research",
+        "market_research",
+        "market_portfolio",
+        "meeting_prep",
+        "sheets_enrich",
+        "tutorial_101"
+      ],
+      "stateful_tools_present": false,
+      "tools_list_20_calls": {
+        "status_200": 20,
+        "status_429": 0
+      },
+      "hsts": null,
+      "healthz_status": 404,
+      "evidence": "reports/independent-audit/deployed_security_00007.json",
+      "note": "First independent test; superseded by 00008.",
+      "stale": true
+    },
+    "deployed_security_current_00008": {
+      "revision": "weblens-00008-t5p",
+      "endpoint": "https://weblens-fgunqcnrla-uc.a.run.app",
+      "unauthenticated_initialize_status": 200,
+      "bogus_bearer_initialize_status": 200,
+      "tools": [
+        "web_search",
+        "extract_url",
+        "crawl_site",
+        "deep_research",
+        "company_research",
+        "market_research",
+        "market_portfolio",
+        "meeting_prep",
+        "sheets_enrich",
+        "tutorial_101"
+      ],
+      "stateful_tools_present": false,
+      "tools_list_20_calls": {
+        "status_200": 20,
+        "status_429": 0
+      },
+      "hsts": null,
+      "healthz_status": 404,
+      "evidence": "reports/independent-audit/deployed_security_00008.json",
+      "note": "Findings reproduce on 00008; not fixed."
+    }
+  },
+  "gates": [
+    {
+      "criterion": "Core functional acceptance",
+      "required": "100%",
+      "observed": "9/9 applications passed; full suite not completed",
+      "status": "PARTIAL",
+      "evidence": "reports/nine_applications_verification.json"
+    },
+    {
+      "criterion": "Retrieval P@5",
+      "required": ">= 0.95",
+      "observed": "local 0.553; deployed 0.471",
+      "status": "FAIL",
+      "evidence": "reports/three-system-comparison-v10/analysis/analysis.json"
+    },
+    {
+      "criterion": "Retrieval nDCG@5",
+      "required": ">= 0.95",
+      "observed": "local 0.669; deployed 0.729",
+      "status": "FAIL",
+      "evidence": "reports/three-system-comparison-v10/analysis/analysis.json"
+    },
+    {
+      "criterion": "Hit@5",
+      "required": ">= 0.98",
+      "observed": "local 0.729; deployed 0.832",
+      "status": "FAIL",
+      "evidence": "reports/three-system-comparison-v10/analysis/analysis.json"
+    },
+    {
+      "criterion": "Answerable success",
+      "required": ">= 0.95",
+      "observed": "local 0.900; deployed 0.942",
+      "status": "FAIL",
+      "evidence": "reports/three-system-comparison-v10/analysis/analysis.json"
+    },
+    {
+      "criterion": "Extraction completeness/correctness",
+      "required": ">= 0.98",
+      "observed": "no validated corpus; legacy unit tests only",
+      "status": "UNVERIFIED",
+      "evidence": "reports/independent-audit/static_audit.json"
+    },
+    {
+      "criterion": "Crawl/map correctness",
+      "required": ">= 0.98",
+      "observed": "local boundary tests only; no ground-truth map corpus",
+      "status": "UNVERIFIED",
+      "evidence": "reports/domination/agent21_tavily_crawl_map.md"
+    },
+    {
+      "criterion": "Research claim support",
+      "required": ">= 0.98",
+      "observed": "no held-out claim-support evaluation",
+      "status": "UNVERIFIED",
+      "evidence": "reports/domination/agent10_deep_research_quality.md"
+    },
+    {
+      "criterion": "Citation precision/coverage",
+      "required": ">= 0.98 / >= 0.95",
+      "observed": "document-generation unit tests only",
+      "status": "UNVERIFIED",
+      "evidence": "reports/domination/agent12_citation_verification.md"
+    },
+    {
+      "criterion": "Correct abstention",
+      "required": "100% of mandatory set",
+      "observed": "10 curated cases; no 10k adversarial set",
+      "status": "PARTIAL",
+      "evidence": "reports/domination/agent13_hallucination_abstention.md"
+    },
+    {
+      "criterion": "Security critical/high",
+      "required": "zero unresolved",
+      "observed": "2 high authentication failures on weblens-00008-t5p; 20 tools/list calls with 0 rate limits; no HSTS",
+      "status": "FAIL",
+      "evidence": "reports/independent-audit/deployed_security_00008.json"
+    },
+    {
+      "criterion": "Performance improvement",
+      "required": ">= 30% avoidable latency",
+      "observed": "canonical faster than Tavily on V10; no accepted 30% before/after",
+      "status": "PARTIAL",
+      "evidence": "reports/three-system-comparison-v10/analysis/analysis.json"
+    },
+    {
+      "criterion": "Dataset scale",
+      "required": "100k queries / 10k adversarial",
+      "observed": "120 queries / 9 adversarial",
+      "status": "BLOCKED",
+      "evidence": "reports/three-system-comparison-v10/V10_REPORT.md"
+    },
+    {
+      "criterion": "Tavily comparison",
+      "required": "comparable held-out evaluation",
+      "observed": "P@5 lower; extract/crawl/map/research not fully comparable",
+      "status": "FAIL",
+      "evidence": "reports/independent-audit/AGENT30_INDEPENDENT_AUDIT.md"
+    }
+  ],
+  "report_audit": [
+    {
+      "report": "agent01_architecture_audit.md",
+      "status": "PARTIAL / SUPERSEDED",
+      "note": "Mirror divergence was real; current canonical and root copies are byte-identical."
+    },
+    {
+      "report": "agent02_search_relevance.md",
+      "status": "REJECTED",
+      "note": "Seven unit tests; no P@5/nDCG/Hit@5. V10 P@5 is 0.553."
+    },
+    {
+      "report": "agent03_search_performance.md",
+      "status": "REJECTED",
+      "note": "Measured legacy src.engine.search.aggregator; canonical probe p50 1,489 ms."
+    },
+    {
+      "report": "agent04_retrieval_reranking.md",
+      "status": "REJECTED",
+      "note": "Canonical weblens has no FlashRank; only legacy src/engine/reranker.py does."
+    },
+    {
+      "report": "agent05_extraction_accuracy.md",
+      "status": "REJECTED",
+      "note": "Legacy extraction tests; no validated 98% accuracy corpus."
+    },
+    {
+      "report": "agent06_extraction_performance.md",
+      "status": "REJECTED",
+      "note": "Legacy extraction performance; canonical path not measured."
+    },
+    {
+      "report": "agent07_crawl_engine.md",
+      "status": "PARTIAL",
+      "note": "Real boundary tests; no site-map accuracy or Tavily parity."
+    },
+    {
+      "report": "agent08_site_mapping.md",
+      "status": "PARTIAL",
+      "note": "Seven unit tests; no unique-page coverage or duplicate metrics."
+    },
+    {
+      "report": "agent09_crawl_scalability.md",
+      "status": "REJECTED",
+      "note": "Legacy/root tests; no canonical crawl throughput."
+    },
+    {
+      "report": "agent10_deep_research_quality.md",
+      "status": "REJECTED",
+      "note": "Lifecycle tests, not factual claim support or completeness."
+    },
+    {
+      "report": "agent11_deep_research_efficiency.md",
+      "status": "REJECTED",
+      "note": "No measured before/after token baseline."
+    },
+    {
+      "report": "agent12_citation_verification.md",
+      "status": "REJECTED",
+      "note": "Document-generation tests, not citation precision/coverage."
+    },
+    {
+      "report": "agent13_hallucination_abstention.md",
+      "status": "PARTIAL / REJECTED as 100%",
+      "note": "Ten curated cases; Tavily 1/10 comparison has no cited artifact."
+    },
+    {
+      "report": "agent14_prompt_injection.md",
+      "status": "PARTIAL",
+      "note": "38 real fixture tests; no hostile live-page corpus."
+    },
+    {
+      "report": "agent15_gpt_oss_12b.md",
+      "status": "VERIFIED (model access only)",
+      "note": "Matches independent probe; report contains account identifiers."
+    },
+    {
+      "report": "agent16_gpt_oss_20b.md",
+      "status": "VERIFIED (BLOCKED)",
+      "note": "ReadTimeouts confirmed; no quality result."
+    },
+    {
+      "report": "agent17_mistral_large.md",
+      "status": "PARTIAL / VERIFIED ACCESS",
+      "note": "Access credible; legacy model provider integration, not canonical quality."
+    },
+    {
+      "report": "agent18_model_orchestration.md",
+      "status": "PARTIAL",
+      "note": "Fallback tests pass; '100% cited facts' unsupported."
+    },
+    {
+      "report": "agent19_tavily_search.md",
+      "status": "PARTIAL / REJECTED for dominance",
+      "note": "Different corpus and hand-scored arena; V10 paired P@5 is negative."
+    },
+    {
+      "report": "agent20_tavily_extract.md",
+      "status": "REJECTED",
+      "note": "Describes legacy tiered extractor and stale density figures."
+    },
+    {
+      "report": "agent21_tavily_crawl_map.md",
+      "status": "REJECTED as Tavily parity",
+      "note": "No Tavily crawl/map run; only local unit tests."
+    },
+    {
+      "report": "agent22_tavily_deep_research.md",
+      "status": "REJECTED",
+      "note": "Uses v14 report with sources_count 0 for all 8 WebLens cases."
+    },
+    {
+      "report": "agent23_tavily_applications.md",
+      "status": "PARTIAL / REJECTED as parity",
+      "note": "Nine-app operational run is real; 0.263 vs 0.844 remains a coverage failure, not proof of superiority."
+    },
+    {
+      "report": "agent24_mcp_api_correctness.md",
+      "status": "REJECTED for canonical MCP",
+      "note": "Tests import root server.mcp and src.server.mcp_server with five legacy tools; canonical weblens core registers four tools and uses crawl_site(mode=map|crawl), not web_map/crawl_website."
+    },
+    {
+      "report": "agent25_security_architecture.md",
+      "status": "REJECTED",
+      "note": "Current 00007 accepts unauthenticated and bogus-Bearer initialize; no rate limit or HSTS; no tenant identity. Cache-key hashing is not tenant isolation. Dockerfile is not distroless and has no non-root USER."
+    },
+    {
+      "report": "agent26_penetration_testing.md",
+      "status": "PARTIAL",
+      "note": "100 local parameterized SSRF tests pass; no deployed 00007 or authentication test, no live DNS-rebinding test."
+    },
+    {
+      "report": "agent27_performance_reliability.md",
+      "status": "REJECTED as release performance",
+      "note": "Legacy aggregator burst test; no canonical/deployed measurement or 30% baseline."
+    },
+    {
+      "report": "agent28_test_infrastructure.md",
+      "status": "PARTIAL / CONFLICTING",
+      "note": "350 tests collected and two arena failures admitted. Claims fuzz passed 31.43 s, but direct observation showed >4 min; core suites include legacy/root tests."
+    },
+    {
+      "report": "agent29_evidence_reproducibility.md",
+      "status": "PARTIAL / REJECTED as completeness",
+      "note": "46-block chain independently verifies. But 29 numbered reports plus master synthesis, not 30 independent reports; ignores fuzz hang and arena overwrite."
+    },
+    {
+      "report": "master_domination_report.md",
+      "status": "REJECTED as final synthesis",
+      "note": "Summary commit 044cf4a vs HEAD b3a0b62; revision 00007 vs live 00008; repeats PASS labels for legacy/unit-test claims; admits two arena failures."
+    },
+    {
+      "report": "independent_agent30",
+      "status": "NOT RUN",
+      "note": "No independent agent30_*.md evidence report exists."
+    }
+  ],
+  "blockers": [
+    "Deployed authentication and rate-limit findings remain unresolved.",
+    "Retrieval quality is far below 0.95.",
+    "Dataset scale 100k/10k is not achieved (120/9).",
+    "Full test suite not completed; fuzz/chaos test was observed running >4 minutes.",
+    "Model comparison blocked: GPT-OSS 20B times out; NeMo 12B is 404; GPT-OSS 12B does not exist.",
+    "Public unauthenticated deployment lacks tenant isolation; stateful tools were removed rather than isolated.",
+    "Several campaign reports measure legacy code or unit tests and cannot support their PASS verdicts.",
+    "Use-case report v14 has zero WebLens sources for all 8 cases; corrected V10 coverage is 0.263 vs 0.844.",
+    "Agent24 MCP conformance tests cover the legacy five-tool server, not the canonical four-tool core/full surface.",
+    "arena_report.json was overwritten with a BUDGET_CAP-blocked Tavily run; agent19/20 density claims cite the old live-Tavily figures and are not reproducible from the current artifact.",
+    "Deployed revision weblens-00008-t5p still accepts unauthenticated and bogus-Bearer initialize, has no visible rate limit, and lacks HSTS.",
+    "Agent25 tenant-compartmentalization and distroless claims are not supported by the current deployment or Dockerfile.",
+    "There is no independent agent30; the master synthesis is not a 30th independent workstream.",
+    "Agent28 admits two arena quality failures: Engine A average 81.6 < 90 and zero tokens on a recency query.",
+    "Agent28 fuzz timing (31.43 s) conflicts with direct observation (>4 minutes); no clean timeout evidence.",
+    "Two arena artifacts disagree (avg 81.6 vs 90.8) for the same five cases; both have Tavily blocked, so no reproducible Tavily density comparison exists.",
+    "Fresh independent rerun of tests/test_04_fuzz_and_chaos.py timed out after 100 s with only \"FF\" progress; the agent28 claim of 31.43 s is not reproducible.",
+    "Fresh GitHub install: DuckDuckGo timed out; fallback MWMbl + Wikipedia returned 2/5 off-topic results.",
+    "Fresh GitHub install: query-mode extract returned 0 passages on the 156-character example.com page; --full was required.",
+    "Fresh GitHub install: Python 3.14 research returned 2 findings / 1 source, 0/2 mentioning 3.14; no primary 3.14 content.",
+    "Fresh GitHub install: research is extractive-only; there is no LLM synthesis layer.",
+    "Fresh GitHub install tested b3a0b62; latest main 4e0885d is docs-only, so code behavior is unchanged, but the install is not literally latest main.",
+    "Browser/JS rendering was disabled; keyed/paid providers were not exercised."
+  ],
+  "verified_positives": [
+    "Nine application workflows passed a live end-to-end run (9/9).",
+    "Local security audit v2: 38 PASS / 0 FAIL.",
+    "V10 benchmark has clean provenance: 120 raw records, 107 graded.",
+    "Canonical search is faster than the legacy aggregator and returns far fewer tokens than Tavily.",
+    "Mirror divergence is fixed; canonical and root copies are byte-identical.",
+    "Agent15/16 model-access findings match independent probing.",
+    "Agent14 injection-sanitization unit tests pass (38 tests)."
+  ],
+  "evidence_paths": [
+    "reports/independent-audit/AGENT30_INDEPENDENT_AUDIT.md",
+    "reports/independent-audit/canonical_search_probe.json",
+    "reports/independent-audit/static_audit.json",
+    "reports/independent-audit/report_inventory.json",
+    "reports/three-system-comparison-v10/analysis/analysis.json",
+    "reports/three-system-comparison-v10/V10_REPORT.md",
+    "reports/tavily-use-cases-v10/results.json",
+    "reports/v14/tavily_demo_use_cases_report.json",
+    "reports/deployed-security/deployed_security_results_v2.json",
+    "reports/nine_applications_verification.json",
+    "evidence/SECURITY-FINDINGS.md",
+    "evidence/CLAIM_LEDGER.md",
+    "reports/independent-audit/canonical_mcp_surface.json",
+    "reports/independent-audit/arena_overwrite.diff",
+    "reports/independent-audit/working_tree_snapshot.txt",
+    "reports/independent-audit/deployed_security_00007.json",
+    "reports/independent-audit/fuzz_timeout_observation.json",
+    "reports/independent-audit/FINAL_VERDICT.md",
+    "reports/independent-audit/deployed_security_00008.json",
+    "reports/arena_full_budget_2026-11-05.json",
+    "arena_report.json",
+    "reports/independent-audit/fuzz_rerun_observation.json",
+    "reports/independent-audit/github-install-run/RESULTS.md",
+    "reports/independent-audit/github-install-run/manifest.json",
+    "reports/independent-audit/github-install-review/REVIEW.md",
+    "reports/independent-audit/github-install-review/review.json"
+  ],
+  "real_world_github_install": {
+    "run_id": "weblens-gh-run-20261105",
+    "repository": "https://github.com/Tusharkapoor-oop/Third-Eye-LLM.git",
+    "requested_commit": "b3a0b62",
+    "installed_commit": "b3a0b624c73191d86a6e681edef531bbdb83f37d",
+    "latest_main_at_review": "4e0885d21842e5382716f3076b6c3a4f4737f469",
+    "latest_main_diff": "docs-only: 3 deployment/report documentation files; no code changes",
+    "install_verdict": "PASS",
+    "isolation": "fresh uv venv, Python 3.13.15, editable install, 58 packages; workspace venv untouched",
+    "cli_invocations": 14,
+    "subagent1_raw_files": 49,
+    "reviewer_reruns": 6,
+    "reviewer_reruns_exit_zero": 6,
+    "paid_apis_used": false,
+    "tavily_used": false,
+    "secret_scan_matches": 0,
+    "capabilities": {
+      "doctor_static": {
+        "status": "PASS",
+        "evidence": "reports/independent-audit/github-install-run/raw/cmd01-doctor.stdout.txt"
+      },
+      "doctor_live": {
+        "status": "PARTIAL",
+        "providers": [
+          "mwmbl",
+          "wikipedia"
+        ],
+        "ddg": "absent/timeout inferred",
+        "evidence": "reports/independent-audit/github-install-run/raw/cmd02-doctor-live.stdout.txt"
+      },
+      "search": {
+        "status": "PARTIAL",
+        "results": 5,
+        "unique_urls": 5,
+        "providers": [
+          "mwmbl",
+          "wikipedia"
+        ],
+        "provider_failures": {
+          "ddg": "TimeoutError"
+        },
+        "off_topic": 2,
+        "tokens": 454,
+        "evidence": "reports/independent-audit/github-install-run/raw/cmd03-search-python314.stdout.txt"
+      },
+      "extract_example_query": {
+        "status": "FAIL",
+        "status_field": "no_reliable_result",
+        "passages": 0,
+        "tokens": 74,
+        "evidence": "reports/independent-audit/github-install-run/raw/cmd04-extract-example.stdout.txt"
+      },
+      "extract_example_full": {
+        "status": "PASS",
+        "text_chars": 156,
+        "tokens": 103,
+        "contains_documentation_examples": true,
+        "contains_illustrative_examples": false,
+        "contains_iana": false,
+        "evidence": "reports/independent-audit/github-install-run/raw/cmd04b-extract-example-full.stdout.txt"
+      },
+      "extract_example_alt_query": {
+        "status": "PASS",
+        "passages": 1,
+        "tokens": 127,
+        "evidence": "reports/independent-audit/github-install-run/raw/cmd04c-extract-example-query-match.stdout.txt"
+      },
+      "extract_python314": {
+        "status": "PASS",
+        "passages": 2,
+        "tokens": 488,
+        "feature_terms": [
+          "template string literals",
+          "deferred evaluation of annotations",
+          "subinterpreters",
+          "compression.zstd"
+        ],
+        "evidence": "reports/independent-audit/github-install-run/raw/cmd05-extract-python314.stdout.txt"
+      },
+      "map_example": {
+        "status": "PASS",
+        "urls": 1,
+        "duplicates": 0,
+        "no_links_found": true,
+        "evidence": "reports/independent-audit/github-install-run/raw/cmd06-map-example.stdout.txt"
+      },
+      "map_python_docs": {
+        "status": "PASS",
+        "unique_urls": 5,
+        "duplicates": 0,
+        "evidence": "reports/independent-audit/github-install-run/raw/cmd06b-map-python-docs.stdout.txt"
+      },
+      "crawl_asyncio": {
+        "status": "PASS with caveat",
+        "pages": 2,
+        "page_statuses": [
+          "ok",
+          "ok"
+        ],
+        "page_failures_field": "absent",
+        "tokens": 562,
+        "evidence": "reports/independent-audit/github-install-run/raw/cmd07-crawl-asyncio.stdout.txt"
+      },
+      "research_example": {
+        "status": "PARTIAL",
+        "findings": 4,
+        "sources": 3,
+        "traceable": 4,
+        "off_topic": 1,
+        "llm_prose": false,
+        "gaps": [
+          "no_source_for:purpose"
+        ],
+        "evidence": "reports/independent-audit/github-install-run/raw/cmd08-research-example.stdout.txt"
+      },
+      "research_python314": {
+        "status": "FAIL",
+        "cli_status": "partial",
+        "findings": 2,
+        "sources": 1,
+        "claims_mentioning_3_14": 0,
+        "gaps": [
+          "no_source_for:3.14"
+        ],
+        "evidence": "reports/independent-audit/github-install-run/raw/cmd09-research-python314.stdout.txt"
+      }
+    },
+    "accuracy": {
+      "example_com_live_page": "156-character stub; title Example Domain; documentation examples; no illustrative examples; no iana.org; 0 anchors",
+      "stale_plan_expectation": true,
+      "extractor_faithful_to_live_page": true,
+      "search_relevance": "5 real results; 2 off-topic; DDG timeout",
+      "research_design": "extractive only, no LLM synthesis; findings are verbatim sentences with URLs/spans",
+      "research_python314": "0/2 findings mention 3.14; generic release-cadence prose; no primary 3.14 content"
+    },
+    "overall_real_world_capability": "PARTIAL",
+    "evidence": [
+      "reports/independent-audit/github-install-run/RESULTS.md",
+      "reports/independent-audit/github-install-run/manifest.json",
+      "reports/independent-audit/github-install-review/REVIEW.md",
+      "reports/independent-audit/github-install-review/review.json"
+    ],
+    "note": "The install is real and isolated. The capability result is partial because keyless search and version-specific research are unreliable; extract/map/crawl are usable."
+  }
+}

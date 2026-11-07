@@ -14,6 +14,8 @@ from weblens.search.router import rank
 from weblens.search.searxng import SearXNGSsearch
 from weblens.search.tavily import TavilySearch
 from weblens.search.wikipedia import WikipediaSearch
+from weblens.search.yahoo import YahooSearch
+from weblens.search.yahoo import unwrap as yahoo_unwrap
 
 
 class FakeFetcher:
@@ -177,6 +179,78 @@ async def test_wikipedia_parses_and_respects_domain_filter():
     assert hits[0].url == "https://en.wikipedia.org/wiki/Asyncio"
     assert "Asynchronous" in hits[0].snippet
     assert await p.search("asyncio", k=1, domains=["example.com"]) == []
+
+
+async def test_wikipedia_uses_query_language():
+    body = json.dumps(
+        {
+            "query": {
+                "search": [
+                    {
+                        "title": "Berlin",
+                        "snippet": "Hauptstadt Deutschlands",
+                        "timestamp": "2026-10-01T00:00:00Z",
+                    }
+                ]
+            }
+        }
+    )
+    fetcher = FakeFetcher(response(body, content_type="application/json"))
+    p = WikipediaSearch(fetcher)
+    hits = await p.search("Quelle est la capitale de l'Allemagne ?", k=1)
+    assert "fr.wikipedia.org/w/api.php" in fetcher.calls[0][0]
+    assert hits[0].url == "https://fr.wikipedia.org/wiki/Berlin"
+
+
+async def test_wikipedia_language_heuristic_keeps_english_queries_english():
+    body = json.dumps({"query": {"search": []}})
+    fetcher = FakeFetcher(response(body, content_type="application/json"))
+    p = WikipediaSearch(fetcher)
+    await p.search("What is the capital of Germany?", k=1)
+    assert "en.wikipedia.org/w/api.php" in fetcher.calls[0][0]
+
+
+async def test_wikipedia_language_heuristic_checks_kana_before_kanji():
+    body = json.dumps({"query": {"search": []}})
+    fetcher = FakeFetcher(response(body, content_type="application/json"))
+    p = WikipediaSearch(fetcher)
+    await p.search("量子もつれとは何ですか？", k=1)
+    assert "ja.wikipedia.org/w/api.php" in fetcher.calls[0][0]
+
+
+async def test_wikipedia_language_heuristic_handles_chinese_and_korean():
+    body = json.dumps({"query": {"search": []}})
+    fetcher = FakeFetcher(response(body, content_type="application/json"))
+    p = WikipediaSearch(fetcher)
+    await p.search("量子纠缠是什么？", k=1)
+    assert "zh.wikipedia.org/w/api.php" in fetcher.calls[0][0]
+    fetcher.calls.clear()
+    await p.search("양자 얽힘이란 무엇인가요?", k=1)
+    assert "ko.wikipedia.org/w/api.php" in fetcher.calls[0][0]
+
+
+async def test_yahoo_parses_results_and_unwraps_redirects():
+    body = """
+    <div class="dd algo">
+      <div class="compTitle">
+        <a href="https://r.search.yahoo.com/_ylt=x/RU=https%3a%2f%2fexample.com%2fdocs%2fstart/RK=2/RS=x">
+          <h3>Example documentation</h3>
+        </a>
+      </div>
+      <div class="compText"><p>Example <b>snippet</b>.</p></div>
+    </div>
+    """
+    fetcher = FakeFetcher(response(body))
+    p = YahooSearch(fetcher)
+    hits = await p.search("example docs", k=1)
+    assert fetcher.calls[0][0].startswith("https://search.yahoo.com/search?p=")
+    assert hits[0].url == "https://example.com/docs/start"
+    assert hits[0].title == "Example documentation"
+    assert hits[0].snippet == "Example snippet."
+
+
+def test_yahoo_unwrap_keeps_direct_urls():
+    assert yahoo_unwrap("https://example.com/docs") == "https://example.com/docs"
 
 
 def test_make_hit_and_dedupe():

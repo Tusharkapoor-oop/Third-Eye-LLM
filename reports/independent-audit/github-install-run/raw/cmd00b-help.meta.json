@@ -1,0 +1,16 @@
+﻿{
+    "id":  "cmd00b-help",
+    "exe":  "C:\\Users\\ACER\\AppData\\Local\\Temp\\opencode\\weblens-gh-run-20261105\\clone\\.venv\\Scripts\\weblens.exe",
+    "args":  [
+                 "--help"
+             ],
+    "command_line":  "\"C:\\Users\\ACER\\AppData\\Local\\Temp\\opencode\\weblens-gh-run-20261105\\clone\\.venv\\Scripts\\weblens.exe\" --help",
+    "exit_code":  0,
+    "wall_seconds":  1.76,
+    "started_at":  "2026-11-05T23:13:55.0919720+05:30",
+    "finished_at":  "2026-11-05T23:13:56.8626785+05:30",
+    "stdout_file":  "C:\\Users\\ACER\\Downloads\\Broswer for ai agnets\\reports\\independent-audit\\github-install-run\\raw\\cmd00b-help.stdout.txt",
+    "stderr_file":  "C:\\Users\\ACER\\Downloads\\Broswer for ai agnets\\reports\\independent-audit\\github-install-run\\raw\\cmd00b-help.stderr.txt",
+    "stdout_bytes":  921,
+    "stderr_bytes":  0
+}

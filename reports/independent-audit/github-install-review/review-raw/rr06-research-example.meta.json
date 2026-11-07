@@ -1,0 +1,21 @@
+﻿{
+    "id":  "rr06-research-example",
+    "exe":  "C:\\Users\\ACER\\AppData\\Local\\Temp\\opencode\\weblens-gh-run-20261105\\clone\\.venv\\Scripts\\weblens.exe",
+    "args":  [
+                 "research",
+                 "What is the purpose of example.com?",
+                 "--max-tokens",
+                 "500",
+                 "--pretty"
+             ],
+    "command_line":  "\"C:\\Users\\ACER\\AppData\\Local\\Temp\\opencode\\weblens-gh-run-20261105\\clone\\.venv\\Scripts\\weblens.exe\" research \"What is the purpose of example.com?\" --max-tokens 500 --pretty",
+    "exit_code":  0,
+    "wall_seconds":  12.031,
+    "started_at":  "2026-11-05T23:20:17.9102557+05:30",
+    "cache_dir":  "C:\\Users\\ACER\\Downloads\\Broswer for ai agnets\\reports\\independent-audit\\github-install-review\\review-cache\\rr06-research-example",
+    "cache_preexisting_entries":  0,
+    "stdout_file":  "C:\\Users\\ACER\\Downloads\\Broswer for ai agnets\\reports\\independent-audit\\github-install-review\\review-raw\\rr06-research-example.stdout.txt",
+    "stderr_file":  "C:\\Users\\ACER\\Downloads\\Broswer for ai agnets\\reports\\independent-audit\\github-install-review\\review-raw\\rr06-research-example.stderr.txt",
+    "stdout_bytes":  2170,
+    "stderr_bytes":  0
+}

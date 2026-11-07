@@ -21,6 +21,7 @@ from config import CONFIG
 from extractor import TieredExtractor
 from query_engine import QueryPlan, plan_query_fast
 from schemas import ChunkResult, FailedItem, SourceItem, UnifiedResponse
+from security import shared_ssl_context
 
 
 def normalize_url(raw_url: str) -> str:
@@ -82,7 +83,7 @@ async def _search_searxng(query: str, count: int = 15, time_range: str | None = 
         params["time_range"] = time_range
 
     try:
-        async with httpx.AsyncClient(timeout=3.0) as client:
+        async with httpx.AsyncClient(timeout=3.0, verify=shared_ssl_context()) as client:
             resp = await client.get(f"{CONFIG.searxng_url.rstrip('/')}/search", params=params)
             if resp.status_code == 200:
                 data = resp.json()
@@ -115,7 +116,7 @@ async def _search_ddg_html(query: str, count: int = 15, time_range: str | None =
 
     try:
         from bs4 import BeautifulSoup
-        async with httpx.AsyncClient(timeout=4.0, follow_redirects=True) as client:
+        async with httpx.AsyncClient(timeout=4.0, follow_redirects=True, verify=shared_ssl_context()) as client:
             resp = await client.post("https://lite.duckduckgo.com/lite/", data=data, headers=headers)
             if resp.status_code == 200:
                 soup = BeautifulSoup(resp.text, "html.parser")

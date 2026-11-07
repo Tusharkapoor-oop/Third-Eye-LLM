@@ -190,14 +190,15 @@ database without touching other files in the cache directory.
 
 Keyless providers are `ddg` (DuckDuckGo Lite HTML), `mwmbl` (public API), and
 `wikipedia` (MediaWiki API). Optional keyed providers are `brave` and `tavily`;
-`searxng` points at a self-hosted instance. `bing` exists only as an optional,
-degraded HTML adapter and is not in the default chain.
+`searxng` points at a self-hosted instance. `bing` and `yahoo` exist only as
+optional, degraded HTML adapters and are not in the default chain; both can be
+rate-limited during burst traffic.
 
 Per-provider deadlines are built in for the keyless path (`ddg` 3.5 s,
-`mwmbl` 2.5 s, `wikipedia` 4.0 s) and for the keyed providers (`tavily` and
-`brave`, 8.0 s). `WEBLENS_PROVIDER_TIMEOUT_S` is the fallback for providers
-without an explicit deadline. Fuse mode runs providers in parallel and records
-failures in `fail` instead of hiding them.
+`mwmbl` 2.5 s, `wikipedia` 4.0 s, `yahoo` 4.0 s) and for the keyed providers
+(`tavily` and `brave`, 8.0 s). `WEBLENS_PROVIDER_TIMEOUT_S` is the fallback for
+providers without an explicit deadline. Fuse mode runs providers in parallel and
+records failures in `fail` instead of hiding them.
 
 ### Keyed providers
 
@@ -279,7 +280,7 @@ MCP client
 mcp_server.py  (four tools, compact JSON, read-only annotations)
    v
 service.py     (budgets, error boundary, stable statuses)
-   +--> search/router.py ---> ddg | mwmbl | wikipedia | brave | tavily | searxng
+   +--> search/router.py ---> ddg | mwmbl | wikipedia | brave | tavily | searxng | bing | yahoo
    +--> extract/ -----------> SafeFetcher -> trafilatura/lxml/PyMuPDF
    |                          + optional Playwright -> loopback egress proxy
    +--> crawl/ -------------> robots.txt + sitemap/link map + page dedupe

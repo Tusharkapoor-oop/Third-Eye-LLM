@@ -1,0 +1,16 @@
+﻿{
+    "id":  "cmd00a-version",
+    "exe":  "C:\\Users\\ACER\\AppData\\Local\\Temp\\opencode\\weblens-gh-run-20261105\\clone\\.venv\\Scripts\\weblens.exe",
+    "args":  [
+                 "--version"
+             ],
+    "command_line":  "\"C:\\Users\\ACER\\AppData\\Local\\Temp\\opencode\\weblens-gh-run-20261105\\clone\\.venv\\Scripts\\weblens.exe\" --version",
+    "exit_code":  0,
+    "wall_seconds":  2.094,
+    "started_at":  "2026-11-05T23:13:52.8236494+05:30",
+    "finished_at":  "2026-11-05T23:13:54.9724644+05:30",
+    "stdout_file":  "C:\\Users\\ACER\\Downloads\\Broswer for ai agnets\\reports\\independent-audit\\github-install-run\\raw\\cmd00a-version.stdout.txt",
+    "stderr_file":  "C:\\Users\\ACER\\Downloads\\Broswer for ai agnets\\reports\\independent-audit\\github-install-run\\raw\\cmd00a-version.stderr.txt",
+    "stdout_bytes":  15,
+    "stderr_bytes":  0
+}

@@ -1,0 +1,71 @@
+{
+  "review_plan_id": "weblens-github-realworld-review-20261105",
+  "purpose": "Independent monitor/reviewer checks Subagent 1's fresh GitHub install and real-world WebLens runs.",
+  "repository": "https://github.com/Tusharkapoor-oop/Third-Eye-LLM.git",
+  "expected_commit": "b3a0b62",
+  "install_evidence": "reports/independent-audit/github-install-run/manifest.json",
+  "results_evidence": "reports/independent-audit/github-install-run/RESULTS.md",
+  "raw_evidence": "reports/independent-audit/github-install-run/raw/",
+  "rules": [
+    "Do not modify Subagent 1 evidence.",
+    "Do not use Tavily, paid APIs, or spend credits.",
+    "Use the isolated venv created by Subagent 1; do not use the primary .venv for the installed package.",
+    "Re-run at least one search and one extract to confirm the installed CLI works independently.",
+    "Do not treat a command that did not run as a pass.",
+    "Record exact commands, exit codes, timings, and raw outputs."
+  ],
+  "scoring": {
+    "search": {
+      "pass": "at least 3 actual results with non-empty title, URL, and snippet; status ok",
+      "partial": "1-2 results or partial status",
+      "fail": "0 results, error, or only query echo"
+    },
+    "extract_example_com": {
+      "facts": [
+        "page title or heading contains Example Domain",
+        "text contains a sentence about illustrative examples",
+        "text contains or cites iana.org"
+      ],
+      "pass": "all 3 facts supported by returned text",
+      "partial": "2 of 3 facts",
+      "fail": "0-1 facts or no text"
+    },
+    "extract_python_docs": {
+      "facts": [
+        "page is about Python 3.14 (or the documented fallback 3.13)",
+        "at least 3 concrete feature/change terms are present",
+        "returned text is non-empty and has token/passage stats"
+      ],
+      "pass": "all 3 facts",
+      "partial": "2 of 3",
+      "fail": "0-1 or 404/error"
+    },
+    "map": {
+      "pass": "at least 1 URL, no duplicate URLs, status ok",
+      "partial": "URLs returned but duplicates or partial status",
+      "fail": "empty/error"
+    },
+    "crawl": {
+      "pass": "at least 1 page with text, status ok, page_failures reported",
+      "partial": "page returned with failures or partial status",
+      "fail": "no pages/error"
+    },
+    "research": {
+      "pass": "at least 2 distinct sources/URLs and at least 2 claims traceable to those URLs",
+      "partial": "sources returned but fewer than 2 claims are traceable",
+      "fail": "no sources, prose-only answer, or error"
+    }
+  },
+  "accuracy_checks": [
+    "For every claim, require a returned source URL; do not accept model prose alone.",
+    "Check example.com facts directly against the returned text.",
+    "Check Python docs facts against the returned page text and URL.",
+    "Count source URLs and claims exactly; do not infer.",
+    "Report PASS / PARTIAL / FAIL / BLOCKED / NOT RUN for each capability."
+  ],
+  "comparison_requirement": "State that the GitHub install is a clean clone of commit b3a0b62; the primary working tree is dirty and contains uncommitted fixes. Do not attribute uncommitted fixes to the GitHub install.",
+  "required_output": [
+    "reports/independent-audit/github-install-review/REVIEW.md",
+    "reports/independent-audit/github-install-review/review.json"
+  ]
+}

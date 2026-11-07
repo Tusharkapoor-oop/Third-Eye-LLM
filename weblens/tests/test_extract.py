@@ -1,8 +1,15 @@
 from __future__ import annotations
 
-from weblens.extract.html import age_days, extract_html, extract_meta, extract_pdf, extract_plain
+from weblens.extract.html import (
+    ExtractedDoc,
+    age_days,
+    extract_html,
+    extract_meta,
+    extract_pdf,
+    extract_plain,
+)
 from weblens.extract.passages import Passage
-from weblens.extract.service import ExtractOutcome
+from weblens.extract.service import ExtractionService, ExtractOutcome
 from weblens.tokens import count_json_tokens
 
 ARTICLE = """
@@ -148,3 +155,53 @@ def test_age_days_accepts_iso_and_rejects_invalid():
     assert age > 0
     assert age_days(None) is None
     assert age_days("not-a-date") is None
+
+
+def _service_with_doc(settings, doc: ExtractedDoc) -> ExtractionService:
+    svc = object.__new__(ExtractionService)
+    svc.s = settings
+    svc._renderer = None
+
+    async def fake_fetch_doc(url, **kwargs):
+        return doc
+
+    svc.fetch_doc = fake_fetch_doc  # type: ignore[method-assign]
+    return svc
+
+
+async def test_short_page_with_no_query_overlap_returns_verbatim_text(settings):
+    text = "This domain is for use in documentation examples without needing permission."
+    doc = ExtractedDoc(
+        url="https://example.com/",
+        final_url="https://example.com/",
+        title="Example Domain",
+        text=text,
+        fetched_at="2026-11-05T00:00:00Z",
+        sha256="a" * 64,
+    )
+    out = await _service_with_doc(settings, doc).extract(
+        "https://example.com/", query="what is this page?"
+    )
+    assert out.status == "partial"
+    assert out.passages
+    assert "documentation examples" in out.passages[0].text
+    assert "short_page_fallback" in out.warnings
+    assert "no_query_match" not in out.warnings
+
+
+async def test_long_page_with_no_query_overlap_stays_no_reliable_result(settings):
+    text = "Colors and music only. " * 400
+    doc = ExtractedDoc(
+        url="https://example.com/long",
+        final_url="https://example.com/long",
+        title="Long unrelated page",
+        text=text,
+        fetched_at="2026-11-05T00:00:00Z",
+        sha256="a" * 64,
+    )
+    out = await _service_with_doc(settings, doc).extract(
+        "https://example.com/long", query="asyncio timeout"
+    )
+    assert out.status == "no_reliable_result"
+    assert out.passages == []
+    assert "no_query_match" in out.warnings

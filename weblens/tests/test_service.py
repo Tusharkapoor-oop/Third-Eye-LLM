@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from types import SimpleNamespace
+
 import pytest
 
 from weblens.errors import ErrCode, WebLensError, resolve_budget
@@ -47,6 +49,52 @@ def _hit(i: int, *, url_len: int = 30) -> Hit:
         provider="fake",
         rank=i,
     )
+
+
+class FakeExtractor:
+    def __init__(self, text: str = "A relevant passage from the page."):
+        self.text = text
+        self.calls = []
+
+    async def extract(self, url, **kwargs):
+        self.calls.append((url, kwargs))
+        return SimpleNamespace(
+            status="ok",
+            title="Page title",
+            passages=[SimpleNamespace(text=self.text)],
+        )
+
+
+async def test_search_replaces_only_top_snippets_with_extracted_passages(settings):
+    settings.search_enrich_top = 2
+    settings.search_enrich_timeout_s = 1.0
+    svc = _service(settings, FakeRouter([_hit(1), _hit(2), _hit(3)]))
+    extractor = FakeExtractor("Extracted passage with python and asyncio details.")
+    svc.extractor = extractor
+
+    out = await svc.search("python asyncio")
+
+    assert out["res"][0]["s"].startswith("Extracted passage")
+    assert out["res"][1]["s"].startswith("Extracted passage")
+    assert out["res"][2]["s"] == "Snippet 3"
+    assert len(extractor.calls) == 2
+    assert all(call[1]["allow_browser"] is False for call in extractor.calls)
+
+
+async def test_search_keeps_provider_snippet_when_enrichment_fails(settings):
+    settings.search_enrich_top = 2
+
+    class FailingExtractor:
+        async def extract(self, url, **kwargs):
+            raise TimeoutError("page too slow")
+
+    svc = _service(settings, FakeRouter([_hit(1)]))
+    svc.extractor = FailingExtractor()
+
+    out = await svc.search("python asyncio")
+
+    assert out["status"] == "ok"
+    assert out["res"][0]["s"] == "Snippet 1"
 
 
 def test_resolve_budget_contract():

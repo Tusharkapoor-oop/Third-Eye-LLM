@@ -1,0 +1,17 @@
+﻿{
+    "id":  "cmd01-doctor",
+    "exe":  "C:\\Users\\ACER\\AppData\\Local\\Temp\\opencode\\weblens-gh-run-20261105\\clone\\.venv\\Scripts\\weblens.exe",
+    "args":  [
+                 "doctor",
+                 "--pretty"
+             ],
+    "command_line":  "\"C:\\Users\\ACER\\AppData\\Local\\Temp\\opencode\\weblens-gh-run-20261105\\clone\\.venv\\Scripts\\weblens.exe\" doctor --pretty",
+    "exit_code":  0,
+    "wall_seconds":  2.386,
+    "started_at":  "2026-11-05T23:10:45.8474184+05:30",
+    "finished_at":  "2026-11-05T23:10:48.3072607+05:30",
+    "stdout_file":  "C:\\Users\\ACER\\Downloads\\Broswer for ai agnets\\reports\\independent-audit\\github-install-run\\raw\\cmd01-doctor.stdout.txt",
+    "stderr_file":  "C:\\Users\\ACER\\Downloads\\Broswer for ai agnets\\reports\\independent-audit\\github-install-run\\raw\\cmd01-doctor.stderr.txt",
+    "stdout_bytes":  609,
+    "stderr_bytes":  0
+}

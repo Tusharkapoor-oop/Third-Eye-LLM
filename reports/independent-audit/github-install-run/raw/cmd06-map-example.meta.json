@@ -1,0 +1,24 @@
+﻿{
+    "id":  "cmd06-map-example",
+    "exe":  "C:\\Users\\ACER\\AppData\\Local\\Temp\\opencode\\weblens-gh-run-20261105\\clone\\.venv\\Scripts\\weblens.exe",
+    "args":  [
+                 "crawl",
+                 "https://example.com",
+                 "--mode",
+                 "map",
+                 "--max-pages",
+                 "5",
+                 "--max-depth",
+                 "1",
+                 "--pretty"
+             ],
+    "command_line":  "\"C:\\Users\\ACER\\AppData\\Local\\Temp\\opencode\\weblens-gh-run-20261105\\clone\\.venv\\Scripts\\weblens.exe\" crawl https://example.com --mode map --max-pages 5 --max-depth 1 --pretty",
+    "exit_code":  0,
+    "wall_seconds":  3.332,
+    "started_at":  "2026-11-05T23:12:29.1699633+05:30",
+    "finished_at":  "2026-11-05T23:12:32.7124989+05:30",
+    "stdout_file":  "C:\\Users\\ACER\\Downloads\\Broswer for ai agnets\\reports\\independent-audit\\github-install-run\\raw\\cmd06-map-example.stdout.txt",
+    "stderr_file":  "C:\\Users\\ACER\\Downloads\\Broswer for ai agnets\\reports\\independent-audit\\github-install-run\\raw\\cmd06-map-example.stderr.txt",
+    "stdout_bytes":  234,
+    "stderr_bytes":  0
+}

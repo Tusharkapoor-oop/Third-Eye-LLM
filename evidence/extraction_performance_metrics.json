@@ -1,0 +1,375 @@
+{
+  "timestamp": "2026-11-05T07:51:38Z",
+  "initial_rss_mb": 155.7,
+  "final_rss_mb": 254.31,
+  "total_rss_growth_mb": 98.61,
+  "html_profiles": [
+    {
+      "label": "Baseline HTML (15KB)",
+      "size_kb": 17.67,
+      "size_bytes": 18090,
+      "stages": {
+        "1_bs4_parse": {
+          "name": "BeautifulSoup HTML Parse (html.parser)",
+          "latency_ms": 604.17,
+          "peak_mem_kib": 1777.36
+        },
+        "2_strip_hidden_dom": {
+          "name": "Strip Hidden DOM & Injection Decoys",
+          "latency_ms": 1.82,
+          "peak_mem_kib": 7.45
+        },
+        "3_protect_code_tables": {
+          "name": "Pre-Protect <pre>, <code>, <table>",
+          "latency_ms": 75.0,
+          "peak_mem_kib": 217.21
+        },
+        "4_trafilatura_metadata": {
+          "name": "Trafilatura Metadata Extraction",
+          "latency_ms": 27.92,
+          "peak_mem_kib": 47.08,
+          "title": "WebLens Systems Architecture Benchmark Document"
+        },
+        "5_trafilatura_extract": {
+          "name": "Trafilatura Core Extract",
+          "latency_ms": 59.76,
+          "peak_mem_kib": 314.86,
+          "chars": 12209
+        },
+        "6_root_extract_markdown": {
+          "name": "Root extract_markdown",
+          "latency_ms": 114.43,
+          "peak_mem_kib": 311.46,
+          "chars": 12209
+        },
+        "7_sanitize_content": {
+          "name": "Sanitize Content",
+          "latency_ms": 6.73,
+          "peak_mem_kib": 1.26,
+          "neutralized": false
+        },
+        "8_document_chunker": {
+          "name": "DocumentChunker",
+          "latency_ms": 199.07,
+          "peak_mem_kib": 1025.18,
+          "chunk_count": 11,
+          "total_tokens": 2111
+        },
+        "9_bm25_passage_scorer": {
+          "name": "BM25PassageScorer",
+          "latency_ms": 19.31,
+          "peak_mem_kib": 127.47,
+          "passages_returned": 2,
+          "passages_tokens": 464
+        }
+      }
+    },
+    {
+      "label": "Complex Technical HTML (>100KB)",
+      "size_kb": 110.58,
+      "size_bytes": 113230,
+      "stages": {
+        "1_bs4_parse": {
+          "name": "BeautifulSoup HTML Parse (html.parser)",
+          "latency_ms": 364.31,
+          "peak_mem_kib": 999.45
+        },
+        "2_strip_hidden_dom": {
+          "name": "Strip Hidden DOM & Injection Decoys",
+          "latency_ms": 4.66,
+          "peak_mem_kib": 21.32
+        },
+        "3_protect_code_tables": {
+          "name": "Pre-Protect <pre>, <code>, <table>",
+          "latency_ms": 477.04,
+          "peak_mem_kib": 1227.4
+        },
+        "4_trafilatura_metadata": {
+          "name": "Trafilatura Metadata Extraction",
+          "latency_ms": 29.55,
+          "peak_mem_kib": 232.16,
+          "title": "WebLens Systems Architecture Benchmark Document"
+        },
+        "5_trafilatura_extract": {
+          "name": "Trafilatura Core Extract",
+          "latency_ms": 182.17,
+          "peak_mem_kib": 1299.48,
+          "chars": 77896
+        },
+        "6_root_extract_markdown": {
+          "name": "Root extract_markdown",
+          "latency_ms": 436.46,
+          "peak_mem_kib": 1792.51,
+          "chars": 77896
+        },
+        "7_sanitize_content": {
+          "name": "Sanitize Content",
+          "latency_ms": 49.2,
+          "peak_mem_kib": 1.26,
+          "neutralized": false
+        },
+        "8_document_chunker": {
+          "name": "DocumentChunker",
+          "latency_ms": 58.87,
+          "peak_mem_kib": 367.49,
+          "chunk_count": 74,
+          "total_tokens": 13466
+        },
+        "9_bm25_passage_scorer": {
+          "name": "BM25PassageScorer",
+          "latency_ms": 49.77,
+          "peak_mem_kib": 600.9,
+          "passages_returned": 2,
+          "passages_tokens": 572
+        }
+      }
+    },
+    {
+      "label": "Large Developer Documentation (>350KB)",
+      "size_kb": 351.48,
+      "size_bytes": 359916,
+      "stages": {
+        "1_bs4_parse": {
+          "name": "BeautifulSoup HTML Parse (html.parser)",
+          "latency_ms": 713.52,
+          "peak_mem_kib": 3147.07
+        },
+        "2_strip_hidden_dom": {
+          "name": "Strip Hidden DOM & Injection Decoys",
+          "latency_ms": 15.05,
+          "peak_mem_kib": 59.34
+        },
+        "3_protect_code_tables": {
+          "name": "Pre-Protect <pre>, <code>, <table>",
+          "latency_ms": 1301.16,
+          "peak_mem_kib": 3854.74
+        },
+        "4_trafilatura_metadata": {
+          "name": "Trafilatura Metadata Extraction",
+          "latency_ms": 63.31,
+          "peak_mem_kib": 713.43,
+          "title": "WebLens Systems Architecture Benchmark Document"
+        },
+        "5_trafilatura_extract": {
+          "name": "Trafilatura Core Extract",
+          "latency_ms": 514.91,
+          "peak_mem_kib": 4015.08,
+          "chars": 248209
+        },
+        "6_root_extract_markdown": {
+          "name": "Root extract_markdown",
+          "latency_ms": 1852.35,
+          "peak_mem_kib": 5647.24,
+          "chars": 248209
+        },
+        "7_sanitize_content": {
+          "name": "Sanitize Content",
+          "latency_ms": 282.77,
+          "peak_mem_kib": 1.26,
+          "neutralized": false
+        },
+        "8_document_chunker": {
+          "name": "DocumentChunker",
+          "latency_ms": 251.34,
+          "peak_mem_kib": 1143.1,
+          "chunk_count": 238,
+          "total_tokens": 42916
+        },
+        "9_bm25_passage_scorer": {
+          "name": "BM25PassageScorer",
+          "latency_ms": 302.81,
+          "peak_mem_kib": 1845.33,
+          "passages_returned": 2,
+          "passages_tokens": 451
+        }
+      }
+    },
+    {
+      "label": "Massive Enterprise Documentation (>1MB)",
+      "size_kb": 1050.48,
+      "size_bytes": 1075694,
+      "stages": {
+        "1_bs4_parse": {
+          "name": "BeautifulSoup HTML Parse (html.parser)",
+          "latency_ms": 2893.87,
+          "peak_mem_kib": 9376.81
+        },
+        "2_strip_hidden_dom": {
+          "name": "Strip Hidden DOM & Injection Decoys",
+          "latency_ms": 61.25,
+          "peak_mem_kib": 179.82
+        },
+        "3_protect_code_tables": {
+          "name": "Pre-Protect <pre>, <code>, <table>",
+          "latency_ms": 4074.69,
+          "peak_mem_kib": 11445.62
+        },
+        "4_trafilatura_metadata": {
+          "name": "Trafilatura Metadata Extraction",
+          "latency_ms": 319.78,
+          "peak_mem_kib": 2109.84,
+          "title": "WebLens Systems Architecture Benchmark Document"
+        },
+        "5_trafilatura_extract": {
+          "name": "Trafilatura Core Extract",
+          "latency_ms": 1499.78,
+          "peak_mem_kib": 11887.21,
+          "chars": 742311
+        },
+        "6_root_extract_markdown": {
+          "name": "Root extract_markdown",
+          "latency_ms": 4877.63,
+          "peak_mem_kib": 16759.66,
+          "chars": 742311
+        },
+        "7_sanitize_content": {
+          "name": "Sanitize Content",
+          "latency_ms": 618.12,
+          "peak_mem_kib": 1.26,
+          "neutralized": false
+        },
+        "8_document_chunker": {
+          "name": "DocumentChunker",
+          "latency_ms": 719.54,
+          "peak_mem_kib": 3405.58,
+          "chunk_count": 711,
+          "total_tokens": 128271
+        },
+        "9_bm25_passage_scorer": {
+          "name": "BM25PassageScorer",
+          "latency_ms": 713.88,
+          "peak_mem_kib": 5490.5,
+          "passages_returned": 2,
+          "passages_tokens": 572
+        }
+      }
+    }
+  ],
+  "pdf_profiles": [
+    {
+      "label": "5-Page PDF Document",
+      "page_count": 5,
+      "pdf_kb": 7.27,
+      "pdf_bytes": 7445,
+      "open_time_ms": 1.57,
+      "text_extraction_ms": 23.73,
+      "avg_per_page_ms": 4.703,
+      "total_extraction_ms": 25.45,
+      "peak_mem_kib": 146.35,
+      "rss_before_mb": 252.98,
+      "rss_after_mb": 253.81,
+      "rss_delta_mb": 0.83,
+      "extracted_chars": 5618,
+      "extracted_words": 745,
+      "chunks_count": 6,
+      "chunking_ms": 5.19,
+      "chunking_peak_kib": 25.68,
+      "scoring_ms": 5.11,
+      "scoring_peak_kib": 50.02,
+      "passages_count": 2,
+      "passages_tokens": 400
+    },
+    {
+      "label": "20-Page Technical Whitepaper",
+      "page_count": 20,
+      "pdf_kb": 27.81,
+      "pdf_bytes": 28474,
+      "open_time_ms": 1.0,
+      "text_extraction_ms": 62.26,
+      "avg_per_page_ms": 3.087,
+      "total_extraction_ms": 63.39,
+      "peak_mem_kib": 39.57,
+      "rss_before_mb": 253.94,
+      "rss_after_mb": 253.95,
+      "rss_delta_mb": 0.01,
+      "extracted_chars": 22553,
+      "extracted_words": 2980,
+      "chunks_count": 27,
+      "chunking_ms": 33.05,
+      "chunking_peak_kib": 69.84,
+      "scoring_ms": 13.15,
+      "scoring_peak_kib": 173.0,
+      "passages_count": 3,
+      "passages_tokens": 456
+    },
+    {
+      "label": "50-Page Enterprise Report",
+      "page_count": 50,
+      "pdf_kb": 68.96,
+      "pdf_bytes": 70616,
+      "open_time_ms": 2.07,
+      "text_extraction_ms": 147.75,
+      "avg_per_page_ms": 2.928,
+      "total_extraction_ms": 150.0,
+      "peak_mem_kib": 85.31,
+      "rss_before_mb": 254.07,
+      "rss_after_mb": 254.08,
+      "rss_delta_mb": 0.01,
+      "extracted_chars": 56453,
+      "extracted_words": 7450,
+      "chunks_count": 68,
+      "chunking_ms": 58.03,
+      "chunking_peak_kib": 154.64,
+      "scoring_ms": 91.62,
+      "scoring_peak_kib": 419.93,
+      "passages_count": 3,
+      "passages_tokens": 456
+    }
+  ],
+  "scorer_scaling": [
+    {
+      "chunk_count": 10,
+      "mean_ms": 17.176,
+      "min_ms": 5.243,
+      "max_ms": 36.148,
+      "peak_mem_kib": 91.99,
+      "passages_count": 3,
+      "tokens_count": 490
+    },
+    {
+      "chunk_count": 25,
+      "mean_ms": 46.645,
+      "min_ms": 16.069,
+      "max_ms": 76.869,
+      "peak_mem_kib": 199.51,
+      "passages_count": 3,
+      "tokens_count": 560
+    },
+    {
+      "chunk_count": 50,
+      "mean_ms": 46.482,
+      "min_ms": 34.909,
+      "max_ms": 63.559,
+      "peak_mem_kib": 381.29,
+      "passages_count": 3,
+      "tokens_count": 560
+    },
+    {
+      "chunk_count": 100,
+      "mean_ms": 87.41,
+      "min_ms": 74.195,
+      "max_ms": 112.81,
+      "peak_mem_kib": 694.28,
+      "passages_count": 3,
+      "tokens_count": 560
+    },
+    {
+      "chunk_count": 200,
+      "mean_ms": 142.36,
+      "min_ms": 119.288,
+      "max_ms": 185.412,
+      "peak_mem_kib": 694.28,
+      "passages_count": 3,
+      "tokens_count": 560
+    },
+    {
+      "chunk_count": 400,
+      "mean_ms": 146.951,
+      "min_ms": 96.87,
+      "max_ms": 213.452,
+      "peak_mem_kib": 694.28,
+      "passages_count": 3,
+      "tokens_count": 560
+    }
+  ]
+}

@@ -1,0 +1,22 @@
+﻿{
+    "id":  "cmd04c-extract-example-query-match",
+    "exe":  "C:\\Users\\ACER\\AppData\\Local\\Temp\\opencode\\weblens-gh-run-20261105\\clone\\.venv\\Scripts\\weblens.exe",
+    "args":  [
+                 "extract",
+                 "https://example.com",
+                 "-q",
+                 "documentation examples domain",
+                 "--max-tokens",
+                 "300",
+                 "--pretty"
+             ],
+    "command_line":  "\"C:\\Users\\ACER\\AppData\\Local\\Temp\\opencode\\weblens-gh-run-20261105\\clone\\.venv\\Scripts\\weblens.exe\" extract https://example.com -q \"documentation examples domain\" --max-tokens 300 --pretty",
+    "exit_code":  0,
+    "wall_seconds":  5.584,
+    "started_at":  "2026-11-05T23:14:37.3936835+05:30",
+    "finished_at":  "2026-11-05T23:14:43.0821774+05:30",
+    "stdout_file":  "C:\\Users\\ACER\\Downloads\\Broswer for ai agnets\\reports\\independent-audit\\github-install-run\\raw\\cmd04c-extract-example-query-match.stdout.txt",
+    "stderr_file":  "C:\\Users\\ACER\\Downloads\\Broswer for ai agnets\\reports\\independent-audit\\github-install-run\\raw\\cmd04c-extract-example-query-match.stderr.txt",
+    "stdout_bytes":  555,
+    "stderr_bytes":  0
+}

@@ -139,14 +139,25 @@ def dedupe(hits: list[Hit]) -> list[Hit]:
     return out
 
 
-def diversify(hits: list[Hit], per_domain: int = 2) -> list[Hit]:
-    """Cap results per registrable domain while preserving order."""
+def diversify(
+    hits: list[Hit],
+    per_domain: int = 2,
+    *,
+    domain_caps: dict[str, int] | None = None,
+) -> list[Hit]:
+    """Cap results per registrable domain while preserving order.
+
+    ``domain_caps`` lets the router allow more results from primary-source
+    domains (for example, several pages from the same official documentation
+    site) without weakening the default diversity guard for generic domains.
+    """
     counts: dict[str, int] = {}
     out: list[Hit] = []
     overflow: list[Hit] = []
     for h in hits:
         d = registrable_domain(h.url.split("/")[2]) if "/" in h.url else ""
-        if counts.get(d, 0) >= per_domain:
+        cap = (domain_caps or {}).get(d, per_domain)
+        if counts.get(d, 0) >= cap:
             overflow.append(h)
             continue
         counts[d] = counts.get(d, 0) + 1

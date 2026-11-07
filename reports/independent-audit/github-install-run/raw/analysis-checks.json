@@ -1,0 +1,156 @@
+{
+  "search": {
+    "status": "partial",
+    "n": 5,
+    "actual_results": 5,
+    "with_titles": 5,
+    "with_urls": 5,
+    "with_snippets": 5,
+    "domains": [
+      "docs.python.org",
+      "en.wikipedia.org",
+      "www.phoronix.com",
+      "www.python.org"
+    ],
+    "providers": [
+      "mwmbl",
+      "wikipedia"
+    ],
+    "provider_failures": {
+      "ddg": "TimeoutError"
+    },
+    "tok": 454,
+    "ms": 3511,
+    "warnings": [
+      "duplicate_text_removed",
+      "off_topic_filtered:4"
+    ],
+    "unique_urls": 5
+  },
+  "extract_example_query": {
+    "status": "no_reliable_result",
+    "title": "Example Domain",
+    "passages": 0,
+    "tok": 74,
+    "warnings": [
+      "low_content",
+      "no_query_match"
+    ],
+    "ms": 2097
+  },
+  "extract_example_full": {
+    "status": "ok",
+    "title": "Example Domain",
+    "chars": 156,
+    "has_Example_Domain_title": true,
+    "has_documentation_examples_sentence": true,
+    "has_illustrative_examples_sentence": false,
+    "mentions_iana.org": false,
+    "has_example.com_url": false,
+    "tok": 103
+  },
+  "extract_python314": {
+    "status": "ok",
+    "title": "What\u2019s new in Python 3.14 \u2014 Python 3.15.2 documentation",
+    "passages": 2,
+    "tok": 488,
+    "cut": true,
+    "ms": 2854,
+    "has_template_strings": true,
+    "has_deferred_annotations": true,
+    "has_subinterpreters": true,
+    "has_zstd": true,
+    "all_passage_urls_same_domain": true
+  },
+  "map_example": {
+    "status": "ok",
+    "n": 1,
+    "actual_urls": 1,
+    "url_list": [
+      "https://example.com/"
+    ],
+    "duplicates": [],
+    "contains_example_com": true,
+    "contains_iana_org": false,
+    "tok": 47,
+    "ms": 871,
+    "warnings": [
+      "no_links_found"
+    ]
+  },
+  "map_python_docs": {
+    "status": "ok",
+    "n": 5,
+    "actual_urls": 5,
+    "duplicates": [],
+    "domains": [
+      "docs.python.org"
+    ],
+    "url_list": [
+      "https://docs.python.org/3/library/asyncio.html",
+      "https://docs.python.org/3/library/ipc.html",
+      "https://docs.python.org/3/library/sys.html",
+      "https://docs.python.org/3/library/index.html",
+      "https://docs.python.org/3/library/intro.html"
+    ],
+    "tok": 148,
+    "ms": 774
+  },
+  "crawl_asyncio": {
+    "status": "ok",
+    "n": 2,
+    "actual_pages": 2,
+    "page_statuses": {
+      "https://docs.python.org/3/library/asyncio.html": "ok",
+      "https://docs.python.org/3/library/ipc.html": "ok"
+    },
+    "page_failures_field_present": false,
+    "pages_with_passages": 2,
+    "passage_count": 2,
+    "all_from_requested_domain": true,
+    "mentions_event_loop": true,
+    "mentions_coroutine": false,
+    "tok": 562,
+    "cut": null,
+    "ms": 4188
+  },
+  "research_example": {
+    "status": "partial",
+    "n": 4,
+    "findings": 4,
+    "distinct_source_urls": [
+      "https://en.wikipedia.org/wiki/.xxx",
+      "https://en.wikipedia.org/wiki/Example.com",
+      "https://handwiki.org/wiki/Example.com"
+    ],
+    "all_have_urls": true,
+    "all_have_verbatim_text": true,
+    "gaps": [
+      "no_source_for:purpose"
+    ],
+    "warnings": [
+      "fetch_failed:FetchError"
+    ],
+    "tok": 492,
+    "ms": 7817,
+    "model_prose_synthesis_present": false
+  },
+  "research_python314": {
+    "status": "partial",
+    "n": 2,
+    "findings": 2,
+    "distinct_source_urls": [
+      "https://en.wikipedia.org/wiki/Python_%28programming_language%29"
+    ],
+    "all_have_urls": true,
+    "gaps": [
+      "no_source_for:3.14"
+    ],
+    "warnings": [
+      "fetch_failed:FetchError"
+    ],
+    "tok": 411,
+    "ms": 10188,
+    "mentions_3_14_features": false
+  }
+}

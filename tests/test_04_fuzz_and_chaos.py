@@ -22,7 +22,14 @@ from hypothesis import HealthCheck, given, settings
 from hypothesis import strategies as st
 
 from config import CONFIG
-from server import crawl_website, deep_research, extract_url, web_map, web_search
+from server import crawl_website, deep_research, extract_url, shutdown_services, web_map, web_search
+
+
+@pytest.fixture(autouse=True)
+async def close_event_store_after_test():
+    """Close every aiosqlite worker thread so pytest can exit after the fuzz run."""
+    yield
+    await shutdown_services()
 
 
 @pytest.fixture(autouse=True)

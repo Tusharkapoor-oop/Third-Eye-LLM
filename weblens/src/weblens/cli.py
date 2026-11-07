@@ -6,6 +6,8 @@ import argparse
 import asyncio
 import json
 import sys
+import time
+from collections import deque
 from typing import Any
 
 from . import __version__
@@ -117,6 +119,8 @@ class _BearerAuth:
     async def __call__(self, scope, receive, send):
         if scope.get("type") != "http":
             return await self.app(scope, receive, send)
+        if scope.get("path") in {"/", "/healthz"}:
+            return await self.app(scope, receive, send)
         headers = {k.lower(): v for k, v in scope.get("headers") or []}
         supplied = headers.get(b"authorization", b"").decode("latin-1")
         import hmac
@@ -136,6 +140,94 @@ class _BearerAuth:
             )
             await send({"type": "http.response.body", "body": body})
             return
+        return await self.app(scope, receive, send)
+
+
+class _SecurityHeaders:
+    """Add browser hardening headers to every HTTP response."""
+
+    _HEADERS = (
+        (b"strict-transport-security", b"max-age=31536000; includeSubDomains"),
+        (b"x-content-type-options", b"nosniff"),
+        (b"x-frame-options", b"DENY"),
+        (b"referrer-policy", b"no-referrer"),
+    )
+
+    def __init__(self, app):
+        self.app = app
+
+    async def __call__(self, scope, receive, send):
+        if scope.get("type") != "http":
+            return await self.app(scope, receive, send)
+
+        async def send_with_headers(message):
+            if message.get("type") == "http.response.start":
+                headers = list(message.get("headers") or [])
+                present = {name.lower() for name, _ in headers}
+                for name, value in self._HEADERS:
+                    if name not in present:
+                        headers.append((name, value))
+                message = {**message, "headers": headers}
+            await send(message)
+
+        return await self.app(scope, receive, send_with_headers)
+
+
+class _RateLimit:
+    """Small in-process sliding-window limiter for the HTTP MCP transport.
+
+    Cloud Run may run multiple instances, so this is a per-instance defense,
+    not a replacement for an edge quota. It still stops a single client from
+    exhausting a worker and makes the public endpoint fail closed with 429.
+    """
+
+    def __init__(self, app, *, limit: int = 120, window_s: float = 60.0):
+        self.app = app
+        self.limit = max(1, int(limit))
+        self.window_s = float(window_s)
+        self._hits: dict[str, deque[float]] = {}
+        self._lock = asyncio.Lock()
+
+    async def __call__(self, scope, receive, send):
+        if scope.get("type") != "http":
+            return await self.app(scope, receive, send)
+        if scope.get("path") in {"/", "/healthz"}:
+            return await self.app(scope, receive, send)
+
+        headers = {k.lower(): v for k, v in scope.get("headers") or []}
+        forwarded = [
+            part.strip()
+            for part in headers.get(b"x-forwarded-for", b"").decode("latin-1").split(",")
+            if part.strip()
+        ]
+        client = scope.get("client") or ("unknown", 0)
+        # Use the address appended by the closest trusted proxy. The left-most
+        # value is client-controlled and would let a caller evade the limiter.
+        key = forwarded[-1] if forwarded else str(client[0])
+        now = time.monotonic()
+        async with self._lock:
+            bucket = self._hits.setdefault(key, deque())
+            cutoff = now - self.window_s
+            while bucket and bucket[0] < cutoff:
+                bucket.popleft()
+            if len(bucket) >= self.limit:
+                retry_after = max(1, int(self.window_s - (now - bucket[0])) + 1)
+                body = b'{"error":"rate_limited"}'
+                await send(
+                    {
+                        "type": "http.response.start",
+                        "status": 429,
+                        "headers": [
+                            (b"content-type", b"application/json"),
+                            (b"content-length", str(len(body)).encode()),
+                            (b"retry-after", str(retry_after).encode()),
+                        ],
+                    }
+                )
+                await send({"type": "http.response.body", "body": body})
+                return
+            bucket.append(now)
+
         return await self.app(scope, receive, send)
 
 
@@ -200,6 +292,11 @@ def _serve_http(args: argparse.Namespace) -> int:
 
     if token:
         app.add_middleware(_BearerAuth, token=token)
+    app.add_middleware(
+        _RateLimit,
+        limit=settings.http_rate_limit_per_minute,
+    )
+    app.add_middleware(_SecurityHeaders)
 
     async def run() -> None:
         config = uvicorn.Config(

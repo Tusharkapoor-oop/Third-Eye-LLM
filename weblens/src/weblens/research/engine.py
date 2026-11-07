@@ -18,15 +18,20 @@ from ..errors import resolve_budget
 from ..extract.passages import Passage, query_terms, select_passages, tokenize
 from ..extract.service import ExtractionService
 from ..lexical import STOPWORDS
+from ..search.base import Hit
 from ..search.router import SearchRouter, clean_query
 from ..tokens import count_json_tokens
-from ..urls import registrable_domain
+from ..urls import official_source_urls, registrable_domain
 
 FRESH = ("latest", "current", "today", "now", "2026", "2025", "price", "release", "news", "recent")
 STRICT_TERMS = {"exact", "precise"}
 GAP_IGNORE = {
     "python", "javascript", "typescript", "java", "go", "golang", "rust", "csharp",
     "php", "ruby", "linux", "windows", "macos", "android", "ios", "web",
+    # Generic ranking/qualifier words are not evidence requirements. Reporting
+    # "no_source_for:major" on a page that documents the new features is a
+    # false gap.
+    "major", "main", "key", "top", "best", "important",
 }
 SENT_SPLIT = re.compile(r"(?<=[.!?])\s+(?=[A-Z0-9`#*])")
 NUM = re.compile(
@@ -416,13 +421,36 @@ class ResearchEngine:
             for pos, h in enumerate(r.hits):
                 hit_scores[h.url] = hit_scores.get(h.url, 0.0) + 1.0 / (1.0 + pos)
                 hit_map[h.url] = h
-        if not hit_map:
+        # Primary-source injection: a keyless index may rank Wikipedia above
+        # the official release notes for a versioned question. Fetch the
+        # canonical page directly and put it first, while keeping every other
+        # result so the evidence still has to pass the normal passage checks.
+        # This also runs when every search provider failed: the direct URL is
+        # independent of the search index.
+        official = official_source_urls(q)
+        if not hit_map and not official:
             outcome.status = "no_reliable_result"
             outcome.gaps.append("no_search_results")
             outcome.warnings = warnings
             return self._finish(outcome, started, budget)
 
+        for url in official:
+            if url not in hit_map:
+                hit_map[url] = Hit(
+                    title="Official documentation",
+                    url=url,
+                    snippet="primary source selected for this topic",
+                    provider="official",
+                    rank=0,
+                )
+        if official:
+            warnings.append("official_source_injected")
+
         ranked = sorted(hit_map.values(), key=lambda h: (-hit_scores.get(h.url, 0.0), h.url))
+        official_set = set(official)
+        ranked = [hit_map[u] for u in official if u in hit_map] + [
+            h for h in ranked if h.url not in official_set
+        ]
         targets = ranked[: max(1, min(12, max_pages))]
         sem = asyncio.Semaphore(4)
 
@@ -464,8 +492,29 @@ class ResearchEngine:
                     if f.published:
                         stale_dates.append(f.published)
 
-        # Rank findings by query-term coverage, then source diversity.
         terms, _ = query_terms(q)
+        # For a versioned question, a page that only says "major new features"
+        # is not evidence about the requested version. Keep the injected
+        # official release notes and claims that name both the version and at
+        # least one topic term; fall back to the unfiltered set only when that
+        # would leave nothing.
+        version = re.search(r"\b\d+\.\d+(?:\.\d+)?\b", q)
+        if version:
+            token = version.group(0)
+            topic_terms = [t for t in terms if t != token and t not in {"python"}]
+            official_set = set(official)
+            relevant = []
+            for f in findings:
+                claim_tokens = set(tokenize(f.claim))
+                has_version = token in claim_tokens or token in f.claim
+                has_topic = not topic_terms or any(t in claim_tokens for t in topic_terms)
+                if f.url in official_set or (has_version and has_topic):
+                    relevant.append(f)
+            if relevant:
+                findings = relevant
+                warnings.append("version_source_filtered")
+
+        # Rank findings by query-term coverage, then source diversity.
         def fscore(f: Finding) -> float:
             toks = set(tokenize(f.claim))
             cov = sum(1 for t in terms if t in toks) / max(1, len(terms))
@@ -504,6 +553,11 @@ class ResearchEngine:
         supported = set()
         for f in outcome.findings:
             supported |= set(tokenize(f.claim))
+            # The section heading is part of the evidence context. Without it,
+            # a claim under "Purpose" can be reported as missing "purpose" even
+            # though the page literally structures the answer that way.
+            if f.heading:
+                supported |= set(tokenize(f.heading))
         missing = [t for t in terms if t not in supported and t not in GAP_IGNORE and t not in FRESH]
         outcome.gaps = [f"no_source_for:{t}" for t in missing[:6]]
 

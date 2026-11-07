@@ -1,0 +1,33 @@
+{
+  "status": "ok",
+  "u": "https://docs.python.org/3/whatsnew/3.14.html",
+  "t": "What’s new in Python 3.14 — Python 3.15.2 documentation",
+  "at": "2026-11-05T17:42:18Z",
+  "sha": "3e12954a79f5d1eb",
+  "src": "html",
+  "ps": [
+    {
+      "u": "https://docs.python.org/3/whatsnew/3.14.html",
+      "at": "2026-11-05T17:42:18Z",
+      "x": "# What’s new in Python 3.14¶\n\n- Editors:\n- Adam Turner and Hugo van Kemenade\n\nThis article explains the new features in Python 3.14, compared to 3.13. Python 3.14 was released on 7 October 2025. For full details, see the changelog.\n\nSee also\n\n**PEP 745** – Python 3.14 release schedule\n\n",
+      "s": [
+        0,
+        287
+      ],
+      "h": "What’s new in Python 3.14¶"
+    },
+    {
+      "u": "https://docs.python.org/3/whatsnew/3.14.html",
+      "at": "2026-11-05T17:42:18Z",
+      "x": "## Summary – Release highlights¶\n\nPython 3.14 is a stable release of the Python programming language, with a mix of changes to the language, the implementation, and the standard library. The biggest changes include template string literals, deferred evaluation of annotations, and support for subinterpreters in the standard library.\n\nThe library changes include significantly improved capabilities for\nintrospection in asyncio,\nsupport for Zstandard via a new\n`compression.zstd` module, syntax highlighting in the REPL,\nas well as the usual deprecations and removals,\nand improvements in user-friendliness and correctness.\n\nThis article doesn’t attempt to provide a complete specification of all new features, but instead gives a convenient overview. For full details refer to the documentation, such as the Library Reference and Language Reference. To understand the complete implementation and design rationale for a change, refer to the PEP for a particular new",
+      "s": [
+        287,
+        1252
+      ],
+      "h": "Summary – Release highlights¶"
+    }
+  ],
+  "tok": 488,
+  "cut": true,
+  "ms": 2854
+}

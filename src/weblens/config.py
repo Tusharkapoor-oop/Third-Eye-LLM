@@ -18,9 +18,10 @@ class Settings(BaseSettings):
     )
 
     # --- search providers -------------------------------------------------
-    # Comma-separated order. Supported: ddg, mwmbl, brave, tavily, searxng, bing, wikipedia
-    # Bing is optional and documented as degraded: its retired-API HTML fallback
-    # has returned unsafe, off-topic results and is not part of the default chain.
+    # Comma-separated order. Supported: ddg, mwmbl, brave, tavily, searxng, bing, yahoo, wikipedia
+    # Bing and Yahoo are optional and documented as degraded: their HTML
+    # fallbacks are rate-limited or can return off-topic results, so neither is
+    # part of the default chain.
     search_providers: str = "ddg,mwmbl,wikipedia"
     brave_api_key: str | None = None
     tavily_api_key: str | None = None
@@ -66,17 +67,25 @@ class Settings(BaseSettings):
     max_research_tokens: int = 2_000
     default_results: int = 5
 
+    # Optional search snippet enrichment. 0 keeps search on the fast path;
+    # set it to 1-5 to replace the first N provider blurbs with a relevant
+    # passage from the page. The trade-off is a bounded number of parallel
+    # page fetches, so it is opt-in rather than a silent latency increase.
+    search_enrich_top: int = Field(default=0, ge=0, le=10)
+    search_enrich_timeout_s: float = Field(default=2.5, gt=0, le=30)
+
     # --- server -----------------------------------------------------------
     http_host: str = "127.0.0.1"
     http_port: int = 8765
     http_token: str | None = None
+    http_rate_limit_per_minute: int = Field(default=120, ge=1, le=100_000)
     log_level: str = "INFO"
     mcp_profile: Literal["core", "research", "full"] = "core"
 
     @field_validator("search_providers")
     @classmethod
     def _providers(cls, v: str) -> str:
-        allowed = {"ddg", "brave", "tavily", "searxng", "bing", "mwmbl", "wikipedia"}
+        allowed = {"ddg", "brave", "tavily", "searxng", "bing", "yahoo", "mwmbl", "wikipedia"}
         names = [p.strip().lower() for p in v.split(",") if p.strip()]
         bad = [p for p in names if p not in allowed]
         if bad:

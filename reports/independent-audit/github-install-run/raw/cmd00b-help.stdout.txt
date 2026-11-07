@@ -1,0 +1,20 @@
+usage: weblens [-h] [--version]
+               {serve,search,extract,crawl,research,doctor,cache,tokens,app} ...
+
+Local-first web intelligence for AI agents (MCP).
+
+positional arguments:
+  {serve,search,extract,crawl,research,doctor,cache,tokens,app}
+    serve               run the MCP server (stdio by default)
+    search              search the live web
+    extract             extract passages from one URL
+    crawl               map or crawl a site
+    research            collect verbatim evidence from several sources
+    doctor              show configuration, provider and cache status
+    cache               inspect or purge the local WebLens cache
+    tokens              measure tools/list schema tokens
+    app                 execute a WebLens application
+
+options:
+  -h, --help            show this help message and exit
+  --version             show program's version number and exit

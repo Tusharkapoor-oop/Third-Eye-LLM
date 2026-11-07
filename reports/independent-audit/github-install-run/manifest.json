@@ -1,0 +1,344 @@
+{
+  "run_id": "weblens-gh-run-20261105",
+  "subagent": "Subagent 1 - independent installer/runner",
+  "started_at": "2026-11-05T23:08:00+05:30",
+  "host": {
+    "os": "Microsoft Windows NT 10.0.26300.0",
+    "platform_reported": "Windows 11",
+    "powershell": "5.1.26100.9711",
+    "console_code_page": 437
+  },
+  "toolchain": {
+    "git": "git version 2.55.0.windows.5",
+    "uv": "0.13.7 (316c827e0 2026-11-03 x86_64-pc-windows-msvc)",
+    "system_python": "3.13.15",
+    "venv_python": "3.13.15"
+  },
+  "repository": {
+    "url": "https://github.com/Tusharkapoor-oop/Third-Eye-LLM.git",
+    "branch": "main",
+    "requested_commit": "b3a0b62",
+    "actual_commit": "b3a0b624c73191d86a6e681edef531bbdb83f37d",
+    "commit_matches": true,
+    "clone_dir": "C:\\Users\\ACER\\AppData\\Local\\Temp\\opencode\\weblens-gh-run-20261105\\clone",
+    "clone_depth": 1
+  },
+  "package": {
+    "path": "<clone>/weblens",
+    "name": "weblens",
+    "version": "0.1.0",
+    "cli_entry_point": "weblens.cli:main",
+    "requires_python": ">=3.11",
+    "install_mode": "editable (-e)",
+    "installed_dist_info": "weblens-0.1.0.dist-info"
+  },
+  "install": {
+    "commands": [
+      {
+        "step": "clone",
+        "command": "git clone --depth 1 --branch main https://github.com/Tusharkapoor-oop/Third-Eye-LLM.git <clone>",
+        "exit_code": 0,
+        "wall_seconds": null,
+        "wall_seconds_note": "not instrumented; ~16s derived from filesystem timestamps (clone.log created 23:09:07, .venv created 23:09:23)",
+        "log": "raw/../clone.log (temp: C:\\Users\\ACER\\AppData\\Local\\Temp\\opencode\\weblens-gh-run-20261105\\clone.log)"
+      },
+      {
+        "step": "venv",
+        "command": "uv venv --python 3.13 <clone>\\.venv",
+        "exit_code": 0,
+        "wall_seconds": null,
+        "wall_seconds_note": "not instrumented",
+        "log": "raw/install-uv-venv.log"
+      },
+      {
+        "step": "pip install",
+        "command": "uv pip install --python <clone>\\.venv\\Scripts\\python.exe -e <clone>\\weblens",
+        "exit_code": 0,
+        "wall_seconds": 28.17,
+        "resolved_packages": 58,
+        "installed_packages": 58,
+        "log": "raw/install-uv-pip-install.log"
+      },
+      {
+        "step": "verify version",
+        "command": "<clone>\\.venv\\Scripts\\weblens.exe --version",
+        "exit_code": 0,
+        "stdout": "weblens 0.1.0",
+        "log": "raw/cmd00a-version.stdout.txt"
+      }
+    ],
+    "fallback_used": false,
+    "fallback_note": "uv install succeeded; python -m venv + pip fallback was not needed"
+  },
+  "isolation": {
+    "workspace_venv_used": false,
+    "package_venv": "<clone>\\.venv (fresh uv venv, Python 3.13.15)",
+    "cache_isolation": {
+      "env_var": "WEBLENS_CACHE_DIR",
+      "value": "C:\\Users\\ACER\\AppData\\Local\\Temp\\opencode\\weblens-gh-run-20261105\\cache",
+      "reason": "default cache is C:\\Users\\ACER\\.weblens and doctor showed 661 pre-existing entries; isolating gives cold-cache, non-cached evidence",
+      "deviation_from_canonical_commands": "env var only; CLI arguments unchanged"
+    },
+    "paid_or_keyed_services_used": false,
+    "env_key_presence_checked": {
+      "TAVILY_API_KEY": false,
+      "OPENAI_API_KEY": false,
+      "ANTHROPIC_API_KEY": false,
+      "BRAVE_API_KEY": false,
+      "SERPER_API_KEY": false,
+      "GOOGLE_API_KEY": false,
+      "WEBLENS_TAVILY_API_KEY": false,
+      "WEBLENS_SEARCH_PROVIDER": false
+    },
+    "notes": "values were never read or printed; only presence/absence and length"
+  },
+  "environment_artifact": "raw/environment.json",
+  "commands": [
+    {
+      "id": "cmd00a-version",
+      "argv": ["--version"],
+      "exit_code": 0,
+      "wall_seconds": 2.094,
+      "result_status": "ok",
+      "stdout": "raw/cmd00a-version.stdout.txt",
+      "stderr": "raw/cmd00a-version.stderr.txt",
+      "meta": "raw/cmd00a-version.meta.json"
+    },
+    {
+      "id": "cmd00b-help",
+      "argv": ["--help"],
+      "exit_code": 0,
+      "wall_seconds": 1.76,
+      "result_status": "ok",
+      "stdout": "raw/cmd00b-help.stdout.txt",
+      "stderr": "raw/cmd00b-help.stderr.txt",
+      "meta": "raw/cmd00b-help.meta.json"
+    },
+    {
+      "id": "cmd01-doctor",
+      "argv": ["doctor", "--pretty"],
+      "exit_code": 0,
+      "wall_seconds": 2.386,
+      "result_status": "ok",
+      "cli_ms": null,
+      "tokens": null,
+      "stdout": "raw/cmd01-doctor.stdout.txt",
+      "stderr": "raw/cmd01-doctor.stderr.txt",
+      "meta": "raw/cmd01-doctor.meta.json"
+    },
+    {
+      "id": "cmd02-doctor-live",
+      "argv": ["doctor", "--live", "--pretty"],
+      "exit_code": 0,
+      "wall_seconds": 7.606,
+      "result_status": "partial",
+      "cli_live_ms": 4695,
+      "live_providers": ["mwmbl", "wikipedia"],
+      "stdout": "raw/cmd02-doctor-live.stdout.txt",
+      "stderr": "raw/cmd02-doctor-live.stderr.txt",
+      "meta": "raw/cmd02-doctor-live.meta.json"
+    },
+    {
+      "id": "cmd03-search-python314",
+      "argv": ["search", "Python 3.14 release notes", "-k", "5", "--pretty"],
+      "exit_code": 0,
+      "wall_seconds": 6.863,
+      "result_status": "partial",
+      "cli_ms": 3511,
+      "tokens": 454,
+      "results_returned": 5,
+      "providers": ["mwmbl", "wikipedia"],
+      "provider_failures": {"ddg": "TimeoutError"},
+      "stdout": "raw/cmd03-search-python314.stdout.txt",
+      "stderr": "raw/cmd03-search-python314.stderr.txt",
+      "meta": "raw/cmd03-search-python314.meta.json"
+    },
+    {
+      "id": "cmd04-extract-example",
+      "argv": ["extract", "https://example.com", "-q", "What is this page?", "--max-tokens", "300", "--pretty"],
+      "exit_code": 0,
+      "wall_seconds": 5.577,
+      "result_status": "no_reliable_result",
+      "cli_ms": 2097,
+      "tokens": 74,
+      "passages": 0,
+      "stdout": "raw/cmd04-extract-example.stdout.txt",
+      "stderr": "raw/cmd04-extract-example.stderr.txt",
+      "meta": "raw/cmd04-extract-example.meta.json"
+    },
+    {
+      "id": "cmd04b-extract-example-full",
+      "argv": ["extract", "https://example.com", "--full", "--pretty"],
+      "exit_code": 0,
+      "wall_seconds": 3.339,
+      "result_status": "ok",
+      "cli_ms": 719,
+      "tokens": 103,
+      "diagnostic_only": true,
+      "stdout": "raw/cmd04b-extract-example-full.stdout.txt",
+      "stderr": "raw/cmd04b-extract-example-full.stderr.txt",
+      "meta": "raw/cmd04b-extract-example-full.meta.json"
+    },
+    {
+      "id": "cmd04c-extract-example-query-match",
+      "argv": ["extract", "https://example.com", "-q", "documentation examples domain", "--max-tokens", "300", "--pretty"],
+      "exit_code": 0,
+      "wall_seconds": 5.584,
+      "result_status": "ok",
+      "cli_ms": 1537,
+      "tokens": 127,
+      "passages": 1,
+      "diagnostic_only": true,
+      "stdout": "raw/cmd04c-extract-example-query-match.stdout.txt",
+      "stderr": "raw/cmd04c-extract-example-query-match.stderr.txt",
+      "meta": "raw/cmd04c-extract-example-query-match.meta.json"
+    },
+    {
+      "id": "cmd05-extract-python314",
+      "argv": ["extract", "https://docs.python.org/3/whatsnew/3.14.html", "-q", "What are the major new features in Python 3.14?", "--max-tokens", "500", "--pretty"],
+      "exit_code": 0,
+      "wall_seconds": 6.358,
+      "result_status": "ok",
+      "cli_ms": 2854,
+      "tokens": 488,
+      "passages": 2,
+      "cut": true,
+      "stdout": "raw/cmd05-extract-python314.stdout.txt",
+      "stderr": "raw/cmd05-extract-python314.stderr.txt",
+      "meta": "raw/cmd05-extract-python314.meta.json"
+    },
+    {
+      "id": "cmd06-map-example",
+      "argv": ["crawl", "https://example.com", "--mode", "map", "--max-pages", "5", "--max-depth", "1", "--pretty"],
+      "exit_code": 0,
+      "wall_seconds": 3.332,
+      "result_status": "ok",
+      "cli_ms": 871,
+      "tokens": 47,
+      "urls_returned": 1,
+      "duplicates": [],
+      "stdout": "raw/cmd06-map-example.stdout.txt",
+      "stderr": "raw/cmd06-map-example.stderr.txt",
+      "meta": "raw/cmd06-map-example.meta.json"
+    },
+    {
+      "id": "cmd06b-map-python-docs",
+      "argv": ["crawl", "https://docs.python.org/3/library/asyncio.html", "--mode", "map", "--max-pages", "5", "--max-depth", "1", "--pretty"],
+      "exit_code": 0,
+      "wall_seconds": 2.8,
+      "result_status": "ok",
+      "cli_ms": 774,
+      "tokens": 148,
+      "urls_returned": 5,
+      "duplicates": [],
+      "diagnostic_only": true,
+      "stdout": "raw/cmd06b-map-python-docs.stdout.txt",
+      "stderr": "raw/cmd06b-map-python-docs.stderr.txt",
+      "meta": "raw/cmd06b-map-python-docs.meta.json"
+    },
+    {
+      "id": "cmd07-crawl-asyncio",
+      "argv": ["crawl", "https://docs.python.org/3/library/asyncio.html", "--mode", "crawl", "--max-pages", "3", "--max-depth", "1", "-q", "How does asyncio work?", "--max-tokens", "600", "--pretty"],
+      "exit_code": 0,
+      "wall_seconds": 7.455,
+      "result_status": "ok",
+      "cli_ms": 4188,
+      "tokens": 562,
+      "pages": 2,
+      "page_failures": 0,
+      "stdout": "raw/cmd07-crawl-asyncio.stdout.txt",
+      "stderr": "raw/cmd07-crawl-asyncio.stderr.txt",
+      "meta": "raw/cmd07-crawl-asyncio.meta.json"
+    },
+    {
+      "id": "cmd08-research-example",
+      "argv": ["research", "What is the purpose of example.com?", "--max-tokens", "500", "--pretty"],
+      "exit_code": 0,
+      "wall_seconds": 10.483,
+      "result_status": "partial",
+      "cli_ms": 7817,
+      "tokens": 492,
+      "findings": 4,
+      "distinct_sources": 3,
+      "gaps": ["no_source_for:purpose"],
+      "stdout": "raw/cmd08-research-example.stdout.txt",
+      "stderr": "raw/cmd08-research-example.stderr.txt",
+      "meta": "raw/cmd08-research-example.meta.json"
+    },
+    {
+      "id": "cmd09-research-python314",
+      "argv": ["research", "What are the major new features in Python 3.14?", "--max-tokens", "500", "--pretty"],
+      "exit_code": 0,
+      "wall_seconds": 12.677,
+      "result_status": "partial",
+      "cli_ms": 10188,
+      "tokens": 411,
+      "findings": 2,
+      "distinct_sources": 1,
+      "gaps": ["no_source_for:3.14"],
+      "stdout": "raw/cmd09-research-python314.stdout.txt",
+      "stderr": "raw/cmd09-research-python314.stderr.txt",
+      "meta": "raw/cmd09-research-python314.meta.json"
+    }
+  ],
+  "ground_truth_probes": [
+    {
+      "target": "https://example.com",
+      "http_status": 200,
+      "bytes": 577,
+      "wall_seconds": 0.23,
+      "artifact": "raw/groundtruth-example-com.html",
+      "findings": {
+        "title_Example_Domain": true,
+        "has_illustrative_examples_sentence": false,
+        "has_documentation_examples_sentence": true,
+        "has_iana_org": false,
+        "any_links_present": false
+      }
+    },
+    {
+      "targets": [
+        "https://en.wikipedia.org/wiki/Example.com",
+        "https://en.wikipedia.org/wiki/.xxx",
+        "https://handwiki.org/wiki/Example.com"
+      ],
+      "artifact": "raw/groundtruth-research-sources.json",
+      "all_reachable": true,
+      "http_statuses": [200, 200, 200]
+    },
+    {
+      "targets": [
+        "https://docs.python.org/3/whatsnew/3.14.html",
+        "https://docs.python.org/3/library/asyncio.html"
+      ],
+      "http_status": 200,
+      "note": "both reachable before CLI use"
+    }
+  ],
+  "analysis_artifact": "raw/analysis-checks.json",
+  "results_document": "RESULTS.md",
+  "errors_document": "errors.md",
+  "capability_verdicts": {
+    "install_and_version": "PASS",
+    "doctor": "PASS",
+    "doctor_live": "PARTIAL",
+    "search": "PARTIAL",
+    "extract_example_com_as_requested": "FAIL",
+    "extract_example_com_with_full_or_matching_query": "PASS",
+    "extract_python314": "PASS",
+    "map_example_com": "PASS",
+    "map_python_docs_extra": "PASS",
+    "crawl_asyncio": "PASS",
+    "research_example_com": "PARTIAL",
+    "research_python314": "FAIL"
+  },
+  "totals": {
+    "commands_executed": 14,
+    "non_zero_exits": 0,
+    "sum_wall_seconds_all_cli_commands": 78.314,
+    "network_requests_issued_by_auditor": 8,
+    "stress_or_load_tests": 0,
+    "crawl_limits_respected": true,
+    "paid_api_spend_usd": 0
+  }
+}

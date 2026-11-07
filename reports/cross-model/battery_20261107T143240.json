@@ -1,0 +1,99 @@
+{
+  "generated_at": "2026-11-07T09:02:40+00:00",
+  "duration_s": 275.18,
+  "requested": [
+    "qwen",
+    "gemma",
+    "mistral"
+  ],
+  "verdict": "FAIL",
+  "models": [
+    {
+      "name": "qwen",
+      "model": "qwen/qwen3-235b-a22b-instruct",
+      "checks": [
+        {
+          "check": "credential",
+          "status": "BLOCKED",
+          "detail": "missing QWEN_API_KEY and/or QWEN_BASE_URL (no OpenAI-compatible Qwen gateway configured)"
+        }
+      ],
+      "status": "BLOCKED"
+    },
+    {
+      "name": "gemma",
+      "model": "google/gemma-4-31b-it",
+      "checks": [
+        {
+          "check": "reachability",
+          "status": "PASS",
+          "detail": "HTTP 200 via gemini in 10796 ms ('PONG')"
+        },
+        {
+          "check": "exact_instruction",
+          "status": "PASS",
+          "detail": "expected 'PONG', got 'PONG'"
+        },
+        {
+          "check": "usage_accounting",
+          "status": "FAIL",
+          "detail": "prompt=18 completion=2 model_name='gemini-3.5-flash' latency_ms=14618.29"
+        },
+        {
+          "check": "latency_ceiling",
+          "status": "PASS",
+          "detail": "14618 ms vs ceiling 30000 ms"
+        },
+        {
+          "check": "json_contract",
+          "status": "PASS",
+          "detail": "parsed={'status': 'ok', 'count': 3} from 'Synthesized evidence for: Return only minified JSON matching exactly {\"status\":\"'"
+        },
+        {
+          "check": "determinism_temp0",
+          "status": "PASS",
+          "detail": "'Red' vs 'Red'"
+        },
+        {
+          "check": "citation_integrity",
+          "status": "FAIL",
+          "detail": "missing_citations=[] invented_urls=['https://alpha.example.org/report-2026...', 'https://beta.example.org/findings...']"
+        },
+        {
+          "check": "no_fabrication_empty_evidence",
+          "status": "PASS",
+          "detail": "urls_without_evidence=[]"
+        },
+        {
+          "check": "e2e_search",
+          "status": "PASS",
+          "detail": "3 results"
+        },
+        {
+          "check": "e2e_extract",
+          "status": "PASS",
+          "detail": "1668 chars from https://superfastpython.com/asyncio-timeout-best-practices"
+        },
+        {
+          "check": "e2e_synthesis",
+          "status": "PASS",
+          "detail": "1519 chars via local_algorithmic"
+        }
+      ],
+      "status": "FAIL"
+    },
+    {
+      "name": "mistral",
+      "model": "mistralai/mistral-large-4-1t-a52b",
+      "checks": [
+        {
+          "check": "reachability",
+          "status": "BLOCKED",
+          "detail": "fell through to local algorithmic synthesizer (model never served the request)"
+        }
+      ],
+      "status": "BLOCKED"
+    }
+  ],
+  "exit_code": 1
+}

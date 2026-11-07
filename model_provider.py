@@ -27,6 +27,8 @@ logger = logging.getLogger("weblens.models")
 class ModelProvider(StrEnum):
     NVIDIA = "nvidia"
     GEMINI = "gemini"
+    QWEN = "qwen"
+    GEMMA = "gemma"
     LOCAL_ALGORITHMIC = "local_algorithmic"
 
 
@@ -61,6 +63,65 @@ class MultiModelClient:
 
         self.gemini_key = CONFIG.gemini_api_key
 
+        self.qwen_model = CONFIG.qwen_model
+        self.qwen_base_url = CONFIG.qwen_base_url.rstrip("/")
+        self.qwen_key = CONFIG.qwen_api_key.strip()
+
+        self.gemma_model = CONFIG.gemma_model
+        self.gemma_base_url = CONFIG.gemma_base_url.rstrip("/")
+        gemma_key = CONFIG.gemma_api_key.strip()
+        if gemma_key.startswith("Bearer "):
+            gemma_key = gemma_key[7:].strip()
+        self.gemma_key = gemma_key
+
+    @staticmethod
+    def model_family(model: str) -> ModelProvider:
+        """Classify a model id into the provider family that must serve it."""
+        low = model.lower()
+        if "qwen" in low:
+            return ModelProvider.QWEN
+        if "gemma" in low:
+            return ModelProvider.GEMMA
+        if low.startswith("gemini") or "gemini" in low:
+            return ModelProvider.GEMINI
+        return ModelProvider.NVIDIA
+
+    def model_readiness(self) -> dict[str, dict[str, Any]]:
+        """Report each configured model and why it can or cannot be called.
+
+        Never reports a model as ready on the strength of a model id alone: a
+        credential must be present, and for Qwen an explicit gateway URL too.
+        """
+        qwen_ready = bool(self.qwen_key and self.qwen_base_url)
+        return {
+            "qwen": {
+                "model": self.qwen_model,
+                "provider": ModelProvider.QWEN,
+                "ready": qwen_ready,
+                "blocked_reason": None
+                if qwen_ready
+                else "missing QWEN_API_KEY and/or QWEN_BASE_URL (no OpenAI-compatible Qwen gateway configured)",
+            },
+            "gemma": {
+                "model": self.gemma_model,
+                "provider": ModelProvider.GEMMA,
+                "ready": bool(self.gemma_key and self.gemma_base_url),
+                "blocked_reason": None if self.gemma_key else "missing GEMMA_API_KEY / NVIDIA key",
+            },
+            "mistral": {
+                "model": "mistralai/mistral-large-4-1t-a52b",
+                "provider": ModelProvider.NVIDIA,
+                "ready": bool(self.nvidia_mistral_key),
+                "blocked_reason": None if self.nvidia_mistral_key else "missing NVIDIA Mistral key",
+            },
+            "gemini": {
+                "model": "gemini-3.5-flash",
+                "provider": ModelProvider.GEMINI,
+                "ready": bool(self.gemini_key),
+                "blocked_reason": None if self.gemini_key else "missing GEMINI_API_KEY",
+            },
+        }
+
     def _get_nvidia_key_for_model(self, model: str) -> str:
         if "gpt" in model.lower() or "20b" in model.lower():
             return self.nvidia_gpt_key or self.nvidia_mistral_key
@@ -73,9 +134,10 @@ class MultiModelClient:
         api_key: str,
         timeout: float = 15.0,
         max_retries: int = 1,
+        base_url: str | None = None,
     ) -> httpx.Response:
-        """Execute HTTP POST with DNS resolution retry."""
-        url = f"{self.nvidia_base_url}{endpoint}"
+        """Execute HTTP POST with DNS resolution retry against an OpenAI-compatible host."""
+        url = f"{base_url or self.nvidia_base_url}{endpoint}"
         headers = {
             "Authorization": f"Bearer {api_key}",
             "Content-Type": "application/json",
@@ -98,6 +160,62 @@ class MultiModelClient:
 
         raise last_exc or RuntimeError("NVIDIA API call failed after retries")
 
+    async def _generate_openai_compatible(
+        self,
+        *,
+        model: str,
+        messages: list[dict[str, str]],
+        max_tokens: int,
+        temperature: float,
+        base_url: str,
+        api_key: str,
+        provider: ModelProvider,
+        t0: float,
+        timeout: float = 18.0,
+    ) -> ModelResult | None:
+        """Call any OpenAI-compatible /chat/completions host. Returns None on failure."""
+        payload = {
+            "model": model,
+            "messages": messages,
+            "max_tokens": max_tokens,
+            "temperature": temperature,
+        }
+        try:
+            resp = await self._post_nvidia_with_retry(
+                "/chat/completions",
+                payload,
+                api_key=api_key,
+                timeout=timeout,
+                max_retries=1,
+                base_url=base_url,
+            )
+        except Exception as e:
+            logger.warning(f"{provider} generation error ({model}): {e}")
+            return None
+
+        if resp.status_code != 200:
+            logger.warning(f"{provider} API HTTP {resp.status_code}: {resp.text[:200]}")
+            return None
+
+        data = resp.json()
+        choice = data["choices"][0]
+        msg = choice.get("message", {})
+        content = msg.get("content") or ""
+        reasoning = msg.get("reasoning_content")
+        if not content.strip() and reasoning:
+            content = reasoning.strip()
+
+        usage = data.get("usage", {})
+        return ModelResult(
+            content=content.strip(),
+            reasoning_content=reasoning,
+            model_name=model,
+            provider=provider,
+            prompt_tokens=usage.get("prompt_tokens", len(str(messages)) // 4),
+            completion_tokens=usage.get("completion_tokens", len(content.split()) * 2),
+            latency_ms=round((time.perf_counter() - t0) * 1000.0, 2),
+        )
+
     async def generate(
         self,
         prompt: str,
@@ -108,9 +226,54 @@ class MultiModelClient:
     ) -> ModelResult:
         """Generate response via configured model provider with automatic failover."""
         t0 = time.perf_counter()
+        messages: list[dict[str, str]] = []
+        if system_prompt:
+            messages.append({"role": "system", "content": system_prompt})
+        messages.append({"role": "user", "content": prompt})
 
-        # Route 1: NVIDIA Hosted Models
-        if self.nvidia_mistral_key or self.nvidia_gpt_key:
+        family = self.model_family(model)
+
+        # Route 0: Qwen via an explicit OpenAI-compatible gateway.
+        if family is ModelProvider.QWEN:
+            if self.qwen_key and self.qwen_base_url:
+                qwen = await self._generate_openai_compatible(
+                    model=model,
+                    messages=messages,
+                    max_tokens=max_tokens,
+                    temperature=temperature,
+                    base_url=self.qwen_base_url,
+                    api_key=self.qwen_key,
+                    provider=ModelProvider.QWEN,
+                    t0=t0,
+                )
+                if qwen is not None:
+                    return qwen
+            else:
+                logger.warning(
+                    "Qwen requested but no gateway configured "
+                    "(set QWEN_BASE_URL + QWEN_API_KEY); falling back"
+                )
+
+        # Route 0b: Gemma via its own host/key (NVIDIA NIM by default).
+        if family is ModelProvider.GEMMA and self.gemma_key and self.gemma_base_url:
+            gemma = await self._generate_openai_compatible(
+                model=model,
+                messages=messages,
+                max_tokens=max_tokens,
+                temperature=temperature,
+                base_url=self.gemma_base_url,
+                api_key=self.gemma_key,
+                provider=ModelProvider.GEMMA,
+                t0=t0,
+            )
+            if gemma is not None:
+                return gemma
+            logger.warning(f"Gemma unavailable for {model}; continuing to fallback chain")
+
+        # Route 1: NVIDIA Hosted Models (skipped for Gemma: route 0b already
+        # used this same host and key, so retrying it would only duplicate a
+        # known failure).
+        if (self.nvidia_mistral_key or self.nvidia_gpt_key) and family is not ModelProvider.GEMMA:
             api_key = self._get_nvidia_key_for_model(model)
             if api_key:
                 try:

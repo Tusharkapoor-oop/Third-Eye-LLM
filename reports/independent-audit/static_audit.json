@@ -1,0 +1,139 @@
+{
+  "run_id": "independent-static-audit-20261105",
+  "commit": "044cf4a17a06ef1641051623885dd73bc0db0bbc",
+  "dirty_entries": 30,
+  "v14_use_case_report": {
+    "path": "reports/v14/tavily_demo_use_cases_report.json",
+    "rows": [
+      {
+        "id": "UC-01",
+        "weblens_score": 70.0,
+        "weblens_tokens": 648,
+        "weblens_sources_count": 0,
+        "tavily_score": 55.0,
+        "tavily_tokens": 194
+      },
+      {
+        "id": "UC-02",
+        "weblens_score": 55.0,
+        "weblens_tokens": 168,
+        "weblens_sources_count": 0,
+        "tavily_score": 45.0,
+        "tavily_tokens": 246
+      },
+      {
+        "id": "UC-03",
+        "weblens_score": 65.0,
+        "weblens_tokens": 188,
+        "weblens_sources_count": 0,
+        "tavily_score": 75.0,
+        "tavily_tokens": 220
+      },
+      {
+        "id": "UC-04",
+        "weblens_score": 65.0,
+        "weblens_tokens": 164,
+        "weblens_sources_count": 0,
+        "tavily_score": 65.0,
+        "tavily_tokens": 248
+      },
+      {
+        "id": "UC-05",
+        "weblens_score": 55.0,
+        "weblens_tokens": 184,
+        "weblens_sources_count": 0,
+        "tavily_score": 65.0,
+        "tavily_tokens": 194
+      },
+      {
+        "id": "UC-06",
+        "weblens_score": 65.0,
+        "weblens_tokens": 176,
+        "weblens_sources_count": 0,
+        "tavily_score": 75.0,
+        "tavily_tokens": 220
+      },
+      {
+        "id": "UC-07",
+        "weblens_score": 55.0,
+        "weblens_tokens": 180,
+        "weblens_sources_count": 0,
+        "tavily_score": 65.0,
+        "tavily_tokens": 188
+      },
+      {
+        "id": "UC-08",
+        "weblens_score": 65.0,
+        "weblens_tokens": 184,
+        "weblens_sources_count": 0,
+        "tavily_score": 59.0,
+        "tavily_tokens": 120
+      }
+    ],
+    "weblens_cases_with_zero_sources": 8,
+    "note": "The v14 report's WebLens scores are not evidence-grounded where sources_count is 0. Agent 22 used this stale report."
+  },
+  "v10_corrected_use_case_report": {
+    "path": "reports/tavily-use-cases-v10/results.json",
+    "local_mean_coverage": 0.263,
+    "tavily_mean_coverage": 0.844,
+    "local_cases_with_evidence_urls": 4,
+    "tavily_cases_with_evidence_urls": 8
+  },
+  "flashrank": {
+    "canonical_weblens_matches": [],
+    "legacy_engine_matches": [
+      "src\\engine\\reranker.py:212:\"\"\"Load the cross-encoder once per process instead of once per request.\"\"\"",
+      "src\\engine\\reranker.py:215:from flashrank import Ranker",
+      "src\\engine\\reranker.py:226:\"\"\"Rank lexical candidates, optionally apply FlashRank, and return reading order.\"\"\"",
+      "src\\engine\\reranker.py:243:from flashrank import RerankRequest"
+    ],
+    "conclusion": "Canonical weblens has no FlashRank/cross-encoder; legacy src/engine/reranker.py does. Agent 04/05/20 claims about canonical FlashRank reranking are false."
+  },
+  "mirror": {
+    "src_weblens_passages_sha256": "3e1857a560902fee547064b523557f01300d6934efc53bc242b8cc7dbe9c8753",
+    "weblens_src_passages_sha256": "3e1857a560902fee547064b523557f01300d6934efc53bc242b8cc7dbe9c8753",
+    "equal": true,
+    "note": "Agent 01 reported divergence at audit time; current files are identical and both define spread_chunks."
+  },
+  "test_imports": {
+    "tests/test_05_extraction_quality.py": [
+      "from __future__ import annotations",
+      "import httpx",
+      "import pytest",
+      "import respx",
+      "from bs4 import BeautifulSoup",
+      "from extractor import (",
+      "from schemas import SourceItem"
+    ],
+    "tests/test_extract.py": [
+      "import pytest",
+      "from src.engine.extract.chunker import DocumentChunker",
+      "from src.engine.extract.extractor import DocumentExtractor",
+      "from src.engine.extract.passage_scorer import BM25PassageScorer"
+    ],
+    "tests/test_06_performance_stress.py": [
+      "from __future__ import annotations",
+      "import asyncio",
+      "import json",
+      "import time",
+      "import httpx",
+      "import psutil",
+      "import pytest",
+      "import respx",
+      "from mcp import Client",
+      "from cache import SQLiteCache",
+      "from server import extractor, mcp, search_pipeline"
+    ],
+    "tests/test_load_stress.py": [
+      "from __future__ import annotations",
+      "import asyncio",
+      "import time",
+      "import psutil",
+      "import pytest",
+      "from src.engine.extract.extractor import DocumentExtractor",
+      "from src.engine.search.aggregator import SearchAggregator"
+    ]
+  },
+  "hanging_test": "tests/test_04_fuzz_and_chaos.py"
+}

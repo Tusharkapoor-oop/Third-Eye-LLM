@@ -1,0 +1,16 @@
+{
+  "observed_at": "2026-11-05T21:34:02+0530",
+  "processes": [
+    {
+      "ProcessId": 19884,
+      "CreationDate": "/Date(1793894451310)/",
+      "CommandLine": "\"C:\\Users\\ACER\\Downloads\\Broswer for ai agnets\\.venv\\Scripts\\python.exe\" \"C:\\Users\\ACER\\Downloads\\Broswer for ai agnets\\.venv\\Scripts\\pytest.exe\" -q tests\\test_04_fuzz_and_chaos.py"
+    },
+    {
+      "ProcessId": 20408,
+      "CreationDate": "/Date(1793894451343)/",
+      "CommandLine": "\"C:\\Users\\ACER\\AppData\\Roaming\\uv\\python\\cpython-3.14-windows-x86_64-none\\python.exe\"  \"C:\\Users\\ACER\\Downloads\\Broswer for ai agnets\\.venv\\Scripts\\pytest.exe\" -q tests\\test_04_fuzz_and_chaos.py"
+    }
+  ],
+  "note": "Fuzz/chaos test still running; elapsed exceeds addopts --timeout=60. No clean timeout result captured."
+}

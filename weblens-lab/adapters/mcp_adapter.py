@@ -16,6 +16,7 @@ from contextlib import AsyncExitStack
 from pathlib import Path
 from typing import Any, Literal
 
+from evaluations.provenance import redact_error
 from mcp.client import Client
 from mcp.client.stdio import StdioServerParameters
 
@@ -29,8 +30,6 @@ from .common_interface.base import (
     SearchItem,
     SearchResponse,
 )
-from evaluations.provenance import redact_error
-
 
 SystemName = Literal["local_weblens", "deployed_weblens"]
 
@@ -205,28 +204,51 @@ class MCPWebLensAdapter(ResearchProvider):
 
     async def answer(self, query: str, **options: Any) -> AnswerResponse:
         data, elapsed, ok, error = await self._call("deep_research", {"query": query, "max_tokens": options.get("max_tokens", 1500)})
-        findings = data.get("key_findings", [])
-        summary = data.get("executive_summary", "")
-        citations = [{"url": item.get("url"), "title": item.get("claim")} for item in findings]
-        tokens = int(data.get("methodology", {}).get("tokens_returned", 0) or 0)
+        findings = data.get("f") or data.get("key_findings", [])
+        summary = data.get("summary") or data.get("executive_summary", "")
+        citations = [
+            {
+                "url": item.get("u") or item.get("url"),
+                "title": item.get("c") or item.get("claim"),
+                "span": item.get("s") or item.get("span"),
+            }
+            for item in findings
+        ]
+        tokens = int(data.get("tok", 0) or data.get("methodology", {}).get("tokens_returned", 0) or 0)
         return AnswerResponse(self.name, query, summary, citations, 0.9 if citations else None, elapsed, tokens, status="ok" if ok and summary else "uncertain", error=error)
 
     async def research(self, query: str, **options: Any) -> ResearchResponse:
         data, elapsed, ok, error = await self._call("deep_research", {"query": query, "max_tokens": options.get("max_tokens", 2500)})
-        findings = data.get("key_findings", [])
+        findings = data.get("f") or data.get("key_findings", [])
         methodology = data.get("methodology", {})
-        tokens = int(methodology.get("tokens_returned", 0) or 0)
-        report = "# Research Report: " + query + "\n\n" + str(data.get("executive_summary", ""))
+        gaps = data.get("gaps") or []
+        tokens = int(data.get("tok", 0) or methodology.get("tokens_returned", 0) or 0)
+        report = "# Research Report: " + query + "\n\n" + str(
+            data.get("summary") or data.get("executive_summary", "")
+        )
+        report += "\n\n" + "\n".join(
+            f"- {item.get('c') or item.get('claim')} ({item.get('u') or item.get('url')})"
+            for item in findings
+        )
+        if gaps:
+            report += "\n\n### Gaps\n" + "\n".join(f"- {gap}" for gap in gaps)
         return ResearchResponse(
             provider=self.name,
             query=query,
             report_markdown=report,
-            subqueries=methodology.get("subqueries_searched", []),
-            sources=[{"url": item.get("url"), "claim": item.get("claim")} for item in findings],
-            contradictions=data.get("contradictions", []),
+            subqueries=data.get("searched") or methodology.get("subqueries_searched", []),
+            sources=[
+                {
+                    "url": item.get("u") or item.get("url"),
+                    "claim": item.get("c") or item.get("claim"),
+                    "span": item.get("s") or item.get("span"),
+                }
+                for item in findings
+            ],
+            contradictions=data.get("contradictions") or [],
             latency_ms=elapsed,
             tokens_returned=tokens,
-            status="ok" if ok else "error",
+            status="ok" if ok and findings else "error",
             error=error,
         )
 

@@ -104,7 +104,18 @@ class SafeFetcher:
             max_keepalive_connections=settings.max_concurrency,
             keepalive_expiry=60.0,
         )
-        self._client = httpx.AsyncClient(
+        self._client = self._new_client(settings, limits, http2=True)
+        # Some origins (notably Yahoo Search) reset HTTP/2 streams immediately.
+        # Keep a second connection pool that speaks HTTP/1.1 and fall back to it
+        # only after a protocol-level failure, so a broken h2 endpoint does not
+        # turn into a provider-wide outage.
+        self._client_h1 = self._new_client(settings, limits, http2=False)
+        self._global = asyncio.Semaphore(settings.max_concurrency)
+        self._per_host: dict[str, asyncio.Semaphore] = {}
+        self._host_lock = asyncio.Lock()
+
+    def _new_client(self, settings: Settings, limits: httpx.Limits, *, http2: bool) -> httpx.AsyncClient:
+        client = httpx.AsyncClient(
             follow_redirects=False,
             timeout=httpx.Timeout(
                 connect=settings.connect_timeout_s,
@@ -113,7 +124,7 @@ class SafeFetcher:
                 pool=settings.connect_timeout_s,
             ),
             limits=limits,
-            http2=True,
+            http2=http2,
             trust_env=False,
             headers={
                 "User-Agent": settings.user_agent,
@@ -123,10 +134,8 @@ class SafeFetcher:
         )
         # Swap in the policy-enforcing backend. httpcore's pool keeps TLS SNI
         # tied to the request origin, so connecting to the validated IP is safe.
-        self._client._transport._pool._network_backend = SafeNetworkBackend(self.policy)  # type: ignore[attr-defined]
-        self._global = asyncio.Semaphore(settings.max_concurrency)
-        self._per_host: dict[str, asyncio.Semaphore] = {}
-        self._host_lock = asyncio.Lock()
+        client._transport._pool._network_backend = SafeNetworkBackend(self.policy)  # type: ignore[attr-defined]
+        return client
 
     async def _host_sem(self, host: str) -> asyncio.Semaphore:
         async with self._host_lock:
@@ -137,7 +146,7 @@ class SafeFetcher:
             return sem
 
     async def close(self) -> None:
-        await self._client.aclose()
+        await asyncio.gather(self._client.aclose(), self._client_h1.aclose())
 
     async def fetch(
         self,
@@ -278,48 +287,59 @@ class SafeFetcher:
     ) -> FetchResponse:
         host = host_of(url)
         assert host
+        clients = (self._client, self._client_h1)
+        last_error: Exception | None = None
         for attempt in range(2):
-            async with self._global, await self._host_sem(host):
+            for client in clients:
                 try:
-                    async with self._client.stream(method, url, headers=headers, content=body) as r:
-                        cl = r.headers.get("content-length")
-                        if cl and cl.isdigit() and int(cl) > limit:
-                            raise FetchError(
-                                f"response too large ({cl} bytes)", code=ErrCode.TOO_LARGE
+                    async with self._global, await self._host_sem(host):
+                        async with client.stream(method, url, headers=headers, content=body) as r:
+                            cl = r.headers.get("content-length")
+                            if cl and cl.isdigit() and int(cl) > limit:
+                                raise FetchError(
+                                    f"response too large ({cl} bytes)", code=ErrCode.TOO_LARGE
+                                )
+                            chunks: list[bytes] = []
+                            total = 0
+                            truncated = False
+                            async for chunk in r.aiter_bytes(65_536):
+                                total += len(chunk)
+                                if total > limit:
+                                    cut = len(chunk) - (total - limit)
+                                    if cut > 0:
+                                        chunks.append(chunk[:cut])
+                                    truncated = True
+                                    break
+                                chunks.append(chunk)
+                            body = b"".join(chunks)
+                            hdrs = {k.lower(): v for k, v in r.headers.items()}
+                            return FetchResponse(
+                                url=url,
+                                final_url=url,
+                                status=r.status_code,
+                                headers=hdrs,
+                                body=body,
+                                fetched_at=utc_now_iso(),
+                                truncated=truncated,
+                                sha256=hashlib.sha256(body).hexdigest(),
                             )
-                        chunks: list[bytes] = []
-                        total = 0
-                        truncated = False
-                        async for chunk in r.aiter_bytes(65_536):
-                            total += len(chunk)
-                            if total > limit:
-                                cut = len(chunk) - (total - limit)
-                                if cut > 0:
-                                    chunks.append(chunk[:cut])
-                                truncated = True
-                                break
-                            chunks.append(chunk)
-                        body = b"".join(chunks)
-                        hdrs = {k.lower(): v for k, v in r.headers.items()}
-                        return FetchResponse(
-                            url=url,
-                            final_url=url,
-                            status=r.status_code,
-                            headers=hdrs,
-                            body=body,
-                            fetched_at=utc_now_iso(),
-                            truncated=truncated,
-                            sha256=hashlib.sha256(body).hexdigest(),
-                        )
+                except (httpx.ProtocolError, httpx.ReadError) as e:
+                    # Try the HTTP/1.1 pool before retrying the same protocol.
+                    last_error = e
+                    continue
                 except httpx.TimeoutException as e:
+                    last_error = e
                     if attempt == 0:
                         continue
-                    raise FetchError(f"timeout fetching {host}", code=ErrCode.TIMEOUT) from e
                 except httpx.HTTPError as e:
+                    last_error = e
                     if attempt == 0:
                         continue
-                    raise FetchError(f"network error fetching {host}: {e}", code=ErrCode.HTTP) from e
-        raise FetchError(f"failed to fetch {host}", code=ErrCode.HTTP)
+        if isinstance(last_error, httpx.TimeoutException):
+            raise FetchError(f"timeout fetching {host}", code=ErrCode.TIMEOUT) from last_error
+        if isinstance(last_error, httpx.ProtocolError):
+            raise FetchError(f"protocol error fetching {host}: {last_error}", code=ErrCode.HTTP) from last_error
+        raise FetchError(f"failed to fetch {host}", code=ErrCode.HTTP) from last_error
 
     async def fetch_text(self, url: str, **kw: Any) -> tuple[str, FetchResponse]:
         r = await self.fetch(url, **kw)

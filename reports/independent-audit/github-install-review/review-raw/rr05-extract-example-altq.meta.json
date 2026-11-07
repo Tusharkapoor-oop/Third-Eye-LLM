@@ -1,0 +1,23 @@
+﻿{
+    "id":  "rr05-extract-example-altq",
+    "exe":  "C:\\Users\\ACER\\AppData\\Local\\Temp\\opencode\\weblens-gh-run-20261105\\clone\\.venv\\Scripts\\weblens.exe",
+    "args":  [
+                 "extract",
+                 "https://example.com",
+                 "-q",
+                 "documentation examples domain",
+                 "--max-tokens",
+                 "300",
+                 "--pretty"
+             ],
+    "command_line":  "\"C:\\Users\\ACER\\AppData\\Local\\Temp\\opencode\\weblens-gh-run-20261105\\clone\\.venv\\Scripts\\weblens.exe\" extract https://example.com -q \"documentation examples domain\" --max-tokens 300 --pretty",
+    "exit_code":  0,
+    "wall_seconds":  5.762,
+    "started_at":  "2026-11-05T23:20:05.8552834+05:30",
+    "cache_dir":  "C:\\Users\\ACER\\Downloads\\Broswer for ai agnets\\reports\\independent-audit\\github-install-review\\review-cache\\rr05-extract-example-altq",
+    "cache_preexisting_entries":  0,
+    "stdout_file":  "C:\\Users\\ACER\\Downloads\\Broswer for ai agnets\\reports\\independent-audit\\github-install-review\\review-raw\\rr05-extract-example-altq.stdout.txt",
+    "stderr_file":  "C:\\Users\\ACER\\Downloads\\Broswer for ai agnets\\reports\\independent-audit\\github-install-review\\review-raw\\rr05-extract-example-altq.stderr.txt",
+    "stdout_bytes":  555,
+    "stderr_bytes":  0
+}

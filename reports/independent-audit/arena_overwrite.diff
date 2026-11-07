@@ -1,0 +1,252 @@
+﻿diff --git a/arena_report.json b/arena_report.json
+index 26fa80f..0f0ab0b 100644
+--- a/arena_report.json
++++ b/arena_report.json
+@@ -1,5 +1,5 @@
+ {
+-  "generated_at": "2026-11-04T17:32:02Z",
++  "generated_at": "2026-11-05T15:55:43Z",
+   "engines": {
+     "A": "local engine via src.engine",
+     "B": "tavily live",
+@@ -12,15 +12,15 @@
+       "engines": {
+         "A": {
+           "status": "ok",
+-          "score": 87,
+-          "latency_s": 24.734,
+-          "tokens": 899,
++          "score": 90,
++          "latency_s": 6.389,
++          "tokens": 680,
+           "trials": 3,
+           "breakdown": {
+             "answer_completeness": 20,
+             "code_and_table_fidelity": 20,
+             "signal_to_noise": 20,
+-            "source_authority": 12,
++            "source_authority": 15,
+             "token_efficiency": 15
+           },
+           "root_causes": [
+@@ -28,20 +28,11 @@
+           ]
+         },
+         "B": {
+-          "status": "ok",
+-          "score": 74,
+-          "latency_s": 0.821,
+-          "tokens": 4366,
+-          "breakdown": {
+-            "answer_completeness": 30,
+-            "code_and_table_fidelity": 20,
+-            "signal_to_noise": 14,
+-            "source_authority": 8,
+-            "token_efficiency": 2
+-          },
+-          "root_causes": [
+-            "SEO_NOISE_PRESENT"
+-          ]
++          "status": "BLOCKED",
++          "note": "BUDGET_CAP is not positive; Tavily was not called",
++          "score": null,
++          "latency_s": 0.0,
++          "tokens": 0
+         },
+         "C": {
+           "status": "BLOCKED",
+@@ -58,36 +49,28 @@
+       "engines": {
+         "A": {
+           "status": "ok",
+-          "score": 94,
+-          "latency_s": 2.374,
+-          "tokens": 701,
++          "score": 82,
++          "latency_s": 2.247,
++          "tokens": 232,
+           "trials": 3,
+           "breakdown": {
+-            "answer_completeness": 30,
++            "answer_completeness": 12,
+             "code_and_table_fidelity": 20,
+             "signal_to_noise": 20,
+-            "source_authority": 9,
++            "source_authority": 15,
+             "token_efficiency": 15
+           },
+-          "root_causes": []
+-        },
+-        "B": {
+-          "status": "ok",
+-          "score": 73,
+-          "latency_s": 0.657,
+-          "tokens": 3023,
+-          "breakdown": {
+-            "answer_completeness": 30,
+-            "code_and_table_fidelity": 20,
+-            "signal_to_noise": 17,
+-            "source_authority": 4,
+-            "token_efficiency": 2
+-          },
+           "root_causes": [
+-            "SEO_NOISE_PRESENT",
+-            "LOW_AUTHORITY_DOMAIN"
++            "QUERY_RECALLEED_PARTIAL"
+           ]
+         },
++        "B": {
++          "status": "BLOCKED",
++          "note": "BUDGET_CAP is not positive; Tavily was not called",
++          "score": null,
++          "latency_s": 0.0,
++          "tokens": 0
++        },
+         "C": {
+           "status": "BLOCKED",
+           "note": "Gemini refused all candidate models - gemini-flash-latest: ClientError: 429 RESOURCE_EXHAUSTED. {'error': {'code': 429, 'message': 'You exceeded your current quota, please check your; no fabricated scores",
+@@ -103,34 +86,30 @@
+       "engines": {
+         "A": {
+           "status": "ok",
+-          "score": 84,
+-          "latency_s": 11.155,
+-          "tokens": 520,
++          "score": 36,
++          "latency_s": 3.104,
++          "tokens": 0,
+           "trials": 3,
+           "breakdown": {
+-            "answer_completeness": 15,
++            "answer_completeness": 0,
+             "code_and_table_fidelity": 20,
+-            "signal_to_noise": 20,
+-            "source_authority": 14,
+-            "token_efficiency": 15
++            "signal_to_noise": 16,
++            "source_authority": 0,
++            "token_efficiency": 0
+           },
+           "root_causes": [
+-            "QUERY_RECALLEED_PARTIAL"
++            "QUERY_TOO_NARROW",
++            "SEO_NOISE_PRESENT",
++            "LOW_AUTHORITY_DOMAIN",
++            "EMPTY_OUTPUT"
+           ]
+         },
+         "B": {
+-          "status": "ok",
+-          "score": 80,
+-          "latency_s": 1.175,
+-          "tokens": 4841,
+-          "breakdown": {
+-            "answer_completeness": 30,
+-            "code_and_table_fidelity": 20,
+-            "signal_to_noise": 20,
+-            "source_authority": 8,
+-            "token_efficiency": 2
+-          },
+-          "root_causes": []
++          "status": "BLOCKED",
++          "note": "BUDGET_CAP is not positive; Tavily was not called",
++          "score": null,
++          "latency_s": 0.0,
++          "tokens": 0
+         },
+         "C": {
+           "status": "BLOCKED",
+@@ -148,7 +127,7 @@
+         "A": {
+           "status": "ok",
+           "score": 100,
+-          "latency_s": 2.33,
++          "latency_s": 4.577,
+           "tokens": 392,
+           "trials": 3,
+           "breakdown": {
+@@ -161,20 +140,11 @@
+           "root_causes": []
+         },
+         "B": {
+-          "status": "ok",
+-          "score": 80,
+-          "latency_s": 1.871,
+-          "tokens": 5673,
+-          "breakdown": {
+-            "answer_completeness": 30,
+-            "code_and_table_fidelity": 20,
+-            "signal_to_noise": 16,
+-            "source_authority": 12,
+-            "token_efficiency": 2
+-          },
+-          "root_causes": [
+-            "CHUNKER_LOST_CONTEXT"
+-          ]
++          "status": "BLOCKED",
++          "note": "BUDGET_CAP is not positive; Tavily was not called",
++          "score": null,
++          "latency_s": 0.0,
++          "tokens": 0
+         },
+         "C": {
+           "status": "BLOCKED",
+@@ -192,8 +162,8 @@
+         "A": {
+           "status": "ok",
+           "score": 100,
+-          "latency_s": 29.795,
+-          "tokens": 687,
++          "latency_s": 14.624,
++          "tokens": 665,
+           "trials": 3,
+           "breakdown": {
+             "answer_completeness": 30,
+@@ -205,20 +175,11 @@
+           "root_causes": []
+         },
+         "B": {
+-          "status": "ok",
+-          "score": 78,
+-          "latency_s": 2.519,
+-          "tokens": 3896,
+-          "breakdown": {
+-            "answer_completeness": 30,
+-            "code_and_table_fidelity": 20,
+-            "signal_to_noise": 20,
+-            "source_authority": 6,
+-            "token_efficiency": 2
+-          },
+-          "root_causes": [
+-            "LOW_AUTHORITY_DOMAIN"
+-          ]
++          "status": "BLOCKED",
++          "note": "BUDGET_CAP is not positive; Tavily was not called",
++          "score": null,
++          "latency_s": 0.0,
++          "tokens": 0
+         },
+         "C": {
+           "status": "BLOCKED",
+@@ -232,14 +193,12 @@
+     }
+   },
+   "summary": {
+-    "avg_A": 93.0,
+-    "avg_B": 77.0,
++    "avg_A": 81.6,
++    "avg_B": null,
+     "avg_C": null,
+-    "latency_A_s": 70.388,
+-    "latency_B_s": 7.043,
+-    "info_density_A_per_1k_tokens": 145.358,
+-    "info_density_B_per_1k_tokens": 17.661,
+-    "meets_avg_target": true,
+-    "beats_tavily_density": true
++    "latency_A_s": 30.941,
++    "latency_B_s": 0.0,
++    "meets_avg_target": false,
++    "beats_tavily_density": null
+   }
+ }
+\ No newline at end of file

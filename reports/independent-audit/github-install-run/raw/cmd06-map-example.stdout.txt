@@ -1,0 +1,16 @@
+{
+  "status": "ok",
+  "u": "https://example.com/",
+  "n": 1,
+  "urls": [
+    {
+      "u": "https://example.com/",
+      "t": "Example Domain"
+    }
+  ],
+  "ms": 871,
+  "tok": 47,
+  "warn": [
+    "no_links_found"
+  ]
+}

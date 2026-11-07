@@ -1,0 +1,21 @@
+﻿{
+    "id":  "rr02-search-python314",
+    "exe":  "C:\\Users\\ACER\\AppData\\Local\\Temp\\opencode\\weblens-gh-run-20261105\\clone\\.venv\\Scripts\\weblens.exe",
+    "args":  [
+                 "search",
+                 "Python 3.14 release notes",
+                 "-k",
+                 "5",
+                 "--pretty"
+             ],
+    "command_line":  "\"C:\\Users\\ACER\\AppData\\Local\\Temp\\opencode\\weblens-gh-run-20261105\\clone\\.venv\\Scripts\\weblens.exe\" search \"Python 3.14 release notes\" -k 5 --pretty",
+    "exit_code":  0,
+    "wall_seconds":  7.883,
+    "started_at":  "2026-11-05T23:19:49.4079480+05:30",
+    "cache_dir":  "C:\\Users\\ACER\\Downloads\\Broswer for ai agnets\\reports\\independent-audit\\github-install-review\\review-cache\\rr02-search-python314",
+    "cache_preexisting_entries":  0,
+    "stdout_file":  "C:\\Users\\ACER\\Downloads\\Broswer for ai agnets\\reports\\independent-audit\\github-install-review\\review-raw\\rr02-search-python314.stdout.txt",
+    "stderr_file":  "C:\\Users\\ACER\\Downloads\\Broswer for ai agnets\\reports\\independent-audit\\github-install-review\\review-raw\\rr02-search-python314.stderr.txt",
+    "stdout_bytes":  1875,
+    "stderr_bytes":  0
+}

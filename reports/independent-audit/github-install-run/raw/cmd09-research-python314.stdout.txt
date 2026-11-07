@@ -1,0 +1,41 @@
+{
+  "status": "partial",
+  "q": "major new features in Python 3.14",
+  "n": 2,
+  "f": [
+    {
+      "c": "\\[edit\\]\nPython's development is conducted mostly through the *Python Enhancement Proposal* (PEP) process; this process is the primary mechanism for proposing major new features, collecting community input on issues, and documenting Python design decisions.<sup>\\[184\\]</sup> Python coding style is covered in PEP 8.<sup>\\[89\\]</sup> Outstanding PEPs are reviewed and commented on by the Python community and the steering council.<sup>\\[184\\]</sup>\n\nEnhancement of the language corresponds with development of the CPython reference implementation.",
+      "u": "https://en.wikipedia.org/wiki/Python_%28programming_language%29",
+      "at": "2026-11-05T17:43:18Z",
+      "s": [
+        42810,
+        43357
+      ],
+      "h": "Code examples",
+      "d": "2001-10-29"
+    },
+    {
+      "c": "Starting with Python 3.9, these releases are expected to occur annually.<sup>\\[190\\]</sup><sup>\\[191\\]</sup> Each major version is supported by bug fixes for several years after its release.<sup>\\[192\\]</sup>\n- *Bug fix releases*,<sup>\\[193\\]</sup> which introduce no new features, occur approximately every three months; these releases are made when a sufficient number of bugs have been fixed upstream since the last release.",
+      "u": "https://en.wikipedia.org/wiki/Python_%28programming_language%29",
+      "at": "2026-11-05T17:43:18Z",
+      "s": [
+        44408,
+        44835
+      ],
+      "h": "Code examples",
+      "d": "2001-10-29"
+    }
+  ],
+  "gaps": [
+    "no_source_for:3.14"
+  ],
+  "searched": [
+    "major new features in Python 3.14"
+  ],
+  "tok": 411,
+  "cut": true,
+  "warn": [
+    "fetch_failed:FetchError"
+  ],
+  "ms": 10188
+}

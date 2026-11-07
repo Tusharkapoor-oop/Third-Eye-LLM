@@ -1,0 +1,90 @@
+{
+  "run_id": "independent-canonical-search-probe-20261105",
+  "timestamp": "2026-11-05T21:23:30+0530",
+  "commit": "044cf4a17a06ef1641051623885dd73bc0db0bbc",
+  "dirty_entries": 29,
+  "python": "3.14.0 (main, Nov 19 2025, 22:43:52) [MSC v.1944 64 bit (AMD64)]",
+  "platform": "Windows-11-10.0.26300-SP0",
+  "package": "weblens (canonical, PYTHONPATH=weblens/src)",
+  "settings": {
+    "providers": "ddg,mwmbl,wikipedia",
+    "mode": "fuse",
+    "cache": "disabled"
+  },
+  "queries": [
+    {
+      "q": "fastapi dependency injection async",
+      "ms": 1818.1,
+      "status": "partial",
+      "n": 2,
+      "prov": [
+        "mwmbl",
+        "wikipedia"
+      ],
+      "fail": {
+        "ddg": "ProviderError"
+      },
+      "tok": 160
+    },
+    {
+      "q": "python uv package manager",
+      "ms": 480.3,
+      "status": "partial",
+      "n": 4,
+      "prov": [
+        "mwmbl",
+        "wikipedia"
+      ],
+      "fail": {
+        "ddg": "ProviderError"
+      },
+      "tok": 276
+    },
+    {
+      "q": "sqlite wal mode concurrency",
+      "ms": 1125.0,
+      "status": "partial",
+      "n": 5,
+      "prov": [
+        "mwmbl",
+        "wikipedia"
+      ],
+      "fail": {
+        "ddg": "ProviderError"
+      },
+      "tok": 391
+    },
+    {
+      "q": "httpx connection pool limits",
+      "ms": 1489.0,
+      "status": "partial",
+      "n": 2,
+      "prov": [
+        "mwmbl",
+        "wikipedia"
+      ],
+      "fail": {
+        "ddg": "ProviderError"
+      },
+      "tok": 184
+    },
+    {
+      "q": "trafilatura content extraction benchmark",
+      "ms": 1504.8,
+      "status": "no_reliable_result",
+      "n": 0,
+      "prov": [
+        "mwmbl",
+        "wikipedia"
+      ],
+      "fail": {
+        "ddg": "ProviderError"
+      },
+      "tok": 55
+    }
+  ],
+  "p50_ms": 1489.0,
+  "min_ms": 480.3,
+  "max_ms": 1818.1,
+  "note": "Independent probe. Agent 03 reported p50 3,870 ms from legacy src.engine.search.aggregator; this probe uses the canonical weblens package."
+}

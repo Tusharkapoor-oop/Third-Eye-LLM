@@ -39,7 +39,8 @@ class AppConfig:
         or os.getenv("GEMINI_API_KEY_2", "")
     )
     nvidia_gpt_oss_20b_key: str = (
-        os.getenv("gpt-oss-20b_api_key _by_nividia", "")
+        os.getenv("gpt-oss-20b_api_key_by_nividia", "")
+        or os.getenv("gpt-oss-20b_api_key _by_nividia", "")
         or os.getenv("gpt-oss-20b_api_key_by_nvidia", "")
         or os.getenv("NVIDIA_GPT_OSS_20B_KEY", "")
     )
@@ -49,6 +50,24 @@ class AppConfig:
         or os.getenv("NVIDIA_MISTRAL_LARGE_KEY", "")
     )
     nvidia_base_url: str = os.getenv("NVIDIA_BASE_URL", "https://integrate.api.nvidia.com/v1")
+
+    # Qwen: served by any OpenAI-compatible gateway (OpenRouter, DashScope, Groq,
+    # Together, LiteLLM, self-hosted vLLM). No default host: without an explicit
+    # QWEN_BASE_URL the provider reports itself unavailable instead of guessing.
+    qwen_model: str = os.getenv("QWEN_MODEL", "qwen/qwen3-235b-a22b-instruct")
+    qwen_base_url: str = os.getenv("QWEN_BASE_URL", "")
+    qwen_api_key: str = os.getenv("QWEN_API_KEY", "") or os.getenv("DASHSCOPE_API_KEY", "")
+
+    # Gemma: served from the NVIDIA NIM catalogue by default.
+    gemma_model: str = os.getenv("GEMMA_MODEL", "google/gemma-4-31b-it")
+    gemma_base_url: str = os.getenv("GEMMA_BASE_URL", "") or os.getenv(
+        "NVIDIA_BASE_URL", "https://integrate.api.nvidia.com/v1"
+    )
+    gemma_api_key: str = (
+        os.getenv("GEMMA_API_KEY", "")
+        or os.getenv("Mistral_Large_4_api_key_by_nividia", "")
+        or os.getenv("NVIDIA_MISTRAL_LARGE_KEY", "")
+    )
     searxng_url: str = (
         os.getenv("SEARXNG_URL", "")
         or os.getenv("SEARXNG_BASE_URL", "")

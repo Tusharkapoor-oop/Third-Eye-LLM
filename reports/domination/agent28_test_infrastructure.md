@@ -75,3 +75,4 @@ No flaky tests were detected across repeated executions during this evaluation s
 ## 7. CI Pipeline
 - **File:** `.github/workflows/ci.yml` -- present and configured for automated test execution on push/PR.
 - **Limitation:** CI was not executed live during this evaluation (GitHub Actions execution is outside local scope). The workflow configuration references the correct pytest commands and Python version.
+

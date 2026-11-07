@@ -1,0 +1,24 @@
+{
+  "canonical_core_tools": [
+    "web_search",
+    "extract_url",
+    "crawl_site",
+    "deep_research"
+  ],
+  "canonical_full_extra_tools": [
+    "company_research",
+    "market_research",
+    "market_portfolio",
+    "meeting_prep",
+    "sheets_enrich",
+    "crawl2rag_index",
+    "crawl2rag_query",
+    "research_chat",
+    "tutorial_101"
+  ],
+  "legacy_test_expected_tools": [
+    "\"web_search\", \"extract_url\", \"web_map\", \"crawl_website\", \"deep_research\""
+  ],
+  "canonical_source": "weblens/src/weblens/mcp_server.py",
+  "note": "The regex also matched the server name \"weblens\"; it was removed. Core tools are web_search, extract_url, crawl_site, deep_research (4). The legacy test expects web_search, extract_url, web_map, crawl_website, deep_research (5)."
+}

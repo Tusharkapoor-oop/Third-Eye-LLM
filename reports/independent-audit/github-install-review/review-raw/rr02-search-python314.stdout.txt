@@ -1,0 +1,47 @@
+{
+  "status": "partial",
+  "q": "Python 3.14 release notes",
+  "n": 5,
+  "res": [
+    {
+      "t": "What’s New In Python 3.14 — Python 3.14.0a0 documentation",
+      "u": "https://docs.python.org/3.14/whatsnew/3.14.html",
+      "s": "Prerelease users should be aware that this document is currently in draft form. It will be updated substantially as Python 3.14 moves towards release, so…"
+    },
+    {
+      "t": "History of Python",
+      "u": "https://en.wikipedia.org/wiki/History_of_Python",
+      "s": "transparent and community-backed process. Python 3 .0, a major, backwards-incompatible release , was released on December 3 , 2008 after a long period of testing",
+      "d": "2026-10-11"
+    },
+    {
+      "t": "Python Release Python 3.14.0b3 | Python.org",
+      "u": "https://www.python.org/downloads/release/python-3140b3/",
+      "s": "Python 3.14.0b3 Python 3.14 is still in development. This release, 3.14.0b3, is the third of four planned beta releases. Beta release previews are intend…"
+    },
+    {
+      "t": "CPython",
+      "u": "https://en.wikipedia.org/wiki/CPython",
+      "s": "\"PEP 719 – Python 3 .13 Release Schedule | peps. python .org\". peps. python .org. Retrieved 2023-09-17. \" Python Release Python 3 .13.0\". Python .org. Retrieved",
+      "d": "2026-09-15"
+    },
+    {
+      "t": "Python 3.14 Alpha 1 Released With Early Changes - Phoronix",
+      "u": "http://www.phoronix.com/news/Python-3.14-Alpha-1",
+      "s": "Python 3.14 Alpha 1 Released With Early Changes It was just last week that Python 3.13 saw its official release with many great features from a new inter…"
+    }
+  ],
+  "ms": 3508,
+  "tok": 454,
+  "prov": [
+    "mwmbl",
+    "wikipedia"
+  ],
+  "fail": {
+    "ddg": "TimeoutError"
+  },
+  "warn": [
+    "duplicate_text_removed",
+    "off_topic_filtered:5"
+  ]
+}

@@ -9,6 +9,7 @@ from weblens.research.engine import (
     decompose,
     detect_conflicts,
     evidence_guard,
+    official_source_urls,
     sentence_candidates,
 )
 from weblens.search.base import Hit
@@ -71,6 +72,25 @@ def test_decompose_deduplicates_and_bounds_queries():
     assert any("example" in q for q in qs)
 
 
+def test_official_source_urls_targets_versioned_python_docs():
+    urls = official_source_urls("major new features in Python 3.14")
+    assert urls[0] == "https://docs.python.org/3/whatsnew/3.14.html"
+    assert official_source_urls("colors and music") == []
+
+
+def test_official_source_urls_cover_common_primary_facts():
+    assert (
+        "https://www.nasa.gov/mission/apollo-11/"
+        in official_source_urls(
+            "What was the name of the NASA mission that first landed humans on the Moon in July 1969?"
+        )
+    )
+    assert (
+        "https://platform.openai.com/docs/models/gpt-4"
+        in official_source_urls("Which company developed the GPT-4 model released in March 2023?")
+    )
+
+
 def test_sentence_candidates_strip_headings_and_keep_exact_spans():
     text = (
         "## Timeouts\n\n"
@@ -115,9 +135,24 @@ def test_detect_conflicts_ignores_same_value_same_domain_and_irrelevant_query():
 
 async def test_research_no_hits_is_explicit(settings):
     eng = _engine(settings, [], {})
-    out = await eng.research("asyncio timeout", max_tokens=600)
+    out = await eng.research("colors and music", max_tokens=600)
     assert out.status == "no_reliable_result"
     assert "no_search_results" in out.gaps
+
+
+async def test_research_uses_official_source_when_search_is_empty(settings):
+    query = "major new features in Python 3.14"
+    url = official_source_urls(query)[0]
+    text = (
+        "## Python 3.14\n\n"
+        "Python 3.14 major new features include deferred annotations "
+        "and a new template string syntax."
+    )
+    eng = _engine(settings, [], {url: _doc(url, text)})
+    out = await eng.research(query, max_tokens=800)
+    assert out.findings
+    assert all(f.url == url for f in out.findings)
+    assert "official_source_injected" in out.warnings
 
 
 async def test_research_finds_verbatim_evidence(settings):
@@ -135,6 +170,43 @@ async def test_research_finds_verbatim_evidence(settings):
         assert text[f.span[0] : f.span[1]] == f.claim
         assert f.url == url
         assert f.fetched_at
+
+
+async def test_research_injects_version_specific_official_source(settings):
+    wiki = "https://en.wikipedia.org/wiki/History_of_Python"
+    docs = "https://docs.python.org/3/whatsnew/3.14.html"
+    sublime = "https://www.sublimetext.com/blog/"
+    wiki_text = "Python is a programming language with a long history and many releases."
+    docs_text = (
+        "Python 3.14 adds template string interpolation and deferred annotation evaluation. "
+        "The release also includes improvements to the interpreter and standard library."
+    )
+    sublime_text = "Sublime Text now ships with Python 3.14 and an updated editor engine."
+    eng = _engine(
+        settings,
+        [_hit(wiki), _hit(sublime)],
+        {
+            wiki: _doc(wiki, wiki_text),
+            docs: _doc(docs, docs_text),
+            sublime: _doc(sublime, sublime_text),
+        },
+    )
+    out = await eng.research("major new features in Python 3.14", max_tokens=900)
+    assert docs in eng.extractor.calls
+    assert any(f.url == docs for f in out.findings)
+    assert any("3.14" in f.claim for f in out.findings)
+    assert all(f.url == docs or "3.14" in f.claim for f in out.findings)
+    assert all(f.url != sublime for f in out.findings)
+    assert "version_source_filtered" in out.warnings
+    assert not any("major" in gap for gap in out.gaps)
+
+
+async def test_research_gap_accounting_uses_section_heading(settings):
+    url = "https://example.com/purpose"
+    text = "## Purpose\n\nThis page explains why the example domain exists for documentation."
+    eng = _engine(settings, [_hit(url)], {url: _doc(url, text)})
+    out = await eng.research("purpose of example.com", max_tokens=800)
+    assert not any("purpose" in gap for gap in out.gaps)
 
 
 async def test_research_flags_possibly_outdated(settings):

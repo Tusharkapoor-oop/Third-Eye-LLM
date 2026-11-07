@@ -1,0 +1,37 @@
+{
+  "report": "MASTER-VERIFICATION-REPORT-2026-11-05.md",
+  "revision_date": "2026-11-06",
+  "git_commit": "4e0885d",
+  "git_branch": "main",
+  "working_tree": "dirty",
+  "environment": {"os": "Windows 11", "python": "3.13.15", "pytest": "9.1.1", "pytest_timeout": 60},
+  "verdict": "PASS_WITH_LIMITATIONS",
+  "gates": {
+    "full_test_suite": {"status": "PASS", "passed": 350, "failed": 0, "errors": 0, "exit_code": 0, "duration_s": 577.85, "artifact": "reports/full_suite_final.log"},
+    "security_redteam": {"status": "PASS", "vectors": 59, "passed": 59, "vulnerabilities": 0, "artifact": "reports/redteam_after_sslfix.log"},
+    "bandit": {"status": "PASS", "high": 0, "medium": 0, "low": 18, "baseline_equal": true},
+    "concurrency_latency": {"status": "PASS", "before_s": 5.827, "after_s": 0.132, "improvement_x": 44.1, "artifacts": ["reports/perf_ssl_context_before.txt", "reports/perf_ssl_context_after.txt"]},
+    "quality_arena": {"status": "FAIL", "latest": 87.0, "target": 90.0, "runs": [90.8, 81.6, 87.0], "artifact": "reports/arena_local_2026-11-06.log"},
+    "tavily_head_to_head_this_cycle": {"status": "BLOCKED", "reason": "BUDGET_CAP=0, 14.0/50.0 credits remaining"},
+    "rag_retrieval": {"status": "UNSUPPORTED", "ref": "GAP-LEDGER F8"},
+    "deep_research_coverage": {"status": "UNSUPPORTED", "ref": "GAP-LEDGER F9"},
+    "citation_integrity_battery": {"status": "UNSUPPORTED", "ref": "GAP-LEDGER F10"},
+    "mcp_protocol": {"status": "PASS", "conformance": "8/8", "tools_local": 13, "tools_public": 10}
+  },
+  "remediation": {"fixes_applied": 8, "fixes_verified": 8, "fixes_regressed": 0},
+  "test_deltas": {
+    "test_04_fuzz_and_chaos": {"before": "EXIT=1 281.31s hang", "after": "PASS 81.98s exit 0"},
+    "test_06_performance_stress": {"before": "EXIT=1 14.31s gate breach", "after": "PASS 3 tests 10.61s exit 0"},
+    "test_apps": {"before": "EXIT=2 collection error", "after": "12 passed"},
+    "test_adversarial_grounding": {"before": "EXIT=2 collection error", "after": "PASS"},
+    "full_suite_wall_clock": {"before_s": 777.10, "after_s": 577.85, "delta_pct": -25.6}
+  },
+  "open_gaps": ["GAP-001", "GAP-002", "GAP-003", "GAP-004", "GAP-005", "GAP-006", "GAP-007", "SEC-V9-001", "F1", "F2", "F4", "F11", "F17", "F8", "F9", "F10", "F13"],
+  "disclosures": [
+    "30 workstreams ran sequentially, not as parallel subagents",
+    "Tavily parity figures are prior-cycle (stage7 campaign), not re-measured",
+    "Arena figures are rubric-judged at n=5 and do not generalise",
+    "Live Tavily key remains in git history until rotated"
+  ],
+  "verdict_rationale": "All locally executable gates pass with clean exits; the two unmet gates (arena quality at n=5, fresh Tavily comparison) and the committed-key finding are disclosed rather than waived."
+}

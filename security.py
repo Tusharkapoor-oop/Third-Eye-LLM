@@ -9,12 +9,32 @@ from __future__ import annotations
 import ipaddress
 import re
 import socket
+import ssl
+import threading
 from pathlib import Path
 from urllib.parse import urlsplit
 
+import certifi
 import httpx
 
 from config import CONFIG
+
+# Building an SSLContext from the CA bundle costs ~0.4s and blocks the event loop,
+# so a single verified context is built once and shared by every outbound fetch.
+_SSL_CONTEXT: ssl.SSLContext | None = None
+_SSL_CONTEXT_LOCK = threading.Lock()
+
+
+def shared_ssl_context() -> ssl.SSLContext:
+    """Return the process-wide CA-verifying client SSL context."""
+    global _SSL_CONTEXT
+    if _SSL_CONTEXT is None:
+        with _SSL_CONTEXT_LOCK:
+            if _SSL_CONTEXT is None:
+                context = ssl.create_default_context(cafile=certifi.where())
+                context.set_alpn_protocols(["http/1.1"])
+                _SSL_CONTEXT = context
+    return _SSL_CONTEXT
 
 # Private and Cloud Metadata IP Networks
 BLOCKED_NETWORKS = (
@@ -194,7 +214,7 @@ async def safe_fetch_url(
 
     async with httpx.AsyncClient(
         follow_redirects=False,
-        verify=True,
+        verify=shared_ssl_context(),
         timeout=httpx.Timeout(timeout, connect=CONFIG.connect_timeout_s),
     ) as client:
         for _ in range(max_redirects):

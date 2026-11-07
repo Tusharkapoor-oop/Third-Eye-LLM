@@ -1,0 +1,64 @@
+{
+  "status": "partial",
+  "q": "purpose of example.com",
+  "n": 4,
+  "f": [
+    {
+      "c": "This option enables website operators to establish a web address like `example.xxx` instead of `example.com`.",
+      "u": "https://en.wikipedia.org/wiki/.xxx",
+      "at": "2026-11-05T17:50:13Z",
+      "s": [
+        1052,
+        1161
+      ],
+      "h": ".xxx",
+      "d": "2004-04-03"
+    },
+    {
+      "c": "| example.com | |\n|---|---|\n| Website type | Reserved domain |\n|---|---|\n| Available in | English |\n| Owner | Internet Assigned Numbers Authority <sup>\\[1\\]</sup> |\n| Website | www.example.com |\n| IPv6 support | No |\n| Launched | 1 January 1999 |\n| Current status | Online |\n\nThe domain names **example.com**, **example.net**, **example.org**, and **example.edu** are second-level domain names in the Domain Name System of the Internet.",
+      "u": "https://en.wikipedia.org/wiki/Example.com",
+      "at": "2026-11-05T17:50:15Z",
+      "s": [
+        15,
+        451
+      ],
+      "h": "example.com",
+      "d": "2004-11-20"
+    },
+    {
+      "c": "\\[edit\\]\nThe domains *example.com*, *example.net*, *example.org* and *example.edu* are intended for general use in any kind of documentation, such as technical and software documentation, manuals, and sample software configurations.",
+      "u": "https://en.wikipedia.org/wiki/Example.com",
+      "at": "2026-11-05T17:50:15Z",
+      "s": [
+        981,
+        1213
+      ],
+      "h": "Purpose",
+      "d": "2004-11-20"
+    },
+    {
+      "c": "The domain names **example.com**, **example.net**, **example.org**, and **example.edu** are second-level domain names in the Domain Name System of the Internet.",
+      "u": "https://handwiki.org/wiki/Example.com",
+      "at": "2026-11-05T17:50:16Z",
+      "s": [
+        15,
+        175
+      ],
+      "h": "Example.com",
+      "d": "2026-10-09"
+    }
+  ],
+  "gaps": [
+    "no_source_for:purpose"
+  ],
+  "searched": [
+    "purpose of example.com",
+    "purpose of example.com example"
+  ],
+  "tok": 492,
+  "cut": true,
+  "warn": [
+    "fetch_failed:FetchError"
+  ],
+  "ms": 7409
+}

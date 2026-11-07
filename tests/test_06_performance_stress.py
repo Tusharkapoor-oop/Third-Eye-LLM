@@ -20,7 +20,7 @@ import respx
 from mcp import Client
 
 from cache import SQLiteCache
-from server import extractor, mcp, search_pipeline
+from server import extractor, mcp, search_pipeline, shutdown_services
 
 
 @pytest.mark.asyncio
@@ -120,6 +120,7 @@ async def test_resource_leak_and_ram_bounds():
         pass
     await search_pipeline.close()
     await extractor.close()
+    await shutdown_services()
 
     # Check for orphaned browser processes spawned by this process
     children = current_proc.children(recursive=True)

@@ -71,3 +71,4 @@ benchmarks/benchmark_results.json
 .webintel/
 .arena_budget_state.json
 .crawl4ai_profile/
+.aider*

@@ -6,9 +6,11 @@ returns a compact JSON-ready dict with a stable ``status`` field.
 
 from __future__ import annotations
 
+import asyncio
 import importlib.util
 import logging
 import platform
+import re
 import sys
 import time
 from typing import Any
@@ -77,6 +79,67 @@ class WebLens:
                 "retry": False,
             }
 
+    async def _enrich_search_snippets(
+        self,
+        hits: list,
+        *,
+        query: str,
+        budget: int,
+    ) -> None:
+        """Replace short provider blurbs with a relevant passage from the page.
+
+        Search is usually the first tool an agent calls. Provider snippets are
+        often too short to answer the question, forcing a second extract call
+        for every result. Enriching only the first few results keeps latency
+        bounded while making the returned evidence materially more useful.
+        Failure is always non-fatal: the original provider snippet remains.
+        """
+        top = int(getattr(self.s, "search_enrich_top", 0) or 0)
+        extractor = getattr(self, "extractor", None)
+        if not hits or top <= 0 or extractor is None or budget < 220:
+            return
+        timeout = float(getattr(self.s, "search_enrich_timeout_s", 2.5))
+        terms = {t for t in re.findall(r"[a-z0-9]{3,}", query.lower())}
+
+        async def one(hit) -> None:
+            try:
+                extracted = await asyncio.wait_for(
+                    extractor.extract(
+                        hit.url,
+                        query=query,
+                        max_tokens=500,
+                        allow_browser=False,
+                    ),
+                    timeout=timeout,
+                )
+            except Exception:
+                return
+            passages = getattr(extracted, "passages", None) or []
+            if not passages or getattr(extracted, "status", "") in {
+                "error",
+                "no_reliable_result",
+            }:
+                return
+
+            def coverage(passage) -> int:
+                text = (getattr(passage, "text", "") or "").lower()
+                return sum(1 for term in terms if term in text)
+
+            best = max(passages, key=coverage)
+            text = " ".join((getattr(best, "text", "") or "").split())
+            if len(text) < 40:
+                return
+            old = " ".join((hit.snippet or "").split())
+            generic = not old or len(old) < 80 or hit.provider.startswith("official")
+            if coverage(best) == 0 and not generic:
+                return
+            hit.snippet = text[:1200]
+            title = " ".join((getattr(extracted, "title", "") or "").split())
+            if title and hit.provider.startswith("official"):
+                hit.title = title[:220]
+
+        await asyncio.gather(*(one(hit) for hit in hits[:top]), return_exceptions=True)
+
     # -- search ----------------------------------------------------------
     async def search(
         self,
@@ -107,6 +170,11 @@ class WebLens:
                 freshness=freshness,
                 domains=[d.strip() for d in (domains or []) if d.strip()][:10],
                 exclude_domains=[d.strip() for d in (exclude_domains or []) if d.strip()][:10],
+            )
+            await self._enrich_search_snippets(
+                out.hits,
+                query=out.used_query,
+                budget=budget,
             )
             payload: dict[str, Any] = {
                 "status": out.status,
