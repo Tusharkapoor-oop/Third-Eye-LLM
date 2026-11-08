@@ -2,7 +2,14 @@ from __future__ import annotations
 
 import argparse
 
-from weblens.cli import _BearerAuth, _RateLimit, _SecurityHeaders, _serve_http
+from weblens.cli import (
+    _ApiKeyAuth,
+    _BearerAuth,
+    _RateLimit,
+    _SecurityHeaders,
+    _serve_http,
+)
+from weblens.tenancy import ApiKeyRegistry, current_tenant
 
 
 class DummyApp:
@@ -15,7 +22,27 @@ class DummyApp:
         await send({"type": "http.response.body", "body": b"ok"})
 
 
-async def _invoke(app, headers, scope_type="http", path="", client=("127.0.0.1", 1234)):
+class TenantApp:
+    def __init__(self):
+        self.scope_tenant = None
+        self.context_tenant = None
+
+    async def __call__(self, scope, receive, send):
+        state = scope.get("state") or {}
+        self.scope_tenant = state.get("tenant_id")
+        self.context_tenant = current_tenant.get()
+        await send({"type": "http.response.start", "status": 200, "headers": []})
+        await send({"type": "http.response.body", "body": b"ok"})
+
+
+async def _invoke(
+    app,
+    headers,
+    scope_type="http",
+    path="",
+    client=("127.0.0.1", 1234),
+    state=None,
+):
     messages = []
 
     async def receive():
@@ -24,7 +51,13 @@ async def _invoke(app, headers, scope_type="http", path="", client=("127.0.0.1",
     async def send(message):
         messages.append(message)
 
-    scope = {"type": scope_type, "headers": headers, "path": path, "client": client}
+    scope = {
+        "type": scope_type,
+        "headers": headers,
+        "path": path,
+        "client": client,
+        "state": state or {},
+    }
     await app(scope, receive, send)
     return messages
 
@@ -62,6 +95,81 @@ async def test_bearer_middleware_allows_public_health_checks():
     messages = await _invoke(app, [], path="/healthz")
     assert messages[0]["status"] == 200
     assert inner.calls == 1
+
+
+async def test_api_key_auth_binds_tenant_and_resets_context():
+    registry = ApiKeyRegistry({"acme": "12345678", "beta": "abcdefgh"})
+    inner = TenantApp()
+    app = _ApiKeyAuth(inner, registry)
+
+    messages = await _invoke(app, [(b"authorization", b"Bearer abcdefgh")])
+    assert messages[0]["status"] == 200
+    assert inner.scope_tenant == "beta"
+    assert inner.context_tenant == "beta"
+    assert current_tenant.get() == "default"
+
+    messages = await _invoke(app, [(b"x-api-key", b"12345678")])
+    assert messages[0]["status"] == 200
+    assert inner.scope_tenant == "acme"
+
+
+async def test_api_key_auth_rejects_unknown_keys_and_keeps_health_public():
+    inner = DummyApp()
+    app = _ApiKeyAuth(inner, ApiKeyRegistry({"acme": "12345678"}))
+    messages = await _invoke(app, [(b"authorization", b"Bearer nope")])
+    assert messages[0]["status"] == 401
+    assert inner.calls == 0
+    messages = await _invoke(app, [], path="/healthz")
+    assert messages[0]["status"] == 200
+    assert inner.calls == 1
+
+
+async def test_api_key_auth_rate_limits_repeated_failures():
+    app = _ApiKeyAuth(
+        DummyApp(),
+        ApiKeyRegistry({"acme": "12345678"}),
+        failure_limit=1,
+    )
+    first = await _invoke(app, [(b"authorization", b"Bearer wrong")])
+    second = await _invoke(app, [(b"authorization", b"Bearer wrong")])
+    assert first[0]["status"] == 401
+    assert second[0]["status"] == 429
+    headers = dict(second[0]["headers"])
+    assert int(headers[b"retry-after"]) >= 1
+    assert headers[b"x-ratelimit-limit"] == b"1"
+
+
+async def test_rate_limit_is_per_tenant_and_emits_headers():
+    app = _RateLimit(
+        DummyApp(),
+        limit=10,
+        window_s=60,
+        tenant_limits={"acme": 1, "beta": 2},
+    )
+    acme = await _invoke(app, [], state={"tenant_id": "acme"})
+    assert acme[0]["status"] == 200
+    assert dict(acme[0]["headers"])[b"x-ratelimit-limit"] == b"1"
+    assert (await _invoke(app, [], state={"tenant_id": "acme"}))[0]["status"] == 429
+
+    assert (await _invoke(app, [], state={"tenant_id": "beta"}))[0]["status"] == 200
+    assert (await _invoke(app, [], state={"tenant_id": "beta"}))[0]["status"] == 200
+    assert (await _invoke(app, [], state={"tenant_id": "beta"}))[0]["status"] == 429
+
+
+async def test_rate_limit_ignores_ip_when_tenant_is_authenticated():
+    app = _RateLimit(DummyApp(), limit=1, window_s=60)
+    first = await _invoke(
+        app,
+        [(b"x-forwarded-for", b"203.0.113.7")],
+        state={"tenant_id": "acme"},
+    )
+    second = await _invoke(
+        app,
+        [(b"x-forwarded-for", b"198.51.100.9")],
+        state={"tenant_id": "acme"},
+    )
+    assert first[0]["status"] == 200
+    assert second[0]["status"] == 429
 
 
 async def test_security_headers_are_added_to_responses():

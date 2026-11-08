@@ -10,10 +10,11 @@ from __future__ import annotations
 import asyncio
 import re
 import time
-from dataclasses import dataclass, field
+from dataclasses import asdict, dataclass, field
 from datetime import date, timedelta
 from urllib.parse import urlsplit
 
+from ..cache import cache_key
 from ..config import Settings
 from ..errors import ErrCode, ProviderError, WebLensError
 from ..lexical import query_terms, tokenize
@@ -663,6 +664,38 @@ class SearchRouter:
         if skipped:
             outcome.warnings.append("provider_cooldown:" + ",".join(skipped))
         mode = mode or self.s.search_mode
+        cache = getattr(self.fetcher, "cache", None)
+        cache_key_value: str | None = None
+        if cache is not None and self.s.cache_enabled and self.s.search_cache_ttl_s > 0:
+            cache_key_value = cache_key(
+                "search",
+                used.lower(),
+                str(k),
+                freshness or "",
+                ",".join(domains or []),
+                ",".join(exclude_domains or []),
+                mode,
+                ",".join(self.provider_names),
+            )
+            cached = await cache.get_json(cache_key_value)
+            if cached is not None:
+                payload, _meta, _created = cached
+                try:
+                    cached_hits = [Hit(**h) for h in payload.get("hits", [])]
+                except (AttributeError, TypeError, KeyError):
+                    cached_hits = []
+                if cached_hits:
+                    outcome.hits = cached_hits
+                    raw_providers = payload.get("providers", [])
+                    outcome.providers = (
+                        [str(p) for p in raw_providers]
+                        if isinstance(raw_providers, list)
+                        else []
+                    )
+                    outcome.status = "ok"
+                    outcome.warnings.append("search_cache_hit")
+                    outcome.elapsed_ms = int((time.perf_counter() - started) * 1000)
+                    return outcome
         stats = {"off_topic": 0, "domain": 0, "version": 0}
         version = _VERSION.search(used)
         terms, _ = query_terms(used)
@@ -942,6 +975,21 @@ class SearchRouter:
                     )
                 else:
                     outcome.status = "partial"
+        if (
+            cache_key_value is not None
+            and merged
+            and outcome.status == "ok"
+            and not outcome.failures
+        ):
+            await cache.set_json(
+                cache_key_value,
+                {
+                    "hits": [asdict(h) for h in merged],
+                    "providers": list(outcome.providers),
+                },
+                {"kind": "search"},
+                self.s.search_cache_ttl_s,
+            )
         outcome.elapsed_ms = int((time.perf_counter() - started) * 1000)
         return outcome
 

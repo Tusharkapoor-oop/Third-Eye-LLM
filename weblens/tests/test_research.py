@@ -218,6 +218,16 @@ async def test_research_flags_possibly_outdated(settings):
     assert "all_sources_older_than_1y" in out.warnings
 
 
+async def test_research_surfaces_stale_source_warning(settings):
+    url = "https://docs.example/asyncio"
+    text = "asyncio timeout limits how long a task waits and raises TimeoutError. " * 3
+    doc = _doc(url, text)
+    doc.warnings.append("stale_cache_used")
+    eng = _engine(settings, [_hit(url)], {url: doc})
+    out = await eng.research("asyncio timeout", max_tokens=800)
+    assert any(w.startswith("stale_source:") for w in out.warnings)
+
+
 async def test_research_flags_conflicts(settings):
     a = "https://a.example/timeout"
     b = "https://b.example/timeout"

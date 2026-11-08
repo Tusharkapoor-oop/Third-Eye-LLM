@@ -70,27 +70,48 @@ class ExtractionService:
         *,
         allow_browser: bool = True,
         include_links: bool = False,
+        timeout_s: float | None = None,
     ) -> ExtractedDoc:
         canon = normalize_url(url)
         if not canon:
             raise WebLensError("invalid URL", code=ErrCode.BAD_INPUT)
-        if self.s.total_timeout_s > 0:
-            async with asyncio.timeout(self.s.total_timeout_s + 5):
+        budget = self.s.total_timeout_s if timeout_s is None else timeout_s
+        if budget > 0:
+            # A small margin lets the fetcher raise its own typed timeout and
+            # serve a stale copy before this outer guard cancels the task.
+            async with asyncio.timeout(budget + 2):
                 return await self._fetch_doc_inner(
-                    canon, allow_browser=allow_browser, include_links=include_links
+                    canon,
+                    allow_browser=allow_browser,
+                    include_links=include_links,
+                    timeout_s=timeout_s,
                 )
-        return await self._fetch_doc_inner(canon, allow_browser=allow_browser, include_links=include_links)
+        return await self._fetch_doc_inner(
+            canon,
+            allow_browser=allow_browser,
+            include_links=include_links,
+            timeout_s=timeout_s,
+        )
 
     async def _fetch_doc_inner(
-        self, canon: str, *, allow_browser: bool, include_links: bool
+        self,
+        canon: str,
+        *,
+        allow_browser: bool,
+        include_links: bool,
+        timeout_s: float | None,
     ) -> ExtractedDoc:
         resp: FetchResponse = await self.fetcher.fetch(
             canon,
             headers={"Accept": "text/html,application/xhtml+xml,application/pdf,text/plain;q=0.9,*/*;q=0.4"},
             cache_ttl=self.s.page_cache_ttl_s,
+            timeout_s=timeout_s,
+            stale_ok=True,
         )
         kind = resp.media_kind
         warnings: list[str] = []
+        if resp.stale:
+            warnings.append("stale_cache_used")
         if kind == "pdf":
             doc = extract_pdf(resp.body, canon)
         elif kind == "html":

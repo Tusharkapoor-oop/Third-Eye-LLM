@@ -1,0 +1,227 @@
+{
+  "name": "synthesis_complex_v1",
+  "version": 1,
+  "note": "Curated, synthetic evidence for deterministic synthesis checks. Not production acceptance.",
+  "cases": [
+    {
+      "id": "asyncio_timeout",
+      "query": "Does asyncio.timeout cancel the task when the deadline expires?",
+      "expected_status": "ok",
+      "findings": [
+        {
+          "claim": "asyncio.timeout() cancels the task when the deadline expires.",
+          "url": "https://docs.python.org/3/library/asyncio-task.html",
+          "published": "2026-01-10"
+        },
+        {
+          "claim": "asyncio.timeout does not cancel the task when the deadline expires; the caller must cancel it.",
+          "url": "https://blog.example.com/asyncio",
+          "published": "2025-06-01"
+        }
+      ],
+      "expected": [
+        {"kind": "polar", "polarity": "affirmative", "verdict": "supported"},
+        {"kind": "polar", "polarity": "negative", "verdict": "refuted"}
+      ]
+    },
+    {
+      "id": "python_313_gil",
+      "query": "Is the Python GIL removed in Python 3.13 by default?",
+      "expected_status": "ok",
+      "findings": [
+        {
+          "claim": "Python 3.13 does not remove the GIL by default; free-threaded mode is experimental.",
+          "url": "https://docs.python.org/3/whatsnew/3.13.html",
+          "published": "2024-10-07"
+        },
+        {
+          "claim": "Python 3.13 removes the GIL by default for all programs.",
+          "url": "https://blog.example.com/python313",
+          "published": "2024-10-10"
+        }
+      ],
+      "expected": [
+        {"kind": "polar", "polarity": "affirmative", "verdict": "refuted"},
+        {"kind": "polar", "polarity": "negative", "verdict": "supported"}
+      ]
+    },
+    {
+      "id": "postgresql_vs_mysql",
+      "query": "PostgreSQL vs MySQL for write-heavy workloads",
+      "expected_status": "ok",
+      "findings": [
+        {
+          "claim": "PostgreSQL uses MVCC and handles write-heavy workloads with row-level locking.",
+          "url": "https://www.postgresql.org/docs/current/mvcc.html",
+          "published": "2026-02-01"
+        },
+        {
+          "claim": "MySQL InnoDB is optimized for write-heavy workloads with row-level locking.",
+          "url": "https://dev.mysql.com/doc/refman/8.0/en/innodb-locking.html",
+          "published": "2026-02-01"
+        },
+        {
+          "claim": "PostgreSQL and MySQL both support write-heavy workloads, but their locking models differ.",
+          "url": "https://blog.example.com/db",
+          "published": "2025-12-01"
+        }
+      ],
+      "expected": [
+        {"kind": "comparison", "entity": "PostgreSQL", "verdict": "supported"},
+        {"kind": "comparison", "entity": "MySQL", "verdict": "supported"},
+        {"kind": "definition", "verdict": "supported"}
+      ]
+    },
+    {
+      "id": "sqlite_max_size",
+      "query": "What is the maximum SQLite database size?",
+      "expected_status": "ok",
+      "findings": [
+        {
+          "claim": "The maximum SQLite database size is 281 TB.",
+          "url": "https://www.sqlite.org/limits.html",
+          "published": "2026-03-01"
+        },
+        {
+          "claim": "The SQLite database size limit is 140 TB.",
+          "url": "https://blog.example.com/sqlite",
+          "published": "2025-01-01"
+        }
+      ],
+      "expected": [
+        {"kind": "numeric", "verdict": "supported"}
+      ]
+    },
+    {
+      "id": "latency_conflict",
+      "query": "What is the p95 latency of the service?",
+      "expected_status": "conflicting_sources",
+      "findings": [
+        {
+          "claim": "The p95 latency of the service is 10 ms in the benchmark.",
+          "url": "https://blog.example.com/a",
+          "published": "2026-01-01"
+        },
+        {
+          "claim": "The p95 latency of the service is 25 ms in the benchmark.",
+          "url": "https://blog.example.org/b",
+          "published": "2026-01-01"
+        }
+      ],
+      "expected": [
+        {"kind": "numeric", "verdict": "conflicting"}
+      ]
+    },
+    {
+      "id": "coffee_dehydration",
+      "query": "Does coffee cause dehydration?",
+      "expected_status": "ok",
+      "findings": [
+        {
+          "claim": "Coffee does not cause dehydration in moderate amounts.",
+          "url": "https://www.who.int/news-room/fact-sheets/detail/coffee",
+          "published": "2026-04-01"
+        },
+        {
+          "claim": "Coffee may cause dehydration if you drink too much.",
+          "url": "https://blog.example.com/coffee",
+          "published": "2025-08-01"
+        }
+      ],
+      "expected": [
+        {"kind": "polar", "polarity": "affirmative", "verdict": "refuted"},
+        {"kind": "polar", "polarity": "negative", "verdict": "supported"}
+      ]
+    },
+    {
+      "id": "supplement_cure",
+      "query": "Does supplement X cure disease Y?",
+      "expected_status": "no_reliable_result",
+      "findings": [
+        {
+          "claim": "There is no evidence that supplement X cures disease Y in controlled trials.",
+          "url": "https://www.nih.gov/supplement-x",
+          "published": "2026-05-01"
+        }
+      ],
+      "expected": [
+        {"kind": "polar", "polarity": "affirmative", "verdict": "insufficient"},
+        {"kind": "polar", "polarity": "negative", "verdict": "insufficient"}
+      ]
+    },
+    {
+      "id": "cap_theorem",
+      "query": "What is the CAP theorem?",
+      "expected_status": "ok",
+      "findings": [
+        {
+          "claim": "The CAP theorem states that a distributed system cannot simultaneously guarantee consistency, availability, and partition tolerance.",
+          "url": "https://cs.example.edu/cap",
+          "published": "2025-09-01"
+        }
+      ],
+      "expected": [
+        {"kind": "definition", "verdict": "supported"}
+      ]
+    },
+    {
+      "id": "kubernetes_vs_docker",
+      "query": "Kubernetes vs Docker for container orchestration",
+      "expected_status": "partial",
+      "findings": [
+        {
+          "claim": "Kubernetes provides container orchestration, scaling, and service discovery.",
+          "url": "https://kubernetes.io/docs/concepts/overview/",
+          "published": "2026-01-01"
+        }
+      ],
+      "expected": [
+        {"kind": "comparison", "entity": "Kubernetes", "verdict": "supported"},
+        {"kind": "comparison", "entity": "Docker", "verdict": "insufficient"},
+        {"kind": "definition", "verdict": "supported"}
+      ]
+    },
+    {
+      "id": "python_vs_java_speed",
+      "query": "Is Python faster than Java for CPU-bound tasks?",
+      "expected_status": "ok",
+      "findings": [
+        {
+          "claim": "Python is slower than Java for CPU-bound tasks in standard benchmarks.",
+          "url": "https://docs.python.org/3/faq/design.html",
+          "published": "2026-01-01"
+        },
+        {
+          "claim": "Python is faster than Java in microbenchmarks.",
+          "url": "https://blog.example.com/python-java",
+          "published": "2025-01-01"
+        }
+      ],
+      "expected": [
+        {"kind": "polar", "polarity": "affirmative", "verdict": "refuted"},
+        {"kind": "polar", "polarity": "negative", "verdict": "supported"}
+      ]
+    },
+    {
+      "id": "caffeine_alertness",
+      "query": "Does caffeine increase alertness?",
+      "expected_status": "ok",
+      "findings": [
+        {
+          "claim": "Caffeine increases alertness and reduces fatigue in controlled studies.",
+          "url": "https://www.nih.gov/caffeine",
+          "published": "2026-02-01"
+        },
+        {
+          "claim": "Caffeine decreases alertness and causes fatigue.",
+          "url": "https://blog.example.com/caffeine",
+          "published": "2025-02-01"
+        }
+      ],
+      "expected": [
+        {"kind": "polar", "polarity": "affirmative", "verdict": "supported"},
+        {"kind": "polar", "polarity": "negative", "verdict": "refuted"}
+      ]
+    }
+  ]
+}

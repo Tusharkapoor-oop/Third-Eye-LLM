@@ -25,10 +25,17 @@ dependencies = [
   "pydantic-settings>=2.6,<3",
   "uvicorn>=0.54,<1",
   "starlette>=0.41,<2",
+  "beautifulsoup4>=4.15.0",
 ]
 
 [project.optional-dependencies]
 browser = ["playwright>=1.49,<2"]
+redis = ["redis>=5,<7"]
+hybrid = [
+  "numpy>=1.26,<3",
+  "onnxruntime>=1.18,<2",
+  "tokenizers>=0.20,<1",
+]
 dev = [
   "pytest>=8.3,<10",
   "pytest-asyncio>=0.24,<2",

@@ -6,13 +6,13 @@ import argparse
 import asyncio
 import json
 import sys
-import time
-from collections import deque
 from typing import Any
 
 from . import __version__
 from .config import Settings
+from .ratelimit import TenantRateLimiter, rate_limit_key, trusted_client_ip
 from .service import WebLens
+from .tenancy import ApiKeyRegistry, current_tenant
 from .tokens import count_json_tokens, count_tokens
 
 
@@ -56,6 +56,12 @@ async def _call(service: WebLens, args: argparse.Namespace) -> dict[str, Any]:
         )
     if args.command == "research":
         return await service.deep_research(args.query, max_tokens=args.max_tokens)
+    if args.command == "synthesize":
+        return await service.synthesize(
+            args.query,
+            max_tokens=args.max_tokens,
+            max_hops=args.max_hops,
+        )
     if args.command == "doctor":
         return await service.doctor(live=args.live)
     raise RuntimeError(f"unknown command {args.command}")
@@ -72,27 +78,36 @@ async def _run_command(args: argparse.Namespace) -> int:
 
 
 async def _run_cache(args: argparse.Namespace) -> int:
-    from .cache import Cache
+    from .cache import build_cache
 
-    cache = Cache(Settings())
+    cache = build_cache(Settings())
     try:
+        stats_fn = getattr(cache, "stats_async", None)
+        stats = await stats_fn() if stats_fn is not None else cache.stats()
+        path = str(cache.path) if hasattr(cache, "path") else None
         if args.cache_command == "stats":
             payload: dict[str, Any] = {
                 "status": "ok",
-                "path": str(cache.path),
-                **cache.stats(),
+                "path": path,
+                **stats,
             }
         else:
             removed = await (cache.clear() if args.all else cache.purge())
+            stats_fn = getattr(cache, "stats_async", None)
+            stats = await stats_fn() if stats_fn is not None else cache.stats()
             payload = {
                 "status": "ok",
-                "path": str(cache.path),
+                "path": path,
                 "scope": "all" if args.all else "expired",
                 "removed": removed,
-                **cache.stats(),
+                **stats,
             }
     finally:
-        cache.close()
+        aclose = getattr(cache, "aclose", None)
+        if aclose is not None:
+            await aclose()
+        else:
+            cache.close()
     _emit(payload, getattr(args, "pretty", False))
     return 0
 
@@ -109,23 +124,65 @@ async def _serve_stdio(args: argparse.Namespace | None = None) -> None:
         await service.close()
 
 
-class _BearerAuth:
-    """Minimal ASGI bearer check for the optional HTTP transport."""
+class _ApiKeyAuth:
+    """ASGI bearer / X-API-Key check that binds a tenant to the request.
 
-    def __init__(self, app, token: str):
+    Only this middleware turns a secret into an identity. Tool handlers read
+    the identity from ``current_tenant`` and never accept a tenant id from the
+    caller.
+    """
+
+    PUBLIC_PATHS = frozenset({"/", "/healthz"})
+
+    def __init__(
+        self,
+        app,
+        registry: ApiKeyRegistry,
+        *,
+        failure_limit: int = 60,
+        max_failure_buckets: int = 10_000,
+    ):
         self.app = app
-        self.token = token
+        self.registry = registry
+        # Authenticated requests are metered by the tenant limiter downstream.
+        # Failed attempts never reach it, so they get a separate IP-scoped
+        # budget. Without this, a flood of bad keys would bypass backpressure.
+        self.failures = TenantRateLimiter(
+            failure_limit,
+            window_s=60.0,
+            max_buckets=max_failure_buckets,
+        )
 
     async def __call__(self, scope, receive, send):
         if scope.get("type") != "http":
             return await self.app(scope, receive, send)
-        if scope.get("path") in {"/", "/healthz"}:
+        if scope.get("path") in self.PUBLIC_PATHS:
             return await self.app(scope, receive, send)
-        headers = {k.lower(): v for k, v in scope.get("headers") or []}
-        supplied = headers.get(b"authorization", b"").decode("latin-1")
-        import hmac
 
-        if not hmac.compare_digest(supplied, f"Bearer {self.token}"):
+        headers = {k.lower(): v for k, v in scope.get("headers") or []}
+        authorization = headers.get(b"authorization", b"").decode("latin-1")
+        api_key = headers.get(b"x-api-key", b"").decode("latin-1")
+        tenant = self.registry.authenticate_header(authorization, api_key)
+        if tenant is None:
+            decision = self.failures.check(f"ip:{trusted_client_ip(scope)}")
+            if not decision.allowed:
+                body = b'{"error":"rate_limited"}'
+                await send(
+                    {
+                        "type": "http.response.start",
+                        "status": 429,
+                        "headers": [
+                            (b"content-type", b"application/json"),
+                            (b"content-length", str(len(body)).encode()),
+                            (b"retry-after", str(decision.retry_after).encode()),
+                            (b"x-ratelimit-limit", str(decision.limit).encode()),
+                            (b"x-ratelimit-remaining", str(decision.remaining).encode()),
+                            (b"x-ratelimit-reset", str(decision.reset_after).encode()),
+                        ],
+                    }
+                )
+                await send({"type": "http.response.body", "body": body})
+                return
             body = b'{"error":"unauthorized"}'
             await send(
                 {
@@ -140,6 +197,26 @@ class _BearerAuth:
             )
             await send({"type": "http.response.body", "body": body})
             return
+
+        state = scope.get("state")
+        if not isinstance(state, dict):
+            state = {}
+            scope["state"] = state
+        state["tenant_id"] = tenant
+        token = current_tenant.set(tenant)
+        try:
+            return await self.app(scope, receive, send)
+        finally:
+            current_tenant.reset(token)
+
+
+class _BearerAuth:
+    """Backward-compatible single-token wrapper around :class:`_ApiKeyAuth`."""
+
+    def __init__(self, app, token: str):
+        self.app = _ApiKeyAuth(app, ApiKeyRegistry({"default": token}))
+
+    async def __call__(self, scope, receive, send):
         return await self.app(scope, receive, send)
 
 
@@ -174,19 +251,37 @@ class _SecurityHeaders:
 
 
 class _RateLimit:
-    """Small in-process sliding-window limiter for the HTTP MCP transport.
+    """Per-tenant (or per-address) token-bucket limiter for the HTTP MCP transport.
 
     Cloud Run may run multiple instances, so this is a per-instance defense,
     not a replacement for an edge quota. It still stops a single client from
     exhausting a worker and makes the public endpoint fail closed with 429.
     """
 
-    def __init__(self, app, *, limit: int = 120, window_s: float = 60.0):
+    def __init__(
+        self,
+        app,
+        *,
+        limit: int = 120,
+        window_s: float = 60.0,
+        tenant_limits: dict[str, int] | None = None,
+        max_buckets: int = 10_000,
+    ):
         self.app = app
-        self.limit = max(1, int(limit))
-        self.window_s = float(window_s)
-        self._hits: dict[str, deque[float]] = {}
-        self._lock = asyncio.Lock()
+        self.limiter = TenantRateLimiter(
+            limit,
+            window_s=window_s,
+            per_tenant=tenant_limits,
+            max_buckets=max_buckets,
+        )
+
+    @staticmethod
+    def _headers(decision) -> list[tuple[bytes, bytes]]:
+        return [
+            (b"x-ratelimit-limit", str(decision.limit).encode()),
+            (b"x-ratelimit-remaining", str(decision.remaining).encode()),
+            (b"x-ratelimit-reset", str(decision.reset_after).encode()),
+        ]
 
     async def __call__(self, scope, receive, send):
         if scope.get("type") != "http":
@@ -194,41 +289,33 @@ class _RateLimit:
         if scope.get("path") in {"/", "/healthz"}:
             return await self.app(scope, receive, send)
 
-        headers = {k.lower(): v for k, v in scope.get("headers") or []}
-        forwarded = [
-            part.strip()
-            for part in headers.get(b"x-forwarded-for", b"").decode("latin-1").split(",")
-            if part.strip()
-        ]
-        client = scope.get("client") or ("unknown", 0)
-        # Use the address appended by the closest trusted proxy. The left-most
-        # value is client-controlled and would let a caller evade the limiter.
-        key = forwarded[-1] if forwarded else str(client[0])
-        now = time.monotonic()
-        async with self._lock:
-            bucket = self._hits.setdefault(key, deque())
-            cutoff = now - self.window_s
-            while bucket and bucket[0] < cutoff:
-                bucket.popleft()
-            if len(bucket) >= self.limit:
-                retry_after = max(1, int(self.window_s - (now - bucket[0])) + 1)
-                body = b'{"error":"rate_limited"}'
-                await send(
-                    {
-                        "type": "http.response.start",
-                        "status": 429,
-                        "headers": [
-                            (b"content-type", b"application/json"),
-                            (b"content-length", str(len(body)).encode()),
-                            (b"retry-after", str(retry_after).encode()),
-                        ],
-                    }
-                )
-                await send({"type": "http.response.body", "body": body})
-                return
-            bucket.append(now)
+        decision = self.limiter.check(rate_limit_key(scope))
+        headers = self._headers(decision)
+        if not decision.allowed:
+            body = b'{"error":"rate_limited"}'
+            await send(
+                {
+                    "type": "http.response.start",
+                    "status": 429,
+                    "headers": [
+                        (b"content-type", b"application/json"),
+                        (b"content-length", str(len(body)).encode()),
+                        (b"retry-after", str(decision.retry_after).encode()),
+                        *headers,
+                    ],
+                }
+            )
+            await send({"type": "http.response.body", "body": body})
+            return
 
-        return await self.app(scope, receive, send)
+        async def send_with_headers(message):
+            if message.get("type") == "http.response.start":
+                existing = list(message.get("headers") or [])
+                existing.extend(headers)
+                message = {**message, "headers": existing}
+            await send(message)
+
+        return await self.app(scope, receive, send_with_headers)
 
 
 def _serve_http(args: argparse.Namespace) -> int:
@@ -240,12 +327,20 @@ def _serve_http(args: argparse.Namespace) -> int:
     settings = Settings()
     host = args.host or settings.http_host
     port = args.port or settings.http_port
-    token = args.token or settings.http_token
+    token = args.token if args.token is not None else settings.http_token
+    keys = dict(settings.api_key_map)
+    if token:
+        keys["default"] = token
+    try:
+        registry = ApiKeyRegistry(keys)
+    except ValueError as exc:
+        print(f"invalid API key configuration: {exc}", file=sys.stderr)
+        return 2
     loopback = host in ("127.0.0.1", "localhost", "::1")
-    if not loopback and not token and not args.allow_insecure:
+    if not loopback and not registry and not args.allow_insecure:
         print(
-            "refusing to bind a non-loopback address without a bearer token; "
-            "pass --token or --allow-insecure",
+            "refusing to bind a non-loopback address without an API key or bearer token; "
+            "pass --token, set WEBLENS_API_KEYS, or --allow-insecure",
             file=sys.stderr,
         )
         return 2
@@ -261,14 +356,13 @@ def _serve_http(args: argparse.Namespace) -> int:
         )
 
     service = WebLens(settings)
-    # Stateful tools (Crawl2RAG, research chat) share one SQLite store. A
-    # public, unauthenticated listener has no tenant identity, so exposing them
-    # would let one caller read another caller's documents. Keep them available
-    # on loopback or when the listener is authenticated.
-    allow_stateful = loopback or bool(token)
+    # Stateful tools (Crawl2RAG, research chat) resolve a per-tenant SQLite
+    # path from the authenticated identity. An unauthenticated public listener
+    # has no identity, so keep those tools unavailable there.
+    allow_stateful = loopback or bool(registry)
     if not allow_stateful:
         print(
-            "stateful tools disabled: non-loopback listener without a bearer token",
+            "stateful tools disabled: non-loopback listener without an API key",
             file=sys.stderr,
         )
     server = build_server(service, profile=args.profile, allow_stateful=allow_stateful)
@@ -290,12 +384,20 @@ def _serve_http(args: argparse.Namespace) -> int:
     app.add_route("/", _health, methods=["GET"])
     app.add_route("/healthz", _health, methods=["GET"])
 
-    if token:
-        app.add_middleware(_BearerAuth, token=token)
+    # add_middleware inserts at the front and Starlette builds in reverse, so
+    # the last added middleware is outermost. Auth must run before the limiter
+    # so the limiter can key on the authenticated tenant rather than only an IP.
     app.add_middleware(
         _RateLimit,
         limit=settings.http_rate_limit_per_minute,
+        tenant_limits=settings.tenant_rate_limit_map,
     )
+    if registry:
+        app.add_middleware(
+            _ApiKeyAuth,
+            registry=registry,
+            failure_limit=settings.http_auth_failure_limit_per_minute,
+        )
     app.add_middleware(_SecurityHeaders)
 
     async def run() -> None:
@@ -471,6 +573,15 @@ def _build_parser() -> argparse.ArgumentParser:
     r.add_argument("query")
     r.add_argument("--max-tokens", type=int, default=None)
     r.add_argument("--pretty", action="store_true")
+
+    sy = sub.add_parser(
+        "synthesize",
+        help="test hypotheses and resolve contradictions from verbatim evidence",
+    )
+    sy.add_argument("query")
+    sy.add_argument("--max-tokens", type=int, default=None)
+    sy.add_argument("--max-hops", type=int, choices=[1, 2, 3], default=2)
+    sy.add_argument("--pretty", action="store_true")
 
     d = sub.add_parser("doctor", help="show configuration, provider and cache status")
     d.add_argument("--live", action="store_true", help="run one live search")

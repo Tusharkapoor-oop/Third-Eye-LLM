@@ -35,14 +35,20 @@ GAP_IGNORE = {
 }
 SENT_SPLIT = re.compile(r"(?<=[.!?])\s+(?=[A-Z0-9`#*])")
 NUM = re.compile(
-    r"(?P<num>\d+(?:[.,]\d+)?)\s*(?P<unit>ms|milliseconds?|s|sec|seconds?|kb|mb|gb|tb|%|"
-    r"usd|dollars?|€|£|\$)",
+    r"(?P<num>\d+(?:[.,]\d+)?)\s*(?P<unit>ms|milliseconds?|s|sec|seconds?|"
+    r"kilobytes?|kb|megabytes?|mb|gigabytes?|gb|terabytes?|tb|petabytes?|pb|"
+    r"bytes?|%|usd|dollars?|€|£|\$)",
     re.I,
 )
 UNIT_NORM = {
     "ms": "ms", "millisecond": "ms", "milliseconds": "ms",
     "s": "s", "sec": "s", "second": "s", "seconds": "s",
-    "kb": "kb", "mb": "mb", "gb": "gb", "tb": "tb",
+    "byte": "b", "bytes": "b",
+    "kilobyte": "kb", "kilobytes": "kb", "kb": "kb",
+    "megabyte": "mb", "megabytes": "mb", "mb": "mb",
+    "gigabyte": "gb", "gigabytes": "gb", "gb": "gb",
+    "terabyte": "tb", "terabytes": "tb", "tb": "tb",
+    "petabyte": "pb", "petabytes": "pb", "pb": "pb",
     "%": "%", "usd": "usd", "dollar": "usd", "dollars": "usd",
     "€": "eur", "£": "gbp", "$": "usd",
 }
@@ -458,8 +464,12 @@ class ResearchEngine:
             async with sem:
                 try:
                     doc = await asyncio.wait_for(
-                        self.extractor.fetch_doc(hit.url, allow_browser=False),
-                        timeout=self.s.research_fetch_timeout_s,
+                        self.extractor.fetch_doc(
+                            hit.url,
+                            allow_browser=False,
+                            timeout_s=self.s.research_fetch_timeout_s,
+                        ),
+                        timeout=self.s.research_fetch_timeout_s + 1,
                     )
                     return hit, doc
                 except TimeoutError:
@@ -475,6 +485,10 @@ class ResearchEngine:
             if isinstance(doc, Exception):
                 warnings.append(f"fetch_failed:{type(doc).__name__}")
                 continue
+            if "stale_cache_used" in doc.warnings:
+                warnings.append(
+                    f"stale_source:{registrable_domain(hit.url.split('/')[2])}"
+                )
             passages, cov = select_passages(doc.text, score_q, title=doc.title, max_passages=3, max_chars=5000)
             if cov == 0:
                 warnings.append(f"no_query_match:{registrable_domain(hit.url.split('/')[2])}")

@@ -16,13 +16,13 @@ import time
 from typing import Any
 
 from . import __version__
-from .cache import Cache
+from .cache import build_cache
 from .config import Settings, get_settings
 from .crawl import SiteCrawler
 from .errors import ErrCode, WebLensError, resolve_budget
 from .extract import ExtractionService
 from .net import SafeFetcher
-from .research import ResearchEngine
+from .research import ResearchEngine, SynthesisEngine
 from .search import SearchRouter
 from .tokens import TOKENIZER_NAME, count_json_tokens
 
@@ -41,7 +41,7 @@ class WebLens:
     def __init__(self, settings: Settings | None = None):
         self.s = settings or get_settings()
         self.s.ensure_dirs()
-        self.cache = Cache(self.s)
+        self.cache = build_cache(self.s)
         self.fetcher = SafeFetcher(self.s, self.cache)
         self.router = SearchRouter(self.s, self.fetcher)
         self.extractor = ExtractionService(self.s, self.fetcher, self.cache)
@@ -51,7 +51,11 @@ class WebLens:
     async def close(self) -> None:
         await self.extractor.close()
         await self.fetcher.close()
-        self.cache.close()
+        aclose = getattr(self.cache, "aclose", None)
+        if aclose is not None:
+            await aclose()
+        else:
+            self.cache.close()
 
     # -- error boundary --------------------------------------------------
     async def _guard(self, coro) -> dict[str, Any]:
@@ -299,9 +303,50 @@ class WebLens:
 
         return await self._guard(run())
 
+    async def synthesize(
+        self,
+        query: str,
+        *,
+        max_tokens: int | None = None,
+        max_hops: int = 2,
+        max_searches: int = 4,
+        max_pages: int = 6,
+    ) -> dict[str, Any]:
+        """Test explicit hypotheses against collected evidence and resolve conflicts.
+
+        This is deterministic and LLM-free: hypotheses are generated from the
+        question, claims are classified as supporting/refuting by lexical
+        stance rules, and contradictions are resolved by source tier, recency
+        and independent-domain support. It never paraphrases a source.
+        """
+
+        async def run() -> dict[str, Any]:
+            if not query or not query.strip():
+                raise WebLensError("query must not be empty", code=ErrCode.BAD_INPUT)
+            if len(query) > 2000:
+                raise WebLensError(
+                    "query exceeds maximum allowed length of 2000 characters",
+                    code=ErrCode.BAD_INPUT,
+                )
+            engine = SynthesisEngine(self.research)
+            out = await engine.run(
+                query,
+                max_tokens=max_tokens,
+                max_hops=max_hops,
+                max_searches=max_searches,
+                max_pages=max_pages,
+            )
+            return out.payload()
+
+        return await self._guard(run())
+
     # -- diagnostics -----------------------------------------------------
     async def doctor(self, *, live: bool = False) -> dict[str, Any]:
         has_playwright = importlib.util.find_spec("playwright") is not None
+        cache_stats_fn = getattr(self.cache, "stats_async", None)
+        cache_stats = (
+            await cache_stats_fn() if cache_stats_fn is not None else self.cache.stats()
+        )
         info: dict[str, Any] = {
             "ok": True,
             "version": __version__,
@@ -310,7 +355,7 @@ class WebLens:
             "providers": self.router.provider_names,
             "unavailable": self.router.unavailable,
             "browser": has_playwright and self.s.allow_browser,
-            "cache": self.cache.stats(),
+            "cache": cache_stats,
             "cache_dir": str(self.s.cache_dir),
             "tokenizer": TOKENIZER_NAME,
             "budgets": {

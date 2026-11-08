@@ -1,0 +1,3 @@
+- insert:
+    - id: conversation-insight
+      name: '@local/conversation-insight'

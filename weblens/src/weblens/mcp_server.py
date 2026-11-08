@@ -7,6 +7,7 @@ text is compact JSON. Retrieved content is data, never instructions.
 
 from __future__ import annotations
 
+import threading
 from typing import Annotated, Literal
 
 from mcp.server import MCPServer
@@ -16,6 +17,7 @@ from pydantic import Field
 
 from . import __version__
 from .service import WebLens
+from .tenancy import current_tenant, tenant_state_path
 from .tokens import compact_json
 
 Freshness = Literal["day", "week", "month", "year"]
@@ -134,6 +136,29 @@ def build_server(service: WebLens, profile: str | None = None, *, allow_stateful
         )
 
     if prof in ("research", "full"):
+
+        @server.tool(
+            name="evidence_synthesis",
+            description=(
+                "Test explicit hypotheses against collected evidence, resolve contradictions by "
+                "source quality and report citation-backed claim support. Deterministic; no LLM."
+            ),
+            annotations=READ_ONLY,
+            structured_output=False,
+        )
+        async def evidence_synthesis(
+            query: Annotated[str, Field(description="Research question or hypothesis")],
+            max_tokens: Annotated[int | None, Field(ge=300, le=8000, description="Output token budget")] = None,
+            max_hops: Annotated[int, Field(ge=1, le=3, description="Bounded follow-up research hops (1-3)")] = 2,
+        ) -> str:
+            return _tool_json(
+                await service.synthesize(
+                    query,
+                    max_tokens=max_tokens,
+                    max_hops=max_hops,
+                )
+            )
+
         from .apps.company import CompanyResearcher
         from .apps.market import MarketResearcher
 
@@ -153,7 +178,10 @@ def build_server(service: WebLens, profile: str | None = None, *, allow_stateful
 
         @server.tool(
             name="market_research",
-            description="Factual asset analysis from regulatory disclosures and filings with strict numeric verification.",
+            description=(
+                "Factual asset analysis from regulatory disclosures and filings with strict "
+                "numeric verification."
+            ),
             annotations=READ_ONLY,
             structured_output=False,
         )
@@ -186,7 +214,10 @@ def build_server(service: WebLens, profile: str | None = None, *, allow_stateful
 
         @server.tool(
             name="meeting_prep",
-            description="Generate cited attendee background dossier strictly from verified public professional sources.",
+            description=(
+                "Generate cited attendee background dossier strictly from verified public "
+                "professional sources."
+            ),
             annotations=READ_ONLY,
             structured_output=False,
         )
@@ -207,17 +238,51 @@ def build_server(service: WebLens, profile: str | None = None, *, allow_stateful
         )
         async def sheets_enrich(
             rows: Annotated[list[dict[str, str]], Field(description="List of row dictionaries to enrich")],
-            column_prompts: Annotated[dict[str, str], Field(description="Mapping of output column name to research query prompt")],
+            column_prompts: Annotated[
+                dict[str, str],
+                Field(description="Mapping of output column name to research query prompt"),
+            ],
         ) -> str:
             return _tool_json(await sheets_enricher.enrich_records(rows, column_prompts))
 
-        # Stateful tools share a process-wide SQLite store. On a public,
-        # unauthenticated endpoint that would let one caller read another
-        # caller's crawled documents or chat history. Register them only when
-        # the transport is loopback or authenticated.
+        # Stateful tools share a process-wide SQLite store only within one
+        # tenant. The HTTP auth middleware sets current_tenant; stdio and the
+        # legacy single-token path use "default". The tenant id is never a tool
+        # argument, so one caller cannot ask for another tenant's database.
         if allow_stateful:
-            kb = Crawl2RAG(service)
-            chat_agent = PersistentResearchChat(service)
+            tenant_kbs: dict[str, Crawl2RAG] = {}
+            tenant_chats: dict[str, PersistentResearchChat] = {}
+            state_lock = threading.Lock()
+
+            def _tenant_kb() -> Crawl2RAG:
+                tenant = current_tenant.get()
+                with state_lock:
+                    kb = tenant_kbs.get(tenant)
+                    if kb is None:
+                        db_path = tenant_state_path(service.s.cache_dir, tenant, "crawl2rag.db")
+                        kb = Crawl2RAG(service, db_path=db_path)
+                        tenant_kbs[tenant] = kb
+                    return kb
+
+            def _chat_db_path(tenant: str):
+                if tenant == "default":
+                    return None  # preserve the historical single-tenant path
+                return tenant_state_path(service.s.cache_dir, tenant, "research_sessions.db")
+
+            def _tenant_chat(session_id: str | None = None) -> PersistentResearchChat:
+                tenant = current_tenant.get()
+                if session_id:
+                    return PersistentResearchChat(
+                        service,
+                        db_path=_chat_db_path(tenant),
+                        session_id=session_id,
+                    )
+                with state_lock:
+                    chat = tenant_chats.get(tenant)
+                    if chat is None:
+                        chat = PersistentResearchChat(service, db_path=_chat_db_path(tenant))
+                        tenant_chats[tenant] = chat
+                    return chat
 
             @server.tool(
                 name="crawl2rag_index",
@@ -229,7 +294,7 @@ def build_server(service: WebLens, profile: str | None = None, *, allow_stateful
                 url: Annotated[str, Field(description="Target site or documentation URL to index")],
                 max_pages: Annotated[int, Field(ge=1, le=20, description="Maximum pages to crawl and index")] = 5,
             ) -> str:
-                return _tool_json(await kb.ingest(url, max_pages=max_pages))
+                return _tool_json(await _tenant_kb().ingest(url, max_pages=max_pages))
 
             @server.tool(
                 name="crawl2rag_query",
@@ -241,7 +306,7 @@ def build_server(service: WebLens, profile: str | None = None, *, allow_stateful
                 question: Annotated[str, Field(description="Question for local knowledge base")],
                 top_k: Annotated[int, Field(ge=1, le=10, description="Top passages to return")] = 5,
             ) -> str:
-                return _tool_json(await kb.query(question, top_k=top_k))
+                return _tool_json(await _tenant_kb().query(question, top_k=top_k))
 
             @server.tool(
                 name="research_chat",
@@ -253,7 +318,7 @@ def build_server(service: WebLens, profile: str | None = None, *, allow_stateful
                 message: Annotated[str, Field(description="User research query or follow-up")],
                 session_id: Annotated[str | None, Field(description="Session ID for multi-turn continuity")] = None,
             ) -> str:
-                active_chat = PersistentResearchChat(service, session_id=session_id) if session_id else chat_agent
+                active_chat = _tenant_chat(session_id)
                 reply = await active_chat.send_query(message)
                 return _tool_json({
                     "status": "ok",
@@ -272,7 +337,15 @@ def build_server(service: WebLens, profile: str | None = None, *, allow_stateful
             structured_output=False,
         )
         async def tutorial_101(
-            step: Annotated[str | None, Field(description="Step filter: doctor, search, chat, company, market, sheets, meeting, rag, deep_research, or all")] = "all",
+            step: Annotated[
+                str | None,
+                Field(
+                    description=(
+                        "Step filter: doctor, search, chat, company, market, sheets, meeting, "
+                        "rag, deep_research, or all"
+                    )
+                ),
+            ] = "all",
         ) -> str:
             return _tool_json(await run_tutorial(service, step=step or "all"))
 

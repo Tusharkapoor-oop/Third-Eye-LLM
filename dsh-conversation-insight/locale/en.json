@@ -1,0 +1,6 @@
+{
+  "meta": {
+    "title": "Conversation insight",
+    "description": "A compact live summary of the current session: turns, steps, messages, tools, commands and errors."
+  }
+}

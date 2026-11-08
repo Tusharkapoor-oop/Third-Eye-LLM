@@ -12,9 +12,12 @@ import threading
 import time
 import zlib
 from pathlib import Path
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 from .config import Settings
+
+if TYPE_CHECKING:
+    from .redis_cache import RedisCache
 
 
 class Cache:
@@ -24,6 +27,7 @@ class Cache:
         self._lock = threading.Lock()
         self._conn: sqlite3.Connection | None = None
         self.hits = 0
+        self.stale_hits = 0
         self.misses = 0
         self.errors = 0
         self.evictions = 0
@@ -77,6 +81,30 @@ class Cache:
         except (zlib.error, json.JSONDecodeError):
             return None
         return raw, meta_d, float(created)
+
+    def _get_cached_sync(
+        self, key: str, grace_s: float
+    ) -> tuple[bytes, dict[str, Any], float, bool] | None:
+        """Return an entry that is fresh or expired within ``grace_s``."""
+        if self._conn is None:
+            return None
+        with self._lock:
+            row = self._conn.execute(
+                "SELECT value, meta, created, expires FROM kv WHERE k=?", (key,)
+            ).fetchone()
+        if not row:
+            return None
+        value, meta, created, expires = row
+        now = time.time()
+        expires = float(expires)
+        if expires + max(0.0, float(grace_s)) < now:
+            return None
+        try:
+            raw = zlib.decompress(value)
+            meta_d = json.loads(meta)
+        except (zlib.error, json.JSONDecodeError):
+            return None
+        return raw, meta_d, float(created), expires < now
 
     def _set_sync(self, key: str, value: bytes, meta: dict[str, Any], ttl: float) -> None:
         if self._conn is None:
@@ -159,6 +187,30 @@ class Cache:
             self.hits += 1
         return out
 
+    async def get_cached(
+        self, key: str, grace_s: float = 0.0
+    ) -> tuple[bytes, dict[str, Any], float, bool] | None:
+        """Return ``(value, meta, created, expired)`` or ``None``.
+
+        Unlike :meth:`get`, this can return an entry whose TTL has passed as
+        long as it is still inside ``grace_s``. The fourth item tells the
+        caller whether the value is stale.
+        """
+        try:
+            import anyio
+
+            out = await anyio.to_thread.run_sync(self._get_cached_sync, key, grace_s)
+        except Exception:
+            self.errors += 1
+            return None
+        if out is None:
+            self.misses += 1
+        elif out[3]:
+            self.stale_hits += 1
+        else:
+            self.hits += 1
+        return out
+
     async def get_json(self, key: str) -> tuple[Any, dict[str, Any], float] | None:
         got = await self.get(key)
         if got is None:
@@ -175,7 +227,9 @@ class Cache:
         try:
             import anyio
 
-            await anyio.to_thread.run_sync(self._set_sync, key, value, meta, ttl or 600.0)
+            await anyio.to_thread.run_sync(
+                self._set_sync, key, value, meta, 600.0 if ttl is None else ttl
+            )
         except Exception:
             self.errors += 1
 
@@ -222,7 +276,10 @@ class Cache:
                 pass
         return {
             "enabled": self._conn is not None,
+            "backend": "sqlite",
+            "shared": False,
             "hits": self.hits,
+            "stale_hits": self.stale_hits,
             "misses": self.misses,
             "hit_rate_pct": round(100 * self.hits / total, 1) if total else 0.0,
             "errors": self.errors,
@@ -241,11 +298,24 @@ class Cache:
                 pass
             self._conn = None
 
+    async def aclose(self) -> None:
+        self.close()
+
     def __del__(self) -> None:  # pragma: no cover - interpreter shutdown
         try:
             self.close()
         except Exception:
             pass
+
+
+def build_cache(settings: Settings) -> Cache | RedisCache:
+    """Select the configured cache backend without importing Redis by default."""
+
+    if settings.cache_backend == "redis":
+        from .redis_cache import RedisCache as RedisCacheBackend
+
+        return RedisCacheBackend(settings)
+    return Cache(settings)
 
 
 def cache_key(*parts: str) -> str:

@@ -37,7 +37,9 @@ def service():
 @pytest.mark.asyncio
 async def test_crawl2rag_lifecycle(service, tmp_path):
     db_file = tmp_path / "test_kb.db"
-    kb = Crawl2RAG(service, db_path=db_file)
+    # This test exercises the lexical lifecycle; hybrid retrieval has its own
+    # coverage in test_embeddings.py.
+    kb = Crawl2RAG(service, db_path=db_file, auto_embedder=False)
 
     # Mock crawl output
     mock_page1 = MagicMock(

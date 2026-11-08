@@ -28,15 +28,32 @@ The four-tool `tools/list` schema measures **838 `cl100k_base` tokens** on this
 machine. Every budget is enforced on the final serialized payload, including
 the envelope, `ms`, `tok`, warnings, and cutoff flags.
 
+The `research` and `full` profiles add `evidence_synthesis` (select them with
+`WEBLENS_MCP_PROFILE=research` / `full`, or `weblens serve --profile research`).
+It turns a research result into a claim ledger, tests explicit polar,
+comparison, numeric, and definition hypotheses with lexical stance rules, and
+resolves contradictions by source tier, recency, and independent-domain
+support. It is deterministic and LLM-free; it never paraphrases a source.
+`supported` means the collected evidence is consistent with the hypothesis, not
+that the hypothesis is proven.
+
+Local gate (2026-11-08): the curated 11-case / 21-hypothesis evaluation matched
+21/21 verdicts, 11/11 expected statuses, and 20/20 claims with complete
+URL/timestamp/span citations. The evidence is curated/synthetic, so this is a
+local implementation check, not production acceptance.
+
 Also included:
 
-- CLI for search/extract/crawl/research plus `doctor` and schema-token reports.
+- CLI for search/extract/crawl/research/synthesize plus `doctor` and schema-token reports.
 - stdio MCP transport (default) and optional streamable HTTP.
 - SSRF-safe fetching with connection-time IP validation, redirect checks,
   size caps, per-host concurrency limits, and no environment proxy trust.
 - Optional Playwright browser behind a loopback egress proxy; disabled by default.
-- SQLite cache with TTLs and ETag/Last-Modified revalidation.
-- Prompt-injection warning flags on retrieved content (not a classifier).
+- SQLite cache with TTLs, ETag/Last-Modified revalidation, and bounded
+  stale-on-error fallback. Stale evidence keeps its original fetch timestamp and
+  is reported with `stale_cache_used` / `stale_source:<domain>`.
+- Prompt-injection warning flags on retrieved content in English, Spanish,
+  Chinese, Russian, and Arabic (not a classifier).
 - Reproducible benchmark dataset (58 labelled queries), hard gates, and a
   cold-start/cache measurement script.
 
@@ -56,6 +73,7 @@ uv run weblens doctor --live --pretty
 uv run weblens search "sqlite WAL mode write-ahead log" --pretty
 uv run weblens extract "https://docs.python.org/3/library/asyncio-task.html" -q "timeout" --pretty
 uv run weblens research "HTTP 429 Retry-After" --pretty
+uv run weblens synthesize "Does asyncio.timeout cancel the task when the deadline expires?" --pretty
 ```
 
 Run the MCP server over stdio:
@@ -72,11 +90,80 @@ uv run weblens serve --http --port 8765
 ```
 
 For a non-loopback bind, WebLens refuses to start unless you pass a bearer
-token or explicitly opt into an insecure bind:
+token, configure tenant API keys, or explicitly opt into an insecure bind:
 
 ```powershell
 uv run weblens serve --http --host 0.0.0.0 --token "replace-me"
 ```
+
+### Multi-tenant HTTP
+
+Use one key per tenant instead of a shared token. `WEBLENS_API_KEYS` accepts a
+JSON object or comma-separated `tenant=key` pairs:
+
+```dotenv
+WEBLENS_API_KEYS={"acme":"replace-with-a-long-random-key","beta":"another-long-random-key"}
+WEBLENS_TENANT_RATE_LIMITS={"acme":600,"beta":120}
+```
+
+Clients send either `Authorization: Bearer <key>` or `X-API-Key: <key>`. The
+legacy `--token` / `WEBLENS_HTTP_TOKEN` maps to the `default` tenant. Keys must
+be at least 8 characters; WebLens stores only SHA-256 digests in the registry.
+
+The limiter is a per-tenant token bucket. `WEBLENS_HTTP_RATE_LIMIT_PER_MINUTE`
+is the fallback for tenants without an override. Authenticated requests are
+keyed by tenant, not by IP; unauthenticated loopback requests are keyed by the
+right-most `X-Forwarded-For` hop or the socket address. Responses include
+`X-RateLimit-Limit`, `X-RateLimit-Remaining`, and `X-RateLimit-Reset`; a 429
+also includes `Retry-After`. A token bucket allows a burst up to one window's
+quota and then refills continuously. Repeated failed key attempts are limited
+separately by `WEBLENS_HTTP_AUTH_FAILURE_LIMIT_PER_MINUTE` (default 60 per IP),
+so a flood of bad keys cannot bypass the tenant limiter.
+
+Stateful `full`-profile tools use a per-tenant SQLite file under
+`~/.weblens/tenants/<tenant>/`. The `default` identity keeps the historical
+single-tenant paths so existing local data remains available. Tenant ids are
+validated before they become directory names, and the tenant is never accepted
+as a tool argument.
+
+### Optional Redis cache
+
+SQLite remains the zero-dependency default. For multiple app instances, install
+the optional client and select Redis:
+
+```powershell
+uv pip install "weblens[redis]"
+```
+
+```dotenv
+WEBLENS_CACHE_BACKEND=redis
+WEBLENS_REDIS_URL=redis://127.0.0.1:6379/0
+WEBLENS_REDIS_NAMESPACE=weblens
+```
+
+Redis payloads are compressed and namespaced under `<namespace>:cache:`.
+`WEBLENS_CACHE_MAX_BYTES` still applies to the SQLite backend; Redis relies on
+per-key TTL and server-side eviction. A Redis outage becomes a cache miss, never
+a request failure; `weblens cache stats` reports the backend and last error.
+`weblens cache purge` returns zero for Redis because expiry is server-side.
+
+### Fetch resilience and repeat queries
+
+Page fetches that hit a transient network failure (timeout, protocol reset,
+retryable 5xx/429) can be answered from an expired cache entry inside
+`WEBLENS_CACHE_STALE_GRACE_S` (default 7 days). The response keeps its original
+`fetched_at`, so callers can see its real age; extraction adds
+`stale_cache_used`, and research adds `stale_source:<domain>`. A 404/403,
+blocked URL, or oversized response is never masked by stale content. Set the
+grace to `0` to disable the fallback.
+
+Research gives each fetch a real deadline. The first HTTP/2 attempt gets most of
+the budget and the HTTP/1.1 pool gets the remainder, so one slow stream cannot
+consume the whole research timeout before the fallback runs.
+
+Repeated identical searches reuse a short-lived provider-result cache for
+`WEBLENS_SEARCH_CACHE_TTL_S` seconds (default 300; `0` disables it). Cache hits
+carry `search_cache_hit`; failed or partial searches are not cached.
 
 ## MCP client setup
 
@@ -119,6 +206,7 @@ weblens search QUERY [-k N] [--freshness day|week|month|year]
 weblens extract URL [-q QUERY] [--full] [--max-tokens N]
 weblens crawl URL [--mode map|crawl] [--max-pages N] [--max-depth N] [-q QUERY]
 weblens research QUERY [--max-tokens N]
+weblens synthesize QUERY [--max-tokens N] [--max-hops 1|2|3]
 weblens doctor [--live] [--pretty]
 weblens cache stats [--pretty]
 weblens cache purge [--all] [--pretty]
@@ -176,10 +264,16 @@ WEBLENS_SEARCH_MODE=fuse
 WEBLENS_ALLOW_PRIVATE_NETWORKS=false
 WEBLENS_ALLOW_BROWSER=false
 WEBLENS_CACHE_MAX_BYTES=536870912
+WEBLENS_CACHE_STALE_GRACE_S=604800
+WEBLENS_SEARCH_CACHE_TTL_S=300
 WEBLENS_DEFAULT_RESULTS=5
 WEBLENS_MAX_SEARCH_TOKENS=600
 WEBLENS_MAX_EXTRACT_TOKENS=1500
 WEBLENS_MAX_RESEARCH_TOKENS=2000
+WEBLENS_CACHE_BACKEND=sqlite
+# WEBLENS_API_KEYS={"acme":"replace-me"}          # multi-tenant HTTP
+# WEBLENS_TENANT_RATE_LIMITS={"acme":600}         # optional per-tenant QPM
+# WEBLENS_REDIS_URL=redis://127.0.0.1:6379/0      # with cache_backend=redis
 ```
 
 `WEBLENS_CACHE_MAX_BYTES` caps the logical compressed payload plus metadata; `0`
@@ -246,6 +340,42 @@ page-destination lookup itself. QUIC, DNS prefetch, and non-proxied WebRTC UDP a
 disabled. The proxy is still an in-process component, not a separate network
 namespace or a security boundary, and it has not been independently audited.
 
+### Optional hybrid Crawl2RAG
+
+`Crawl2RAG` uses SQLite FTS5/BM25 by default and needs no model. To add local
+dense candidates, install the optional extra and place an all-MiniLM-L6-v2 ONNX
+model in a local directory:
+
+```powershell
+uv sync --extra hybrid
+# model.onnx and tokenizer.json go under:
+#   ~/.weblens/models/all-MiniLM-L6-v2/
+# or:
+#   ~/.cache/weblens/models/all-MiniLM-L6-v2/
+```
+
+WebLens never downloads a model implicitly. Set an explicit path with
+`WEBLENS_EMBEDDING_MODEL_DIR` if the model lives elsewhere, or disable dense
+retrieval with `WEBLENS_EMBEDDING_ENABLED=false`. When the model or optional
+packages are missing, `Crawl2RAG.query()` stays on BM25 and reports
+`mode="bm25"`; when dense retrieval is active it fuses BM25 and dense rankings
+with reciprocal rank fusion and reports `mode="hybrid"`. Dense scoring currently
+scans at most 50,000 indexed passages per query; larger knowledge bases stay on
+BM25 until an approximate-nearest-neighbour index is added. The exact dense
+matrix is cached per process, so repeated queries skip the SQLite blob scan;
+ingestion and `clear()` invalidate it, and a size-based scan-cap fallback keeps
+the embedder enabled for later smaller knowledge bases. At the 50,000-passage
+cap with 384-d vectors, the cached matrix is roughly 77 MB of process memory.
+
+On a local 21-query Python-standard-library diagnostic (20 pages, 112
+passages), BM25-only Recall@5 was 0.905 and hybrid Recall@5 was 1.000. That is a
+small local check, not an official benchmark. Re-run it with
+`weblens-lab/evaluations/run_crawl2rag_hybrid.py --require-hybrid`. A synthetic
+dense-cache benchmark (`weblens-lab/evaluations/run_dense_cache_benchmark.py`)
+measured roughly 0.1–16 ms for cached queries versus 6–962 ms to rebuild the
+matrix for 1,000–50,000 passages across local runs; those are synthetic timings
+that vary with disk and CPU load, not a production benchmark.
+
 ## Security posture
 
 WebLens treats every page as untrusted data and every URL as hostile until
@@ -264,8 +394,14 @@ every hop, response bodies are capped while streaming, and a global/per-host
 concurrency limit bounds resource use. The optional browser is launched through a
 loopback egress proxy that performs the same validate-then-connect step for HTTP
 requests and HTTPS tunnels. Retrieved text may carry `inj` flags for
-instruction-smuggling patterns, but those flags are heuristics and do not grant
-or remove permissions.
+instruction-smuggling patterns in English, Spanish, Chinese, Russian, and
+Arabic. Matching normalises full-width characters, accents, Arabic diacritics,
+and Cyrillic short-i, and it keeps negated credential advice such as "do not
+share credentials" out of the exfiltration flag. Those flags are heuristics and
+do not grant or remove permissions. On a local 50-payload / 50-benign corpus,
+the current rules measured recall 1.00 with 0.00 FPR; that is a curated local
+diagnostic, not a production benchmark. Re-run it with
+`weblens-lab/evaluations/run_injection_multilingual.py`.
 
 See [`docs/THREAT_MODEL.md`](docs/THREAT_MODEL.md) for the asset/threat/control
 matrix, adversarial tests, and residual risks. In particular, enabling the
@@ -286,13 +422,16 @@ service.py     (budgets, error boundary, stable statuses)
    +--> crawl/ -------------> robots.txt + sitemap/link map + page dedupe
    +--> research/engine.py --> searches -> fetches -> verbatim findings -> gaps
    v
-cache.sqlite3 (TTL + revalidation) and ~/.weblens/
+cache.sqlite3 or Redis (TTL + revalidation) and ~/.weblens/
+~/.weblens/tenants/<tenant>/ (full-profile stateful tools only)
 ```
 
-The service is stateless with respect to conversations. The cache is disposable,
-expires entries by TTL, and evicts the oldest entries when its logical payload
-exceeds `WEBLENS_CACHE_MAX_BYTES`. There is no vector database, no LLM call, and
-no server-side memory of a user's research.
+The core search/extract/crawl/research surface is stateless with respect to a
+caller. The cache is disposable, expires entries by TTL, and evicts the oldest
+entries when its logical payload exceeds `WEBLENS_CACHE_MAX_BYTES` (SQLite).
+Optional full-profile stateful tools write only to a per-tenant directory; the
+tenant identity comes from the ingress API key, never from a tool argument. There
+is no vector database, no LLM call, and no shared cross-tenant research store.
 
 Design decisions are recorded in [`docs/adr/`](docs/adr/). Protocol evidence and
 version support are in [`docs/PROTOCOL.md`](docs/PROTOCOL.md). The comparison
@@ -391,6 +530,15 @@ provider response was cached. These are single-machine observations, not a
 startup guarantee; the run was taken when CPU load was low but disk activity was
 high, and startup remains sensitive to antivirus and disk contention.
 
+Ingress-only sample (in-process ASGI, synthetic handler, 2026-11-08,
+`weblens-lab/evaluations/run_ingress_benchmark.py`): 1,000 paced requests over
+59.949 s at 1,000 QPM returned 1,000/1,000 HTTP 200s with p50 1.08 ms, p95
+1.77 ms, and p99 2.71 ms. A 10,000-request burst across 10 tenants and
+concurrency 100 returned 10,000/10,000 HTTP 200s at 1,248 rps with p95 1.40 ms.
+The scope is API-key auth, tenant binding, rate limiting, and security headers
+only. It excludes MCP tool dispatch, provider/network latency, and the real HTTP
+transport, so it is **not** the production 1,000 QPM gate.
+
 Known measured gaps are listed in [`docs/LIMITATIONS.md`](docs/LIMITATIONS.md):
 the keyless headline has labelled-domain precision 0.146, top-3 authoritative
 0.35, zero conflict recall, and a search p50 of 2.5 s that misses the 1.5 s
@@ -440,7 +588,10 @@ the live measurement, and it is allowed to fail.
   each page destination, but the proxy is in-process and has not been
   independently audited; do not call the browser a sandbox or "SSRF-safe." See
   the threat model.
-- Conflict detection is conservative and only handles same-unit numeric
+- Numeric synthesis only accepts claims whose text, heading, or source URL
+  carries a topic anchor; generic words such as "maximum" and "size" are not
+  enough. Common word units (for example "terabytes" and "bytes") are normalized.
+  Conflict detection is conservative and only handles same-unit numeric
   contradictions with overlapping subject tokens.
 - Tavily was exercised live on a 58-query run; Brave was not measured because no
   Brave key was available. SearXNG JSON support depends on the instance. No

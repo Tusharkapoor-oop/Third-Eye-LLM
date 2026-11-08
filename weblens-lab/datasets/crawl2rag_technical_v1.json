@@ -1,0 +1,113 @@
+{
+  "name": "crawl2rag_technical_v1",
+  "description": "Small technical-documentation retrieval set for Crawl2RAG. The target is the page that answers the query; pages are extracted from the public Python standard-library documentation. This is a local diagnostic, not a hosted benchmark.",
+  "base_url": "https://docs.python.org/3/library/",
+  "pages": [
+    "asyncio-task.html",
+    "pathlib.html",
+    "sqlite3.html",
+    "json.html",
+    "re.html",
+    "typing.html",
+    "dataclasses.html",
+    "unittest.mock.html",
+    "urllib.parse.html",
+    "logging.html",
+    "argparse.html",
+    "heapq.html",
+    "collections.html",
+    "threading.html",
+    "multiprocessing.html",
+    "http.server.html",
+    "csv.html",
+    "datetime.html",
+    "inspect.html",
+    "textwrap.html"
+  ],
+  "queries": [
+    {
+      "q": "How do I run multiple coroutines concurrently?",
+      "target": "asyncio-task.html"
+    },
+    {
+      "q": "How do I join a directory and a filename into a path?",
+      "target": "pathlib.html"
+    },
+    {
+      "q": "How can I avoid SQL injection when building statements?",
+      "target": "sqlite3.html"
+    },
+    {
+      "q": "How do I turn a Python mapping into a serialized text representation?",
+      "target": "json.html"
+    },
+    {
+      "q": "How do I check whether a pattern occurs at the beginning of a string?",
+      "target": "re.html"
+    },
+    {
+      "q": "How do I declare a value that may be an integer or a string?",
+      "target": "typing.html"
+    },
+    {
+      "q": "How do I automatically generate init and repr methods for a class?",
+      "target": "dataclasses.html"
+    },
+    {
+      "q": "How do I test code that depends on an external service without calling it?",
+      "target": "unittest.mock.html"
+    },
+    {
+      "q": "How do I percent-encode a query string?",
+      "target": "urllib.parse.html"
+    },
+    {
+      "q": "How do I send log messages to a file with a chosen level?",
+      "target": "logging.html"
+    },
+    {
+      "q": "How do I add a required positional argument to a command line program?",
+      "target": "argparse.html"
+    },
+    {
+      "q": "How do I remove and return the smallest item from a heap?",
+      "target": "heapq.html"
+    },
+    {
+      "q": "How do I get a default value for a missing dictionary key?",
+      "target": "collections.html"
+    },
+    {
+      "q": "How do I run a function in a background thread?",
+      "target": "threading.html"
+    },
+    {
+      "q": "How do I start a new operating system process?",
+      "target": "multiprocessing.html"
+    },
+    {
+      "q": "How do I serve the current directory over HTTP?",
+      "target": "http.server.html"
+    },
+    {
+      "q": "How do I read comma-separated values into a list of rows?",
+      "target": "csv.html"
+    },
+    {
+      "q": "How do I parse a date from an ISO 8601 string?",
+      "target": "datetime.html"
+    },
+    {
+      "q": "How do I retrieve the source code of a Python function?",
+      "target": "inspect.html"
+    },
+    {
+      "q": "How do I wrap a long paragraph to a fixed width?",
+      "target": "textwrap.html"
+    },
+    {
+      "q": "How do I create a full-text search virtual table?",
+      "target": "sqlite3.html"
+    }
+  ]
+}

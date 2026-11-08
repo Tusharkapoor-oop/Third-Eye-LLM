@@ -31,6 +31,10 @@ class FakeService:
         self.calls.append(("research", {"query": query, **kwargs}))
         return {"status": "ok", "q": query, "n": 0, "f": [], "tok": 20}
 
+    async def synthesize(self, query, **kwargs):
+        self.calls.append(("synthesize", {"query": query, **kwargs}))
+        return {"status": "ok", "q": query, "hyp": [], "tok": 20}
+
 
 async def test_tool_surface_is_four_compact_readonly_tools():
     server = build_server(FakeService())
@@ -50,6 +54,24 @@ async def test_tool_schema_stays_within_budget():
     dumped = [t.model_dump(by_alias=True, exclude_none=True) for t in tools]
     tokens = count_tokens(json.dumps(dumped, separators=(",", ":"), ensure_ascii=False))
     assert tokens <= 1000, tokens
+
+
+async def test_research_profile_exposes_evidence_synthesis_and_forwards_arguments():
+    svc = FakeService()
+    server = build_server(svc, profile="research")
+    tools = await server.list_tools()
+    assert "evidence_synthesis" in [t.name for t in tools]
+
+    result = await server.call_tool(
+        "evidence_synthesis",
+        {"query": "does X cause Y", "max_tokens": 500, "max_hops": 3},
+    )
+    assert result.is_error is False
+    call = svc.calls[-1]
+    assert call[0] == "synthesize"
+    assert call[1]["query"] == "does X cause Y"
+    assert call[1]["max_tokens"] == 500
+    assert call[1]["max_hops"] == 3
 
 
 async def test_web_search_forwards_arguments_and_returns_compact_json():

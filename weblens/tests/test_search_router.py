@@ -574,3 +574,44 @@ async def test_router_promotes_existing_provider_hit_to_official(tmp_path, monke
     assert out.hits[0].url == "https://example.com/primary"
     assert out.hits[0].provider == "official-source"
     assert out.hits[0].title == "Primary document"
+
+
+@pytest.mark.asyncio
+async def test_search_result_cache_avoids_repeat_provider_calls(tmp_path):
+    from weblens.cache import Cache
+
+    settings = Settings(
+        cache_dir=tmp_path / "cache",
+        cache_enabled=True,
+        allow_browser=False,
+        search_providers="ddg",
+        search_mode="fallback",
+        search_cache_ttl_s=60,
+    )
+    cache = Cache(settings)
+
+    class CacheFetcher:
+        def __init__(self, cache):
+            self.cache = cache
+
+    provider = FakeProvider(
+        "fake",
+        [
+            hit(
+                "Example Domain",
+                "https://example.com/",
+                "example domain reference page",
+                provider="fake",
+            )
+        ],
+    )
+    router = SearchRouter(settings, CacheFetcher(cache))  # type: ignore[arg-type]
+    router._providers = [provider]
+    try:
+        first = await router.search("example domain", k=5)
+        second = await router.search("example domain", k=5)
+        assert provider.calls == 1
+        assert [h.url for h in second.hits] == [h.url for h in first.hits]
+        assert "search_cache_hit" in second.warnings
+    finally:
+        cache.close()
