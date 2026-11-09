@@ -116,11 +116,7 @@ def git_commit() -> str:
 
 
 def load_rows() -> list[dict[str, Any]]:
-    web_rows = [
-        json.loads(line)
-        for line in WEBLENS_SOURCE.read_text(encoding="utf-8").splitlines()
-        if line.strip()
-    ]
+    web_rows = [json.loads(line) for line in WEBLENS_SOURCE.read_text(encoding="utf-8").splitlines() if line.strip()]
     root_rows = json.loads(ROOT_SOURCE.read_text(encoding="utf-8"))
     if len(web_rows) != 58:
         raise SystemExit(f"expected 58 WebLens rows, found {len(web_rows)}")
@@ -144,9 +140,7 @@ def convert(web_rows: list[dict[str, Any]], root_rows: list[dict[str, Any]]) -> 
                 "support_mode": r.get("support_mode", "all"),
                 "relevant_domains": list(r.get("relevant_domains") or []),
                 "relevant_url_prefixes": list(r.get("relevant_url_prefixes") or []),
-                "expect_research_status": list(
-                    r.get("expect_research_status") or ["ok", "partial"]
-                ),
+                "expect_research_status": list(r.get("expect_research_status") or ["ok", "partial"]),
                 "expect_conflict": r["category"] == "conflicting",
                 "expect_abstention": r["category"] == "unanswerable",
                 "difficulty": "medium",
@@ -176,11 +170,7 @@ def convert(web_rows: list[dict[str, Any]], root_rows: list[dict[str, Any]]) -> 
                 "expect_research_status": (
                     ["no_reliable_result"]
                     if is_no
-                    else (
-                        ["conflicting_sources", "ok", "partial"]
-                        if is_conflict
-                        else ["ok", "partial"]
-                    )
+                    else (["conflicting_sources", "ok", "partial"] if is_conflict else ["ok", "partial"])
                 ),
                 "expect_conflict": is_conflict,
                 "expect_abstention": is_no,
@@ -294,14 +284,14 @@ def write_outputs(rows: list[dict[str, Any]]) -> None:
     card = f"""# Stage 7 frozen dataset card
 
 - Version: `stage7-v1`
-- Frozen at: `{manifest['created_at']}`
-- Code commit: `{manifest['git_commit']}`
-- Dataset: `{manifest['dataset_path']}`
+- Frozen at: `{manifest["created_at"]}`
+- Code commit: `{manifest["git_commit"]}`
+- Dataset: `{manifest["dataset_path"]}`
 - SHA-256: `{digest}`
-- Rows: {len(rows)} ({split_counts['dev']} dev / {split_counts['test']} sealed test)
+- Rows: {len(rows)} ({split_counts["dev"]} dev / {split_counts["test"]} sealed test)
 - Categories: {dict(category_counts)}
-- Answerable: {manifest['answerable']}; unanswerable: {manifest['unanswerable']};
-  conflict-labelled: {manifest['conflicting']}
+- Answerable: {manifest["answerable"]}; unanswerable: {manifest["unanswerable"]};
+  conflict-labelled: {manifest["conflicting"]}
 
 ## Provenance
 
@@ -337,11 +327,7 @@ human-judged relevance.
 def main() -> int:
     if not WEBLENS_SOURCE.exists() or not ROOT_SOURCE.exists():
         raise SystemExit("source dataset is missing")
-    web_rows = [
-        json.loads(line)
-        for line in WEBLENS_SOURCE.read_text(encoding="utf-8").splitlines()
-        if line.strip()
-    ]
+    web_rows = [json.loads(line) for line in WEBLENS_SOURCE.read_text(encoding="utf-8").splitlines() if line.strip()]
     root_rows = json.loads(ROOT_SOURCE.read_text(encoding="utf-8"))
     rows = convert(web_rows, root_rows)
     assign_splits(rows)

@@ -26,6 +26,9 @@ class AppConfig:
     server_version: str = os.getenv("MCP_SERVER_VERSION", "2.0.0")
     host: str = os.getenv("MCP_HOST", "127.0.0.1")
     port: int = int(os.getenv("MCP_PORT", "8765"))
+    # Bearer token required by the Streamable HTTP transport. Mandatory whenever
+    # the server binds a non-loopback address (see server.run_server).
+    http_auth_token: str = os.getenv("WEBINTEL_HTTP_TOKEN", "")
 
     # API Keys
     tavily_api_key: str = (

@@ -1,0 +1,42 @@
+# Lean WebLens image for Cloudflare Containers.
+#
+# Cloudflare Containers run a normal linux/amd64 Docker image. This image
+# intentionally installs the canonical Python package only: the root project's
+# optional browser, hybrid-embedding, and Redis extras are not required for the
+# MCP HTTP profile used by the Worker.
+
+FROM python:3.11-slim
+
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1 \
+    PYTHONPATH=/app/weblens/src \
+    PORT=8080 \
+    WEBLENS_HTTP_HOST=0.0.0.0 \
+    WEBLENS_HTTP_PORT=8080 \
+    WEBLENS_MCP_PROFILE=full \
+    WEBLENS_CACHE_DIR=/tmp/weblens
+
+WORKDIR /app
+
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends ca-certificates \
+    && rm -rf /var/lib/apt/lists/*
+
+# The root .dockerignore excludes tests, caches, local virtualenvs, and secrets
+# while keeping the package sources available to the build.
+COPY weblens/ /app/weblens/
+
+RUN pip install --no-cache-dir --no-compile ./weblens
+
+RUN useradd --create-home --uid 10001 weblens \
+    && mkdir -p /tmp/weblens \
+    && chown -R weblens:weblens /app /tmp/weblens
+
+USER weblens
+
+EXPOSE 8080
+
+HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
+    CMD python -c "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8080/healthz', timeout=3).read()"
+
+CMD ["python", "-m", "weblens.cli", "serve", "--http", "--host", "0.0.0.0", "--port", "8080", "--profile", "full"]

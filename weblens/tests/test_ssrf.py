@@ -57,6 +57,25 @@ def test_check_hostname_blocks_internal_names(policy, host):
         policy.check_hostname(host)
 
 
+@pytest.mark.parametrize(
+    "ip",
+    [
+        "169.254.169.254",
+        "168.63.129.16",
+        "100.100.100.200",
+    ],
+)
+def test_check_ip_blocks_cloud_metadata_endpoints(policy, ip):
+    with pytest.raises(BlockedURLError, match="blocked metadata"):
+        policy.check_ip(ip)
+
+
+def test_blocked_port_raises_blocked_url_error_not_valueerror(settings):
+    p = DestinationPolicy(settings)
+    with pytest.raises(BlockedURLError, match="invalid URL port"):
+        p.check_url("http://x:99999/")
+
+
 def test_check_hostname_blocks_private_ip_literals(policy):
     with pytest.raises(BlockedURLError):
         policy.check_hostname("127.0.0.1")
@@ -66,7 +85,7 @@ def test_check_hostname_blocks_private_ip_literals(policy):
 
 
 def test_allowlist_and_denylist(settings):
-    settings.allowed_hosts = "example.com"
+    settings.allow_hosts = "example.com"
     settings.block_hosts = "bad.example.com"
     p = DestinationPolicy(settings)
     p.check_hostname("docs.example.com")

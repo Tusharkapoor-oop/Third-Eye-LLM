@@ -86,8 +86,12 @@ _PATTERNS: list[tuple[str, re.Pattern[str]]] = [
         "concealment",
         re.compile(
             r"\b(?:do not|don't|never)\s+(?:tell|inform|mention|reveal|notify)\b"
+            r"(?:"
             r".{0,40}\b(?:user|human|operator|person)\b"
-            r".{0,40}\b(?:about\s+(?:this|these|the\s+instruction)|anything|this|these)\b",
+            r".{0,40}\b(?:about\s+(?:this|these|the\s+instruction)|anything|this|these)\b"
+            r"|.{0,40}\b(?:about\s+)?(?:this|these|anything|the\s+instruction)\b"
+            r".{0,40}\b(?:user|human|operator|person)\b"
+            r")",
             re.I | re.S,
         ),
     ),
@@ -412,10 +416,7 @@ _NEGATION = re.compile(
 
 
 def _negated(prefix: str) -> bool:
-    return any(
-        not re.search(r"[,;.!?]", prefix[match.end() :])
-        for match in _NEGATION.finditer(prefix)
-    )
+    return any(not re.search(r"[,;.!?]", prefix[match.end() :]) for match in _NEGATION.finditer(prefix))
 
 
 def _has_exfiltration(text: str) -> bool:
@@ -429,9 +430,7 @@ def _has_exfiltration(text: str) -> bool:
     return False
 
 
-INVISIBLE = re.compile(
-    r"[\u00ad\u180e\u200b-\u200f\u202a-\u202e\u2060\u2066-\u2069\ufeff]"
-)
+INVISIBLE = re.compile(r"[\u00ad\u180e\u200b-\u200f\u202a-\u202e\u2060\u2066-\u2069\ufeff]")
 
 _COMMENT_PATTERNS = [
     re.compile(
@@ -439,6 +438,8 @@ _COMMENT_PATTERNS = [
         r".{0,60}\b(?:instructions?|prompt|system|rules?)\b",
         re.I | re.S,
     ),
+    re.compile(r"\b(?:system|developer|assistant)\s*:", re.I),
+    re.compile(r"\bprompt\s+injection\b", re.I),
     re.compile(
         r"\b(?:ignora|descarta|olvida|omite)\b"
         r".{0,60}\b(?:instrucciones|prompt|sistema|reglas)\b",

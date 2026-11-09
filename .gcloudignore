@@ -3,6 +3,9 @@
 .gcloudignore
 .env
 .env*
+**/.env
+**/.env.*
+**/*.env
 .venv
 weblens/.venv
 __pycache__

@@ -1,0 +1,36 @@
+# Pre-commit hooks for WebLens.
+# Install with: pre-commit install
+minimum_pre_commit_version: "3.0.0"
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.6.0
+    hooks:
+      - id: trailing-whitespace
+      - id: end-of-file-fixer
+      - id: check-yaml
+      - id: check-toml
+      - id: check-merge-conflict
+      - id: check-added-large-files
+        args: ["--maxkb=2048"]
+      - id: detect-private-key
+
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.17.3
+    hooks:
+      - id: ruff
+        files: ^weblens/(src|tests|benchmarks)/
+      - id: ruff-format
+        files: ^weblens/(src|tests|benchmarks)/
+
+  - repo: local
+    hooks:
+      - id: mirror-drift-guard
+        name: canonical/mirror drift guard
+        entry: python -m pytest weblens/tests/test_mirror_drift.py -q
+        language: system
+        pass_filenames: false
+      - id: tracked-secret-scan
+        name: tracked-file secret scan
+        entry: python -m pytest tests/test_no_tracked_secrets.py -q
+        language: system
+        pass_filenames: false

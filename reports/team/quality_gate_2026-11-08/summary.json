@@ -1,0 +1,38 @@
+{
+  "generated_at": "2026-11-08T13:56:07+00:00",
+  "team": "weblens-verification",
+  "mode": "sequential-with-handoff",
+  "verdict": "FAIL",
+  "duration_s": 4.14,
+  "roles": [
+    {
+      "role": "quality",
+      "objective": "Arena quality and token-compression gates on the most recent arena artifact, judged strictly (>= 90.0).",
+      "owner": "quality",
+      "status": "FAIL",
+      "gate": "exit 0; a recorded arena score below 90.0 is a real failure, not a skip",
+      "exit_codes": [
+        1
+      ],
+      "duration_s": 4.14,
+      "commands": [
+        {
+          "command": "python -m pytest tests/test_07_live_quality_arena.py -q -p no:cacheprovider",
+          "exit_code": 1,
+          "duration_s": 4.14
+        }
+      ],
+      "log": "reports\\team\\quality_gate_2026-11-08\\quality.log",
+      "last_line": "1 failed, 2 passed in 1.23s"
+    }
+  ],
+  "skipped_roles": [
+    "architect",
+    "security",
+    "contract",
+    "correctness",
+    "applications",
+    "performance",
+    "models"
+  ]
+}

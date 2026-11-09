@@ -1,0 +1,23 @@
+{
+  "generated_at": "2026-11-08T13:29:50+00:00",
+  "duration_s": 34.66,
+  "requested": [
+    "gemini"
+  ],
+  "verdict": "BLOCKED",
+  "models": [
+    {
+      "name": "gemini",
+      "model": "gemini-3.5-flash",
+      "checks": [
+        {
+          "check": "reachability",
+          "status": "BLOCKED",
+          "detail": "fell through to local algorithmic synthesizer (model never served the request)"
+        }
+      ],
+      "status": "BLOCKED"
+    }
+  ],
+  "exit_code": 2
+}

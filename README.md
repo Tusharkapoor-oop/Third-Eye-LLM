@@ -1,8 +1,20 @@
 # WebLens: Web Intelligence Platform & Model Context Protocol (MCP)
 
+[![CI](https://github.com/Tusharkapoor-oop/Third-Eye-LLM/actions/workflows/ci.yml/badge.svg)](https://github.com/Tusharkapoor-oop/Third-Eye-LLM/actions/workflows/ci.yml)
+[![WebLens CI](https://github.com/Tusharkapoor-oop/Third-Eye-LLM/actions/workflows/weblens-ci.yml/badge.svg)](https://github.com/Tusharkapoor-oop/Third-Eye-LLM/actions/workflows/weblens-ci.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+[![Python 3.11+](https://img.shields.io/badge/python-3.11%2B-blue.svg)](pyproject.toml)
+
 WebLens is a local-first, cloud-deployable web intelligence platform for AI agents. It provides compact, citable evidence packets, bounded crawling, a local RAG knowledge base, and nine application workflows over a real MCP server.
 
+**What it is:** an evidence engine. It returns URLs, fetch timestamps, exact
+character spans, gaps, conflicts and explicit no-result states — never invented
+prose. **What it is not:** an LLM, a scraper farm, or a "just trust the summary"
+search API.
+
 This README reports **measured** results from the current V10 evaluation. It deliberately does not repeat older unverified marketing numbers.
+
+**Jump to:** [quick start](#installation--local-execution) · [MCP tools](docs/MCP_API_REFERENCE.md) · [quality gates](#engineering-quality-gates) · [security](SECURITY.md) · [measured benchmark](#v10-three-system-measurement-120-queries) · [contributing](CONTRIBUTING.md)
 
 ---
 
@@ -13,10 +25,14 @@ This README reports **measured** results from the current V10 evaluation. It del
 - **Health/root:** `GET /` returns `{"status":"ok","service":"weblens","version":"0.1.0","mcp_endpoint":"/mcp"}`
 - **Current revision:** `weblens-00006-l9h` (region `us-central1`)
 - **Transport:** JSON-RPC over Streamable HTTP MCP
-- **Public tool surface:** 10 stateless tools. The three stateful tools (`crawl2rag_index`, `crawl2rag_query`, `research_chat`) are **not** registered on the public unauthenticated listener because they share a process-wide SQLite store.
-- **Local tool surface:** all 13 tools under `--profile full` on loopback (or with a bearer token).
+- **Public tool surface:** 11 stateless tools. The three stateful tools (`crawl2rag_index`, `crawl2rag_query`, `research_chat`) are **not** registered on the public unauthenticated listener because they share a process-wide SQLite store.
+- **Local tool surface:** all 14 tools under `--profile full` on loopback (or with a bearer token).
 
-The deployment is public (`allUsers`). Authentication is **not enforced**, and no application-level rate limit was observed. See the security section below.
+The Cloud Run IAM policy is public (`allUsers`), but the MCP listener requires a bearer token: the current code refuses to bind a non-loopback host without `WEBLENS_HTTP_TOKEN` or `WEBLENS_API_KEYS`, and `--allow-insecure` is no longer used by the shipped `Dockerfile`. The deployed-revision measurements below were taken before that change. See the security section below.
+
+### Cloudflare Containers
+
+A separate deployment package targets Cloudflare Containers: `wrangler.jsonc`, `Dockerfile.cloudflare`, and the Worker in `cloudflare/worker.ts`. It is deployment-ready but has **not** been deployed. See [cloudflare/README.md](cloudflare/README.md) for the Workers Paid prerequisite, secret setup, MCP client configuration, and operational limits.
 
 ---
 
@@ -113,36 +129,40 @@ Run: `python tools/run_all_nine_apps_live.py`
 
 **Local:** 38/38 checks pass (`reports/local-security/local_security_results_v2.json`). SSRF blocking works for metadata, loopback, RFC1918, IPv6 loopback and `file://`; a public control URL still extracts, proving the block is not blanket denial.
 
-**Deployed (revision `00006-l9h`):** 18 PASS / 4 FAIL / 1 UNSUPPORTED (`reports/deployed-security/deployed_security_results_v2.json`).
+**Deployed (revision `00006-l9h`):** 18 PASS / 4 FAIL / 1 UNSUPPORTED (`reports/deployed-security/deployed_security_results_v2.json`). Those results describe that historical revision, not the current code.
 
-Open findings:
+Open findings in the *current* code:
 
-- Unauthenticated MCP `initialize` succeeds, and a bogus `Bearer` token is accepted. The service is public.
-- No application-level rate limit was observed in 20 cheap metadata calls. This was not a load test.
-- No HSTS header on the app response.
-- Cross-tenant isolation is **UNSUPPORTED**, not PASS: stateful tools were removed from the public listener after a real leak was found on revision `00005`. True multi-tenant isolation is not implemented.
+- Auth is mandatory for non-loopback listeners (`WEBLENS_HTTP_TOKEN`/`WEBLENS_API_KEYS`); the `Dockerfile` no longer passes `--allow-insecure`. A deployment that omits the token exits with status 2 instead of serving unauthenticated requests.
+- Application-level rate limiting is implemented (`weblens/src/weblens/ratelimit.py`, per-tenant token buckets). The "no rate limit" finding applied to revision `00006-l9h`.
+- Security headers (HSTS, `X-Content-Type-Options`, `X-Frame-Options`, `Referrer-Policy`) are emitted by `weblens/src/weblens/cli.py`. The "no HSTS" finding applied to revision `00006-l9h`.
+- Cross-tenant isolation remains **UNSUPPORTED** for callers sharing one token: stateful tools were removed from the public listener after a real leak was found on revision `00005`. True multi-tenant isolation across distinct identities is not implemented.
 
 Not claimed: “fully hardened”, “10/10 remote checks passed”, or “zero trust”. The old README claimed these; they are contradicted by the measured audit.
 
-The deployment does **not** include `.env`; no API keys are baked into the image.
+The build context excludes env files via `.dockerignore`/`.gcloudignore` (`**/.env*`), so `weblens/.env` is not copied into the image. Known residual risk: a live Tavily key remains in **git history** (commits `1c11ac3`, `a93e61b`); rotate it and purge history as documented in `evidence/SECURITY-FINDINGS.md`.
 
 ---
 
 ## MCP Client Configuration
 
-### Deployed (public, stateless tools)
+### Deployed (11 stateless tools; bearer token required)
 
 ```json
 {
   "mcpServers": {
     "weblens-cloud": {
-      "url": "https://weblens-fgunqcnrla-uc.a.run.app/mcp"
+      "url": "https://weblens-fgunqcnrla-uc.a.run.app/mcp",
+      "headers": {"Authorization": "Bearer ${WEBLENS_HTTP_TOKEN}"}
     }
   }
 }
 ```
 
-### Local (all 13 tools)
+Generate the token with `openssl rand -hex 32`, set `WEBLENS_HTTP_TOKEN` on the
+server, and give clients the same value. Requests without it receive HTTP 401.
+
+### Local (all 14 tools)
 
 ```json
 {
@@ -167,14 +187,18 @@ pip install -e ./weblens -e .
 ```
 
 ```bash
-# stdio MCP server (all 13 tools)
+# stdio MCP server (all 14 tools)
 python -m weblens.cli serve --profile full
 
 # local HTTP MCP server
 python -m weblens.cli serve --http --host 127.0.0.1 --port 8765 --profile full
 
-# non-loopback without a token: stateful tools are disabled
-python -m weblens.cli serve --http --host 0.0.0.0 --port 8080 --profile full --allow-insecure
+# non-loopback requires a bearer token; the server refuses to start otherwise
+WEBLENS_HTTP_TOKEN="$(openssl rand -hex 32)" \
+  python -m weblens.cli serve --http --host 0.0.0.0 --port 8080 --profile full
+
+# --allow-insecure exists only to explicitly accept an unauthenticated endpoint
+# (never use it for a public deployment).
 ```
 
 ### Application CLI
@@ -193,13 +217,65 @@ python -m weblens.cli app tutorial --step all
 
 | Suite | Result |
 |---|---|
-| Targeted security/SSRF/crawler/extraction (`pytest tests/...`) | **170 passed** in 16.7 s |
-| Injection + app lifecycle (`pytest tests/test_injection_sanitization.py weblens/tests/test_apps.py`) | **47 passed** in 21.1 s |
-| MCP/auth/apps/config (`pytest weblens/tests/...`) | passed |
-| Full root `pytest tests` | **INCOMPLETE**: reached ~93% then hung >15 min and was terminated; not reported as a pass |
+| Canonical package (`pytest weblens/tests`) | **769 passed, 1 skipped** in 191.6 s |
+| Canonical coverage | **90.74 %** (gate: `--cov-fail-under=90`) |
+| Root / legacy stack (`pytest tests`) | **353 passed, 5 skipped** in 483.1 s; terminates cleanly (the old teardown wedge is fixed) |
+| Skipped tests | Browser-dependent tests skip when Chromium cannot launch in the environment |
+| `ruff check` + `ruff format --check` (inside `weblens/`) | **pass** |
+| `mypy weblens/src/weblens` | **0 errors** (54 files) |
+| `bandit -r weblens/src/weblens -ll` | **0 medium/high** |
+| Mirror drift guard (`test_mirror_drift.py`) | **pass** |
+| Tracked-secret scan (`tests/test_no_tracked_secrets.py`) | **pass** |
+| Provider status classification (tavily/brave/searxng/yahoo) | **pass** (401/403 terminal, 429 retryable) |
+| Benchmark metric unit tests (`test_v11_metrics.py`) | **11 passed** |
 | Nine apps live runner | **9/9 PASS** |
 | Local security v2 | **38/38 PASS** |
-| Deployed security v2 | **18 PASS / 4 FAIL / 1 UNSUPPORTED** |
+| Deployed security v2 (historical revision `00006-l9h`) | **18 PASS / 4 FAIL / 1 UNSUPPORTED** |
+
+Measured on Windows with Python 3.14 in this workspace. CI additionally runs both suites on Python 3.11–3.13.
+
+### Measured head-to-head vs Tavily (live API, 40 held-out queries)
+
+See [reports/weblens-vs-tavily-v11/README.md](reports/weblens-vs-tavily-v11/README.md) for the full method, raw rows and the contamination analysis.
+
+| Metric | WebLens | Tavily |
+|---|---:|---:|
+| Hit@5 | **0.775** | 0.600 |
+| P@5 | **0.410** | 0.210 |
+| nDCG@5 | **0.416** | 0.232 |
+| MRR | **0.523** | 0.423 |
+| p50 / p95 latency | 3057 / 6391 ms | **295 / 344 ms** |
+| Mean payload tokens | **367** | 1680 |
+
+Paired P@5 difference **+0.200** (95% CI **+0.110 … +0.295**), win/tie/loss **22 / 12 / 6**.
+
+**Important:** WebLens ships an author-curated "primary source" hint table whose
+labels overlap this dataset's labels. Left enabled it inflates P@5 from 0.410 to
+**0.805** — pure label leakage. The benchmark disables it
+(`use_official_source_hints=False`) and records that setting in `results.json`.
+An earlier revision of this README would have quoted the inflated figure.
+
+---
+
+## Engineering Quality Gates
+
+Every pull request must pass these automated gates (enforced in CI and available
+via `pre-commit`):
+
+| Gate | Command | Threshold |
+|---|---|---|
+| Lint | `cd weblens && ruff check src tests benchmarks` | zero findings |
+| Format | `cd weblens && ruff format --check src tests benchmarks` | clean |
+| Types | `mypy weblens/src/weblens` | zero errors |
+| Static security | `bandit -r weblens/src/weblens -ll -q` | no medium/high |
+| Canonical tests + coverage | `cd weblens && pytest tests --cov=weblens` | all pass, **≥ 90 %** |
+| Root/legacy tests | `pytest tests` | all pass, no hangs |
+| Mirror drift guard | `pytest weblens/tests/test_mirror_drift.py` | byte-identical trees |
+| Secret scan | `pytest tests/test_no_tracked_secrets.py` | no tracked credentials |
+
+The canonical package and its mirror `src/weblens` must remain byte-identical;
+the guard test fails otherwise. See [CONTRIBUTING.md](CONTRIBUTING.md) for the
+full local workflow.
 
 ---
 
@@ -216,10 +292,11 @@ python -m weblens.cli app tutorial --step all
 
 ## Documentation
 
+- [Documentation index](docs/README.md)
+- [MCP API reference](docs/MCP_API_REFERENCE.md)
+- [Security policy](SECURITY.md) · [Security threat model](docs/SECURITY_THREAT_MODEL.md) · [Security findings](evidence/SECURITY-FINDINGS.md)
+- [Contributing guide](CONTRIBUTING.md) · [Changelog](CHANGELOG.md) · [License](LICENSE)
 - [V10 three-system report](reports/three-system-comparison-v10/V10_REPORT.md)
 - [Claim ledger](evidence/CLAIM_LEDGER.md)
-- [Security findings](evidence/SECURITY-FINDINGS.md)
 - [Experiment index](evidence/EXPERIMENT-INDEX.md)
 - [Final A–L report](reports/FINAL_REPORT.md)
-- [MCP API reference](docs/MCP_API_REFERENCE.md)
-- [Security threat model](docs/SECURITY_THREAT_MODEL.md)

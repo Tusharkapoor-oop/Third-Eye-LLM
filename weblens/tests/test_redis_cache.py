@@ -143,9 +143,7 @@ async def test_redis_cache_ttl_zero_deletes_and_expired_values_are_miss(tmp_path
 
 async def test_redis_cache_serves_stale_within_grace(tmp_path):
     client = FakeRedis()
-    cache = RedisCache(
-        _settings(tmp_path, cache_stale_grace_s=3600), client=client
-    )
+    cache = RedisCache(_settings(tmp_path, cache_stale_grace_s=3600), client=client)
     await cache.set("stale", b"x", {"kind": "test"}, ttl=60)
     key = "weblens:cache:stale"
     # Force the logical expiry into the past while the server-side key (kept
@@ -165,9 +163,7 @@ async def test_redis_cache_serves_stale_within_grace(tmp_path):
 
 async def test_redis_cache_extends_only_http_keys_for_stale_grace(tmp_path):
     client = FakeRedis()
-    cache = RedisCache(
-        _settings(tmp_path, cache_stale_grace_s=3600), client=client
-    )
+    cache = RedisCache(_settings(tmp_path, cache_stale_grace_s=3600), client=client)
     started = time.time()
     await cache.set("page", b"x", {"kind": "http"}, ttl=60)
     await cache.set("search", b"y", {"kind": "search"}, ttl=60)

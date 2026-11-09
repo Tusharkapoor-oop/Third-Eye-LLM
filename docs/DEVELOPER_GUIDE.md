@@ -1,5 +1,25 @@
 # WebLens Developer Guide
 
+## 0. Quality gates (read this first)
+
+Every change must keep these green (also enforced in CI and via `pre-commit`):
+
+```bash
+cd weblens
+ruff check src tests benchmarks
+ruff format --check src tests benchmarks
+mypy src/weblens                      # 0 errors
+bandit -r src/weblens -ll -q          # no medium/high
+pytest tests --cov=weblens            # all pass, coverage >= 90 %
+cd ..
+pytest tests --timeout=120            # root/legacy suite, no hangs
+pytest weblens/tests/test_mirror_drift.py tests/test_no_tracked_secrets.py -q
+```
+
+`weblens/src/weblens` is canonical; `src/weblens` is a byte-identical mirror.
+Never edit the mirror directly — the drift guard fails the build. See
+[CONTRIBUTING.md](../CONTRIBUTING.md) for the full workflow.
+
 ## 1. Environment Setup & Prerequisites
 WebLens requires Python 3.11 or later.
 

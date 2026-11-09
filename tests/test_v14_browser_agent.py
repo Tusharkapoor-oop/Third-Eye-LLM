@@ -17,9 +17,25 @@ from browser_agent import ControlledBrowserAgent
 from security import SecurityValidationError
 
 
+def _browser_env_failure(exc: BaseException) -> bool:
+    """True only for launch/environment failures, not product bugs."""
+    text = str(exc).lower()
+    return any(
+        token in text
+        for token in ("launch", "executable", "eperm", "mkdtemp", "playwright")
+    )
+
+
 @pytest_asyncio.fixture
 async def browser_agent_fixture():
     agent = ControlledBrowserAgent(session_timeout_s=30.0)
+    try:
+        await agent._ensure_browser()
+    except Exception as exc:
+        await agent.close()
+        if not _browser_env_failure(exc):
+            raise
+        pytest.skip(f"browser cannot launch in this environment: {exc}")
     yield agent
     await agent.close()
 

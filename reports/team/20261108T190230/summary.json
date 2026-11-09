@@ -1,0 +1,156 @@
+{
+  "generated_at": "2026-11-08T13:41:48+00:00",
+  "team": "weblens-verification",
+  "mode": "sequential-with-handoff",
+  "verdict": "BLOCKED",
+  "duration_s": 557.91,
+  "roles": [
+    {
+      "role": "architect",
+      "objective": "Every shipped module compiles and imports with no side effects.",
+      "owner": "architecture",
+      "status": "PASS",
+      "gate": "all commands exit 0",
+      "exit_codes": [
+        0,
+        0
+      ],
+      "duration_s": 23.15,
+      "commands": [
+        {
+          "command": "python -m compileall -q server.py config.py model_provider.py search_pipeline.py security.py extractor.py event_store.py browser_agent.py geo_mapper.py document_generator.py schemas.py reranker.py cache.py",
+          "exit_code": 0,
+          "duration_s": 0.41
+        },
+        {
+          "command": "python -c \"import server, model_provider, search_pipeline, extractor, event_store, security, schemas\"",
+          "exit_code": 0,
+          "duration_s": 22.74
+        }
+      ],
+      "log": "reports\\team\\20261108T190230\\architect.log",
+      "last_line": ""
+    },
+    {
+      "role": "security",
+      "objective": "59-vector red-team suite passes with zero vulnerabilities.",
+      "owner": "security",
+      "status": "PASS",
+      "gate": "exit 0 and 0 vulnerabilities reported",
+      "exit_codes": [
+        0
+      ],
+      "duration_s": 10.05,
+      "commands": [
+        {
+          "command": "python scripts/run_security_redteam.py",
+          "exit_code": 0,
+          "duration_s": 10.05
+        }
+      ],
+      "log": "reports\\team\\20261108T190230\\security.log",
+      "last_line": "Passed: 59, Failed/Vulnerabilities: 0"
+    },
+    {
+      "role": "contract",
+      "objective": "Static/dependency hygiene and MCP protocol conformance.",
+      "owner": "protocol",
+      "status": "PASS",
+      "gate": "exit 0",
+      "exit_codes": [
+        0
+      ],
+      "duration_s": 112.09,
+      "commands": [
+        {
+          "command": "python -m pytest tests/test_01_static_and_deps.py tests/test_02_mcp_protocol.py tests/test_mcp_protocol.py tests/test_mcp_e2e.py tests/test_mcp_stress.py -q -p no:cacheprovider",
+          "exit_code": 0,
+          "duration_s": 112.09
+        }
+      ],
+      "log": "reports\\team\\20261108T190230\\contract.log",
+      "last_line": "25 passed in 102.45s (0:01:42)"
+    },
+    {
+      "role": "correctness",
+      "objective": "Search, extraction, crawling, caching and failure-injection behaviour.",
+      "owner": "engine",
+      "status": "PASS",
+      "gate": "exit 0",
+      "exit_codes": [
+        0
+      ],
+      "duration_s": 278.86,
+      "commands": [
+        {
+          "command": "python -m pytest tests/test_search.py tests/test_search_engine.py tests/test_extract.py tests/test_crawler.py tests/test_crawler_traps.py tests/test_cache.py tests/test_edge_fuzz.py tests/test_failure_injection.py tests/test_token_boundaries.py tests/test_injection_sanitization.py -q -p no:cacheprovider",
+          "exit_code": 0,
+          "duration_s": 278.86
+        }
+      ],
+      "log": "reports\\team\\20261108T190230\\correctness.log",
+      "last_line": "115 passed in 275.93s (0:04:35)"
+    },
+    {
+      "role": "applications",
+      "objective": "Research, chat, document, geo, browser and adversarial-grounding applications.",
+      "owner": "apps",
+      "status": "PASS",
+      "gate": "exit 0",
+      "exit_codes": [
+        0
+      ],
+      "duration_s": 43.04,
+      "commands": [
+        {
+          "command": "python -m pytest tests/test_apps.py tests/test_adversarial_grounding.py tests/test_v14_browser_agent.py tests/test_v14_crawl_and_research_lifecycle.py tests/test_v14_document_generation.py tests/test_v14_event_and_dashboard.py tests/test_v14_geo_mapping.py tests/test_v14_integrated_workflows.py tests/test_v14_server_event_wiring.py -q -p no:cacheprovider",
+          "exit_code": 0,
+          "duration_s": 43.03
+        }
+      ],
+      "log": "reports\\team\\20261108T190230\\applications.log",
+      "last_line": "55 passed in 38.99s"
+    },
+    {
+      "role": "performance",
+      "objective": "Concurrency, resource-leak and RAM-bound gates stay inside limits.",
+      "owner": "performance",
+      "status": "PASS",
+      "gate": "exit 0",
+      "exit_codes": [
+        0
+      ],
+      "duration_s": 9.44,
+      "commands": [
+        {
+          "command": "python -m pytest tests/test_06_performance_stress.py -q -p no:cacheprovider",
+          "exit_code": 0,
+          "duration_s": 9.43
+        }
+      ],
+      "log": "reports\\team\\20261108T190230\\performance.log",
+      "last_line": "3 passed in 6.17s"
+    },
+    {
+      "role": "models",
+      "objective": "Every configured model is reachable and satisfies the strict cross-model contract battery.",
+      "owner": "models",
+      "status": "BLOCKED",
+      "gate": "exit 0 PASS; exit 2 = BLOCKED (model unreachable); exit 1 = FAIL",
+      "exit_codes": [
+        2
+      ],
+      "duration_s": 81.28,
+      "commands": [
+        {
+          "command": "python scripts/cross_model_verification.py",
+          "exit_code": 2,
+          "duration_s": 81.28
+        }
+      ],
+      "log": "reports\\team\\20261108T190230\\models.log",
+      "last_line": "NVIDIA API HTTP 404: 404 page not found"
+    }
+  ],
+  "skipped_roles": []
+}

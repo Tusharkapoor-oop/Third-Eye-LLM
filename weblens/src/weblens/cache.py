@@ -31,6 +31,10 @@ class Cache:
         self.misses = 0
         self.errors = 0
         self.evictions = 0
+        # In-memory logical byte total, kept consistent with the DB so that
+        # eviction is O(1) instead of a full SUM scan on every write. Pre-existing
+        # rows are counted once at open; uncounted rows are tolerated gracefully.
+        self._bytes_used: int = 0
         if settings.cache_enabled:
             try:
                 self.path.parent.mkdir(parents=True, exist_ok=True)
@@ -52,6 +56,7 @@ class Cache:
                 self._conn.execute("CREATE INDEX IF NOT EXISTS idx_kv_expires ON kv(expires)")
                 self._conn.commit()
                 with self._lock:
+                    self._bytes_used = self._logical_size_locked()
                     try:
                         self._enforce_limit_locked()
                     except sqlite3.Error:
@@ -61,15 +66,14 @@ class Cache:
             except (sqlite3.Error, OSError):
                 self.errors += 1
                 self._conn = None
+                self._bytes_used = 0
 
     # -- synchronous core, called via to_thread -------------------------
     def _get_sync(self, key: str) -> tuple[bytes, dict[str, Any], float] | None:
         if self._conn is None:
             return None
         with self._lock:
-            row = self._conn.execute(
-                "SELECT value, meta, created, expires FROM kv WHERE k=?", (key,)
-            ).fetchone()
+            row = self._conn.execute("SELECT value, meta, created, expires FROM kv WHERE k=?", (key,)).fetchone()
         if not row:
             return None
         value, meta, created, expires = row
@@ -82,16 +86,12 @@ class Cache:
             return None
         return raw, meta_d, float(created)
 
-    def _get_cached_sync(
-        self, key: str, grace_s: float
-    ) -> tuple[bytes, dict[str, Any], float, bool] | None:
+    def _get_cached_sync(self, key: str, grace_s: float) -> tuple[bytes, dict[str, Any], float, bool] | None:
         """Return an entry that is fresh or expired within ``grace_s``."""
         if self._conn is None:
             return None
         with self._lock:
-            row = self._conn.execute(
-                "SELECT value, meta, created, expires FROM kv WHERE k=?", (key,)
-            ).fetchone()
+            row = self._conn.execute("SELECT value, meta, created, expires FROM kv WHERE k=?", (key,)).fetchone()
         if not row:
             return None
         value, meta, created, expires = row
@@ -111,12 +111,18 @@ class Cache:
             return
         now = time.time()
         blob = zlib.compress(value, 6)
+        meta_text = json.dumps(meta)
         with self._lock:
+            # Replace: the old entry (if any) is removed before eviction, so
+            # its bytes no longer count toward the cap.
+            old = self._conn.execute("SELECT value, meta FROM kv WHERE k=?", (key,)).fetchone()
+            if old:
+                self._bytes_used -= len(old[0]) + len(old[1])
             self._conn.execute(
-                "INSERT OR REPLACE INTO kv(k, kind, value, meta, created, expires) "
-                "VALUES(?,?,?,?,?,?)",
-                (key, str(meta.get("kind", "")), blob, json.dumps(meta), now, now + ttl),
+                "INSERT OR REPLACE INTO kv(k, kind, value, meta, created, expires) VALUES(?,?,?,?,?,?)",
+                (key, str(meta.get("kind", "")), blob, meta_text, now, now + ttl),
             )
+            self._bytes_used += len(blob) + len(meta_text)
             self._conn.commit()
             try:
                 self._enforce_limit_locked()
@@ -128,9 +134,7 @@ class Cache:
     def _logical_size_locked(self) -> int:
         if self._conn is None:
             return 0
-        row = self._conn.execute(
-            "SELECT COALESCE(SUM(LENGTH(value) + LENGTH(meta)), 0) FROM kv"
-        ).fetchone()
+        row = self._conn.execute("SELECT COALESCE(SUM(LENGTH(value) + LENGTH(meta)), 0) FROM kv").fetchone()
         return int(row[0]) if row else 0
 
     def _enforce_limit_locked(self) -> int:
@@ -138,18 +142,17 @@ class Cache:
         cap = self.s.cache_max_bytes
         if self._conn is None or cap <= 0:
             return 0
-        total = self._logical_size_locked()
-        if total <= cap:
+        # Reconcile once in case external writes or DDL changed the table.
+        self._bytes_used = self._logical_size_locked()
+        if self._bytes_used <= cap:
             return 0
-        rows = self._conn.execute(
-            "SELECT k, LENGTH(value) + LENGTH(meta) FROM kv ORDER BY created ASC"
-        ).fetchall()
+        rows = self._conn.execute("SELECT k, value, meta FROM kv ORDER BY created ASC").fetchall()
         evicted = 0
-        for key, size in rows:
-            if total <= cap:
+        for key, blob, meta_text in rows:
+            if self._bytes_used <= cap:
                 break
             self._conn.execute("DELETE FROM kv WHERE k=?", (key,))
-            total -= int(size)
+            self._bytes_used -= len(blob) + len(meta_text)
             evicted += 1
         if evicted:
             self._conn.commit()
@@ -162,7 +165,10 @@ class Cache:
         with self._lock:
             cur = self._conn.execute("DELETE FROM kv WHERE expires < ?", (time.time(),))
             self._conn.commit()
-            return cur.rowcount
+            removed = cur.rowcount
+            if removed:
+                self._bytes_used = self._logical_size_locked()
+            return removed
 
     def _clear_sync(self) -> int:
         if self._conn is None:
@@ -170,7 +176,10 @@ class Cache:
         with self._lock:
             cur = self._conn.execute("DELETE FROM kv")
             self._conn.commit()
-            return cur.rowcount
+            removed = cur.rowcount
+            if removed:
+                self._bytes_used = 0
+            return removed
 
     # -- async wrappers --------------------------------------------------
     async def get(self, key: str) -> tuple[bytes, dict[str, Any], float] | None:
@@ -187,9 +196,7 @@ class Cache:
             self.hits += 1
         return out
 
-    async def get_cached(
-        self, key: str, grace_s: float = 0.0
-    ) -> tuple[bytes, dict[str, Any], float, bool] | None:
+    async def get_cached(self, key: str, grace_s: float = 0.0) -> tuple[bytes, dict[str, Any], float, bool] | None:
         """Return ``(value, meta, created, expired)`` or ``None``.
 
         Unlike :meth:`get`, this can return an entry whose TTL has passed as
@@ -221,15 +228,11 @@ class Cache:
         except json.JSONDecodeError:
             return None
 
-    async def set(
-        self, key: str, value: bytes, meta: dict[str, Any], ttl: float | None = None
-    ) -> None:
+    async def set(self, key: str, value: bytes, meta: dict[str, Any], ttl: float | None = None) -> None:
         try:
             import anyio
 
-            await anyio.to_thread.run_sync(
-                self._set_sync, key, value, meta, 600.0 if ttl is None else ttl
-            )
+            await anyio.to_thread.run_sync(self._set_sync, key, value, meta, 600.0 if ttl is None else ttl)
         except Exception:
             self.errors += 1
 
@@ -254,7 +257,7 @@ class Cache:
             self.errors += 1
             return 0
 
-    def stats(self) -> dict[str, int | float | bool]:
+    def stats(self) -> dict[str, int | float | bool | str | None]:
         total = self.hits + self.misses
         entries = 0
         logical_bytes = 0
@@ -266,6 +269,7 @@ class Cache:
                     ).fetchone()
                 if row:
                     entries, logical_bytes = int(row[0]), int(row[1])
+                    self._bytes_used = logical_bytes
             except sqlite3.Error:
                 self.errors += 1
         file_bytes = 0

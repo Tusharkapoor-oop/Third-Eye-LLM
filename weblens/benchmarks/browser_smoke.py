@@ -144,9 +144,7 @@ async def measure(cache_dir: Path, runs: int, https_check: bool) -> dict[str, An
 
     elapsed = [float(r["elapsed_ms"]) for r in results]
     all_ok = all(
-        r.get("extract_status") == "ok"
-        and r.get("contains_rendered_text")
-        and r.get("proxy_requests", 0) > 0
+        r.get("extract_status") == "ok" and r.get("contains_rendered_text") and r.get("proxy_requests", 0) > 0
         for r in results
     )
     result: dict[str, Any] = {
@@ -162,8 +160,7 @@ async def measure(cache_dir: Path, runs: int, https_check: bool) -> dict[str, An
             "cache": "disabled",
             "runs": len(results),
             "note": (
-                "Each run uses a fresh WebLens instance, so every elapsed_ms "
-                "includes Chromium launch and navigation."
+                "Each run uses a fresh WebLens instance, so every elapsed_ms includes Chromium launch and navigation."
             ),
         },
         "status": "ok" if all_ok else "error",
@@ -176,9 +173,7 @@ async def measure(cache_dir: Path, runs: int, https_check: bool) -> dict[str, An
         "browser_rendered": all(bool(r.get("browser_rendered")) for r in results),
         "passages": results[0].get("passages"),
         "tokens": results[0].get("tokens"),
-        "contains_rendered_text": all(
-            bool(r.get("contains_rendered_text")) for r in results
-        ),
+        "contains_rendered_text": all(bool(r.get("contains_rendered_text")) for r in results),
         "proxy_requests": [r.get("proxy_requests") for r in results],
         "private_url": {
             "status": blocked_out.get("status"),

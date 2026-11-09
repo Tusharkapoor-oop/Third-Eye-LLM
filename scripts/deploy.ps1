@@ -11,13 +11,20 @@ param (
 $ErrorActionPreference = "Stop"
 $ImageName = "weblens-mcp"
 
+# Authentication is mandatory for a non-loopback listener. Fail fast instead of
+# publishing an unauthenticated MCP endpoint (the server also exits with status 2
+# if this is missing, but the check here produces a clearer message).
+if (-not $env:WEBLENS_HTTP_TOKEN) {
+    throw "WEBLENS_HTTP_TOKEN must be set (generate one with: openssl rand -hex 32). In production prefer a secret, e.g. --set-secrets WEBLENS_HTTP_TOKEN=weblens-http-token:latest"
+}
+
 Write-Host "=================================================="
 Write-Host " WebLens Production Deployment: Target = $Target"
 Write-Host "=================================================="
 
 switch ($Target.ToLower()) {
     "docker" {
-        Write-Host "[1/3] Building Docker container image: $ImageName:$Tag..."
+        Write-Host "[1/3] Building Docker container image: ${ImageName}:${Tag}..."
         docker build -t "$ImageName`:$Tag" .
 
         Write-Host "[2/3] Stopping previous container instances if running..."
@@ -34,20 +41,24 @@ switch ($Target.ToLower()) {
             -e WEBLENS_HTTP_HOST=0.0.0.0 `
             -e WEBLENS_HTTP_PORT=8080 `
             -e WEBLENS_MCP_PROFILE=full `
+            -e WEBLENS_HTTP_TOKEN=$env:WEBLENS_HTTP_TOKEN `
             "$ImageName`:$Tag"
 
-        Write-Host "WebLens successfully deployed locally on http://localhost:8080/mcp"
+        Write-Host "WebLens successfully deployed locally on http://localhost:8080/mcp (bearer token required)"
     }
 
     "cloudrun" {
         Write-Host "[1/2] Building and submitting Cloud Run container..."
+        # App-level bearer auth is enforced from WEBLENS_HTTP_TOKEN. For production,
+        # prefer --set-secrets instead of --set-env-vars so the token is not stored
+        # in plain-text revision config (see README deployment section).
         gcloud run deploy $GcpService `
             --source . `
             --platform managed `
             --region $GcpRegion `
             --allow-unauthenticated `
             --port 8080 `
-            --set-env-vars WEBLENS_HTTP_HOST=0.0.0.0,WEBLENS_HTTP_PORT=8080,WEBLENS_MCP_PROFILE=full
+            --set-env-vars "WEBLENS_HTTP_HOST=0.0.0.0,WEBLENS_HTTP_PORT=8080,WEBLENS_MCP_PROFILE=full,WEBLENS_HTTP_TOKEN=$env:WEBLENS_HTTP_TOKEN"
 
         Write-Host "[2/2] Retrieving Cloud Run endpoint URL..."
         $serviceUrl = (gcloud run services describe $GcpService --platform managed --region $GcpRegion --format 'value(status.url)')

@@ -43,10 +43,7 @@ class FakeEmbedder:
                 )
             ):
                 vectors.append([1.0, 0.0, 0.0])
-            elif any(
-                term in low
-                for term in ("provider", "duckduckgo", "search", "router")
-            ):
+            elif any(term in low for term in ("provider", "duckduckgo", "search", "router")):
                 vectors.append([0.0, 1.0, 0.0])
             else:
                 vectors.append([0.0, 0.0, 1.0])
@@ -92,9 +89,7 @@ def _page(url: str, title: str, text: str):
 
 
 @pytest.mark.asyncio
-async def test_hybrid_query_finds_dense_match_without_lexical_overlap(
-    service, tmp_path
-):
+async def test_hybrid_query_finds_dense_match_without_lexical_overlap(service, tmp_path):
     kb = Crawl2RAG(
         service,
         db_path=tmp_path / "kb.db",
@@ -114,9 +109,7 @@ async def test_hybrid_query_finds_dense_match_without_lexical_overlap(
         ),
     ]
 
-    with patch.object(
-        service.crawler, "crawl", new=AsyncMock(return_value=_crawl(pages))
-    ):
+    with patch.object(service.crawler, "crawl", new=AsyncMock(return_value=_crawl(pages))):
         result = await kb.ingest("https://docs.example.com", max_pages=5)
 
     assert result["status"] == "ok"
@@ -159,9 +152,7 @@ async def test_hybrid_query_fuses_lexical_and_dense_rankings(service, tmp_path):
         ),
     ]
 
-    with patch.object(
-        service.crawler, "crawl", new=AsyncMock(return_value=_crawl(pages))
-    ):
+    with patch.object(service.crawler, "crawl", new=AsyncMock(return_value=_crawl(pages))):
         await kb.ingest("https://docs.example.com", max_pages=5)
 
     out = await kb.query("evidence first intelligence", top_k=5)
@@ -194,9 +185,7 @@ async def test_dense_python_fallback_without_numpy(service, tmp_path, monkeypatc
             "The SearchRouter aggregates DuckDuckGo and Wikipedia providers.",
         ),
     ]
-    with patch.object(
-        service.crawler, "crawl", new=AsyncMock(return_value=_crawl(pages))
-    ):
+    with patch.object(service.crawler, "crawl", new=AsyncMock(return_value=_crawl(pages))):
         await kb.ingest("https://docs.example.com", max_pages=5)
 
     out = await kb.query("evidence", top_k=5)
@@ -227,9 +216,7 @@ async def test_dense_cache_reuses_matrix_and_query_embedding(service, tmp_path):
             "The SearchRouter aggregates DuckDuckGo and Wikipedia providers.",
         ),
     ]
-    with patch.object(
-        service.crawler, "crawl", new=AsyncMock(return_value=_crawl(pages))
-    ):
+    with patch.object(service.crawler, "crawl", new=AsyncMock(return_value=_crawl(pages))):
         await kb.ingest("https://docs.example.com", max_pages=5)
 
     embedder.calls.clear()
@@ -241,12 +228,8 @@ async def test_dense_cache_reuses_matrix_and_query_embedding(service, tmp_path):
     second = await kb.query("evidence", top_k=5)
     assert second["mode"] == "hybrid"
     assert kb._dense_cache is cache
-    first_rows = [
-        (p["url"], tuple(p["span"]), p["text"]) for p in first["passages"]
-    ]
-    second_rows = [
-        (p["url"], tuple(p["span"]), p["text"]) for p in second["passages"]
-    ]
+    first_rows = [(p["url"], tuple(p["span"]), p["text"]) for p in first["passages"]]
+    second_rows = [(p["url"], tuple(p["span"]), p["text"]) for p in second["passages"]]
     assert first_rows == second_rows
     assert sum(call == ["evidence"] for call in embedder.calls) == 1
 
@@ -264,9 +247,7 @@ async def test_dense_cache_invalidated_by_ingest(service, tmp_path):
         "Intro",
         "WebLens prioritizes exact citations and evidence spans.",
     )
-    with patch.object(
-        service.crawler, "crawl", new=AsyncMock(return_value=_crawl([first_page]))
-    ):
+    with patch.object(service.crawler, "crawl", new=AsyncMock(return_value=_crawl([first_page]))):
         await kb.ingest("https://docs.example.com", max_pages=5)
 
     out = await kb.query("evidence", top_k=5)
@@ -304,18 +285,14 @@ async def test_noop_ingest_keeps_dense_cache(service, tmp_path):
         "Intro",
         "WebLens prioritizes exact citations and evidence spans.",
     )
-    with patch.object(
-        service.crawler, "crawl", new=AsyncMock(return_value=_crawl([page]))
-    ):
+    with patch.object(service.crawler, "crawl", new=AsyncMock(return_value=_crawl([page]))):
         await kb.ingest("https://docs.example.com", max_pages=5)
 
     await kb.query("evidence", top_k=5)
     cache = kb._dense_cache
     assert cache is not None
 
-    with patch.object(
-        service.crawler, "crawl", new=AsyncMock(return_value=_crawl([page]))
-    ):
+    with patch.object(service.crawler, "crawl", new=AsyncMock(return_value=_crawl([page]))):
         result = await kb.ingest("https://docs.example.com", max_pages=5)
 
     assert result["skipped_unchanged"] == 1
@@ -335,9 +312,7 @@ async def test_dense_cache_invalidated_by_clear(service, tmp_path):
         "Intro",
         "WebLens prioritizes exact citations and evidence spans.",
     )
-    with patch.object(
-        service.crawler, "crawl", new=AsyncMock(return_value=_crawl([page]))
-    ):
+    with patch.object(service.crawler, "crawl", new=AsyncMock(return_value=_crawl([page]))):
         await kb.ingest("https://docs.example.com", max_pages=5)
 
     await kb.query("evidence", top_k=5)
@@ -363,9 +338,7 @@ async def test_dense_cache_rebuilds_when_index_changes_externally(service, tmp_p
         "Intro",
         "WebLens prioritizes exact citations and evidence spans.",
     )
-    with patch.object(
-        service.crawler, "crawl", new=AsyncMock(return_value=_crawl([page]))
-    ):
+    with patch.object(service.crawler, "crawl", new=AsyncMock(return_value=_crawl([page]))):
         await kb.ingest("https://docs.example.com", max_pages=5)
 
     await kb.query("evidence", top_k=5)
@@ -377,17 +350,12 @@ async def test_dense_cache_rebuilds_when_index_changes_externally(service, tmp_p
     extra_url = "https://docs.example.com/extra"
     with sqlite3.connect(kb.db_path) as conn:
         conn.execute(
-            "INSERT INTO kb_passages "
-            "(url, title, passage_index, span_start, span_end, text) "
-            "VALUES (?, ?, ?, ?, ?, ?)",
+            "INSERT INTO kb_passages (url, title, passage_index, span_start, span_end, text) VALUES (?, ?, ?, ?, ?, ?)",
             (extra_url, "Extra", 0, 0, len(extra_text), extra_text),
         )
-        rowid = conn.execute(
-            "SELECT rowid FROM kb_passages WHERE url = ?", (extra_url,)
-        ).fetchone()[0]
+        rowid = conn.execute("SELECT rowid FROM kb_passages WHERE url = ?", (extra_url,)).fetchone()[0]
         conn.execute(
-            "INSERT INTO kb_embeddings "
-            "(passage_rowid, url, model, dim, vec) VALUES (?, ?, ?, ?, ?)",
+            "INSERT INTO kb_embeddings (passage_rowid, url, model, dim, vec) VALUES (?, ?, ?, ?, ?)",
             (
                 rowid,
                 extra_url,
@@ -426,17 +394,13 @@ async def test_transient_dense_error_keeps_embedder_enabled(service, tmp_path):
             "The SearchRouter aggregates DuckDuckGo and Wikipedia providers.",
         ),
     ]
-    with patch.object(
-        service.crawler, "crawl", new=AsyncMock(return_value=_crawl(pages))
-    ):
+    with patch.object(service.crawler, "crawl", new=AsyncMock(return_value=_crawl(pages))):
         await kb.ingest("https://docs.example.com", max_pages=5)
 
     embedder.fail_queries = True
     degraded = await kb.query("evidence", top_k=5)
     assert degraded["mode"] == "bm25"
-    assert any(
-        "temporary inference failure" in warning for warning in degraded["warnings"]
-    )
+    assert any("temporary inference failure" in warning for warning in degraded["warnings"])
     assert kb.embedder is embedder
     assert kb._embedding_error is None
     assert kb._dense_cache is None
@@ -463,9 +427,7 @@ async def test_bm25_only_when_embeddings_are_disabled(service, tmp_path):
         )
     ]
 
-    with patch.object(
-        service.crawler, "crawl", new=AsyncMock(return_value=_crawl(pages))
-    ):
+    with patch.object(service.crawler, "crawl", new=AsyncMock(return_value=_crawl(pages))):
         result = await kb.ingest("https://docs.example.com", max_pages=5)
 
     assert result["embeddings_indexed"] == 0
@@ -498,9 +460,7 @@ async def test_failed_embedder_falls_back_and_reports_error(service, tmp_path):
         )
     ]
 
-    with patch.object(
-        service.crawler, "crawl", new=AsyncMock(return_value=_crawl(pages))
-    ):
+    with patch.object(service.crawler, "crawl", new=AsyncMock(return_value=_crawl(pages))):
         result = await kb.ingest("https://docs.example.com", max_pages=5)
 
     assert result["status"] == "ok"
@@ -528,9 +488,7 @@ async def test_stats_and_clear_include_embeddings(service, tmp_path):
         )
     ]
 
-    with patch.object(
-        service.crawler, "crawl", new=AsyncMock(return_value=_crawl(pages))
-    ):
+    with patch.object(service.crawler, "crawl", new=AsyncMock(return_value=_crawl(pages))):
         await kb.ingest("https://docs.example.com", max_pages=5)
 
     stats = kb.stats()
@@ -569,9 +527,7 @@ async def test_dense_scan_cap_falls_back_to_bm25(tmp_path):
         ),
     ]
 
-    with patch.object(
-        service.crawler, "crawl", new=AsyncMock(return_value=_crawl(pages))
-    ):
+    with patch.object(service.crawler, "crawl", new=AsyncMock(return_value=_crawl(pages))):
         await kb.ingest("https://docs.example.com", max_pages=5)
 
     out = await kb.query("evidence", top_k=5)
@@ -596,9 +552,7 @@ async def test_dense_scan_cap_falls_back_to_bm25(tmp_path):
         "Evidence",
         "Evidence spans remain attached to every cited answer.",
     )
-    with patch.object(
-        service.crawler, "crawl", new=AsyncMock(return_value=_crawl([small_page]))
-    ):
+    with patch.object(service.crawler, "crawl", new=AsyncMock(return_value=_crawl([small_page]))):
         await kb.ingest("https://docs.example.com", max_pages=5)
 
     recovered = await kb.query("evidence", top_k=5)
@@ -640,9 +594,7 @@ def test_real_onnx_embedder_if_model_is_present():
     vectors = embedder.encode(["hello world", "hello world"])
     assert len(vectors) == 2
     assert len(vectors[0]) == embedder.dim == 384
-    assert math.isclose(
-        sum(value * value for value in vectors[0]), 1.0, rel_tol=1e-5
-    )
+    assert math.isclose(sum(value * value for value in vectors[0]), 1.0, rel_tol=1e-5)
     similarity = sum(a * b for a, b in zip(vectors[0], vectors[1], strict=True))
     assert similarity > 0.99
 

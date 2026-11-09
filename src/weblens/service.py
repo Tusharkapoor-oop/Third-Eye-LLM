@@ -16,9 +16,9 @@ import time
 from typing import Any
 
 from . import __version__
-from .cache import build_cache
+from .cache import Cache, build_cache
 from .config import Settings, get_settings
-from .crawl import SiteCrawler
+from .crawl.crawler import CrawlOutcome, MapOutcome, SiteCrawler
 from .errors import ErrCode, WebLensError, resolve_budget
 from .extract import ExtractionService
 from .net import SafeFetcher
@@ -41,7 +41,7 @@ class WebLens:
     def __init__(self, settings: Settings | None = None):
         self.s = settings or get_settings()
         self.s.ensure_dirs()
-        self.cache = build_cache(self.s)
+        self.cache: Cache = build_cache(self.s)  # type: ignore[assignment]
         self.fetcher = SafeFetcher(self.s, self.cache)
         self.router = SearchRouter(self.s, self.fetcher)
         self.extractor = ExtractionService(self.s, self.fetcher, self.cache)
@@ -162,12 +162,8 @@ class WebLens:
             if len(query) > 2000:
                 raise WebLensError("query exceeds maximum allowed length of 2000 characters", code=ErrCode.BAD_INPUT)
             if freshness not in (None, "day", "week", "month", "year"):
-                raise WebLensError(
-                    "freshness must be day, week, month or year", code=ErrCode.BAD_INPUT
-                )
-            budget = resolve_budget(
-                max_tokens, self.s.max_search_tokens, minimum=120, maximum=2000
-            )
+                raise WebLensError("freshness must be day, week, month or year", code=ErrCode.BAD_INPUT)
+            budget = resolve_budget(max_tokens, self.s.max_search_tokens, minimum=120, maximum=2000)
             out = await self.router.search(
                 query,
                 k=k,
@@ -264,18 +260,16 @@ class WebLens:
             if mode not in ("map", "crawl"):
                 raise WebLensError("mode must be map or crawl", code=ErrCode.BAD_INPUT)
             if mode == "map":
-                out = await self.crawler.site_map(
-                    url, max_urls=max_pages, max_tokens=max_tokens
-                )
+                out: MapOutcome = await self.crawler.site_map(url, max_urls=max_pages, max_tokens=max_tokens)
                 return self.crawler.map_payload(out)
-            out = await self.crawler.crawl(
+            out_crawl: CrawlOutcome = await self.crawler.crawl(
                 url,
                 max_pages=max_pages,
                 max_depth=max_depth,
                 query=query,
                 max_tokens=max_tokens,
             )
-            return self.crawler.payload(out)
+            return self.crawler.payload(out_crawl)
 
         return await self._guard(run())
 
@@ -344,9 +338,7 @@ class WebLens:
     async def doctor(self, *, live: bool = False) -> dict[str, Any]:
         has_playwright = importlib.util.find_spec("playwright") is not None
         cache_stats_fn = getattr(self.cache, "stats_async", None)
-        cache_stats = (
-            await cache_stats_fn() if cache_stats_fn is not None else self.cache.stats()
-        )
+        cache_stats = await cache_stats_fn() if cache_stats_fn is not None else self.cache.stats()
         info: dict[str, Any] = {
             "ok": True,
             "version": __version__,

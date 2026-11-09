@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import asyncio
 import contextlib
+from typing import Any
 from urllib.parse import urlsplit
 
 from ..config import Settings
@@ -16,8 +17,8 @@ class BrowserRenderer:
     def __init__(self, settings: Settings):
         self.s = settings
         self.policy = DestinationPolicy(settings)
-        self._pw = None
-        self._browser = None
+        self._pw: Any = None
+        self._browser: Any = None
         self._proxy: BrowserEgressProxy | None = None
         self._lock = asyncio.Lock()
 

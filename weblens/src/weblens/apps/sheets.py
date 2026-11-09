@@ -30,6 +30,31 @@ def defang_formula(val: str) -> str:
     return s
 
 
+def _read_csv(path: Path) -> tuple[list[str], list[dict[str, str]]]:
+    """Read a CSV file without blocking the event loop."""
+    with open(path, encoding="utf-8-sig", newline="") as handle:
+        reader = csv.DictReader(handle)
+        return list(reader.fieldnames or []), list(reader)
+
+
+def _write_csv(
+    path: Path,
+    fieldnames: list[str],
+    rows: list[dict[str, Any]],
+) -> None:
+    """Write an enriched CSV file without blocking the event loop."""
+    path.parent.mkdir(parents=True, exist_ok=True)
+    with open(path, "w", encoding="utf-8", newline="") as handle:
+        writer = csv.DictWriter(handle, fieldnames=fieldnames)
+        writer.writeheader()
+        writer.writerows(rows)
+
+
+def _read_checkpoint(path: Path) -> list[dict[str, Any]]:
+    """Load checkpoint rows without blocking the event loop."""
+    return json.loads(path.read_text(encoding="utf-8"))
+
+
 class SheetsEnricher:
     """Enriches tabular datasets with verified web evidence and formula injection defense."""
 
@@ -45,7 +70,11 @@ class SheetsEnricher:
         """Enrich target columns for a single row using WebLens search."""
         async with self.semaphore:
             enriched_data = {k: defang_formula(v) for k, v in row.items()}
-            entity_key = next((v for k, v in row.items() if k.lower() in ("company", "name", "domain", "ticker", "entity")), None)
+            entity_columns = ("company", "name", "domain", "ticker", "entity")
+            entity_key = next(
+                (v for k, v in row.items() if k.lower() in entity_columns),
+                None,
+            )
             if not entity_key:
                 entity_key = next(iter(row.values()), "")
 
@@ -107,13 +136,10 @@ class SheetsEnricher:
         """Read CSV, enrich missing columns with web research, and write sanitized CSV."""
         in_path = Path(input_csv)
         out_path = Path(output_csv)
-        if not in_path.exists():
+        if not await asyncio.to_thread(in_path.exists):
             return {"status": "error", "msg": f"Input file not found: {in_path}"}
 
-        with open(in_path, mode="r", encoding="utf-8-sig", newline="") as f:
-            reader = csv.DictReader(f)
-            fieldnames = list(reader.fieldnames or [])
-            rows = list(reader)
+        fieldnames, rows = await asyncio.to_thread(_read_csv, in_path)
 
         # Extend fieldnames with source and status tracking columns
         for target_col in col_specs:
@@ -128,9 +154,9 @@ class SheetsEnricher:
         done_rows: list[dict[str, Any]] = []
         chk_path = Path(checkpoint_file) if checkpoint_file else in_path.with_suffix(".checkpoint.json")
         start_idx = 0
-        if chk_path.exists():
+        if await asyncio.to_thread(chk_path.exists):
             try:
-                done_rows = json.loads(chk_path.read_text(encoding="utf-8"))
+                done_rows = await asyncio.to_thread(_read_checkpoint, chk_path)
                 start_idx = len(done_rows)
             except Exception:
                 done_rows = []
@@ -140,16 +166,11 @@ class SheetsEnricher:
         all_enriched = done_rows + list(new_enriched)
 
         # Write output CSV
-        out_path.parent.mkdir(parents=True, exist_ok=True)
-        with open(out_path, mode="w", encoding="utf-8", newline="") as f:
-            writer = csv.DictWriter(f, fieldnames=fieldnames)
-            writer.writeheader()
-            for r in all_enriched:
-                writer.writerow(r)
+        await asyncio.to_thread(_write_csv, out_path, fieldnames, all_enriched)
 
         # Clean checkpoint upon successful run
-        if chk_path.exists():
-            chk_path.unlink()
+        if await asyncio.to_thread(chk_path.exists):
+            await asyncio.to_thread(chk_path.unlink)
 
         return {
             "status": "ok",
@@ -157,4 +178,3 @@ class SheetsEnricher:
             "enriched_rows": len(all_enriched),
             "output_path": str(out_path),
         }
-

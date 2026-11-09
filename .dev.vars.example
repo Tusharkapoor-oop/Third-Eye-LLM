@@ -1,0 +1,9 @@
+# Copy this file to .dev.vars for local `npm run dev`.
+# Never commit .dev.vars or real provider keys.
+WEBLENS_API_KEY="replace-with-a-long-random-token"
+TAVILY_API_KEY="tvly-replace-me"
+
+# Optional: validate multiple tenant keys at the edge and inside the container.
+# The container's normal format is a JSON object or comma-separated tenant=key
+# pairs. The Worker accepts the same forms.
+# WEBLENS_API_KEYS='{"tenant-a":"replace-with-another-long-token"}'

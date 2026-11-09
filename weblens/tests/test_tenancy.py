@@ -83,10 +83,7 @@ def test_registry_rejects_duplicate_keys():
 
 def test_tenant_state_path_keeps_default_and_isolates_others(tmp_path):
     assert tenant_state_path(tmp_path, "default", "crawl2rag.db") == tmp_path / "crawl2rag.db"
-    assert (
-        tenant_state_path(tmp_path, "acme", "crawl2rag.db")
-        == tmp_path / "tenants" / "acme" / "crawl2rag.db"
-    )
+    assert tenant_state_path(tmp_path, "acme", "crawl2rag.db") == tmp_path / "tenants" / "acme" / "crawl2rag.db"
     with pytest.raises(ValueError):
         tenant_state_path(tmp_path, "../escape", "crawl2rag.db")
     with pytest.raises(ValueError):

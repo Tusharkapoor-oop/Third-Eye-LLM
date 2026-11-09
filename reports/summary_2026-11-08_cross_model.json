@@ -1,0 +1,49 @@
+{
+  "addendum": "reports/ADDENDUM-2026-11-08-cross-model-and-agent-team.md",
+  "date": "2026-11-08",
+  "git_commit": "4e0885d",
+  "working_tree": "dirty",
+  "verdict": "PASS_WITH_LIMITATIONS",
+  "models": {
+    "qwen": {"status": "BLOCKED", "reason": "no QWEN_BASE_URL/QWEN_API_KEY; account NVIDIA catalogue has no Qwen model", "route_implemented": true, "route_tested": true},
+    "gemma": {"status": "BLOCKED", "reason": "NVIDIA chat completions returned 403 Authorization failed for every Gemma id", "route_implemented": true, "route_tested": true},
+    "mistral": {"status": "BLOCKED", "reason": "403 Authorization failed (entitlement regression; key still accepted by /v1/models)"},
+    "gemini": {"status": "PASS_THEN_BLOCKED", "detail": "full 10-check battery PASS at 2026-11-08T18:51Z; free-tier daily quota (20 req) exhausted afterwards", "artifact": "reports/cross-model/battery_20261108T185128.json"}
+  },
+  "cross_model_battery": {
+    "script": "scripts/cross_model_verification.py",
+    "exit_codes": {"0": "all pass", "1": "failure", "2": "blocked model"},
+    "checks_per_model": ["reachability", "exact_instruction", "usage_accounting", "latency_ceiling", "json_contract", "determinism_temp0", "citation_integrity", "no_fabrication_empty_evidence", "e2e_search", "e2e_extract", "e2e_synthesis"]
+  },
+  "agent_team": {
+    "definition": ".freebuff/agents/team.json",
+    "runner": "scripts/agent_team.py",
+    "roles": ["architect", "security", "contract", "correctness", "applications", "performance", "quality", "models"],
+    "first_full_run": {"artifact": "reports/team/20261108T190230/report.md", "verdict": "BLOCKED", "pass": 6, "blocked": 1, "fail": 0},
+    "quality_role_alone": {"artifact": "reports/team/quality_gate_2026-11-08/report.md", "status": "FAIL", "reason": "arena score 87.0 < 90.0"},
+    "sub_agents_supported": false,
+    "execution_mode": "sequential-with-handoff"
+  },
+  "test_suite": {
+    "artifact": "reports/full_suite_2026-11-08.log",
+    "total": 357,
+    "passed": 356,
+    "failed": 1,
+    "exit_code": 1,
+    "duration_s": 513.66,
+    "failing_test": "tests/test_07_live_quality_arena.py::test_arena_benchmark_score_gate",
+    "failure_cause": "arena_report.json records 87.0 < 90.0 (GAP-001 variance), not a code regression"
+  },
+  "product_changes": [
+    "ModelProvider.QWEN / GEMMA plus model_family() and model_readiness()",
+    "Qwen route via configurable OpenAI-compatible gateway",
+    "Gemma route on its own host/key, generic NVIDIA retry skipped",
+    "Gemini SDK bounded with HttpOptions(timeout=20_000) to stop a ~300 s shutdown hang",
+    "Research fallback table no longer emits malformed URL-looking link text"
+  ],
+  "inventory": "reports/harness-plugin-inventory.md",
+  "unblock_commands": [
+    "QWEN_BASE_URL=<gateway>/v1 QWEN_API_KEY=<key> python scripts/cross_model_verification.py --models qwen",
+    "python scripts/agent_team.py --only models"
+  ]
+}

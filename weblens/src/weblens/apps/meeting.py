@@ -16,7 +16,8 @@ from typing import Any
 from ..service import WebLens
 
 PRIVACY_PROBE_PATTERN = re.compile(
-    r"\b(?:home address|personal phone|cell phone|family|spouse|children|kids|medical|health|salary|wealth|net worth|religion|private life)\b",
+    r"\b(?:home address|personal phone|cell phone|family|spouse|children|kids|"
+    r"medical|health|salary|wealth|net worth|religion|private life)\b",
     re.I,
 )
 
@@ -93,11 +94,15 @@ class MeetingPrepAgent:
             bio_snippets = [h.get("s", "") for h in hits if h.get("s")]
             sources = list(dict.fromkeys(h.get("u", "") for h in hits if h.get("u")))
 
-            attendee_profiles.append({
-                "attendee": clean_name,
-                "public_professional_background": " ".join(bio_snippets[:2]) if bio_snippets else "No public professional profile verified.",
-                "sources": sources,
-            })
+            attendee_profiles.append(
+                {
+                    "attendee": clean_name,
+                    "public_professional_background": (
+                        " ".join(bio_snippets[:2]) if bio_snippets else "No public professional profile verified."
+                    ),
+                    "sources": sources,
+                }
+            )
 
         # Research company context if provided
         company_notes = []
@@ -112,11 +117,13 @@ class MeetingPrepAgent:
                 max_results=2,
             )
             for h in comp_search.get("res", []):
-                company_notes.append({
-                    "title": h.get("t"),
-                    "url": h.get("u"),
-                    "summary": h.get("s"),
-                })
+                company_notes.append(
+                    {
+                        "title": h.get("t"),
+                        "url": h.get("u"),
+                        "summary": h.get("s"),
+                    }
+                )
 
         elapsed_ms = int((time.perf_counter() - t0) * 1000)
         return {
@@ -126,7 +133,9 @@ class MeetingPrepAgent:
             "attendee_profiles": attendee_profiles,
             "company_context": company_notes,
             "suggested_discussion_topics": agenda_topics or ["Strategic alignment", "Collaboration opportunities"],
-            "privacy_notice": "Dossier constructed exclusively from public professional sources under data minimization rules.",
+            "privacy_notice": (
+                "Dossier constructed exclusively from public professional sources under data minimization rules."
+            ),
             "ms": elapsed_ms,
         }
 
@@ -154,4 +163,3 @@ class MeetingPrepAgent:
 
         company = event.get("company") or event.get("organization")
         return await self.prepare_brief(title, attendee_names, company_or_org=company)
-

@@ -1,0 +1,23 @@
+{
+  "generated_at": "2026-11-08T13:57:25+00:00",
+  "duration_s": 0.0,
+  "requested": [
+    "qwen"
+  ],
+  "verdict": "BLOCKED",
+  "models": [
+    {
+      "name": "qwen",
+      "model": "qwen/qwen3-235b-a22b-instruct",
+      "checks": [
+        {
+          "check": "credential",
+          "status": "BLOCKED",
+          "detail": "missing QWEN_API_KEY and/or QWEN_BASE_URL (no OpenAI-compatible Qwen gateway configured)"
+        }
+      ],
+      "status": "BLOCKED"
+    }
+  ],
+  "exit_code": 2
+}

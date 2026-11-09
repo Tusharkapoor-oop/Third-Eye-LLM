@@ -88,9 +88,7 @@ class BrowserEgressProxy:
         if task is not None:
             self._tasks.add(task)
         try:
-            method, target, headers = await asyncio.wait_for(
-                self._read_head(reader), self.s.read_timeout_s
-            )
+            method, target, headers = await asyncio.wait_for(self._read_head(reader), self.s.read_timeout_s)
             if method == "CONNECT":
                 await self._connect(reader, writer, target)
             else:
@@ -114,9 +112,7 @@ class BrowserEgressProxy:
             with contextlib.suppress(Exception):
                 await writer.wait_closed()
 
-    async def _read_head(
-        self, reader: asyncio.StreamReader
-    ) -> tuple[str, str, list[tuple[str, str]]]:
+    async def _read_head(self, reader: asyncio.StreamReader) -> tuple[str, str, list[tuple[str, str]]]:
         raw = await reader.readuntil(b"\r\n\r\n")
         if len(raw) > MAX_HEADER_BYTES:
             raise ValueError("request headers too large")
@@ -154,15 +150,16 @@ class BrowserEgressProxy:
         writer: asyncio.StreamWriter,
         target: str,
     ) -> None:
-        upstream_writer: asyncio.StreamWriter | None = None
         established = False
+        host, port = _split_authority(target)
+        upstream: tuple[asyncio.StreamReader, asyncio.StreamWriter] | None = None
         try:
-            host, port = _split_authority(target)
             dest = await self.policy.resolve(host, port)
-            upstream_reader, upstream_writer = await asyncio.wait_for(
+            upstream = await asyncio.wait_for(
                 asyncio.open_connection(dest.ip, port),
                 self.s.connect_timeout_s,
             )
+            upstream_reader, upstream_writer = upstream
             writer.write(b"HTTP/1.1 200 Connection Established\r\n\r\n")
             await writer.drain()
             established = True
@@ -180,7 +177,8 @@ class BrowserEgressProxy:
                 log.debug("browser proxy CONNECT failed", exc_info=True)
                 await self._send_error(writer, 502, "Bad Gateway")
         finally:
-            if upstream_writer is not None:
+            if upstream is not None:
+                _, upstream_writer = upstream
                 upstream_writer.close()
                 with contextlib.suppress(Exception):
                     await upstream_writer.wait_closed()
@@ -210,12 +208,16 @@ class BrowserEgressProxy:
             writer.write(b"HTTP/1.1 100 Continue\r\n\r\n")
             await writer.drain()
         body, chunked = await self._read_body(reader, headers)
-        upstream_writer: asyncio.StreamWriter | None = None
         try:
             upstream_reader, upstream_writer = await asyncio.wait_for(
                 asyncio.open_connection(dest.ip, port),
                 self.s.connect_timeout_s,
             )
+        except Exception:
+            if not writer.is_closing():
+                await self._send_error(writer, 502, "Bad Gateway")
+            return
+        try:
             path = url.path or "/"
             if url.query:
                 path = f"{path}?{url.query}"
@@ -230,10 +232,9 @@ class BrowserEgressProxy:
             await upstream_writer.drain()
             await self._pipe(upstream_reader, writer)
         finally:
-            if upstream_writer is not None:
-                upstream_writer.close()
-                with contextlib.suppress(Exception):
-                    await upstream_writer.wait_closed()
+            upstream_writer.close()
+            with contextlib.suppress(Exception):
+                await upstream_writer.wait_closed()
 
     async def _read_body(
         self, reader: asyncio.StreamReader, headers: list[tuple[str, str]]

@@ -119,4 +119,3 @@ def test_cache_key_partitions_by_authorization():
     assert key_anon != key_user_a
     assert key_anon != key_user_b
     assert key_user_a != key_user_b
-

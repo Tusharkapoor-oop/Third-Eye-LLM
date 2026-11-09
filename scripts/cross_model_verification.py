@@ -33,7 +33,7 @@ import json
 import re
 import sys
 import time
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 
@@ -79,7 +79,7 @@ async def probe_reachability(model: str) -> tuple[bool, str]:
             ),
             timeout=45,
         )
-    except asyncio.TimeoutError:
+    except TimeoutError:
         return False, "probe timeout after 45s"
     except Exception as e:  # noqa: BLE001 - reported, never swallowed silently
         return False, f"probe raised {type(e).__name__}: {e}"
@@ -389,7 +389,7 @@ async def main_async(args: argparse.Namespace) -> int:
     verdict = "FAIL" if failures else ("BLOCKED" if blocked else "PASS")
 
     payload = {
-        "generated_at": datetime.now(timezone.utc).isoformat(timespec="seconds"),
+        "generated_at": datetime.now(UTC).isoformat(timespec="seconds"),
         "duration_s": round(time.perf_counter() - started, 2),
         "requested": requested,
         "verdict": verdict,

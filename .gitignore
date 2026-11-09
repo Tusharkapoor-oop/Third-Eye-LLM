@@ -75,3 +75,22 @@ data-gym-cache/
 .arena_budget_state.json
 .crawl4ai_profile/
 .aider*
+
+# Type/lint/test tooling caches
+.mypy_cache/
+.ruff_cache/
+.hypothesis/
+.review-logs/
+.tmp-*/
+coverage.xml
+coverage.json
+.coverage.*
+*.junit.xml
+
+# Cloudflare / Node deployment surface
+node_modules/
+.wrangler/
+.dev.vars
+.dev.vars.*
+!.dev.vars.example
+worker-configuration.d.ts

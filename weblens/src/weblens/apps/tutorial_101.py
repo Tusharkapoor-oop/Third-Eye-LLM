@@ -118,9 +118,7 @@ async def run_tutorial(service: WebLens | None = None, step: str = "all") -> dic
         if step in ("all", "sheets"):
             enricher = SheetsEnricher(service)
             sample_rows = [{"Company": "Apple"}, {"Company": "Microsoft"}]
-            enriched = await enricher.enrich_records(
-                sample_rows, {"CEO": "who is the current CEO of {Company}?"}
-            )
+            enriched = await enricher.enrich_records(sample_rows, {"CEO": "who is the current CEO of {Company}?"})
             records = enriched.get("records", [])
             verified = sum(1 for r in records if r.get("CEO_status") == "verified" and r.get("CEO"))
             results["steps"]["6_sheets_enrich"] = {
@@ -161,9 +159,7 @@ async def run_tutorial(service: WebLens | None = None, step: str = "all") -> dic
                 "passages_indexed": stats.get("passages", 0),
                 "query_hits": rag_query.get("n", 0),
                 "status": _status(
-                    stats.get("documents", 0) > 0
-                    and stats.get("passages", 0) > 0
-                    and rag_query.get("n", 0) > 0,
+                    stats.get("documents", 0) > 0 and stats.get("passages", 0) > 0 and rag_query.get("n", 0) > 0,
                     degraded=ingest.get("pages_crawled", 0) > 0,
                 ),
             }

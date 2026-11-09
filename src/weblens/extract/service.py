@@ -9,6 +9,7 @@ from dataclasses import dataclass, field
 from ..cache import Cache
 from ..config import Settings
 from ..errors import ErrCode, WebLensError, resolve_budget
+from ..extract.browser import BrowserRenderer
 from ..net import FetchResponse, SafeFetcher
 from ..security.injection import has_instruction_smuggling
 from ..tokens import count_json_tokens, count_tokens, truncate_tokens
@@ -50,7 +51,7 @@ class ExtractionService:
         self.s = settings
         self.fetcher = fetcher
         self.cache = cache
-        self._renderer = None
+        self._renderer: BrowserRenderer | None = None
 
     async def _renderer_get(self):
         if self._renderer is None:
@@ -112,10 +113,12 @@ class ExtractionService:
         warnings: list[str] = []
         if resp.stale:
             warnings.append("stale_cache_used")
+        # CPU-heavy extraction libraries (trafilatura, PyMuPDF) block the event loop;
+        # run them on the default executor.
         if kind == "pdf":
-            doc = extract_pdf(resp.body, canon)
+            doc = await asyncio.to_thread(extract_pdf, resp.body, canon)
         elif kind == "html":
-            doc = extract_html(resp.text, canon, include_links=include_links)
+            doc = await asyncio.to_thread(extract_html, resp.text, canon, include_links=include_links)
             if has_instruction_smuggling(resp.text):
                 warnings.append("html_comment_instructions")
         elif kind in {"text", "data"}:
@@ -159,9 +162,7 @@ class ExtractionService:
         allow_browser: bool = True,
     ) -> ExtractOutcome:
         started = time.perf_counter()
-        budget = resolve_budget(
-            max_tokens, self.s.max_extract_tokens, minimum=200, maximum=8000
-        )
+        budget = resolve_budget(max_tokens, self.s.max_extract_tokens, minimum=200, maximum=8000)
         doc = await self.fetch_doc(url, allow_browser=allow_browser, include_links=full)
         out = ExtractOutcome(
             status="ok",

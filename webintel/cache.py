@@ -25,17 +25,33 @@ CREATE INDEX IF NOT EXISTS idx_cache_kind_ts ON cache(kind, ts);
 
 class Cache:
     def __init__(self, path: pathlib.Path):
-        path.parent.mkdir(parents=True, exist_ok=True)
-        # isolation_level=None => real autocommit; without it each execute opens an
-        # implicit transaction that never commits, and OTHER PROCESSES see nothing.
-        self._conn = sqlite3.connect(str(path), check_same_thread=False, isolation_level=None)
-        self._conn.execute("PRAGMA journal_mode=WAL")
-        self._conn.executescript(_SCHEMA)
+        self._conn: Optional[sqlite3.Connection] = None
         self._lock = threading.Lock()
         self.hits = 0
         self.misses = 0
+        conn: Optional[sqlite3.Connection] = None
+        try:
+            path.parent.mkdir(parents=True, exist_ok=True)
+            # isolation_level=None => real autocommit; without it each execute opens an
+            # implicit transaction that never commits, and OTHER PROCESSES see nothing.
+            conn = sqlite3.connect(str(path), check_same_thread=False, isolation_level=None)
+            conn.execute("PRAGMA journal_mode=WAL")
+            conn.executescript(_SCHEMA)
+        except (sqlite3.Error, OSError):
+            # A read-only or otherwise unusable cache directory must degrade to
+            # a cache miss, not prevent the MCP server from starting.
+            if conn is not None:
+                try:
+                    conn.close()
+                except sqlite3.Error:
+                    pass
+            return
+        self._conn = conn
 
     def get(self, kind: str, key: str, ttl: int) -> Optional[Any]:
+        if self._conn is None:
+            self.misses += 1
+            return None
         now = time.time()
         k = f"{kind}:{key}"
         with self._lock:
@@ -56,6 +72,8 @@ class Cache:
         return None
 
     def put(self, kind: str, key: str, payload: Any):
+        if self._conn is None:
+            return
         k = f"{kind}:{key}"
         ts = time.time()
         blob = json.dumps(payload, ensure_ascii=False, separators=(",", ":")).encode("utf-8")
@@ -70,6 +88,8 @@ class Cache:
     _last_gc = 0.0
 
     def _gc(self, now: float):
+        if self._conn is None:
+            return
         # keep at most 300k rows globally, drop stale > 14 days for likely-unusual TTLs
         try:
             self._conn.execute(
@@ -80,11 +100,16 @@ class Cache:
             pass
 
     def stats(self):
+        if self._conn is None:
+            return {"hits": self.hits, "misses": self.misses, "rows": 0}
         with self._lock:
             n = self._conn.execute("SELECT COUNT(*) FROM cache").fetchone()[0]
         return {"hits": self.hits, "misses": self.misses, "rows": n}
 
     def close(self):
+        if self._conn is None:
+            return
         with self._lock:
             self._conn.commit()
             self._conn.close()
+            self._conn = None

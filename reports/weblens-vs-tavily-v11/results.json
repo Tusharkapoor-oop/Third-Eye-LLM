@@ -1,0 +1,2115 @@
+{
+  "generated_at": "2026-11-09T10:12:55Z",
+  "benchmark": "weblens-vs-tavily-v11",
+  "dataset": "weblens-lab\\datasets\\eval_benchmark_suite_v10.json",
+  "dataset_sha256": "a42d4004fb91208f1ae18de89e2337f2ccf5e7cb580a3c600a8ec7d8057d6361",
+  "k": 5,
+  "limit": 40,
+  "limit_requested": 40,
+  "split_filter": null,
+  "selection_rule": "eligible (is_unanswerable=false, web_search_equivalent=true, >=1 label); heldout first then development, dataset order; fixed prefix of --limit",
+  "query_ids": [
+    "general_factual_q01",
+    "general_factual_q04",
+    "current_events_news_q01",
+    "current_events_news_q04",
+    "technical_research_q01",
+    "technical_research_q04",
+    "programming_developer_docs_q01",
+    "programming_developer_docs_q04",
+    "scientific_research_q01",
+    "scientific_research_q04",
+    "academic_research_q01",
+    "academic_research_q04",
+    "multihop_reasoning_q01",
+    "multihop_reasoning_q04",
+    "long_document_extraction_q01",
+    "long_document_extraction_q04",
+    "company_research_q01",
+    "company_research_q04",
+    "startup_research_q01",
+    "startup_research_q04",
+    "industry_research_q01",
+    "industry_research_q04",
+    "market_research_q01",
+    "market_research_q04",
+    "stock_portfolio_research_q01",
+    "stock_portfolio_research_q04",
+    "product_research_q01",
+    "product_research_q04",
+    "competitive_intelligence_q01",
+    "competitive_intelligence_q04",
+    "legal_policy_research_q01",
+    "legal_policy_research_q04",
+    "public_sector_research_q01",
+    "public_sector_research_q04",
+    "healthcare_information_q01",
+    "healthcare_information_q04",
+    "structured_data_enrichment_q01",
+    "structured_data_enrichment_q04",
+    "website_crawling_q01",
+    "website_crawling_q04"
+  ],
+  "config": {
+    "weblens_api": "weblens.service.WebLens.search(query, max_results=5)",
+    "weblens_providers": "mwmbl,wikipedia,bing,yahoo",
+    "weblens_search_mode": "fuse",
+    "weblens_cache_enabled": false,
+    "weblens_use_official_source_hints": false,
+    "weblens_tavily_provider_disabled": true,
+    "weblens_official_source_hints": false,
+    "tavily": {
+      "search_depth": "basic",
+      "max_results": 5
+    },
+    "per_query_timeout_s": 30.0,
+    "retries": 0,
+    "concurrency": 2,
+    "sleep_between_queries_s": 0.5,
+    "tokens_headline": "count_json_tokens(results array) for both systems",
+    "tokens_secondary": "count_json_tokens(full response payload) for both systems"
+  },
+  "environment": {
+    "python": "3.14.0",
+    "platform": "Windows-11-10.0.26300-SP0",
+    "pytest_not_used": true
+  },
+  "wall_clock_s": 85.8,
+  "data_quality": {
+    "tavily_error_rate": 0.0,
+    "weblens_error_rate": 0.0,
+    "loud_warning": null
+  },
+  "weblens": {
+    "n": 40,
+    "success_rate": 1.0,
+    "hit_at_5": 0.775,
+    "p_at_5": 0.41,
+    "ndcg_at_5": 0.4161739214065408,
+    "ndcg_at_5_label_cap": 0.5774098860883374,
+    "mrr": 0.5229166666666667,
+    "p50_ms": 3056.9959499989636,
+    "p95_ms": 6391.193724991172,
+    "mean_ms": 3554.6542450028937,
+    "mean_tokens": 366.9,
+    "mean_payload_tokens": 425.025,
+    "errors": 0,
+    "p_at_5_ci95": [
+      0.315,
+      0.515
+    ],
+    "ndcg_at_5_ci95": [
+      0.3123455959142641,
+      0.5287569762819417
+    ],
+    "mrr_ci95": [
+      0.39375,
+      0.6541666666666667
+    ]
+  },
+  "tavily": {
+    "n": 40,
+    "success_rate": 1.0,
+    "hit_at_5": 0.6,
+    "p_at_5": 0.21000000000000002,
+    "ndcg_at_5": 0.2324496102686311,
+    "ndcg_at_5_label_cap": 0.36029339932198845,
+    "mrr": 0.4229166666666667,
+    "p50_ms": 295.24510001647286,
+    "p95_ms": 343.9800350373843,
+    "mean_ms": 305.6789975045831,
+    "mean_tokens": 1679.575,
+    "mean_payload_tokens": 1745.175,
+    "errors": 0,
+    "p_at_5_ci95": [
+      0.15,
+      0.275
+    ],
+    "ndcg_at_5_ci95": [
+      0.16718954787724583,
+      0.3024669440861927
+    ],
+    "mrr_ci95": [
+      0.29583333333333334,
+      0.5520833333333333
+    ]
+  },
+  "paired": {
+    "p_at_5_diff": 0.2,
+    "p_at_5_diff_ci95": [
+      0.11000000000000001,
+      0.29500000000000004
+    ],
+    "ndcg_at_5_diff": 0.1837243111379097,
+    "ndcg_at_5_diff_ci95": [
+      0.09267074991048577,
+      0.2765867704378474
+    ],
+    "wins": 22,
+    "ties": 12,
+    "losses": 6
+  },
+  "anomalies": [
+    {
+      "id": "programming_developer_docs_q04",
+      "query": "In JavaScript, what is the difference between let and const?",
+      "weblens_relevant": 0,
+      "tavily_relevant": 0,
+      "weblens_urls": [
+        "https://en.wikipedia.org/wiki/JavaScript_syntax",
+        "https://en.wikipedia.org/wiki/JavaScript",
+        "https://en.wikipedia.org/wiki/ECMAScript",
+        "http://playcode.io/tutorials/javascript/let-const",
+        "https://www.w3schools.com/js/js_varletconst.asp"
+      ],
+      "tavily_urls": [
+        "https://dev.to/jps27cse/difference-between-var-let-and-const-in-javascript-53c",
+        "https://www.geeksforgeeks.org/javascript/difference-between-var-let-and-const-keywords-in-javascript",
+        "https://www.explainthis.io/en/swe/js-var-let-const-in-javascript",
+        "https://www.w3schools.com/js/js_varletconst.asp",
+        "https://medium.com/@robinviktorsson/understanding-the-differences-between-var-let-and-const-in-javascript-and-typescript-0ddd90c0b672"
+      ],
+      "reasons": [
+        "no_relevant_result_from_either"
+      ]
+    },
+    {
+      "id": "company_research_q01",
+      "query": "Who is the CEO of Stripe, and in what year was the payments company founded?",
+      "weblens_relevant": 0,
+      "tavily_relevant": 0,
+      "weblens_urls": [
+        "https://en.wikipedia.org/wiki/Klarna",
+        "https://en.wikipedia.org/wiki/Wish_%28company%29",
+        "https://en.wikipedia.org/wiki/Stripe,_Inc.",
+        "http://www.bbc.com/news/business-43311868",
+        "https://corpdigest.com/company/stripe/company-history"
+      ],
+      "tavily_urls": [
+        "https://en.wikipedia.org/wiki/Stripe,_Inc.",
+        "https://en.wikipedia.org/wiki/Patrick_Collison",
+        "https://www.cnbc.com/2022/01/17/ford-signs-five-year-payments-deal-with-stripe-for-e-commerce-drive.html",
+        "https://www.cnbc.com/amp/2022/01/17/ford-signs-five-year-payments-deal-with-stripe-for-e-commerce-drive.html",
+        "https://finance.yahoo.com/news/payments-platform-stripe-axes-300-145321476.html"
+      ],
+      "reasons": [
+        "no_relevant_result_from_either"
+      ]
+    },
+    {
+      "id": "stock_portfolio_research_q01",
+      "query": "Compare the primary business revenue segments of Microsoft (MSFT) and Alphabet (GOOGL) from their recent 10-K filings.",
+      "weblens_relevant": 0,
+      "tavily_relevant": 0,
+      "weblens_urls": [
+        "https://en.wikipedia.org/wiki/Microsoft",
+        "https://www.facebook.com/jyotiswamivideo/posts/microsoft-vs-alphabet-which-stock-looks-better-for-the-next-10-yearsmicrosoft-or/1082335577746214/",
+        "https://www.yieldtheory.app/compare-stocks/googl-vs-msft",
+        "https://app.edgar.tools/companies/MSFT/disclosures/segments",
+        "https://pitchgrade.com/compare/alphabet-google-vs-microsoft"
+      ],
+      "tavily_urls": [
+        "https://www.stocktitan.net/sec-filings/MSFT",
+        "https://stocktitan.net/sec-filings/MSFT",
+        "https://www.marketbeat.com/stocks/NASDAQ/MSFT/sec-filings",
+        "https://finance.yahoo.com/news/alphabet-googl-vs-microsoft-msft-180000220.html",
+        "https://www.marketbeat.com/stocks/NASDAQ/GOOGL/sec-filings"
+      ],
+      "reasons": [
+        "no_relevant_result_from_either"
+      ]
+    },
+    {
+      "id": "stock_portfolio_research_q04",
+      "query": "What is a dividend paid by a corporation to its shareholders?",
+      "weblens_relevant": 0,
+      "tavily_relevant": 0,
+      "weblens_urls": [
+        "https://en.wikipedia.org/wiki/Dividend",
+        "https://en.wikipedia.org/wiki/Shareholder",
+        "https://en.wikipedia.org/wiki/Dividend_tax",
+        "http://www.law.cornell.edu/wex/dividend",
+        "https://www.fool.com/terms/d/dividend-payments/"
+      ],
+      "tavily_urls": [
+        "https://en.wikipedia.org/wiki/Dividend",
+        "https://owiki.org/wiki/Dividends",
+        "https://stimmel-law.com/articles/dividends-definitions-and-rights",
+        "https://www.irs.gov/taxtopics/tc404",
+        "https://www.bdc.ca/en/articles-tools/entrepreneur-toolkit/templates-business-guides/glossary/dividends"
+      ],
+      "reasons": [
+        "no_relevant_result_from_either"
+      ]
+    },
+    {
+      "id": "competitive_intelligence_q01",
+      "query": "How does Snowflake's cloud architecture compare with Databricks Lakehouse architecture?",
+      "weblens_relevant": 0,
+      "tavily_relevant": 0,
+      "weblens_urls": [
+        "https://en.wikipedia.org/wiki/Predictive_analytics",
+        "https://en.wikipedia.org/wiki/Databricks",
+        "https://www.flexera.com/blog/finops/snowflake-vs-databricks/",
+        "https://www.dawiso.com/glossary/databricks-vs-snowflake-which-data-platform-is-right-for-you",
+        "https://www.reddit.com/r/dataengineering/comments/10kjilb/is_data_lakehouse_a_threat_to_snowflake/"
+      ],
+      "tavily_urls": [
+        "https://dataforest.ai/blog/databricks-vs-snowflake",
+        "https://www.flexera.com/blog/finops/snowflake-vs-databricks",
+        "https://bigdataboutique.com/blog/databricks-vs-snowflake-2026-comparison-d731b5",
+        "https://www.sparity.com/blogs/migrating-warehouses-to-databricks-lakehouse",
+        "https://finance.yahoo.com/sectors/technology/articles/streamnative-introduces-lakestream-architecture-launches-130000338.html"
+      ],
+      "reasons": [
+        "no_relevant_result_from_either"
+      ]
+    },
+    {
+      "id": "healthcare_information_q04",
+      "query": "What is the key difference between a virus and a bacterium?",
+      "weblens_relevant": 0,
+      "tavily_relevant": 0,
+      "weblens_urls": [
+        "https://en.wikipedia.org/wiki/Escherichia_virus_T4",
+        "https://en.wikipedia.org/wiki/Pathogen",
+        "https://en.wikipedia.org/wiki/Zoonosis",
+        "https://en.wikipedia.org/wiki/Diarrhea",
+        "https://en.wikipedia.org/wiki/Influenza"
+      ],
+      "tavily_urls": [
+        "https://www.webmd.com/a-to-z-guides/bacterial-and-viral-infections",
+        "https://imb.uq.edu.au/article/2020/04/difference-between-bacteria-and-viruses",
+        "https://www.youtube.com/watch?v=mQZDyLtCu5E",
+        "https://www.henryford.com/blog/2022/05/virus-versus-bacteria",
+        "https://www.sanitized.com/viruses-and-bacteria-a-brief-explanation-of-the-differences"
+      ],
+      "reasons": [
+        "no_relevant_result_from_either"
+      ]
+    },
+    {
+      "id": "structured_data_enrichment_q01",
+      "query": "What is the official stock ticker symbol and headquarters city for Salesforce?",
+      "weblens_relevant": 0,
+      "tavily_relevant": 0,
+      "weblens_urls": [
+        "https://en.wikipedia.org/wiki/Skydance",
+        "https://en.wikipedia.org/wiki/Hewlett_Packard_Enterprise",
+        "https://en.wikipedia.org/wiki/Telus_Digital",
+        "https://en.wikipedia.org/wiki/Equinix",
+        "https://en.wikipedia.org/wiki/Franklin_Templeton"
+      ],
+      "tavily_urls": [
+        "https://en.wikipedia.org/wiki/Salesforce",
+        "https://tavily.com/knowledge/company/XiMau7KBLqwM",
+        "https://www.google.com/finance/quote/CRM:NYSE",
+        "https://finance.yahoo.com/quote/CRM",
+        "https://finance.yahoo.com/video/salesforce-history-beyond-ticker-213321115.html"
+      ],
+      "reasons": [
+        "no_relevant_result_from_either"
+      ]
+    },
+    {
+      "id": "website_crawling_q04",
+      "query": "What is the difference between an HTTP 301 and 302 redirect?",
+      "weblens_relevant": 0,
+      "tavily_relevant": 0,
+      "weblens_urls": [
+        "https://en.wikipedia.org/wiki/List_of_HTTP_status_codes",
+        "https://en.wikipedia.org/wiki/URL_redirection",
+        "https://en.wikipedia.org/wiki/Meta_refresh",
+        "https://stackoverflow.com/questions/1393280/http-redirect-301-permanent-vs-302-temporary",
+        "http://stackshare.io/terraform-registry-flaconi-alb-redirect-aws"
+      ],
+      "tavily_urls": [
+        "https://seranking.com/blog/301-vs-302-redirects",
+        "https://differencebetween.info/difference-between-301-and-302-redirect",
+        "https://www.conductor.com/academy/redirects/faq/301-vs-302",
+        "https://www.seoclarity.net/resources/knowledgebase/use-301-redirect-vs-302-redirect-15683",
+        "https://www.youtube.com/watch?v=SZypVInS4p0"
+      ],
+      "reasons": [
+        "no_relevant_result_from_either"
+      ]
+    }
+  ],
+  "rows": [
+    {
+      "id": "general_factual_q01",
+      "query": "What year was the Python programming language first released by Guido van Rossum?",
+      "category": "general_factual",
+      "split": "heldout",
+      "labels": [
+        "python.org",
+        "wikipedia.org"
+      ],
+      "order": [
+        "weblens",
+        "tavily"
+      ],
+      "weblens_urls": [
+        "http://docs.python.org/2.3/lib/node756.html",
+        "http://docs.python.org/3.6/license.html",
+        "https://en.wikipedia.org/wiki/Python_%28programming_language%29",
+        "https://en.wikipedia.org/wiki/Monty_Python",
+        "https://en.wikipedia.org/wiki/Monty_Python%27s_Flying_Circus"
+      ],
+      "tavily_urls": [
+        "https://pythoninstitute.org/about-python",
+        "https://en.wikipedia.org/wiki/Python_(programming_language)",
+        "https://www.cwi.nl/en/news/25-years-of-python-at-cwi",
+        "https://www.computer.org/csdl/magazine/co/2015/02/mco2015020007/13rRUy3gmYB",
+        "https://en.wikipedia.org/wiki/Guido_van_Rossum"
+      ],
+      "weblens_ms": 1268.4451999957673,
+      "tavily_ms": 289.1422000247985,
+      "weblens_tokens": 356,
+      "tavily_tokens": 1705,
+      "weblens_payload_tokens": 417,
+      "tavily_payload_tokens": 1771,
+      "weblens_status": "ok",
+      "weblens_providers": [
+        "mwmbl",
+        "wikipedia",
+        "bing",
+        "yahoo"
+      ],
+      "tavily_status": "ok",
+      "weblens_error": null,
+      "tavily_error": null
+    },
+    {
+      "id": "general_factual_q04",
+      "query": "What is the tallest mountain above sea level on Earth?",
+      "category": "general_factual",
+      "split": "heldout",
+      "labels": [
+        "wikipedia.org",
+        "nationalgeographic.com",
+        "britannica.com"
+      ],
+      "order": [
+        "tavily",
+        "weblens"
+      ],
+      "weblens_urls": [
+        "https://en.wikipedia.org/wiki/List_of_highest_mountains_on_Earth",
+        "https://en.wikipedia.org/wiki/Extremes_on_Earth",
+        "https://en.wikipedia.org/wiki/List_of_mountains_by_elevation",
+        "https://oceanservice.noaa.gov/facts/highestpoint.html",
+        "https://earthobservatory.nasa.gov/IOTD/view.php?id=82578"
+      ],
+      "tavily_urls": [
+        "https://en.wikipedia.org/wiki/List_of_highest_mountains_on_Earth",
+        "http://www.businessinsider.com/earths-tallest-mountain-is-hawaii-2015-6",
+        "https://www.businessinsider.com/earths-tallest-mountain-is-hawaii-2015-6",
+        "https://www.guinnessworldrecords.com/world-records/tallest-mountain",
+        "https://www.businessinsider.com/myths-earth-true-science-2016-4"
+      ],
+      "weblens_ms": 1727.374600013718,
+      "tavily_ms": 343.42640003887936,
+      "weblens_tokens": 387,
+      "tavily_tokens": 1528,
+      "weblens_payload_tokens": 437,
+      "tavily_payload_tokens": 1590,
+      "weblens_status": "ok",
+      "weblens_providers": [
+        "mwmbl",
+        "wikipedia",
+        "bing",
+        "yahoo"
+      ],
+      "tavily_status": "ok",
+      "weblens_error": null,
+      "tavily_error": null
+    },
+    {
+      "id": "current_events_news_q01",
+      "query": "What major announcements were made regarding Google Gemini in late 2024 and 2025?",
+      "category": "current_events_news",
+      "split": "heldout",
+      "labels": [
+        "blog.google",
+        "deepmind.google",
+        "theverge.com"
+      ],
+      "order": [
+        "weblens",
+        "tavily"
+      ],
+      "weblens_urls": [
+        "https://en.wikipedia.org/wiki/Google",
+        "https://en.wikipedia.org/wiki/Google_Search",
+        "https://blog.google/innovation-and-ai/products/google-ai-updates-november-2025/",
+        "https://blog.google/innovation-and-ai/products/google-ai-news-recap-2025/",
+        "https://blog.google/innovation-and-ai/products/google-io-2025-all-our-announcements/"
+      ],
+      "tavily_urls": [
+        "https://en.wikipedia.org/wiki/Google_Gemini",
+        "https://cryptorank.io/news/feed/1e22d-google-gemini-users-750-million-2025",
+        "https://aistudio.google.com/docs/changelog",
+        "https://www.youtube.com/watch?v=wYtmizMTtjo",
+        "https://finance.yahoo.com/news/made-google-devices-lead-gemini-073916390.html"
+      ],
+      "weblens_ms": 2192.51699995948,
+      "tavily_ms": 289.5472000236623,
+      "weblens_tokens": 402,
+      "tavily_tokens": 1765,
+      "weblens_payload_tokens": 461,
+      "tavily_payload_tokens": 1836,
+      "weblens_status": "ok",
+      "weblens_providers": [
+        "mwmbl",
+        "wikipedia",
+        "bing",
+        "yahoo"
+      ],
+      "tavily_status": "ok",
+      "weblens_error": null,
+      "tavily_error": null
+    },
+    {
+      "id": "current_events_news_q04",
+      "query": "Which city hosted the 2024 Summer Olympic Games?",
+      "category": "current_events_news",
+      "split": "heldout",
+      "labels": [
+        "olympics.com",
+        "wikipedia.org",
+        "paris2024.org"
+      ],
+      "order": [
+        "tavily",
+        "weblens"
+      ],
+      "weblens_urls": [
+        "https://en.wikipedia.org/wiki/2026_Summer_Youth_Olympics",
+        "https://en.wikipedia.org/wiki/2032_Summer_Olympics",
+        "https://en.wikipedia.org/wiki/List_of_Olympic_Games_host_cities",
+        "https://www.olympics.com/en/olympic-games/paris-2024",
+        "https://kottke.org/19/10/the-chic-2024-summer-olympics-logo"
+      ],
+      "tavily_urls": [
+        "https://en.wikipedia.org/wiki/Summer_Olympic_Games",
+        "https://en.wikipedia.org/wiki/2024_Summer_Olympics",
+        "https://prepp.in/question/which-city-will-host-the-2024-olympic-games-642aa02abc10beb3fb90e8e8",
+        "https://testbook.com/question-answer/which-country-will-host-the-2024-olympic-games--616675a510f80e88ca0b5219",
+        "https://www.olympedia.org/editions/63"
+      ],
+      "weblens_ms": 2883.85450001806,
+      "tavily_ms": 289.3805999774486,
+      "weblens_tokens": 410,
+      "tavily_tokens": 2087,
+      "weblens_payload_tokens": 462,
+      "tavily_payload_tokens": 2149,
+      "weblens_status": "ok",
+      "weblens_providers": [
+        "mwmbl",
+        "wikipedia",
+        "bing",
+        "yahoo"
+      ],
+      "tavily_status": "ok",
+      "weblens_error": null,
+      "tavily_error": null
+    },
+    {
+      "id": "technical_research_q01",
+      "query": "What is Python PEP 703 and how does it propose to make the Global Interpreter Lock optional?",
+      "category": "technical_research",
+      "split": "heldout",
+      "labels": [
+        "peps.python.org",
+        "python.org"
+      ],
+      "order": [
+        "weblens",
+        "tavily"
+      ],
+      "weblens_urls": [
+        "https://docs.rs/pyo3",
+        "https://www.python.org/dev/peps/pep-0703",
+        "http://www.python.org/dev/peps/pep-0779/",
+        "https://discuss.python.org/t/37075",
+        "https://algomaster.io/learn/python/gil"
+      ],
+      "tavily_urls": [
+        "https://pydevtools.com/handbook/explanation/what-is-pep-703",
+        "https://discuss.python.org/t/pep-703-making-the-global-interpreter-lock-optional/22606",
+        "https://peps.python.org/pep-0703",
+        "https://github.com/sqlalchemy/sqlalchemy/discussions/10002",
+        "https://blog.jetbrains.com/pycharm/2025/07/faster-python-unlocking-the-python-global-interpreter-lock"
+      ],
+      "weblens_ms": 3122.8802000405267,
+      "tavily_ms": 282.2960000485182,
+      "weblens_tokens": 339,
+      "tavily_tokens": 1380,
+      "weblens_payload_tokens": 398,
+      "tavily_payload_tokens": 1450,
+      "weblens_status": "ok",
+      "weblens_providers": [
+        "mwmbl",
+        "wikipedia",
+        "bing",
+        "yahoo"
+      ],
+      "tavily_status": "ok",
+      "weblens_error": null,
+      "tavily_error": null
+    },
+    {
+      "id": "technical_research_q04",
+      "query": "What does the CAP theorem say about distributed systems?",
+      "category": "technical_research",
+      "split": "heldout",
+      "labels": [
+        "wikipedia.org",
+        "ibm.com",
+        "mongodb.com"
+      ],
+      "order": [
+        "tavily",
+        "weblens"
+      ],
+      "weblens_urls": [
+        "https://en.wikipedia.org/wiki/NoSQL",
+        "https://en.wikipedia.org/wiki/TLA%2B",
+        "https://en.wikipedia.org/wiki/Database",
+        "https://www.geeksforgeeks.org/system-design/cap-theorem-in-system-design/",
+        "https://www.geeksforgeeks.org/dbms/the-cap-theorem-in-dbms/"
+      ],
+      "tavily_urls": [
+        "https://www.ibm.com/think/topics/cap-theorem",
+        "https://www.mongodb.com/resources/basics/databases/cap-theorem",
+        "https://www.dsstream.com/post/distributed-systems-and-the-cap-theorem",
+        "https://www.splunk.com/en_us/blog/learn/cap-theorem.html",
+        "https://www.geeksforgeeks.org/system-design/cap-theorem-in-system-design"
+      ],
+      "weblens_ms": 3313.6340000201017,
+      "tavily_ms": 286.8251000181772,
+      "weblens_tokens": 360,
+      "tavily_tokens": 1391,
+      "weblens_payload_tokens": 411,
+      "tavily_payload_tokens": 1451,
+      "weblens_status": "ok",
+      "weblens_providers": [
+        "mwmbl",
+        "wikipedia",
+        "bing",
+        "yahoo"
+      ],
+      "tavily_status": "ok",
+      "weblens_error": null,
+      "tavily_error": null
+    },
+    {
+      "id": "programming_developer_docs_q01",
+      "query": "How does asyncio.gather differ from asyncio.TaskGroup in Python 3.11+?",
+      "category": "programming_developer_docs",
+      "split": "heldout",
+      "labels": [
+        "docs.python.org",
+        "python.org"
+      ],
+      "order": [
+        "weblens",
+        "tavily"
+      ],
+      "weblens_urls": [
+        "https://docs.python.org/3/library/asyncio-task.html",
+        "https://codemia.io/knowledge-hub/path/asynciogather_vs_asynciowait_vs_asynciotaskgroup",
+        "https://bruceeckel.substack.com/p/python-311-asynciotaskgroup",
+        "https://dev.to/akki907/from-promiseall-to-asynciogather-the-complete-guide-to-javascript-style-async-patterns-in-12d7",
+        "https://www.activeskill.dev/blog/python-asyncio-taskgroup"
+      ],
+      "tavily_urls": [
+        "https://codemia.io/knowledge-hub/path/asynciogather_vs_asynciowait_vs_asynciotaskgroup",
+        "https://stackoverflow.com/questions/42231161/asyncio-gather-vs-asyncio-wait-vs-asyncio-taskgroup",
+        "https://www.activeskill.dev/blog/python-asyncio-taskgroup",
+        "https://www.geeksforgeeks.org/python/python-taskgroups-with-asyncio",
+        "https://bruceeckel.substack.com/p/python-311-asynciotaskgroup"
+      ],
+      "weblens_ms": 3018.8541000243276,
+      "tavily_ms": 295.8483000402339,
+      "weblens_tokens": 401,
+      "tavily_tokens": 1693,
+      "weblens_payload_tokens": 464,
+      "tavily_payload_tokens": 1761,
+      "weblens_status": "ok",
+      "weblens_providers": [
+        "mwmbl",
+        "wikipedia",
+        "bing",
+        "yahoo"
+      ],
+      "tavily_status": "ok",
+      "weblens_error": null,
+      "tavily_error": null
+    },
+    {
+      "id": "programming_developer_docs_q04",
+      "query": "In JavaScript, what is the difference between let and const?",
+      "category": "programming_developer_docs",
+      "split": "heldout",
+      "labels": [
+        "developer.mozilla.org",
+        "javascript.info"
+      ],
+      "order": [
+        "tavily",
+        "weblens"
+      ],
+      "weblens_urls": [
+        "https://en.wikipedia.org/wiki/JavaScript_syntax",
+        "https://en.wikipedia.org/wiki/JavaScript",
+        "https://en.wikipedia.org/wiki/ECMAScript",
+        "http://playcode.io/tutorials/javascript/let-const",
+        "https://www.w3schools.com/js/js_varletconst.asp"
+      ],
+      "tavily_urls": [
+        "https://dev.to/jps27cse/difference-between-var-let-and-const-in-javascript-53c",
+        "https://www.geeksforgeeks.org/javascript/difference-between-var-let-and-const-keywords-in-javascript",
+        "https://www.explainthis.io/en/swe/js-var-let-const-in-javascript",
+        "https://www.w3schools.com/js/js_varletconst.asp",
+        "https://medium.com/@robinviktorsson/understanding-the-differences-between-var-let-and-const-in-javascript-and-typescript-0ddd90c0b672"
+      ],
+      "weblens_ms": 3596.500299987383,
+      "tavily_ms": 287.1826000045985,
+      "weblens_tokens": 316,
+      "tavily_tokens": 1713,
+      "weblens_payload_tokens": 377,
+      "tavily_payload_tokens": 1778,
+      "weblens_status": "ok",
+      "weblens_providers": [
+        "mwmbl",
+        "wikipedia",
+        "yahoo"
+      ],
+      "tavily_status": "ok",
+      "weblens_error": null,
+      "tavily_error": null
+    },
+    {
+      "id": "scientific_research_q01",
+      "query": "What is AlphaFold 3 capable of predicting beyond protein structures?",
+      "category": "scientific_research",
+      "split": "heldout",
+      "labels": [
+        "nature.com",
+        "deepmind.google"
+      ],
+      "order": [
+        "weblens",
+        "tavily"
+      ],
+      "weblens_urls": [
+        "https://en.wikipedia.org/wiki/Google_DeepMind",
+        "https://pmc.ncbi.nlm.nih.gov/articles/PMC12027460/",
+        "https://arxiv.org/html/2406.03979v1",
+        "https://www.nature.com/articles/s41586-021-03819-2",
+        "https://zenodo.org/records/11546022"
+      ],
+      "tavily_urls": [
+        "https://pmc.ncbi.nlm.nih.gov/articles/PMC12027460",
+        "https://www.isomorphiclabs.com/articles/alphafold-3-predicts-the-structure-and-interactions-of-all-of-lifes-molecules",
+        "https://deepmind.google/science/alphafold",
+        "https://www.nature.com/articles/s41586-021-03819-2",
+        "https://www.cnbc.com/amp/2020/11/30/deepmind-solves-protein-folding-grand-challenge-with-alphafold-ai.html"
+      ],
+      "weblens_ms": 3554.5192999998108,
+      "tavily_ms": 333.56880000792444,
+      "weblens_tokens": 319,
+      "tavily_tokens": 1455,
+      "weblens_payload_tokens": 381,
+      "tavily_payload_tokens": 1515,
+      "weblens_status": "ok",
+      "weblens_providers": [
+        "mwmbl",
+        "wikipedia",
+        "yahoo"
+      ],
+      "tavily_status": "ok",
+      "weblens_error": null,
+      "tavily_error": null
+    },
+    {
+      "id": "scientific_research_q04",
+      "query": "What is the CRISPR-Cas9 system used for?",
+      "category": "scientific_research",
+      "split": "heldout",
+      "labels": [
+        "nature.com",
+        "broadinstitute.org",
+        "nih.gov"
+      ],
+      "order": [
+        "tavily",
+        "weblens"
+      ],
+      "weblens_urls": [
+        "https://en.wikipedia.org/wiki/CRISPR_gene_editing",
+        "https://en.wikipedia.org/wiki/Genome-wide_CRISPR-Cas9_knockout_screens",
+        "https://en.wikipedia.org/wiki/Cas12a",
+        "https://pmc.ncbi.nlm.nih.gov/articles/PMC4975809/",
+        "https://pubmed.ncbi.nlm.nih.gov/30485088/"
+      ],
+      "tavily_urls": [
+        "https://en.wikipedia.org/wiki/CRISPR",
+        "https://pmc.ncbi.nlm.nih.gov/articles/PMC4975809",
+        "https://www.yourgenome.org/theme/what-is-crispr-cas9",
+        "https://www.nsf.gov/impacts/crispr",
+        "https://medlineplus.gov/genetics/understanding/genomicresearch/genomeediting"
+      ],
+      "weblens_ms": 3088.746399967931,
+      "tavily_ms": 299.03829999966547,
+      "weblens_tokens": 375,
+      "tavily_tokens": 1653,
+      "weblens_payload_tokens": 426,
+      "tavily_payload_tokens": 1715,
+      "weblens_status": "ok",
+      "weblens_providers": [
+        "mwmbl",
+        "wikipedia",
+        "bing",
+        "yahoo"
+      ],
+      "tavily_status": "ok",
+      "weblens_error": null,
+      "tavily_error": null
+    },
+    {
+      "id": "academic_research_q01",
+      "query": "Who are the authors of the seminal Transformer architecture paper Attention Is All You Need?",
+      "category": "academic_research",
+      "split": "heldout",
+      "labels": [
+        "arxiv.org",
+        "neurips.cc"
+      ],
+      "order": [
+        "weblens",
+        "tavily"
+      ],
+      "weblens_urls": [
+        "https://en.wikipedia.org/wiki/Noam_Shazeer",
+        "https://en.wikipedia.org/wiki/AI_boom",
+        "https://en.wikipedia.org/wiki/History_of_artificial_intelligence",
+        "https://arxiv.org/pdf/1706.03762",
+        "http://www.dsplog.com/"
+      ],
+      "tavily_urls": [
+        "https://en.wikipedia.org/wiki/Attention_Is_All_You_Need",
+        "https://www.reddit.com/r/ChatGPT/comments/125i04d/but_google_is_the_author_of_attention_is_all_you",
+        "https://www.alphaxiv.org/abs/1706.03762",
+        "https://parseur.com/blog/attention-is-all-you-need",
+        "https://medium.com/@adnanmasood/attention-is-all-you-need-explained-like-youre-smart-and-busy-2a3d7436144f"
+      ],
+      "weblens_ms": 3088.707999966573,
+      "tavily_ms": 472.39229996921495,
+      "weblens_tokens": 341,
+      "tavily_tokens": 1755,
+      "weblens_payload_tokens": 396,
+      "tavily_payload_tokens": 1820,
+      "weblens_status": "ok",
+      "weblens_providers": [
+        "mwmbl",
+        "wikipedia",
+        "bing",
+        "yahoo"
+      ],
+      "tavily_status": "ok",
+      "weblens_error": null,
+      "tavily_error": null
+    },
+    {
+      "id": "academic_research_q04",
+      "query": "Who won the Nobel Prize in Physics in 2023?",
+      "category": "academic_research",
+      "split": "heldout",
+      "labels": [
+        "nobelprize.org",
+        "wikipedia.org"
+      ],
+      "order": [
+        "tavily",
+        "weblens"
+      ],
+      "weblens_urls": [
+        "https://en.wikipedia.org/wiki/List_of_Nobel_laureates_in_Physics",
+        "https://en.wikipedia.org/wiki/Nobel_Prize_in_Physics_controversies",
+        "https://en.wikipedia.org/wiki/List_of_women_Nobel_laureates",
+        "https://www.nobelprize.org/prizes/physics/2023",
+        "https://www.nobelprize.org/prizes/physics/2023/summary/"
+      ],
+      "tavily_urls": [
+        "https://www.polytechnique-insights.com/en/columns/science/nobel-prize-in-physics-2023-an-unprecedented-image-of-the-infinitely-small",
+        "https://www.reddit.com/r/Physics/comments/16ynjir/the_2023_nobel_prize_in_physics_is_awarded_to",
+        "https://hubner-photonics.com/news/2023-nobel-prize-in-physics-announced",
+        "https://www.nobelprize.org/prizes/physics/2023/summary",
+        "https://www.youtube.com/watch?v=FdCaSua_GLI"
+      ],
+      "weblens_ms": 3166.7853000108153,
+      "tavily_ms": 323.796599986963,
+      "weblens_tokens": 434,
+      "tavily_tokens": 1766,
+      "weblens_payload_tokens": 491,
+      "tavily_payload_tokens": 1829,
+      "weblens_status": "ok",
+      "weblens_providers": [
+        "mwmbl",
+        "wikipedia",
+        "bing",
+        "yahoo"
+      ],
+      "tavily_status": "ok",
+      "weblens_error": null,
+      "tavily_error": null
+    },
+    {
+      "id": "multihop_reasoning_q01",
+      "query": "What company acquired DeepMind in 2014, and who was that parent company's CEO at the time of acquisition?",
+      "category": "multihop_reasoning",
+      "split": "heldout",
+      "labels": [
+        "wikipedia.org",
+        "reuters.com",
+        "bloomberg.com"
+      ],
+      "order": [
+        "weblens",
+        "tavily"
+      ],
+      "weblens_urls": [
+        "https://en.wikipedia.org/wiki/Google_DeepMind",
+        "https://en.wikipedia.org/wiki/Mustafa_Suleyman",
+        "https://en.wikipedia.org/wiki/Amazon_%28company%29",
+        "https://seedtable.com/exits/google-deepmind",
+        "https://littlesis.org/relationships/1484478"
+      ],
+      "tavily_urls": [
+        "https://en.wikipedia.org/wiki/Google_DeepMind",
+        "https://www.cnbc.com/2024/03/19/microsoft-names-deepmind-co-founder-mustafa-suleyman-as-ceo-of-ai-unit.html",
+        "https://www.cnbc.com/amp/2024/03/19/microsoft-names-deepmind-co-founder-mustafa-suleyman-as-ceo-of-ai-unit.html",
+        "https://techcrunch.com/2014/01/26/google-deepmind",
+        "https://www.linkedin.com/posts/przchojecki_2014-google-acquires-deepmind-for-500m-activity-7405187987845595136-2nE4"
+      ],
+      "weblens_ms": 6358.894200006034,
+      "tavily_ms": 287.46789996512234,
+      "weblens_tokens": 378,
+      "tavily_tokens": 1475,
+      "weblens_payload_tokens": 456,
+      "tavily_payload_tokens": 1554,
+      "weblens_status": "ok",
+      "weblens_providers": [
+        "mwmbl",
+        "wikipedia",
+        "bing",
+        "yahoo"
+      ],
+      "tavily_status": "ok",
+      "weblens_error": null,
+      "tavily_error": null
+    },
+    {
+      "id": "multihop_reasoning_q04",
+      "query": "Which country is the world's largest producer of coffee, and on which continent is it located?",
+      "category": "multihop_reasoning",
+      "split": "heldout",
+      "labels": [
+        "wikipedia.org",
+        "ico.org",
+        "usda.gov"
+      ],
+      "order": [
+        "tavily",
+        "weblens"
+      ],
+      "weblens_urls": [
+        "https://en.wikipedia.org/wiki/History_of_coffee",
+        "https://en.wikipedia.org/wiki/S%C3%A3o_Paulo_%28state%29",
+        "https://en.wikipedia.org/wiki/Brazil",
+        "http://www.eia.gov/todayinenergy/detail.cfm?id=22392",
+        "https://worldpopulationreview.com/country-rankings/coffee-producing-countries"
+      ],
+      "tavily_urls": [
+        "https://www.nescafe.com/gb/coffee-culture/knowledge/coffee-producing-countries",
+        "https://en.wikipedia.org/wiki/List_of_countries_by_coffee_production",
+        "https://colipsecoffee.com/blogs/coffee/countries",
+        "https://www.cafedirect.co.uk/blogs/coffee-education/which-country-produces-the-most-coffee",
+        "https://cafesroma.com/en/blogs/news/los-principales-paises-productores-de-cafe"
+      ],
+      "weblens_ms": 3088.6276999954134,
+      "tavily_ms": 295.64189998200163,
+      "weblens_tokens": 366,
+      "tavily_tokens": 1500,
+      "weblens_payload_tokens": 427,
+      "tavily_payload_tokens": 1568,
+      "weblens_status": "ok",
+      "weblens_providers": [
+        "mwmbl",
+        "wikipedia",
+        "bing",
+        "yahoo"
+      ],
+      "tavily_status": "ok",
+      "weblens_error": null,
+      "tavily_error": null
+    },
+    {
+      "id": "long_document_extraction_q01",
+      "query": "Extract the exact license terms of the MIT License text.",
+      "category": "long_document_extraction",
+      "split": "heldout",
+      "labels": [
+        "opensource.org",
+        "mit-license.org"
+      ],
+      "order": [
+        "weblens",
+        "tavily"
+      ],
+      "weblens_urls": [
+        "https://en.wikipedia.org/wiki/Glossary_of_computer_science",
+        "https://en.wikipedia.org/wiki/Reverse_image_search",
+        "https://en.wikipedia.org/wiki/Glossary_of_video_game_terms",
+        "https://opensource.org/license/mit",
+        "https://choosealicense.com/licenses/mit/"
+      ],
+      "tavily_urls": [
+        "https://medium.com/@kemitchell/the-mit-license-line-by-line-83349c361dd6",
+        "https://en.wikipedia.org/wiki/MIT_License",
+        "https://snyk.io/articles/what-is-mit-license",
+        "https://orca.security/resources/blog/what-is-the-mit-license",
+        "https://libguides.wvu.edu/c.php?g=1260463&p=9239106"
+      ],
+      "weblens_ms": 6431.268199987244,
+      "tavily_ms": 287.7623999956995,
+      "weblens_tokens": 360,
+      "tavily_tokens": 1323,
+      "weblens_payload_tokens": 423,
+      "tavily_payload_tokens": 1385,
+      "weblens_status": "ok",
+      "weblens_providers": [
+        "mwmbl",
+        "wikipedia",
+        "bing",
+        "yahoo"
+      ],
+      "tavily_status": "ok",
+      "weblens_error": null,
+      "tavily_error": null
+    },
+    {
+      "id": "long_document_extraction_q04",
+      "query": "Which article of the United States Constitution establishes the judicial branch?",
+      "category": "long_document_extraction",
+      "split": "heldout",
+      "labels": [
+        "archives.gov",
+        "constitution.congress.gov",
+        "senate.gov"
+      ],
+      "order": [
+        "tavily",
+        "weblens"
+      ],
+      "weblens_urls": [
+        "https://en.wikipedia.org/wiki/Article_One_of_the_United_States_Constitution",
+        "https://en.wikipedia.org/wiki/Judicial_review_in_the_United_States",
+        "https://en.wikipedia.org/wiki/Article_Six_of_the_United_States_Constitution",
+        "https://constitution.congress.gov/constitution/article-3/",
+        "https://www.law.cornell.edu/constitution/articleiii"
+      ],
+      "tavily_urls": [
+        "https://en.wikipedia.org/wiki/Article_Three_of_the_United_States_Constitution",
+        "https://bensguide.gpo.gov/m-judicial",
+        "https://obamawhitehouse.archives.gov/1600/judicial-branch",
+        "https://www.khanacademy.org/humanities/us-government-and-civics/x231f0f4241b58f49:us-gov-and-civics-the-judicial-branch/us-gov-the-judicial-branch/v/article-iii-of-the-constitution",
+        "https://www.uscourts.gov/about-federal-courts/educational-resources/about-educational-outreach/activity-resources/about"
+      ],
+      "weblens_ms": 2756.891299970448,
+      "tavily_ms": 281.8402000120841,
+      "weblens_tokens": 354,
+      "tavily_tokens": 1502,
+      "weblens_payload_tokens": 408,
+      "tavily_payload_tokens": 1565,
+      "weblens_status": "ok",
+      "weblens_providers": [
+        "mwmbl",
+        "wikipedia",
+        "bing",
+        "yahoo"
+      ],
+      "tavily_status": "ok",
+      "weblens_error": null,
+      "tavily_error": null
+    },
+    {
+      "id": "company_research_q01",
+      "query": "Who is the CEO of Stripe, and in what year was the payments company founded?",
+      "category": "company_research",
+      "split": "heldout",
+      "labels": [
+        "stripe.com",
+        "forbes.com",
+        "bloomberg.com"
+      ],
+      "order": [
+        "weblens",
+        "tavily"
+      ],
+      "weblens_urls": [
+        "https://en.wikipedia.org/wiki/Klarna",
+        "https://en.wikipedia.org/wiki/Wish_%28company%29",
+        "https://en.wikipedia.org/wiki/Stripe,_Inc.",
+        "http://www.bbc.com/news/business-43311868",
+        "https://corpdigest.com/company/stripe/company-history"
+      ],
+      "tavily_urls": [
+        "https://en.wikipedia.org/wiki/Stripe,_Inc.",
+        "https://en.wikipedia.org/wiki/Patrick_Collison",
+        "https://www.cnbc.com/2022/01/17/ford-signs-five-year-payments-deal-with-stripe-for-e-commerce-drive.html",
+        "https://www.cnbc.com/amp/2022/01/17/ford-signs-five-year-payments-deal-with-stripe-for-e-commerce-drive.html",
+        "https://finance.yahoo.com/news/payments-platform-stripe-axes-300-145321476.html"
+      ],
+      "weblens_ms": 3080.7904999819584,
+      "tavily_ms": 282.3443999513984,
+      "weblens_tokens": 360,
+      "tavily_tokens": 1509,
+      "weblens_payload_tokens": 416,
+      "tavily_payload_tokens": 1577,
+      "weblens_status": "ok",
+      "weblens_providers": [
+        "mwmbl",
+        "wikipedia",
+        "bing",
+        "yahoo"
+      ],
+      "tavily_status": "ok",
+      "weblens_error": null,
+      "tavily_error": null
+    },
+    {
+      "id": "company_research_q04",
+      "query": "Which products is Adobe Inc. best known for?",
+      "category": "company_research",
+      "split": "heldout",
+      "labels": [
+        "adobe.com",
+        "wikipedia.org",
+        "britannica.com"
+      ],
+      "order": [
+        "tavily",
+        "weblens"
+      ],
+      "weblens_urls": [
+        "https://en.wikipedia.org/wiki/Adobe_Inc.",
+        "https://en.wikipedia.org/wiki/Adobe_Flash",
+        "https://en.wikipedia.org/wiki/Adobe_Flash_Player",
+        "https://www.adobe.com/in/products/catalog.html",
+        "https://www.adobe.com/products/catalog.html"
+      ],
+      "tavily_urls": [
+        "https://en.wikipedia.org/wiki/Adobe_Inc.",
+        "https://www.techmonitor.ai/what-is/what-is-adobe-4956838",
+        "https://www.mapquest.com/us/virginia/adobe-inc-369814807",
+        "https://tavily.com/knowledge/company/1LGhojf0NTrw",
+        "https://www.mapquest.com/us/california/adobe-inc-24141725"
+      ],
+      "weblens_ms": 2565.2208999963477,
+      "tavily_ms": 283.21259998483583,
+      "weblens_tokens": 308,
+      "tavily_tokens": 1619,
+      "weblens_payload_tokens": 360,
+      "tavily_payload_tokens": 1678,
+      "weblens_status": "ok",
+      "weblens_providers": [
+        "mwmbl",
+        "wikipedia",
+        "bing",
+        "yahoo"
+      ],
+      "tavily_status": "ok",
+      "weblens_error": null,
+      "tavily_error": null
+    },
+    {
+      "id": "startup_research_q01",
+      "query": "What foundational model products does Mistral AI offer as open weights?",
+      "category": "startup_research",
+      "split": "heldout",
+      "labels": [
+        "mistral.ai",
+        "huggingface.co"
+      ],
+      "order": [
+        "weblens",
+        "tavily"
+      ],
+      "weblens_urls": [
+        "https://home.cern/cern-and-mistral-join-forces-to-accelerate-ai-for-science/",
+        "https://github.com/mistralai/timestral",
+        "https://en.wikipedia.org/wiki/Large_language_model",
+        "https://en.wikipedia.org/wiki/Foundation_model",
+        "https://en.wikipedia.org/wiki/Sarvam_AI"
+      ],
+      "tavily_urls": [
+        "https://mistral.ai/research",
+        "https://techjacksolutions.com/vendor/mistral",
+        "https://www.ibm.com/think/topics/mistral-ai",
+        "https://finance.yahoo.com/news/mistral-releases-voxtral-first-open-151444971.html",
+        "https://docs.mistral.ai/models"
+      ],
+      "weblens_ms": 6000.44049997814,
+      "tavily_ms": 290.0752000277862,
+      "weblens_tokens": 391,
+      "tavily_tokens": 1782,
+      "weblens_payload_tokens": 455,
+      "tavily_payload_tokens": 1848,
+      "weblens_status": "ok",
+      "weblens_providers": [
+        "mwmbl",
+        "wikipedia",
+        "bing",
+        "yahoo"
+      ],
+      "tavily_status": "ok",
+      "weblens_error": null,
+      "tavily_error": null
+    },
+    {
+      "id": "startup_research_q04",
+      "query": "What product is the startup Perplexity AI known for?",
+      "category": "startup_research",
+      "split": "heldout",
+      "labels": [
+        "perplexity.ai",
+        "wikipedia.org",
+        "techcrunch.com"
+      ],
+      "order": [
+        "tavily",
+        "weblens"
+      ],
+      "weblens_urls": [
+        "https://en.wikipedia.org/wiki/Generative_engine_optimization",
+        "https://en.wikipedia.org/wiki/Denis_Yarats",
+        "https://en.wikipedia.org/wiki/Andy_Konwinski",
+        "https://www.perplexity.ai/hub",
+        "https://www.devx.com/daily-news/apple-considers-bid-for-ai-startup-perplexity/"
+      ],
+      "tavily_urls": [
+        "https://finance.yahoo.com/news/ai-startup-perplexity-closes-funding-192915394.html",
+        "https://finance.yahoo.com/news/ai-startup-perplexity-closes-funding-192915394.html?fr=sycsrp_catchall",
+        "https://finance.yahoo.com/news/ai-startup-perplexity-reportedly-raises-124100883.html",
+        "https://www.reddit.com/r/perplexity_ai/comments/12vh64q/who_is_behind_perplexityai_and_which_llm_does_it",
+        "https://ca.finance.yahoo.com/news/ai-startup-perplexity-adds-shopping-213136570.html"
+      ],
+      "weblens_ms": 2690.8794000046328,
+      "tavily_ms": 291.2736000143923,
+      "weblens_tokens": 338,
+      "tavily_tokens": 1276,
+      "weblens_payload_tokens": 391,
+      "tavily_payload_tokens": 1341,
+      "weblens_status": "ok",
+      "weblens_providers": [
+        "mwmbl",
+        "wikipedia",
+        "bing",
+        "yahoo"
+      ],
+      "tavily_status": "ok",
+      "weblens_error": null,
+      "tavily_error": null
+    },
+    {
+      "id": "industry_research_q01",
+      "query": "What are the major commercial AI hardware chip families produced by NVIDIA for data centers?",
+      "category": "industry_research",
+      "split": "heldout",
+      "labels": [
+        "nvidia.com",
+        "anandtech.com"
+      ],
+      "order": [
+        "weblens",
+        "tavily"
+      ],
+      "weblens_urls": [
+        "https://en.wikipedia.org/wiki/Nvidia",
+        "https://en.wikipedia.org/wiki/HiSilicon",
+        "https://en.wikipedia.org/wiki/Artificial_intelligence_industry_in_the_United_Kingdom",
+        "https://nvidianews.nvidia.com/news/computer-industry-ai-factories-data-centers",
+        "https://resources.nvidia.com/en-us-mfg-briefcase/data-center"
+      ],
+      "tavily_urls": [
+        "https://aimultiple.com/ai-chip-makers",
+        "https://en.wikipedia.org/wiki/Nvidia",
+        "https://www.nvidia.com/en-us/data-center",
+        "https://www.wired.com/story/nvidia-wants-to-own-every-chip-inside-an-ai-data-center",
+        "https://nvidianews.nvidia.com/news/computer-industry-ai-factories-data-centers"
+      ],
+      "weblens_ms": 3196.3936000247486,
+      "tavily_ms": 323.6013000132516,
+      "weblens_tokens": 375,
+      "tavily_tokens": 1409,
+      "weblens_payload_tokens": 429,
+      "tavily_payload_tokens": 1475,
+      "weblens_status": "ok",
+      "weblens_providers": [
+        "mwmbl",
+        "wikipedia",
+        "bing",
+        "yahoo"
+      ],
+      "tavily_status": "ok",
+      "weblens_error": null,
+      "tavily_error": null
+    },
+    {
+      "id": "industry_research_q04",
+      "query": "What industry does the company Siemens primarily operate in?",
+      "category": "industry_research",
+      "split": "heldout",
+      "labels": [
+        "siemens.com",
+        "wikipedia.org",
+        "britannica.com"
+      ],
+      "order": [
+        "tavily",
+        "weblens"
+      ],
+      "weblens_urls": [
+        "https://en.wikipedia.org/wiki/Streetcars_in_North_America",
+        "https://en.wikipedia.org/wiki/Economy_of_Germany",
+        "https://en.wikipedia.org/wiki/Harland_%26_Wolff",
+        "https://press.siemens.com/global/en?+Divisions=&key=Sectors+",
+        "https://www.forbes.com/companies/siemens/"
+      ],
+      "tavily_urls": [
+        "https://en.wikipedia.org/wiki/Siemens",
+        "https://umbrex.com/resources/company-profiles/siemens-ag",
+        "https://www.forbes.com/companies/siemens",
+        "https://tavily.com/knowledge/company/E5K2EqfeEhaV",
+        "https://www.cascade.app/studies/siemens-strategy-study"
+      ],
+      "weblens_ms": 2412.2780000325292,
+      "tavily_ms": 280.6169000105001,
+      "weblens_tokens": 376,
+      "tavily_tokens": 1448,
+      "weblens_payload_tokens": 427,
+      "tavily_payload_tokens": 1511,
+      "weblens_status": "ok",
+      "weblens_providers": [
+        "mwmbl",
+        "wikipedia",
+        "bing",
+        "yahoo"
+      ],
+      "tavily_status": "ok",
+      "weblens_error": null,
+      "tavily_error": null
+    },
+    {
+      "id": "market_research_q01",
+      "query": "What were Apple's reported total net sales in its official FY2024 10-K SEC regulatory filing?",
+      "category": "market_research",
+      "split": "heldout",
+      "labels": [
+        "sec.gov",
+        "apple.com"
+      ],
+      "order": [
+        "weblens",
+        "tavily"
+      ],
+      "weblens_urls": [
+        "https://investor.apple.com/sec-filings/default.aspx",
+        "https://investor.apple.com/sec-filings/sec-filings-details/default.aspx?FilingId=17933082",
+        "http://www.freethesaurus.com/muscatel",
+        "https://s2.q4cdn.com/470004039/files/doc_earnings/2024/q4/filing/10-Q4-2024-As-Filed.pdf",
+        "https://www.secfilingdata.com/blog/apples-most-important-filing-2025/"
+      ],
+      "tavily_urls": [
+        "https://s2.q4cdn.com/470004039/files/doc_earnings/2024/q4/filing/10-Q4-2024-As-Filed.pdf",
+        "https://www.sec.gov/Archives/edgar/data/320193/000032019324000123/aapl-20240928.htm",
+        "https://www.sec.gov/Archives/edgar/data/320193/000032019325000079/aapl-20250927.htm",
+        "https://tavily.com/knowledge/company/eL7xXx9SgNQa",
+        "https://www.sec.gov/Archives/edgar/data/320193/000032019318000145/a10-k20189292018.htm"
+      ],
+      "weblens_ms": 5942.006800032686,
+      "tavily_ms": 339.0441000228748,
+      "weblens_tokens": 458,
+      "tavily_tokens": 2993,
+      "weblens_payload_tokens": 536,
+      "tavily_payload_tokens": 3066,
+      "weblens_status": "ok",
+      "weblens_providers": [
+        "mwmbl",
+        "wikipedia",
+        "bing",
+        "yahoo"
+      ],
+      "tavily_status": "ok",
+      "weblens_error": null,
+      "tavily_error": null
+    },
+    {
+      "id": "market_research_q04",
+      "query": "What is a 10-K filing that public companies submit to the SEC?",
+      "category": "market_research",
+      "split": "heldout",
+      "labels": [
+        "sec.gov",
+        "investopedia.com"
+      ],
+      "order": [
+        "tavily",
+        "weblens"
+      ],
+      "weblens_urls": [
+        "https://www.sec.gov/fast-answers/answersform8khtm.html",
+        "https://www.sec.gov/search-filings",
+        "https://www.investor.gov/introduction-investing/investing-basics/glossary/form-10-k",
+        "https://edgarscout.com/sec-forms/10-k/",
+        "https://en.wikipedia.org/wiki/SEC_filing"
+      ],
+      "tavily_urls": [
+        "https://www.sec.gov/submit-filings",
+        "https://www.sec.gov/search-filings",
+        "https://www.sec.gov/files/reada10k.pdf",
+        "https://www.dfinsolutions.com/knowledge-hub/thought-leadership/knowledge-resources/what-10-k-filing",
+        "https://www.stocktitan.net/sec-filings/ASPI/nt-10-k-asp-isotopes-inc-sec-filing-100ff394df25.html"
+      ],
+      "weblens_ms": 2710.598200035747,
+      "tavily_ms": 354.49910000897944,
+      "weblens_tokens": 370,
+      "tavily_tokens": 1807,
+      "weblens_payload_tokens": 424,
+      "tavily_payload_tokens": 1876,
+      "weblens_status": "ok",
+      "weblens_providers": [
+        "mwmbl",
+        "wikipedia",
+        "bing",
+        "yahoo"
+      ],
+      "tavily_status": "ok",
+      "weblens_error": null,
+      "tavily_error": null
+    },
+    {
+      "id": "stock_portfolio_research_q01",
+      "query": "Compare the primary business revenue segments of Microsoft (MSFT) and Alphabet (GOOGL) from their recent 10-K filings.",
+      "category": "stock_portfolio_research",
+      "split": "heldout",
+      "labels": [
+        "sec.gov",
+        "microsoft.com",
+        "abc.xyz"
+      ],
+      "order": [
+        "weblens",
+        "tavily"
+      ],
+      "weblens_urls": [
+        "https://en.wikipedia.org/wiki/Microsoft",
+        "https://www.facebook.com/jyotiswamivideo/posts/microsoft-vs-alphabet-which-stock-looks-better-for-the-next-10-yearsmicrosoft-or/1082335577746214/",
+        "https://www.yieldtheory.app/compare-stocks/googl-vs-msft",
+        "https://app.edgar.tools/companies/MSFT/disclosures/segments",
+        "https://pitchgrade.com/compare/alphabet-google-vs-microsoft"
+      ],
+      "tavily_urls": [
+        "https://www.stocktitan.net/sec-filings/MSFT",
+        "https://stocktitan.net/sec-filings/MSFT",
+        "https://www.marketbeat.com/stocks/NASDAQ/MSFT/sec-filings",
+        "https://finance.yahoo.com/news/alphabet-googl-vs-microsoft-msft-180000220.html",
+        "https://www.marketbeat.com/stocks/NASDAQ/GOOGL/sec-filings"
+      ],
+      "weblens_ms": 6399.704300041776,
+      "tavily_ms": 295.30900000827387,
+      "weblens_tokens": 490,
+      "tavily_tokens": 1937,
+      "weblens_payload_tokens": 574,
+      "tavily_payload_tokens": 2010,
+      "weblens_status": "ok",
+      "weblens_providers": [
+        "mwmbl",
+        "wikipedia",
+        "bing",
+        "yahoo"
+      ],
+      "tavily_status": "ok",
+      "weblens_error": null,
+      "tavily_error": null
+    },
+    {
+      "id": "stock_portfolio_research_q04",
+      "query": "What is a dividend paid by a corporation to its shareholders?",
+      "category": "stock_portfolio_research",
+      "split": "heldout",
+      "labels": [
+        "investopedia.com",
+        "sec.gov"
+      ],
+      "order": [
+        "tavily",
+        "weblens"
+      ],
+      "weblens_urls": [
+        "https://en.wikipedia.org/wiki/Dividend",
+        "https://en.wikipedia.org/wiki/Shareholder",
+        "https://en.wikipedia.org/wiki/Dividend_tax",
+        "http://www.law.cornell.edu/wex/dividend",
+        "https://www.fool.com/terms/d/dividend-payments/"
+      ],
+      "tavily_urls": [
+        "https://en.wikipedia.org/wiki/Dividend",
+        "https://owiki.org/wiki/Dividends",
+        "https://stimmel-law.com/articles/dividends-definitions-and-rights",
+        "https://www.irs.gov/taxtopics/tc404",
+        "https://www.bdc.ca/en/articles-tools/entrepreneur-toolkit/templates-business-guides/glossary/dividends"
+      ],
+      "weblens_ms": 2527.7360000181943,
+      "tavily_ms": 300.25660002138466,
+      "weblens_tokens": 337,
+      "tavily_tokens": 1214,
+      "weblens_payload_tokens": 392,
+      "tavily_payload_tokens": 1276,
+      "weblens_status": "ok",
+      "weblens_providers": [
+        "mwmbl",
+        "wikipedia",
+        "bing",
+        "yahoo"
+      ],
+      "tavily_status": "ok",
+      "weblens_error": null,
+      "tavily_error": null
+    },
+    {
+      "id": "product_research_q01",
+      "query": "What are the key technical specifications and battery life of the M4 MacBook Pro?",
+      "category": "product_research",
+      "split": "heldout",
+      "labels": [
+        "apple.com"
+      ],
+      "order": [
+        "weblens",
+        "tavily"
+      ],
+      "weblens_urls": [
+        "https://en.wikipedia.org/wiki/Apple_M1",
+        "https://www.apple.com/mk/macbook-air/",
+        "http://www.apple.com/eg/macbook-air",
+        "https://www.reddit.com/r/macbookpro/comments/1i63w49/battery_life_macbook_pro_m4_pro_16/",
+        "https://www.youtube.com/watch?v=BWb5YMtyeO0"
+      ],
+      "tavily_urls": [
+        "https://support.apple.com/en-us/121554",
+        "https://support.apple.com/en-us/121553",
+        "https://finance.yahoo.com/news/apple-upgrades-macbook-pro-m4-150000960.html",
+        "https://finance.yahoo.com/news/apple-unveils-macbook-pro-m4-160920736.html",
+        "https://www.laptopmag.com/laptops/macbooks/this-macbook-pro-is-the-longest-lasting-apple-laptop-weve-ever-tested-but-did-it-make-it-to-24-hours"
+      ],
+      "weblens_ms": 3041.4848999935202,
+      "tavily_ms": 296.12859996268526,
+      "weblens_tokens": 408,
+      "tavily_tokens": 1838,
+      "weblens_payload_tokens": 466,
+      "tavily_payload_tokens": 1906,
+      "weblens_status": "ok",
+      "weblens_providers": [
+        "mwmbl",
+        "wikipedia",
+        "bing",
+        "yahoo"
+      ],
+      "tavily_status": "ok",
+      "weblens_error": null,
+      "tavily_error": null
+    },
+    {
+      "id": "product_research_q04",
+      "query": "What is Apple Vision Pro?",
+      "category": "product_research",
+      "split": "heldout",
+      "labels": [
+        "apple.com",
+        "wikipedia.org",
+        "theverge.com"
+      ],
+      "order": [
+        "tavily",
+        "weblens"
+      ],
+      "weblens_urls": [
+        "https://en.wikipedia.org/wiki/VisionOS",
+        "https://en.wikipedia.org/wiki/Apple_M5",
+        "https://en.wikipedia.org/wiki/Apple_M2",
+        "http://www.apple.com/apple-vision-pro",
+        "https://www.apple.com/shop/buy-vision"
+      ],
+      "tavily_urls": [
+        "https://en.wikipedia.org/wiki/Apple_Vision_Pro",
+        "https://www.apple.com/apple-vision-pro",
+        "https://www.reddit.com/r/virtualreality/comments/194s7t3/currently_whats_the_point_of_the_apple_vision_pro",
+        "https://finance.yahoo.com/news/apple-is-aiming-the-vision-pro-at-enterprises-140056694.html",
+        "https://finance.yahoo.com/news/apple-brings-apple-intelligence-vision-173841127.html"
+      ],
+      "weblens_ms": 2700.152200006414,
+      "tavily_ms": 295.18120002467185,
+      "weblens_tokens": 312,
+      "tavily_tokens": 1772,
+      "weblens_payload_tokens": 361,
+      "tavily_payload_tokens": 1829,
+      "weblens_status": "ok",
+      "weblens_providers": [
+        "mwmbl",
+        "wikipedia",
+        "bing",
+        "yahoo"
+      ],
+      "tavily_status": "ok",
+      "weblens_error": null,
+      "tavily_error": null
+    },
+    {
+      "id": "competitive_intelligence_q01",
+      "query": "How does Snowflake's cloud architecture compare with Databricks Lakehouse architecture?",
+      "category": "competitive_intelligence",
+      "split": "heldout",
+      "labels": [
+        "snowflake.com",
+        "databricks.com"
+      ],
+      "order": [
+        "weblens",
+        "tavily"
+      ],
+      "weblens_urls": [
+        "https://en.wikipedia.org/wiki/Predictive_analytics",
+        "https://en.wikipedia.org/wiki/Databricks",
+        "https://www.flexera.com/blog/finops/snowflake-vs-databricks/",
+        "https://www.dawiso.com/glossary/databricks-vs-snowflake-which-data-platform-is-right-for-you",
+        "https://www.reddit.com/r/dataengineering/comments/10kjilb/is_data_lakehouse_a_threat_to_snowflake/"
+      ],
+      "tavily_urls": [
+        "https://dataforest.ai/blog/databricks-vs-snowflake",
+        "https://www.flexera.com/blog/finops/snowflake-vs-databricks",
+        "https://bigdataboutique.com/blog/databricks-vs-snowflake-2026-comparison-d731b5",
+        "https://www.sparity.com/blogs/migrating-warehouses-to-databricks-lakehouse",
+        "https://finance.yahoo.com/sectors/technology/articles/streamnative-introduces-lakestream-architecture-launches-130000338.html"
+      ],
+      "weblens_ms": 3056.5097999642603,
+      "tavily_ms": 296.57720000250265,
+      "weblens_tokens": 353,
+      "tavily_tokens": 1543,
+      "weblens_payload_tokens": 408,
+      "tavily_payload_tokens": 1611,
+      "weblens_status": "ok",
+      "weblens_providers": [
+        "mwmbl",
+        "wikipedia",
+        "bing",
+        "yahoo"
+      ],
+      "tavily_status": "ok",
+      "weblens_error": null,
+      "tavily_error": null
+    },
+    {
+      "id": "competitive_intelligence_q04",
+      "query": "How do AWS and Google Cloud differ in their core compute pricing models?",
+      "category": "competitive_intelligence",
+      "split": "heldout",
+      "labels": [
+        "aws.amazon.com",
+        "cloud.google.com"
+      ],
+      "order": [
+        "tavily",
+        "weblens"
+      ],
+      "weblens_urls": [
+        "https://en.wikipedia.org/wiki/Google_Cloud_Platform",
+        "https://en.wikipedia.org/wiki/Amazon_Web_Services",
+        "https://en.wikipedia.org/wiki/Cloud_computing",
+        "http://cloud.google.com/compute",
+        "https://aws.amazon.com/"
+      ],
+      "tavily_urls": [
+        "https://spot.rackspace.com/blog/cloud-computing-cost",
+        "https://www.channelinsider.com/infrastructure/aws-vs-azure-vs-google-cloud",
+        "https://cast.ai/blog/cloud-pricing-comparison",
+        "https://www.reddit.com/r/googlecloud/comments/187n2l7/pricing_comparison_aws_vs_gcp",
+        "https://cloudchipr.com/blog/databricks-pricing"
+      ],
+      "weblens_ms": 5801.150799961761,
+      "tavily_ms": 336.2517000059597,
+      "weblens_tokens": 288,
+      "tavily_tokens": 1538,
+      "weblens_payload_tokens": 354,
+      "tavily_payload_tokens": 1603,
+      "weblens_status": "ok",
+      "weblens_providers": [
+        "mwmbl",
+        "wikipedia",
+        "bing",
+        "yahoo"
+      ],
+      "tavily_status": "ok",
+      "weblens_error": null,
+      "tavily_error": null
+    },
+    {
+      "id": "legal_policy_research_q01",
+      "query": "What are the key compliance requirements under the European Union AI Act for high-risk AI systems?",
+      "category": "legal_policy_research",
+      "split": "heldout",
+      "labels": [
+        "europa.eu"
+      ],
+      "order": [
+        "weblens",
+        "tavily"
+      ],
+      "weblens_urls": [
+        "https://en.wikipedia.org/wiki/Regulation_of_artificial_intelligence_in_the_United_States",
+        "https://ai-act-service-desk.ec.europa.eu/pl/node/471",
+        "https://digital-strategy.ec.europa.eu/en/policies/regulatory-framework-ai",
+        "https://artificialintelligenceact.eu/article/16/",
+        "https://artificialintelligenceact.eu/section/3-2/"
+      ],
+      "tavily_urls": [
+        "https://www.metricstream.com/learn/what-is-the-eu-ai-act-guide-to-compliance-categories-obligations.html",
+        "https://www.aoshearman.com/en/insights/ao-shearman-on-tech/zooming-in-on-ai-10-eu-ai-act-what-are-the-obligations-for-high-risk-ai-systems",
+        "https://www.modelop.com/ai-governance/ai-regulations-standards/eu-ai-act",
+        "https://artificialintelligenceact.eu/section/3-2",
+        "https://www.wilmerhale.com/en/insights/blogs/wilmerhale-privacy-and-cybersecurity-law/20240717-what-are-highrisk-ai-systems-within-the-meaning-of-the-eus-ai-act-and-what-requirements-apply-to-them"
+      ],
+      "weblens_ms": 2729.0520000387914,
+      "tavily_ms": 342.8408000036143,
+      "weblens_tokens": 373,
+      "tavily_tokens": 1641,
+      "weblens_payload_tokens": 429,
+      "tavily_payload_tokens": 1711,
+      "weblens_status": "ok",
+      "weblens_providers": [
+        "mwmbl",
+        "wikipedia",
+        "bing",
+        "yahoo"
+      ],
+      "tavily_status": "ok",
+      "weblens_error": null,
+      "tavily_error": null
+    },
+    {
+      "id": "legal_policy_research_q04",
+      "query": "What is the legal voting age in United States federal elections?",
+      "category": "legal_policy_research",
+      "split": "heldout",
+      "labels": [
+        "usa.gov",
+        "archives.gov",
+        "senate.gov"
+      ],
+      "order": [
+        "tavily",
+        "weblens"
+      ],
+      "weblens_urls": [
+        "https://en.wikipedia.org/wiki/2026_United_States_House_of_Representatives_elections",
+        "https://en.wikipedia.org/wiki/Electoral_fraud_in_the_United_States",
+        "https://en.wikipedia.org/wiki/Postal_voting_in_the_United_States",
+        "https://www.usa.gov/who-can-vote",
+        "https://vote.gov/guide-to-voting/preparing-age-18-and-under"
+      ],
+      "tavily_urls": [
+        "https://www.ncsl.org/elections-and-campaigns/voting-age-for-primary-elections",
+        "https://www.vote.org/newsletters/old-enough-to-fight",
+        "https://www.mentoring.org/wp-content/uploads/2020/08/Age-eligibility-to-register-to-vote.pdf",
+        "https://www.reaganlibrary.gov/education/lesson-plans/high-school/constitutional-amendments/constitutional-amendments-amendment-26",
+        "https://constitutioncenter.org/the-constitution/amendments/amendment-xxvi"
+      ],
+      "weblens_ms": 2381.6083999699913,
+      "tavily_ms": 300.58109998935834,
+      "weblens_tokens": 385,
+      "tavily_tokens": 1943,
+      "weblens_payload_tokens": 439,
+      "tavily_payload_tokens": 2005,
+      "weblens_status": "ok",
+      "weblens_providers": [
+        "mwmbl",
+        "wikipedia",
+        "bing",
+        "yahoo"
+      ],
+      "tavily_status": "ok",
+      "weblens_error": null,
+      "tavily_error": null
+    },
+    {
+      "id": "public_sector_research_q01",
+      "query": "What is the mission and core dataset repositories provided by NASA Earthdata?",
+      "category": "public_sector_research",
+      "split": "heldout",
+      "labels": [
+        "nasa.gov",
+        "earthdata.nasa.gov"
+      ],
+      "order": [
+        "weblens",
+        "tavily"
+      ],
+      "weblens_urls": [
+        "https://en.wikipedia.org/wiki/NASA",
+        "https://en.wikipedia.org/wiki/Doppler_on_Wheels",
+        "https://en.wikipedia.org/wiki/Cairo",
+        "https://www.earthdata.nasa.gov/",
+        "https://www.earthdata.nasa.gov/about/esdis/eosdis"
+      ],
+      "tavily_urls": [
+        "https://casrai.org/guides/nasa-earthdata",
+        "https://datascience.codata.org/articles/10.5334/dsj-2023-009",
+        "https://www.earthdata.nasa.gov/about/open-science",
+        "https://www.earthdata.nasa.gov",
+        "https://www.earthdata.nasa.gov/data/catalog"
+      ],
+      "weblens_ms": 6070.504800009076,
+      "tavily_ms": 288.32759999204427,
+      "weblens_tokens": 395,
+      "tavily_tokens": 1307,
+      "weblens_payload_tokens": 457,
+      "tavily_payload_tokens": 1372,
+      "weblens_status": "ok",
+      "weblens_providers": [
+        "mwmbl",
+        "wikipedia",
+        "bing",
+        "yahoo"
+      ],
+      "tavily_status": "ok",
+      "weblens_error": null,
+      "tavily_error": null
+    },
+    {
+      "id": "public_sector_research_q04",
+      "query": "Which US agency regulates pharmaceutical drugs and medical devices?",
+      "category": "public_sector_research",
+      "split": "heldout",
+      "labels": [
+        "fda.gov",
+        "wikipedia.org",
+        "hhs.gov"
+      ],
+      "order": [
+        "tavily",
+        "weblens"
+      ],
+      "weblens_urls": [
+        "https://www.fda.gov/",
+        "https://en.wikipedia.org/wiki/Central_Drugs_Standard_Control_Organisation",
+        "https://en.wikipedia.org/wiki/Food_and_Drug_Administration",
+        "https://www.usa.gov/agencies/food-and-drug-administration",
+        "http://www.mhra.gov.uk/"
+      ],
+      "tavily_urls": [
+        "https://en.wikipedia.org/wiki/Food_and_Drug_Administration",
+        "https://www.sciencedirect.com/topics/nursing-and-health-professions/food-and-drug-administration",
+        "https://www.federalregister.gov/agencies/food-and-drug-administration",
+        "https://www.pmda.go.jp/english/about-pmda/0004.html",
+        "https://www.usa.gov/agencies/food-and-drug-administration"
+      ],
+      "weblens_ms": 2777.5331000448205,
+      "tavily_ms": 288.03910000715405,
+      "weblens_tokens": 349,
+      "tavily_tokens": 1630,
+      "weblens_payload_tokens": 400,
+      "tavily_payload_tokens": 1690,
+      "weblens_status": "ok",
+      "weblens_providers": [
+        "mwmbl",
+        "wikipedia",
+        "bing",
+        "yahoo"
+      ],
+      "tavily_status": "ok",
+      "weblens_error": null,
+      "tavily_error": null
+    },
+    {
+      "id": "healthcare_information_q01",
+      "query": "What are the clinical diagnostic criteria for Type 2 Diabetes according to the American Diabetes Association guidelines?",
+      "category": "healthcare_information",
+      "split": "heldout",
+      "labels": [
+        "diabetes.org",
+        "cdc.gov",
+        "nih.gov"
+      ],
+      "order": [
+        "weblens",
+        "tavily"
+      ],
+      "weblens_urls": [
+        "https://en.wikipedia.org/wiki/Gestational_diabetes",
+        "https://en.wikipedia.org/wiki/Waist-to-height_ratio",
+        "https://pmc.ncbi.nlm.nih.gov/articles/PMC12690183/",
+        "https://professional.diabetes.org/standards-of-care",
+        "https://attheu.utah.edu/tag/type-2-diabetes/"
+      ],
+      "tavily_urls": [
+        "https://diabetesjournals.org/care/article/49/Supplement_1/S27/163926/2-Diagnosis-and-Classification-of-Diabetes",
+        "https://diabetes.org/newsroom/press-releases/american-diabetes-association-releases-standards-care-diabetes-2026",
+        "https://finance.yahoo.com/news/american-diabetes-association-releases-standards-151500424.html?fr=sycsrp_catchall",
+        "https://pmc.ncbi.nlm.nih.gov/articles/PMC12690183",
+        "https://professional.diabetes.org/standards-of-care"
+      ],
+      "weblens_ms": 3057.482100033667,
+      "tavily_ms": 288.3826000033878,
+      "weblens_tokens": 384,
+      "tavily_tokens": 1919,
+      "weblens_payload_tokens": 445,
+      "tavily_payload_tokens": 1988,
+      "weblens_status": "ok",
+      "weblens_providers": [
+        "mwmbl",
+        "wikipedia",
+        "bing",
+        "yahoo"
+      ],
+      "tavily_status": "ok",
+      "weblens_error": null,
+      "tavily_error": null
+    },
+    {
+      "id": "healthcare_information_q04",
+      "query": "What is the key difference between a virus and a bacterium?",
+      "category": "healthcare_information",
+      "split": "heldout",
+      "labels": [
+        "cdc.gov",
+        "mayoclinic.org",
+        "nih.gov"
+      ],
+      "order": [
+        "tavily",
+        "weblens"
+      ],
+      "weblens_urls": [
+        "https://en.wikipedia.org/wiki/Escherichia_virus_T4",
+        "https://en.wikipedia.org/wiki/Pathogen",
+        "https://en.wikipedia.org/wiki/Zoonosis",
+        "https://en.wikipedia.org/wiki/Diarrhea",
+        "https://en.wikipedia.org/wiki/Influenza"
+      ],
+      "tavily_urls": [
+        "https://www.webmd.com/a-to-z-guides/bacterial-and-viral-infections",
+        "https://imb.uq.edu.au/article/2020/04/difference-between-bacteria-and-viruses",
+        "https://www.youtube.com/watch?v=mQZDyLtCu5E",
+        "https://www.henryford.com/blog/2022/05/virus-versus-bacteria",
+        "https://www.sanitized.com/viruses-and-bacteria-a-brief-explanation-of-the-differences"
+      ],
+      "weblens_ms": 5811.585300019942,
+      "tavily_ms": 293.84009999921545,
+      "weblens_tokens": 339,
+      "tavily_tokens": 1699,
+      "weblens_payload_tokens": 396,
+      "tavily_payload_tokens": 1763,
+      "weblens_status": "ok",
+      "weblens_providers": [
+        "mwmbl",
+        "wikipedia",
+        "bing",
+        "yahoo"
+      ],
+      "tavily_status": "ok",
+      "weblens_error": null,
+      "tavily_error": null
+    },
+    {
+      "id": "structured_data_enrichment_q01",
+      "query": "What is the official stock ticker symbol and headquarters city for Salesforce?",
+      "category": "structured_data_enrichment",
+      "split": "heldout",
+      "labels": [
+        "salesforce.com",
+        "nyse.com"
+      ],
+      "order": [
+        "weblens",
+        "tavily"
+      ],
+      "weblens_urls": [
+        "https://en.wikipedia.org/wiki/Skydance",
+        "https://en.wikipedia.org/wiki/Hewlett_Packard_Enterprise",
+        "https://en.wikipedia.org/wiki/Telus_Digital",
+        "https://en.wikipedia.org/wiki/Equinix",
+        "https://en.wikipedia.org/wiki/Franklin_Templeton"
+      ],
+      "tavily_urls": [
+        "https://en.wikipedia.org/wiki/Salesforce",
+        "https://tavily.com/knowledge/company/XiMau7KBLqwM",
+        "https://www.google.com/finance/quote/CRM:NYSE",
+        "https://finance.yahoo.com/quote/CRM",
+        "https://finance.yahoo.com/video/salesforce-history-beyond-ticker-213321115.html"
+      ],
+      "weblens_ms": 2835.9653999796137,
+      "tavily_ms": 297.6706000044942,
+      "weblens_tokens": 337,
+      "tavily_tokens": 2224,
+      "weblens_payload_tokens": 388,
+      "tavily_payload_tokens": 2289,
+      "weblens_status": "ok",
+      "weblens_providers": [
+        "mwmbl",
+        "wikipedia",
+        "bing",
+        "yahoo"
+      ],
+      "tavily_status": "ok",
+      "weblens_error": null,
+      "tavily_error": null
+    },
+    {
+      "id": "structured_data_enrichment_q04",
+      "query": "What is the IATA airport code for London Heathrow Airport?",
+      "category": "structured_data_enrichment",
+      "split": "heldout",
+      "labels": [
+        "iata.org",
+        "wikipedia.org",
+        "heathrow.com"
+      ],
+      "order": [
+        "tavily",
+        "weblens"
+      ],
+      "weblens_urls": [
+        "https://en.wikipedia.org/wiki/Airports_of_London",
+        "https://en.wikipedia.org/wiki/IATA_airport_code",
+        "https://en.wikipedia.org/wiki/Haneda_Airport",
+        "https://www.heathrow.com/",
+        "https://fortune.com/2019/01/08/heathrow-airport-drone-london/"
+      ],
+      "tavily_urls": [
+        "https://en.wikipedia.org/wiki/Heathrow_Airport",
+        "https://www.linearair.com/airport/london-heathrow-airport-in-london-gbr-lhr",
+        "https://www.world-airport-codes.com/united-kingdom/london-heathrow-4171.html",
+        "https://en.wikipedia.org/wiki/Airports_of_London",
+        "https://www.mapquest.com/gb/england/moxy-london-heathrow-airport-526438168"
+      ],
+      "weblens_ms": 2648.4040999785066,
+      "tavily_ms": 304.86520001431927,
+      "weblens_tokens": 363,
+      "tavily_tokens": 1887,
+      "weblens_payload_tokens": 414,
+      "tavily_payload_tokens": 1957,
+      "weblens_status": "ok",
+      "weblens_providers": [
+        "mwmbl",
+        "wikipedia",
+        "bing",
+        "yahoo"
+      ],
+      "tavily_status": "ok",
+      "weblens_error": null,
+      "tavily_error": null
+    },
+    {
+      "id": "website_crawling_q01",
+      "query": "What is the canonical sitemap and robots.txt specification format according to sitemaps.org?",
+      "category": "website_crawling",
+      "split": "heldout",
+      "labels": [
+        "sitemaps.org",
+        "robotstxt.org"
+      ],
+      "order": [
+        "weblens",
+        "tavily"
+      ],
+      "weblens_urls": [
+        "https://en.wikipedia.org/wiki/Canonical_link_element",
+        "https://www.sitemaps.org/protocol.html",
+        "https://developers.google.com/crawling/docs/robots-txt/robots-txt-spec",
+        "https://stackoverflow.com/questions/20297596/can-i-include-canonical-urls-in-sitemap-for-seo",
+        "https://sitebulb.com/hints/xml-sitemaps/canonicalized-url-in-xml-sitemaps/"
+      ],
+      "tavily_urls": [
+        "https://en.wikipedia.org/wiki/Sitemaps",
+        "https://www.dchost.com/blog/en/setting-up-robots-txt-and-sitemap-xml-correctly-for-seo-and-hosting",
+        "https://www.sitemaps.org/protocol.html",
+        "https://developers.google.com/crawling/docs/robots-txt/robots-txt-spec",
+        "https://stackoverflow.com/questions/2594179/multiple-sitemap-entries-in-robots-txt"
+      ],
+      "weblens_ms": 6390.745799988508,
+      "tavily_ms": 325.6210000254214,
+      "weblens_tokens": 367,
+      "tavily_tokens": 1885,
+      "weblens_payload_tokens": 432,
+      "tavily_payload_tokens": 1952,
+      "weblens_status": "ok",
+      "weblens_providers": [
+        "mwmbl",
+        "wikipedia",
+        "bing",
+        "yahoo"
+      ],
+      "tavily_status": "ok",
+      "weblens_error": null,
+      "tavily_error": null
+    },
+    {
+      "id": "website_crawling_q04",
+      "query": "What is the difference between an HTTP 301 and 302 redirect?",
+      "category": "website_crawling",
+      "split": "heldout",
+      "labels": [
+        "developer.mozilla.org",
+        "rfc-editor.org"
+      ],
+      "order": [
+        "tavily",
+        "weblens"
+      ],
+      "weblens_urls": [
+        "https://en.wikipedia.org/wiki/List_of_HTTP_status_codes",
+        "https://en.wikipedia.org/wiki/URL_redirection",
+        "https://en.wikipedia.org/wiki/Meta_refresh",
+        "https://stackoverflow.com/questions/1393280/http-redirect-301-permanent-vs-302-temporary",
+        "http://stackshare.io/terraform-registry-flaconi-alb-redirect-aws"
+      ],
+      "tavily_urls": [
+        "https://seranking.com/blog/301-vs-302-redirects",
+        "https://differencebetween.info/difference-between-301-and-302-redirect",
+        "https://www.conductor.com/academy/redirects/faq/301-vs-302",
+        "https://www.seoclarity.net/resources/knowledgebase/use-301-redirect-vs-302-redirect-15683",
+        "https://www.youtube.com/watch?v=SZypVInS4p0"
+      ],
+      "weblens_ms": 2699.442600016482,
+      "tavily_ms": 287.46349998982623,
+      "weblens_tokens": 322,
+      "tavily_tokens": 1672,
+      "weblens_payload_tokens": 373,
+      "tavily_payload_tokens": 1736,
+      "weblens_status": "ok",
+      "weblens_providers": [
+        "mwmbl",
+        "wikipedia",
+        "bing",
+        "yahoo"
+      ],
+      "tavily_status": "ok",
+      "weblens_error": null,
+      "tavily_error": null
+    }
+  ]
+}

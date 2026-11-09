@@ -107,9 +107,12 @@ async def test_simulated_dns_rebinding_check(monkeypatch):
 
 @pytest.mark.asyncio
 @respx.mock
-async def test_unbounded_stream_zipbomb_dos_protection():
+async def test_unbounded_stream_zipbomb_dos_protection(monkeypatch):
     """Verify streaming reader aborts when response exceeds byte cap without loading 25MB into memory."""
     target_url = "https://example.com/huge-stream"
+    # Fetch is IP-pinned, so the mocked route matches the pinned address and the
+    # public hostname travels in the Host header.
+    monkeypatch.setattr("security.resolve_and_verify_host", lambda host, port: "93.184.216.34")
 
     # Stream 25MB of repeating text in 64KB chunks
     chunk = b"A" * 65536
@@ -119,7 +122,7 @@ async def test_unbounded_stream_zipbomb_dos_protection():
         for _ in range(total_chunks):
             yield chunk
 
-    respx.get(target_url).mock(
+    respx.get(url__regex=r".*huge-stream").mock(
         return_value=httpx.Response(
             200,
             headers={"Content-Type": "text/plain"},

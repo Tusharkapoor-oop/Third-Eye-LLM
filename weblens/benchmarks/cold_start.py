@@ -211,8 +211,7 @@ async def main_async(args: argparse.Namespace) -> int:
         f"`{c['extract_cache_status']}`.",
         f"Search provider failures: `{json.dumps(c.get('search_network_failures') or {})}`; "
         f"warnings: `{json.dumps(c.get('search_network_warnings') or [])}`.",
-        "Network samples are indicative, not a latency percentile. See "
-        "`benchmarks/results/` for the p50/p95 run.",
+        "Network samples are indicative, not a latency percentile. See `benchmarks/results/` for the p50/p95 run.",
     ]
     markdown = "\n".join(lines) + "\n"
     out.with_suffix(".md").write_text(markdown, encoding="utf-8")

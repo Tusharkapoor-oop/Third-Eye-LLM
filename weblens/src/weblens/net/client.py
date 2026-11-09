@@ -21,13 +21,13 @@ REDIRECT_CODES = {301, 302, 303, 307, 308}
 RETRY_CODES = {429, 502, 503, 504}
 
 
-def _stale_eligible(exc: FetchError) -> bool:
+def _stale_eligible(fetch_err: FetchError) -> bool:
     """Only transient failures may be answered from the stale cache.
 
     A 404/403 or a blocked/too-large response is a real answer, not a network
     accident, so it must not be masked by old content.
     """
-    return exc.code == ErrCode.TIMEOUT or exc.retryable
+    return fetch_err.code == ErrCode.TIMEOUT or fetch_err.retryable
 
 
 def _mark_stale(resp: FetchResponse, created: float) -> FetchResponse:
@@ -279,9 +279,7 @@ class SafeFetcher:
             if resp.status in REDIRECT_CODES and location:
                 nxt = normalize_url(location, base=current)
                 if not nxt:
-                    raise FetchError(
-                        f"redirect to disallowed URL: {location[:100]}", code=ErrCode.BLOCKED_URL
-                    )
+                    raise FetchError(f"redirect to disallowed URL: {location[:100]}", code=ErrCode.BLOCKED_URL)
                 if nxt in hops:
                     raise FetchError("redirect loop", code=ErrCode.HTTP)
                 hops.append(current)
@@ -289,14 +287,15 @@ class SafeFetcher:
                 continue
 
             if not resp.ok:
-                exc = FetchError(
+                fetch_err = FetchError(
                     f"HTTP {resp.status} for {current}",
                     code=ErrCode.HTTP,
                     retryable=resp.status in RETRY_CODES,
+                    status=resp.status,
                 )
-                if stale_resp is not None and _stale_eligible(exc):
+                if stale_resp is not None and _stale_eligible(fetch_err):
                     return _mark_stale(stale_resp, stale_created)
-                raise exc
+                raise fetch_err
 
             resp.redirects = hops
             resp.final_url = current
@@ -360,11 +359,9 @@ class SafeFetcher:
                 async with self._global, await self._host_sem(host):
                     async with asyncio.timeout(attempt_timeout):
                         async with client.stream(method, url, headers=headers, content=body) as r:
-                            cl = r.headers.get("content-length")
-                            if cl and cl.isdigit() and int(cl) > limit:
-                                raise FetchError(
-                                    f"response too large ({cl} bytes)", code=ErrCode.TOO_LARGE
-                                )
+                            # Do not reject solely on Content-Length: a server
+                            # can omit or lie about it. Enforce the cap while
+                            # streaming and return a marked, truncated body.
                             chunks: list[bytes] = []
                             total = 0
                             truncated = False
@@ -400,22 +397,16 @@ class SafeFetcher:
                 last_error = e
                 continue
         if last_error is None:
-            raise FetchError(
-                f"deadline exceeded fetching {host}", code=ErrCode.TIMEOUT, retryable=True
-            )
+            raise FetchError(f"deadline exceeded fetching {host}", code=ErrCode.TIMEOUT, retryable=True)
         if isinstance(last_error, (TimeoutError, httpx.TimeoutException)):
-            raise FetchError(
-                f"timeout fetching {host}", code=ErrCode.TIMEOUT, retryable=True
-            ) from last_error
+            raise FetchError(f"timeout fetching {host}", code=ErrCode.TIMEOUT, retryable=True) from last_error
         if isinstance(last_error, httpx.ProtocolError):
             raise FetchError(
                 f"protocol error fetching {host}: {last_error}",
                 code=ErrCode.HTTP,
                 retryable=True,
             ) from last_error
-        raise FetchError(
-            f"failed to fetch {host}", code=ErrCode.HTTP, retryable=True
-        ) from last_error
+        raise FetchError(f"failed to fetch {host}", code=ErrCode.HTTP, retryable=True) from last_error
 
     async def fetch_text(self, url: str, **kw: Any) -> tuple[str, FetchResponse]:
         r = await self.fetch(url, **kw)

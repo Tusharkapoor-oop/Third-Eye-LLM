@@ -5,12 +5,17 @@ import time
 
 import httpx
 import pytest
+import respx
 
 from weblens.cache import Cache, cache_key
 from weblens.config import Settings
-from weblens.errors import ErrCode, FetchError
+from weblens.errors import ErrCode, FetchError, ProviderError
 from weblens.extract.service import ExtractionService
 from weblens.net import FetchResponse, SafeFetcher
+from weblens.search.brave import BraveSearch
+from weblens.search.searxng import SearXNGSsearch
+from weblens.search.tavily import TavilySearch
+from weblens.search.yahoo import YahooSearch
 from weblens.urls import normalize_url
 
 URL = "https://example.com/page"
@@ -267,9 +272,7 @@ async def test_request_deadline_leaves_room_for_http1(tmp_path):
     fetcher._client_h1 = _FakeClient(body=b"h1 body")  # type: ignore[assignment]
     try:
         started = time.perf_counter()
-        resp = await fetcher._request_once(
-            URL, {}, 1024, deadline=time.monotonic() + 0.4
-        )
+        resp = await fetcher._request_once(URL, {}, 1024, deadline=time.monotonic() + 0.4)
         elapsed = time.perf_counter() - started
         assert resp.body == b"h1 body"
         assert elapsed < 1.0
@@ -301,6 +304,131 @@ async def test_extract_reports_stale_cache_warning(tmp_path):
     try:
         doc = await service.fetch_doc(URL)
         assert "stale_cache_used" in doc.warnings
+    finally:
+        await fetcher.close()
+        cache.close()
+
+
+@pytest.mark.asyncio
+async def test_fetch_error_includes_http_status(tmp_path):
+    """HTTP error status must be available on FetchError for provider classification."""
+    settings = _settings(tmp_path)
+    cache = Cache(settings)
+    fetcher = SafeFetcher(settings, cache)
+    try:
+        with respx.mock:
+            respx.get("https://example.com/status_page").respond(429)
+            with pytest.raises(FetchError) as exc_info:
+                await fetcher.fetch("https://example.com/status_page", use_cache=False)
+            assert exc_info.value.status == 429
+    finally:
+        await fetcher.close()
+        cache.close()
+
+
+@pytest.mark.asyncio
+async def test_tavily_classifies_429_retryable_and_401_not(tmp_path):
+    """Tavily provider must surface FetchError status as ProviderError retryability."""
+    settings = _settings(tmp_path)
+    cache = Cache(settings)
+    fetcher = SafeFetcher(settings, cache)
+    try:
+        with respx.mock:
+            respx.post("https://api.tavily.com/search").respond(401)
+            tavily = TavilySearch(fetcher, api_key="test-key")
+            with pytest.raises(ProviderError) as exc_info:
+                await tavily.search("python asyncio")
+            assert exc_info.value.code == ErrCode.PROVIDER
+            assert exc_info.value.retryable is False
+
+        with respx.mock:
+            respx.post("https://api.tavily.com/search").respond(429)
+            tavily = TavilySearch(fetcher, api_key="test-key")
+            with pytest.raises(ProviderError) as exc_info:
+                await tavily.search("python asyncio")
+            assert exc_info.value.code == ErrCode.PROVIDER
+            assert exc_info.value.retryable is True
+    finally:
+        await fetcher.close()
+        cache.close()
+
+
+@pytest.mark.asyncio
+async def test_brave_classifies_429_retryable_and_401_not(tmp_path):
+    """Brave provider must surface FetchError status as ProviderError retryability."""
+    settings = _settings(tmp_path)
+    cache = Cache(settings)
+    fetcher = SafeFetcher(settings, cache)
+    try:
+        with respx.mock:
+            respx.get(url__regex=r"https://api\.search\.brave\.com/.*").respond(401)
+            brave = BraveSearch(fetcher, api_key="test-key")
+            with pytest.raises(ProviderError) as exc_info:
+                await brave.search("python asyncio")
+            assert exc_info.value.code == ErrCode.PROVIDER
+            assert exc_info.value.retryable is False
+
+        with respx.mock:
+            respx.get(url__regex=r"https://api\.search\.brave\.com/.*").respond(429)
+            brave = BraveSearch(fetcher, api_key="test-key")
+            with pytest.raises(ProviderError) as exc_info:
+                await brave.search("python asyncio")
+            assert exc_info.value.code == ErrCode.PROVIDER
+            assert exc_info.value.retryable is True
+    finally:
+        await fetcher.close()
+        cache.close()
+
+
+@pytest.mark.asyncio
+async def test_searxng_classifies_429_retryable_and_401_not(tmp_path):
+    """SearXNG must not downgrade a retryable 429 into a non-retryable error."""
+    settings = _settings(tmp_path, searxng_url="https://searx.example.org")
+    cache = Cache(settings)
+    fetcher = SafeFetcher(settings, cache)
+    try:
+        with respx.mock:
+            respx.get(url__regex=r"https://searx\.example\.org/.*").respond(401)
+            searxng = SearXNGSsearch(fetcher, "https://searx.example.org")
+            with pytest.raises(ProviderError) as exc_info:
+                await searxng.search("python asyncio")
+            assert exc_info.value.code == ErrCode.PROVIDER
+            assert exc_info.value.retryable is False
+
+        with respx.mock:
+            respx.get(url__regex=r"https://searx\.example\.org/.*").respond(429)
+            searxng = SearXNGSsearch(fetcher, "https://searx.example.org")
+            with pytest.raises(ProviderError) as exc_info:
+                await searxng.search("python asyncio")
+            assert exc_info.value.code == ErrCode.PROVIDER
+            assert exc_info.value.retryable is True
+    finally:
+        await fetcher.close()
+        cache.close()
+
+
+@pytest.mark.asyncio
+async def test_yahoo_classifies_429_retryable_and_401_not(tmp_path):
+    """Yahoo must treat 401/403 as terminal and 429 as retryable."""
+    settings = _settings(tmp_path)
+    cache = Cache(settings)
+    fetcher = SafeFetcher(settings, cache)
+    try:
+        with respx.mock:
+            respx.get(url__regex=r"https://search\.yahoo\.(com|co\.jp)/.*").respond(401)
+            yahoo = YahooSearch(fetcher)
+            with pytest.raises(ProviderError) as exc_info:
+                await yahoo.search("python asyncio")
+            assert exc_info.value.code == ErrCode.PROVIDER
+            assert exc_info.value.retryable is False
+
+        with respx.mock:
+            respx.get(url__regex=r"https://search\.yahoo\.(com|co\.jp)/.*").respond(429)
+            yahoo = YahooSearch(fetcher)
+            with pytest.raises(ProviderError) as exc_info:
+                await yahoo.search("python asyncio")
+            assert exc_info.value.code == ErrCode.PROVIDER
+            assert exc_info.value.retryable is True
     finally:
         await fetcher.close()
         cache.close()

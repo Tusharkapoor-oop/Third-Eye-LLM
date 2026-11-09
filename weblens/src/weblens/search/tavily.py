@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from ..errors import ErrCode, ProviderError
+from ..errors import ErrCode, FetchError, ProviderError
 from ..net import SafeFetcher
 from .base import Hit, make_hit
 
@@ -46,21 +46,24 @@ class TavilySearch:
         if exclude_domains:
             body["exclude_domains"] = exclude_domains[:20]
 
-        resp = await self.fetcher.fetch(
-            "https://api.tavily.com/search",
-            headers={
-                "Authorization": f"Bearer {self.api_key}",
-                "Accept": "application/json",
-            },
-            json_body=body,
-            method="POST",
-            cache_ttl=300,
-            max_bytes=2_000_000,
-        )
-        if resp.status in (401, 403):
-            raise ProviderError("tavily rejected the API key", code=ErrCode.PROVIDER)
-        if resp.status == 429:
-            raise ProviderError("tavily rate limited", code=ErrCode.PROVIDER, retryable=True)
+        try:
+            resp = await self.fetcher.fetch(
+                "https://api.tavily.com/search",
+                headers={
+                    "Authorization": f"Bearer {self.api_key}",
+                    "Accept": "application/json",
+                },
+                json_body=body,
+                method="POST",
+                cache_ttl=300,
+                max_bytes=2_000_000,
+            )
+        except FetchError as exc:
+            if exc.status == 429:
+                raise ProviderError("tavily rate limited", code=ErrCode.PROVIDER, retryable=True) from exc
+            if exc.status in (401, 403):
+                raise ProviderError("tavily rejected the API key", code=ErrCode.PROVIDER) from exc
+            raise ProviderError(f"tavily fetch failed: {exc.message}", code=ErrCode.PROVIDER) from exc
         try:
             data = resp.json()
         except ValueError as e:

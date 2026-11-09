@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-11-06T18:31:06Z",
+  "generated_at": "2026-11-08T13:53:11Z",
   "engines": {
     "A": "local engine via src.engine",
     "B": "tavily live",
@@ -13,7 +13,7 @@
         "A": {
           "status": "ok",
           "score": 90,
-          "latency_s": 27.224,
+          "latency_s": 22.002,
           "tokens": 473,
           "trials": 3,
           "breakdown": {
@@ -50,7 +50,7 @@
         "A": {
           "status": "ok",
           "score": 77,
-          "latency_s": 15.979,
+          "latency_s": 23.6,
           "tokens": 288,
           "trials": 3,
           "breakdown": {
@@ -87,7 +87,7 @@
         "A": {
           "status": "ok",
           "score": 87,
-          "latency_s": 23.922,
+          "latency_s": 27.329,
           "tokens": 273,
           "trials": 3,
           "breakdown": {
@@ -124,7 +124,7 @@
         "A": {
           "status": "ok",
           "score": 100,
-          "latency_s": 1.191,
+          "latency_s": 1.292,
           "tokens": 392,
           "trials": 3,
           "breakdown": {
@@ -158,20 +158,18 @@
       "engines": {
         "A": {
           "status": "ok",
-          "score": 81,
-          "latency_s": 20.318,
-          "tokens": 650,
+          "score": 99,
+          "latency_s": 27.989,
+          "tokens": 634,
           "trials": 3,
           "breakdown": {
             "answer_completeness": 30,
-            "code_and_table_fidelity": 5,
+            "code_and_table_fidelity": 20,
             "signal_to_noise": 20,
-            "source_authority": 11,
+            "source_authority": 14,
             "token_efficiency": 15
           },
-          "root_causes": [
-            "LOW_CODE_FIDELITY"
-          ]
+          "root_causes": []
         },
         "B": {
           "status": "BLOCKED",
@@ -192,12 +190,12 @@
     }
   },
   "summary": {
-    "avg_A": 87.0,
+    "avg_A": 90.6,
     "avg_B": null,
     "avg_C": null,
-    "latency_A_s": 88.634,
+    "latency_A_s": 102.212,
     "latency_B_s": 0.0,
-    "meets_avg_target": false,
+    "meets_avg_target": true,
     "beats_tavily_density": null
   }
 }

@@ -268,7 +268,10 @@ async def test_synthesize_research_report_tier3_structure(client: MultiModelClie
             assert "| Source Title | Canonical URL | Verification |" in report
             assert "| NVIDIA Architecture Brief |" in report
             assert "| Google DeepMind Gemini Report |" in report
-            assert "[https://developer.nvidia.com/nim...](" in report
+            assert (
+                "| NVIDIA Architecture Brief | "
+                "[link](https://developer.nvidia.com/nim) | Grounded |"
+            ) in report
             assert "| Grounded |" in report
 
             # Verify footer

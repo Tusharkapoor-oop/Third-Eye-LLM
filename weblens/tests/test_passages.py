@@ -52,12 +52,7 @@ def test_select_passages_returns_exact_spans_and_no_score_field():
 
 
 def test_select_passages_prefers_all_term_chunks():
-    text = (
-        "alpha beta gamma\n\n"
-        "alpha only\n\n"
-        "beta only\n\n"
-        "alpha beta delta\n"
-    )
+    text = "alpha beta gamma\n\nalpha only\n\nbeta only\n\nalpha beta delta\n"
     passages, cov = select_passages(text, "alpha beta", max_passages=1)
     assert cov > 0
     assert "alpha" in passages[0].text and "beta" in passages[0].text
@@ -103,10 +98,7 @@ def test_html_comment_smuggling():
 
 
 def test_select_passages_without_query_reaches_tail_of_long_page():
-    blocks = [
-        f"Paragraph {i} contains routine operational text for the page. " + "filler " * 20
-        for i in range(60)
-    ]
+    blocks = [f"Paragraph {i} contains routine operational text for the page. " + "filler " * 20 for i in range(60)]
     # Fixture fixed: trailing sentence is 66 chars >= 40-char chunk minimum
     text = "\n\n".join(blocks) + "\n\nThe final marker for reaching the document tail is TAIL-MARKER-9."
     passages, _ = select_passages(text, None, max_passages=4)
@@ -117,10 +109,7 @@ def test_select_passages_without_query_reaches_tail_of_long_page():
 
 
 def test_select_passages_without_query_still_keeps_first_chunk():
-    blocks = [
-        f"Paragraph {i} contains routine operational text for the page. " + "filler " * 20
-        for i in range(60)
-    ]
+    blocks = [f"Paragraph {i} contains routine operational text for the page. " + "filler " * 20 for i in range(60)]
     # Head and tail markers both exceed 40-char threshold
     head = "HEAD-MARKER-1 provides the opening content for the document."
     tail = "The final marker for reaching the document tail is TAIL-MARKER-9."
@@ -152,10 +141,7 @@ def test_chunk_length_boundary_conditions():
 
 def test_tail_chunker_mutation_fails_when_spread_disabled():
     """Prove that disabling spread_chunks causes the tail-reachability test to fail."""
-    blocks = [
-        f"Paragraph {i} contains routine operational text for the page. " + "filler " * 20
-        for i in range(60)
-    ]
+    blocks = [f"Paragraph {i} contains routine operational text for the page. " + "filler " * 20 for i in range(60)]
     tail = "The final marker for reaching the document tail is TAIL-MARKER-9."
     text = "\n\n".join(blocks) + f"\n\n{tail}"
     chunks = build_chunks(text)
@@ -163,4 +149,6 @@ def test_tail_chunker_mutation_fails_when_spread_disabled():
 
     # Naive un-spread behavior: take first 4 chunks
     naive_selection = chunks[:4]
-    assert not any("TAIL-MARKER-9" in c.text for c in naive_selection), "Mutation control: naive chunk selection must NOT reach the tail"
+    assert not any("TAIL-MARKER-9" in c.text for c in naive_selection), (
+        "Mutation control: naive chunk selection must NOT reach the tail"
+    )

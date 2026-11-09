@@ -14,12 +14,24 @@ from typing import Any
 import mcp.types as t
 from mcp.server.mcpserver import MCPServer
 
-from src.engine.config import CONFIG
-from src.engine.crawl.crawler import WebsiteCrawler
-from src.engine.crawl.mapper import WebsiteMapper
-from src.engine.extract.extractor import DocumentExtractor
-from src.engine.research.deep_research import DeepResearchEngine
-from src.engine.search.aggregator import SearchAggregator
+try:
+    from engine.config import CONFIG
+    from engine.crawl.crawler import WebsiteCrawler
+    from engine.crawl.mapper import WebsiteMapper
+    from engine.extract.extractor import DocumentExtractor
+    from engine.research.deep_research import DeepResearchEngine
+    from engine.search.aggregator import SearchAggregator
+except ImportError:  # pragma: no cover - supports running from repo root
+    import sys
+    from pathlib import Path
+
+    sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
+    from engine.config import CONFIG
+    from engine.crawl.crawler import WebsiteCrawler
+    from engine.crawl.mapper import WebsiteMapper
+    from engine.extract.extractor import DocumentExtractor
+    from engine.research.deep_research import DeepResearchEngine
+    from engine.search.aggregator import SearchAggregator
 
 # Lazy-loaded engine singletons for sub-second process startup
 _aggregator: SearchAggregator | None = None

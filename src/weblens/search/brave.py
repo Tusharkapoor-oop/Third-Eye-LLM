@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from urllib.parse import quote_plus
 
-from ..errors import ErrCode, ProviderError
+from ..errors import ErrCode, FetchError, ProviderError
 from ..net import SafeFetcher
 from .base import Hit, make_hit, parse_date
 
@@ -43,20 +43,23 @@ class BraveSearch:
         )
         if freshness in _FRESH:
             url += f"&freshness={_FRESH[freshness]}"
-        resp = await self.fetcher.fetch(
-            url,
-            headers={
-                "X-Subscription-Token": self.api_key,
-                "Accept": "application/json",
-                "Accept-Encoding": "gzip",
-            },
-            cache_ttl=300,
-            max_bytes=2_000_000,
-        )
-        if resp.status == 401:
-            raise ProviderError("brave rejected the API key", code=ErrCode.PROVIDER)
-        if resp.status == 429:
-            raise ProviderError("brave rate limited", code=ErrCode.PROVIDER, retryable=True)
+        try:
+            resp = await self.fetcher.fetch(
+                url,
+                headers={
+                    "X-Subscription-Token": self.api_key,
+                    "Accept": "application/json",
+                    "Accept-Encoding": "gzip",
+                },
+                cache_ttl=300,
+                max_bytes=2_000_000,
+            )
+        except FetchError as exc:
+            if exc.status == 429:
+                raise ProviderError("brave rate limited", code=ErrCode.PROVIDER, retryable=True) from exc
+            if exc.status == 401:
+                raise ProviderError("brave rejected the API key", code=ErrCode.PROVIDER) from exc
+            raise ProviderError(f"brave fetch failed: {exc.message}", code=ErrCode.PROVIDER) from exc
         try:
             data = resp.json()
         except ValueError as e:

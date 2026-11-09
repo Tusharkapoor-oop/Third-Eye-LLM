@@ -1,0 +1,63 @@
+name: Security analysis
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+  schedule:
+    - cron: "0 6 * * 1"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  security-events: write
+
+jobs:
+  codeql:
+    name: CodeQL (Python)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@v3
+        with:
+          languages: python
+          queries: security-and-quality
+
+      - name: Analyze
+        uses: github/codeql-action/analyze@v3
+        with:
+          category: "/language:python"
+
+  dependency-audit:
+    name: Dependency vulnerability audit
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: weblens
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+          cache-dependency-glob: "weblens/uv.lock"
+
+      - name: Set up Python
+        run: uv python install 3.11
+
+      - name: Export locked requirement set
+        run: |
+          uv export --frozen --no-hashes --no-emit-project -o requirements-audit.txt
+
+      - name: pip-audit against locked dependencies
+        run: |
+          uv pip install --system pip-audit
+          pip-audit -r requirements-audit.txt --strict --desc || true
+          # Non-blocking: advisories are triaged and recorded in SECURITY.md.
+          # Flip to a hard gate once the maintainer accepts the current advisory set.

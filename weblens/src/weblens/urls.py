@@ -10,7 +10,7 @@ from __future__ import annotations
 import base64
 import binascii
 import re
-from urllib.parse import parse_qsl, quote, unquote, urlencode, urljoin, urlsplit, urlunsplit
+from urllib.parse import parse_qsl, quote, urlencode, urljoin, urlsplit, urlunsplit
 
 TRACKING_PREFIXES = ("utm_", "pk_", "mtm_", "hsa_", "vero_", "_hs")
 TRACKING_EXACT = {
@@ -98,6 +98,12 @@ def normalize_url(url: str, base: str | None = None) -> str | None:
     if not url or not isinstance(url, str):
         return None
     url = url.strip()
+    # Control characters are never valid: urlsplit silently deletes tabs/newlines
+    # (turning exam\tple.com into example.com), so reject instead of rewriting.
+    # Spaces stay legal in the query/fragment and are encoded later; a space in
+    # the host is rejected below.
+    if any(ord(ch) < 0x20 or ord(ch) == 0x7F for ch in url):
+        return None
     if base:
         try:
             url = urljoin(base, url)
@@ -113,7 +119,9 @@ def normalize_url(url: str, base: str | None = None) -> str | None:
     if scheme in BAD_SCHEMES or scheme not in {"http", "https"}:
         return None
     host = (p.hostname or "").strip(".").lower()
-    if not host or ("." not in host and ":" not in host and host != "localhost"):
+    if not host or any(ch.isspace() for ch in host):
+        return None
+    if "." not in host and ":" not in host and host != "localhost":
         # single-label intranet hosts are refused (also blocks many SSRF tricks);
         # IPv6 literals contain colons and are validated at connection time.
         return None
@@ -139,7 +147,10 @@ def normalize_url(url: str, base: str | None = None) -> str | None:
     query = p.query
     tmp = urlunsplit((scheme, netloc, path, query, ""))
     tmp = strip_tracking(tmp)
-    tmp = unquote(tmp) if "%25" in tmp else tmp
+    # Percent-encoding is preserved verbatim. Decoding here (the earlier
+    # ``unquote`` and a later ``%25`` -> ``%`` attempt) changed the meaning of
+    # %25/%2526 sequences and could emit invalid URLs (e.g. ``.../x%25y``
+    # became ``.../x%y``), breaking fetch, cache keys and dedupe.
     return tmp
 
 
@@ -186,22 +197,16 @@ def official_source_urls(query: str) -> list[str]:
         urls.extend(
             [
                 "https://arxiv.org/abs/1512.03385",
-                "https://openaccess.thecvf.com/content_cvpr_2016/html/"
-                "He_Deep_Residual_Learning_CVPR_2016_paper.html",
+                "https://openaccess.thecvf.com/content_cvpr_2016/html/He_Deep_Residual_Learning_CVPR_2016_paper.html",
             ]
         )
-    if re.search(r"\bbert\b", q) and any(
-        term in q for term in ("natural language", "nlp", "stand for", "paper")
-    ):
+    if re.search(r"\bbert\b", q) and any(term in q for term in ("natural language", "nlp", "stand for", "paper")):
         urls.append("https://arxiv.org/abs/1810.04805")
-    if "attention is all you need" in q or (
-        "transformer" in q and ("paper" in q or "architecture" in q)
-    ):
+    if "attention is all you need" in q or ("transformer" in q and ("paper" in q or "architecture" in q)):
         urls.extend(
             [
                 "https://arxiv.org/abs/1706.03762",
-                "https://papers.nips.cc/paper_files/paper/2017/hash/"
-                "3f5ee243547dee91fbd053c1c4a845aa-Abstract.html",
+                "https://papers.nips.cc/paper_files/paper/2017/hash/3f5ee243547dee91fbd053c1c4a845aa-Abstract.html",
             ]
         )
     if any(term in q for term in ("greenhouse gas", "global warming", "climate change")):
@@ -263,9 +268,7 @@ def official_source_urls(query: str) -> list[str]:
         urls.append("https://www.nvidia.com/en-us/about-nvidia/")
     if "stripe" in q and any(term in q for term in ("founder", "founded", "who")):
         urls.append("https://stripe.com/about")
-    if ("tsmc" in q or "semiconductor" in q) and any(
-        term in q for term in ("manufacturer", "largest", "foundry")
-    ):
+    if ("tsmc" in q or "semiconductor" in q) and any(term in q for term in ("manufacturer", "largest", "foundry")):
         urls.append("https://www.tsmc.com/english/aboutTSMC/TSMC_Introduction")
     if "instagram" in q and any(term in q for term in ("owns", "founded", "owner", "parent")):
         urls.extend(
@@ -363,9 +366,7 @@ def official_source_urls(query: str) -> list[str]:
         and any(term in q for term in ("land", "landing", "1969", "apollo"))
     ):
         urls.append("https://www.nasa.gov/mission/apollo-11/")
-    if re.search(r"\bgpt-4(?:o)?\b", q) and any(
-        term in q for term in ("company", "developed", "released", "openai")
-    ):
+    if re.search(r"\bgpt-4(?:o)?\b", q) and any(term in q for term in ("company", "developed", "released", "openai")):
         urls.append("https://platform.openai.com/docs/models/gpt-4")
     if "higgs boson" in q and ("cern" in q or "discovery" in q):
         urls.append("https://home.cern/science/physics/higgs-boson")
@@ -385,9 +386,7 @@ def official_source_urls(query: str) -> list[str]:
                 "https://mit-license.org/",
             ]
         )
-    if "united states constitution" in q and (
-        "article iii" in q or "judicial branch" in q
-    ):
+    if "united states constitution" in q and ("article iii" in q or "judicial branch" in q):
         urls.extend(
             [
                 "https://www.archives.gov/founding-docs/constitution",
@@ -429,9 +428,7 @@ def official_source_urls(query: str) -> list[str]:
                 "https://stripe.com/newsroom",
             ]
         )
-    if ("byzantine" in q and ("fault" in q or "consensus" in q)) or re.search(
-        r"\bpbft\b", q
-    ):
+    if ("byzantine" in q and ("fault" in q or "consensus" in q)) or re.search(r"\bpbft\b", q):
         urls.extend(
             [
                 "https://en.wikipedia.org/wiki/Byzantine_fault",
@@ -485,9 +482,7 @@ def official_source_urls(query: str) -> list[str]:
                 "https://www.nyse.com/quote/XNYS:CRM",
             ]
         )
-    if "sitemap" in q and (
-        "robots.txt" in q or "specification" in q or "canonical" in q
-    ):
+    if "sitemap" in q and ("robots.txt" in q or "specification" in q or "canonical" in q):
         urls.extend(
             [
                 "https://www.sitemaps.org/protocol.html",
@@ -510,14 +505,11 @@ def official_source_urls(query: str) -> list[str]:
             [
                 "https://www.cloudflare.com/learning/ssl/what-is-encryption/",
                 "https://www.cloudflare.com/learning/ssl/how-does-public-key-encryption-work/",
-                "https://cheatsheetseries.owasp.org/cheatsheets/"
-                "Cryptographic_Storage_Cheat_Sheet.html",
+                "https://cheatsheetseries.owasp.org/cheatsheets/Cryptographic_Storage_Cheat_Sheet.html",
                 "https://en.wikipedia.org/wiki/Public-key_cryptography",
             ]
         )
-    if "wave-particle" in q or (
-        "quantum" in q and "light" in q and "particle" in q and "wave" in q
-    ):
+    if "wave-particle" in q or ("quantum" in q and "light" in q and "particle" in q and "wave" in q):
         urls.extend(
             [
                 "https://www.britannica.com/science/wave-particle-duality",
@@ -525,9 +517,7 @@ def official_source_urls(query: str) -> list[str]:
                 "https://www.britannica.com/science/quantum-mechanics",
             ]
         )
-    if re.search(r"\bmcp\b", q) and (
-        "model context protocol" in q or "rest" in q or "architecture" in q
-    ):
+    if re.search(r"\bmcp\b", q) and ("model context protocol" in q or "rest" in q or "architecture" in q):
         urls.extend(
             [
                 "https://modelcontextprotocol.io/docs/getting-started/intro",
@@ -564,8 +554,7 @@ def official_source_urls(query: str) -> list[str]:
     if "dividend" in q and ("shareholder" in q or "corporation" in q):
         urls.extend(
             [
-                "https://www.investor.gov/introduction-investing/investing-basics/"
-                "glossary/dividend",
+                "https://www.investor.gov/introduction-investing/investing-basics/glossary/dividend",
                 "https://www.sec.gov/answers/dividen.htm",
                 "https://www.investopedia.com/terms/d/dividend.asp",
             ]
@@ -636,8 +625,7 @@ def official_source_urls(query: str) -> list[str]:
             ]
         )
     if ("fda" in q or "food and drug administration" in q) or (
-        ("pharmaceutical" in q or "medical device" in q)
-        and any(term in q for term in ("regulat", "agency", "approve"))
+        ("pharmaceutical" in q or "medical device" in q) and any(term in q for term in ("regulat", "agency", "approve"))
     ):
         urls.extend(
             [
@@ -648,9 +636,7 @@ def official_source_urls(query: str) -> list[str]:
         )
     if re.search(r"\bp53\b", q):
         urls.append("https://www.ncbi.nlm.nih.gov/gene/7157")
-    if "netflix" in q and any(
-        term in q for term in ("compete", "competitor", "competition")
-    ):
+    if "netflix" in q and any(term in q for term in ("compete", "competitor", "competition")):
         urls.extend(
             [
                 "https://www.netflix.com/",
@@ -662,8 +648,7 @@ def official_source_urls(query: str) -> list[str]:
         urls.extend(
             [
                 "https://www.cdc.gov/antibiotic-use/about/index.html",
-                "https://www.mayoclinic.org/diseases-conditions/infectious-diseases/"
-                "symptoms-causes/syc-20351173",
+                "https://www.mayoclinic.org/diseases-conditions/infectious-diseases/symptoms-causes/syc-20351173",
             ]
         )
     # Papers are usually requested by their abstract page, but the PDF is the
@@ -734,6 +719,40 @@ def host_of(url: str) -> str:
         return (urlsplit(url).hostname or "").lower()
     except ValueError:
         return ""
+
+
+def document_canonical_key(url: str) -> str:
+    """Return a dedupe key that treats common aliases as the same document.
+
+    Differences ignored:
+
+    - scheme (http/https)
+    - www. prefix
+    - fragments
+    - trailing slash
+    - .html extension
+    - tracking/query marketing parameters (via :func:`strip_tracking`)
+
+    Query parameters are preserved because they often distinguish real documents
+    (for example EDGAR filings by CIK).
+    """
+    cleaned = (url or "").strip()
+    if not cleaned:
+        return ""
+    try:
+        parts = urlsplit(strip_tracking(cleaned))
+    except ValueError:
+        return cleaned.split("#", 1)[0].rstrip("/").removesuffix(".html").lower()
+    scheme = parts.scheme.lower()
+    if scheme not in ("http", "https"):
+        return cleaned.split("#", 1)[0].rstrip("/").removesuffix(".html").lower()
+    host = (parts.hostname or "").strip(".").lower()
+    if host.startswith("www."):
+        host = host[4:]
+    path = parts.path.rstrip("/").removesuffix(".html").lower()
+    key = f"{host}{path}"
+    query = parts.query.lower()
+    return f"{key}?{query}" if query else key
 
 
 def safe_display_url(url: str, max_len: int = 300) -> str:

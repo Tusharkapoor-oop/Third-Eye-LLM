@@ -8,6 +8,7 @@ import re
 import time
 from collections import deque
 from dataclasses import dataclass, field
+from typing import Any
 from urllib.parse import urlsplit
 
 from lxml import html as lxml_html
@@ -22,15 +23,62 @@ from ..urls import is_same_site, normalize_url
 from .robots import RobotsPolicy
 
 SKIP_EXT = {
-    ".jpg", ".jpeg", ".png", ".gif", ".webp", ".svg", ".ico", ".bmp", ".tiff",
-    ".mp4", ".webm", ".avi", ".mov", ".mkv", ".mp3", ".wav", ".ogg", ".flac",
-    ".zip", ".tar", ".gz", ".7z", ".rar", ".exe", ".msi", ".dmg", ".iso",
-    ".css", ".js", ".mjs", ".map", ".woff", ".woff2", ".ttf", ".eot",
-    ".doc", ".docx", ".xls", ".xlsx", ".ppt", ".pptx",
+    ".jpg",
+    ".jpeg",
+    ".png",
+    ".gif",
+    ".webp",
+    ".svg",
+    ".ico",
+    ".bmp",
+    ".tiff",
+    ".mp4",
+    ".webm",
+    ".avi",
+    ".mov",
+    ".mkv",
+    ".mp3",
+    ".wav",
+    ".ogg",
+    ".flac",
+    ".zip",
+    ".tar",
+    ".gz",
+    ".7z",
+    ".rar",
+    ".exe",
+    ".msi",
+    ".dmg",
+    ".iso",
+    ".css",
+    ".js",
+    ".mjs",
+    ".map",
+    ".woff",
+    ".woff2",
+    ".ttf",
+    ".eot",
+    ".doc",
+    ".docx",
+    ".xls",
+    ".xlsx",
+    ".ppt",
+    ".pptx",
 }
 SKIP_PARTS = {
-    "/login", "/logout", "/signin", "/signup", "/register", "/cart", "/checkout",
-    "/wp-admin", "/wp-login", "/admin", "/feed", "/rss", "/print/",
+    "/login",
+    "/logout",
+    "/signin",
+    "/signup",
+    "/register",
+    "/cart",
+    "/checkout",
+    "/wp-admin",
+    "/wp-login",
+    "/admin",
+    "/feed",
+    "/rss",
+    "/print/",
 }
 CALENDAR = re.compile(r"/(?:19|20)\d{2}/(?:0?[1-9]|1[0-2])/(?:0?[1-9]|[12]\d|3[01])/?$")
 
@@ -46,9 +94,7 @@ def path_affinity(root: str, link: str) -> int:
         root_stem = pr[-1].rsplit(".", 1)[0]
         link_stem = pl[-1].rsplit(".", 1)[0]
         prefix = root_stem.split("-")[0]
-        if prefix and prefix != root_stem and (
-            link_stem == prefix or link_stem.startswith(prefix + "-")
-        ):
+        if prefix and prefix != root_stem and (link_stem == prefix or link_stem.startswith(prefix + "-")):
             return 4
     if pr[:-1] == pl[:-1] and pr[:-1]:
         return 3
@@ -175,10 +221,12 @@ class SiteCrawler:
         self.extractor = extractor
         self.robots = RobotsPolicy(settings, fetcher)
 
-    async def _sitemap_urls(self, root: str, cap: int) -> tuple[list[dict], bool]:
+    async def _sitemap_urls(self, root: str, cap: int, warnings: list[str]) -> tuple[list[dict], bool]:
         p = urlsplit(root)
         origin = f"{p.scheme}://{p.netloc}"
-        seeds = await self.robots.sitemaps(root)
+        seeds, robots_warn = await self.robots.sitemaps(root)
+        if robots_warn:
+            warnings.append(robots_warn)
         if not seeds:
             seeds = [origin + "/sitemap.xml"]
         found: list[dict] = []
@@ -220,14 +268,10 @@ class SiteCrawler:
                 continue
         return found, bool(found)
 
-    async def site_map(
-        self, url: str, *, max_urls: int = 50, max_tokens: int | None = None
-    ) -> MapOutcome:
+    async def site_map(self, url: str, *, max_urls: int = 50, max_tokens: int | None = None) -> MapOutcome:
         started = time.perf_counter()
         cap = max(1, min(200, max_urls))
-        budget = resolve_budget(
-            max_tokens, self.s.max_search_tokens, minimum=200, maximum=4000
-        )
+        budget = resolve_budget(max_tokens, self.s.max_search_tokens, minimum=200, maximum=4000)
         root = normalize_url(url)
         if not root:
             raise WebLensError("invalid URL", code=ErrCode.BAD_INPUT)
@@ -255,7 +299,7 @@ class SiteCrawler:
         warnings: list[str] = []
         sitemap_used = False
         if len(entries) < cap:
-            sm, used = await self._sitemap_urls(root, cap - len(entries))
+            sm, used = await self._sitemap_urls(root, cap - len(entries), warnings)
             sitemap_used = used
             for e in sm:
                 key = e["u"].rstrip("/")
@@ -267,7 +311,7 @@ class SiteCrawler:
                     break
         if len(entries) <= 1:
             warnings.append("no_links_found")
-        payload = {
+        payload: dict[str, object] = {
             "status": "ok" if entries else "no_reliable_result",
             "u": root,
             "n": len(entries),
@@ -307,9 +351,7 @@ class SiteCrawler:
         pages_cap = max(1, min(30, max_pages))
         depth_cap = max(0, min(3, max_depth))
         follow_min = follow_threshold(root)
-        budget = resolve_budget(
-            max_tokens, self.s.max_extract_tokens, minimum=300, maximum=8000
-        )
+        budget = resolve_budget(max_tokens, self.s.max_extract_tokens, minimum=300, maximum=8000)
         queue: deque[tuple[str, int]] = deque([(root, 0)])
         seen: set[str] = {root.rstrip("/")}
         pages: list[CrawledPage] = []
@@ -323,7 +365,10 @@ class SiteCrawler:
             nonlocal denied, duplicates
             u, depth = node
             try:
-                if not await self.robots.allowed(u):
+                allowed, robots_warn = await self.robots.allowed(u)
+                if robots_warn:
+                    warnings.append(robots_warn)
+                if not allowed:
                     denied += 1
                     return None
                 async with sem:
@@ -403,6 +448,7 @@ class SiteCrawler:
             warnings.append(f"robots_denied:{denied}")
         if duplicates:
             warnings.append(f"duplicates_removed:{duplicates}")
+        warnings = list(dict.fromkeys(warnings))
         if not pages:
             status = "no_reliable_result"
         elif any(p.status != "ok" for p in pages):
@@ -442,9 +488,7 @@ class SiteCrawler:
             budget=budget,
         )
 
-    def _crawl_payload(
-        self, root: str, pages: list[CrawledPage], status: str, warnings: list[str]
-    ) -> dict:
+    def _crawl_payload(self, root: str, pages: list[CrawledPage], status: str, warnings: list[str]) -> dict:
         out_pages: list[dict] = []
         for p in pages:
             item: dict[str, object] = {"u": p.url, "t": p.title, "at": p.fetched_at, "s": p.status}
@@ -519,14 +563,10 @@ class SiteCrawler:
         if not pages and out.pages:
             status = "partial"
             body["status"] = status
-            body["warn"] = list(
-                dict.fromkeys([*(body.get("warn") or []), "budget_exhausted"])
-            )
+            body["warn"] = list(dict.fromkeys([*(body.get("warn") or []), "budget_exhausted"]))
         body["tok"] = count_json_tokens({**body, "tok": 0})
         if count_json_tokens(body) > budget:
-            body["warn"] = list(
-                dict.fromkeys([*(body.get("warn") or []), "budget_exhausted"])
-            )
+            body["warn"] = list(dict.fromkeys([*(body.get("warn") or []), "budget_exhausted"]))
             body["tok"] = count_json_tokens({**body, "tok": 0})
         out.pages = pages
         out.status = status
@@ -538,7 +578,7 @@ class SiteCrawler:
         target = max(120, budget - 6)
         urls = list(out.urls)
         for _ in range(120):
-            body: dict[str, object] = {
+            candidate: dict[str, Any] = {
                 "status": out.status,
                 "u": out.url,
                 "n": len(urls),
@@ -547,16 +587,16 @@ class SiteCrawler:
                 "tok": 0,
             }
             if out.warnings:
-                body["warn"] = out.warnings
+                candidate["warn"] = out.warnings
             if out.sitemap_used:
-                body["sitemap"] = True
-            if count_json_tokens(body) <= target:
+                candidate["sitemap"] = True
+            if count_json_tokens(candidate) <= target:
                 break
             if not urls:
                 break
             urls.pop()
             out.cut = True
-        body = {
+        body: dict[str, Any] = {
             "status": out.status,
             "u": out.url,
             "n": len(urls),
@@ -572,14 +612,12 @@ class SiteCrawler:
             body["cut"] = True
         if not urls and out.urls:
             body["status"] = "partial"
-            body["warn"] = list(
-                dict.fromkeys([*(body.get("warn") or []), "budget_exhausted"])
-            )
+            existing_warn: list[str] = [str(w) for w in (body.get("warn") or [])]
+            body["warn"] = list(dict.fromkeys([*existing_warn, "budget_exhausted"]))
         body["tok"] = count_json_tokens({**body, "tok": 0})
         if count_json_tokens(body) > budget:
-            body["warn"] = list(
-                dict.fromkeys([*(body.get("warn") or []), "budget_exhausted"])
-            )
+            existing_warn = [str(w) for w in (body.get("warn") or [])]
+            body["warn"] = list(dict.fromkeys([*existing_warn, "budget_exhausted"]))
             body["tok"] = count_json_tokens({**body, "tok": 0})
         out.urls = urls
         out.tokens = body["tok"]  # type: ignore[assignment]

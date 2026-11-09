@@ -190,7 +190,12 @@ async def test_workflow_e_controlled_browser_session(workflow_env: dict):
     """Workflow E: Controlled AI Browser Session -> Lifecycle & Inspection."""
     browser: ControlledBrowserAgent = workflow_env["browser"]
 
-    session = await browser.create_session(permission_level=2)
+    try:
+        session = await browser.create_session(permission_level=2)
+    except Exception as exc:
+        if "launch" not in str(exc).lower() and "executable" not in str(exc).lower() and "eperm" not in str(exc).lower():
+            raise
+        pytest.skip(f"browser cannot launch in this environment: {exc}")
     assert session.is_active is True
 
     # Validate active observation before navigation

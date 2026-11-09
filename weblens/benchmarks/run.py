@@ -142,9 +142,7 @@ async def run_query(service: WebLens, entry: dict[str, Any], *, extract_limit: i
     results = search.get("res") or []
     record["search_relevant"] = sum(1 for r in results if is_relevant(r.get("u", ""), entry))
     record["search_returned"] = len(results)
-    record["search_precision_at_n"] = (
-        record["search_relevant"] / len(results) if results else 0.0
-    )
+    record["search_precision_at_n"] = record["search_relevant"] / len(results) if results else 0.0
     record["top3_relevant"] = any(is_relevant(r.get("u", ""), entry) for r in results[:3])
 
     t0 = time.perf_counter()
@@ -156,9 +154,7 @@ async def run_query(service: WebLens, entry: dict[str, Any], *, extract_limit: i
     record["research"] = research
     findings = research.get("f") or []
     record["research_status_match"] = research.get("status") in entry.get("expect_research_status", [])
-    record["research_support"] = support_for(
-        entry, "\n".join(str(f.get("c", "")) for f in findings)
-    )
+    record["research_support"] = support_for(entry, "\n".join(str(f.get("c", "")) for f in findings))
     record["conflict_flagged"] = bool(research.get("conflicts")) or research.get("status") == "conflicting_sources"
 
     record["extract"] = None
@@ -181,9 +177,7 @@ async def run_query(service: WebLens, entry: dict[str, Any], *, extract_limit: i
 def summarize(rows: list[dict[str, Any]]) -> dict[str, Any]:
     answerable = [r for r in rows if r["category"] in {"docs", "niche_technical", "current_facts"}]
     gated_support = [
-        r
-        for r in rows
-        if r["category"] in {"docs", "niche_technical"} and r["research_support"] is not None
+        r for r in rows if r["category"] in {"docs", "niche_technical"} and r["research_support"] is not None
     ]
     precision_rows = [r for r in answerable if r["search_returned"] > 0]
     noresult = [r for r in rows if r["category"] == "unanswerable"]
@@ -310,8 +304,7 @@ def evaluate_gates(
             ]
         )
     return [
-        {"name": name, "ok": bool(ok), "value": value, "threshold": threshold}
-        for name, ok, value, threshold in gates
+        {"name": name, "ok": bool(ok), "value": value, "threshold": threshold} for name, ok, value, threshold in gates
     ]
 
 
@@ -475,6 +468,7 @@ def build_parser() -> argparse.ArgumentParser:
 
 def main() -> int:
     return asyncio.run(main_async(build_parser().parse_args()))
+
 
 if __name__ == "__main__":
     raise SystemExit(main())

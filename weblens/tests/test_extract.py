@@ -179,9 +179,7 @@ async def test_short_page_with_no_query_overlap_returns_verbatim_text(settings):
         fetched_at="2026-11-05T00:00:00Z",
         sha256="a" * 64,
     )
-    out = await _service_with_doc(settings, doc).extract(
-        "https://example.com/", query="what is this page?"
-    )
+    out = await _service_with_doc(settings, doc).extract("https://example.com/", query="what is this page?")
     assert out.status == "partial"
     assert out.passages
     assert "documentation examples" in out.passages[0].text
@@ -199,9 +197,30 @@ async def test_long_page_with_no_query_overlap_stays_no_reliable_result(settings
         fetched_at="2026-11-05T00:00:00Z",
         sha256="a" * 64,
     )
-    out = await _service_with_doc(settings, doc).extract(
-        "https://example.com/long", query="asyncio timeout"
-    )
+    out = await _service_with_doc(settings, doc).extract("https://example.com/long", query="asyncio timeout")
     assert out.status == "no_reliable_result"
     assert out.passages == []
     assert "no_query_match" in out.warnings
+
+
+async def test_extract_payload_spans_point_to_returned_cited_text(settings):
+    """Every returned span must match the verbatim cited text at that position."""
+    text = (
+        "The first sentence is a decoy.\n\n"
+        "asyncio.timeout() returns an asynchronous context manager. "
+        "When the deadline expires it cancels the current task."
+    )
+    doc = ExtractedDoc(
+        url="https://example.com/asyncio",
+        final_url="https://example.com/asyncio",
+        title="Timeouts",
+        text=text,
+        fetched_at="2026-11-05T00:00:00Z",
+        sha256="b" * 64,
+    )
+    out = await _service_with_doc(settings, doc).extract("https://example.com/asyncio", query="asyncio timeout")
+    assert out.status in {"ok", "partial"}
+    assert out.passages
+    payload = ExtractionService.payload(out)
+    for p in payload["ps"]:
+        assert p["x"] == text[p["s"][0] : p["s"][1]]

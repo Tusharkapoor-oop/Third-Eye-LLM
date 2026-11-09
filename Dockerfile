@@ -48,7 +48,8 @@ HEALTHCHECK --interval=30s --timeout=5s --start-period=5s --retries=3 \
 # root server.py is the older MyWebEngine demo and must not silently replace it.
 #
 # Authentication is mandatory for a non-loopback listener. Set
-# WEBLENS_HTTP_TOKEN (for example, from Secret Manager) before deploying; the
+# WEBLENS_HTTP_TOKEN (from Secret Manager in production) before deploying; the
 # process exits with status 2 if the token is missing instead of exposing an
-# unauthenticated public endpoint.
-CMD ["sh", "-c", "exec python -m weblens.cli serve --http --host 0.0.0.0 --port ${PORT:-8080} --profile full --allow-insecure"]
+# unauthenticated public endpoint. Do not add --allow-insecure here: it disables
+# the token requirement and exposes every tool to the internet.
+CMD ["sh", "-c", "exec python -m weblens.cli serve --http --host 0.0.0.0 --port ${PORT:-8080} --profile full"]

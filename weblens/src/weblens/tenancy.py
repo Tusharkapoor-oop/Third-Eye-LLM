@@ -27,10 +27,7 @@ current_tenant: ContextVar[str] = ContextVar("weblens_tenant", default="default"
 def validate_tenant(tenant: str) -> str:
     value = (tenant or "").strip()
     if not TENANT_RE.fullmatch(value):
-        raise ValueError(
-            "tenant must match [A-Za-z0-9][A-Za-z0-9_.-]{0,63} "
-            f"(got {tenant!r})"
-        )
+        raise ValueError(f"tenant must match [A-Za-z0-9][A-Za-z0-9_.-]{{0,63}} (got {tenant!r})")
     return value
 
 
@@ -53,10 +50,7 @@ def _split_pairs(raw: str) -> list[tuple[str, str]]:
         if not item:
             continue
         if "=" not in item:
-            raise ValueError(
-                "expected tenant=value pairs or a JSON object; "
-                f"cannot parse {item!r}"
-            )
+            raise ValueError(f"expected tenant=value pairs or a JSON object; cannot parse {item!r}")
         tenant, value = item.split("=", 1)
         pairs.append((tenant.strip(), value.strip()))
     return pairs
@@ -74,16 +68,11 @@ def parse_api_keys(raw: str | None) -> dict[str, str]:
     for tenant, key in _split_pairs(raw or ""):
         tenant = validate_tenant(tenant)
         if len(key) < _MIN_KEY_LENGTH:
-            raise ValueError(
-                f"API key for tenant {tenant!r} is shorter than "
-                f"{_MIN_KEY_LENGTH} characters"
-            )
+            raise ValueError(f"API key for tenant {tenant!r} is shorter than {_MIN_KEY_LENGTH} characters")
         if tenant in keys:
             raise ValueError(f"duplicate tenant {tenant!r} in API keys")
         if key in seen_keys:
-            raise ValueError(
-                f"duplicate API key for tenants {seen_keys[key]!r} and {tenant!r}"
-            )
+            raise ValueError(f"duplicate API key for tenants {seen_keys[key]!r} and {tenant!r}")
         keys[tenant] = key
         seen_keys[key] = tenant
     return keys
@@ -107,9 +96,7 @@ def parse_tenant_rate_limits(raw: str | None) -> dict[str, int]:
         except (TypeError, ValueError) as exc:
             raise ValueError(f"rate limit for tenant {tenant!r} must be an integer") from exc
         if not 1 <= limit <= 100_000:
-            raise ValueError(
-                f"rate limit for tenant {tenant!r} must be between 1 and 100000"
-            )
+            raise ValueError(f"rate limit for tenant {tenant!r} must be between 1 and 100000")
         if tenant in limits:
             raise ValueError(f"duplicate tenant {tenant!r} in rate limits")
         limits[tenant] = limit
@@ -133,9 +120,7 @@ class ApiKeyRegistry:
     def add(self, tenant: str, key: str) -> None:
         tenant = validate_tenant(tenant)
         if len(key) < _MIN_KEY_LENGTH:
-            raise ValueError(
-                f"API key for tenant {tenant!r} is shorter than {_MIN_KEY_LENGTH} characters"
-            )
+            raise ValueError(f"API key for tenant {tenant!r} is shorter than {_MIN_KEY_LENGTH} characters")
         if tenant in self._tenants:
             raise ValueError(f"duplicate tenant {tenant!r}")
         digest = hashlib.sha256(key.encode("utf-8")).digest()

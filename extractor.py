@@ -18,7 +18,13 @@ from bs4 import BeautifulSoup, Tag
 from config import CONFIG
 from reranker import TwoStageReranker
 from schemas import FailedItem, SourceItem
-from security import SecurityValidationError, safe_fetch_url, sanitize_untrusted_content
+from security import (
+    SecurityValidationError,
+    resolve_and_verify_host,
+    safe_fetch_url,
+    sanitize_untrusted_content,
+    validate_url_security,
+)
 
 
 def html_table_to_markdown(table: Tag) -> str:
@@ -224,6 +230,12 @@ class TieredExtractor:
 
     async def _extract_tier2_playwright(self, url: str) -> tuple[str, str, str | None]:
         """Tier 2: Render dynamic SPA using persistent warm Playwright browser."""
+        # Mirror the tier-1 SSRF policy before Chromium is even launched: the URL
+        # must use an allowed scheme/port and resolve only to public addresses.
+        host, port = validate_url_security(url)
+        loop = asyncio.get_running_loop()
+        await loop.run_in_executor(None, resolve_and_verify_host, host, port)
+
         browser = await self._get_browser()
         context = await browser.new_context(
             user_agent=CONFIG.user_agent,
@@ -232,13 +244,25 @@ class TieredExtractor:
         )
         page = await context.new_page()
 
-        # Abort images, media, and fonts for high performance
-        await page.route(
-            "**/*",
-            lambda route: route.abort()
-            if route.request.resource_type in ("image", "media", "font")
-            else route.continue_(),
-        )
+        # Every request Chromium makes (document, XHR, iframe, redirect target) is
+        # re-validated; DNS is resolved off the event loop and cached per host.
+        validated_hosts: dict[tuple[str, int], None] = {}
+
+        async def _guarded_route(route) -> None:
+            if route.request.resource_type in ("image", "media", "font"):
+                await route.abort()
+                return
+            try:
+                req_host, req_port = validate_url_security(route.request.url)
+                if (req_host, req_port) not in validated_hosts:
+                    await loop.run_in_executor(None, resolve_and_verify_host, req_host, req_port)
+                    validated_hosts[(req_host, req_port)] = None
+            except Exception:
+                await route.abort()
+                return
+            await route.continue_()
+
+        await page.route("**/*", _guarded_route)
 
         try:
             await page.goto(url, wait_until="domcontentloaded", timeout=CONFIG.page_timeout_ms)

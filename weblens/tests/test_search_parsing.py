@@ -4,7 +4,7 @@ import json
 
 import pytest
 
-from weblens.errors import ProviderError
+from weblens.errors import FetchError, ProviderError
 from weblens.net import FetchResponse
 from weblens.search.base import Hit, dedupe, make_hit, parse_date
 from weblens.search.bing import BingHTML
@@ -19,12 +19,20 @@ from weblens.search.yahoo import unwrap as yahoo_unwrap
 
 
 class FakeFetcher:
-    def __init__(self, response: FetchResponse):
+    def __init__(
+        self,
+        response: FetchResponse | None = None,
+        *,
+        exc: Exception | None = None,
+    ):
         self.response = response
+        self.exc = exc
         self.calls: list[tuple[str, dict]] = []
 
     async def fetch(self, url: str, **kwargs):
         self.calls.append((url, kwargs))
+        if self.exc is not None:
+            raise self.exc
         return self.response
 
 
@@ -119,7 +127,10 @@ async def test_brave_json_and_errors():
     assert hits[0].url == "https://example.com/b"
     assert hits[0].date == "2026-09-01"
 
-    p = BraveSearch(FakeFetcher(response("{}", status=429, content_type="application/json")), "key")
+    p = BraveSearch(
+        FakeFetcher(exc=FetchError("brave rate limit", status=429, retryable=True)),
+        "key",
+    )
     with pytest.raises(ProviderError) as err:
         await p.search("q")
     assert err.value.retryable is True
@@ -152,9 +163,7 @@ async def test_searxng_requires_json_content_type():
 
 
 async def test_searxng_parses_json():
-    body = json.dumps(
-        {"results": [{"title": "S", "url": "https://example.com/s", "content": "C"}]}
-    )
+    body = json.dumps({"results": [{"title": "S", "url": "https://example.com/s", "content": "C"}]})
     p = SearXNGSsearch(FakeFetcher(response(body, content_type="application/json")), "https://sx.example")
     hits = await p.search("q", k=1)
     assert hits[0].title == "S"

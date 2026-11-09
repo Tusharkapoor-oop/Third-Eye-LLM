@@ -56,6 +56,26 @@ asyncio_mode = "auto"
 addopts = "-q"
 pythonpath = ["src"]
 
+[tool.mypy]
+python_version = "3.11"
+files = ["src/weblens"]
+ignore_missing_imports = true
+check_untyped_defs = true
+no_implicit_optional = true
+warn_unused_ignores = false
+
+[tool.coverage.run]
+source = ["src/weblens"]
+
+[tool.coverage.report]
+fail_under = 90
+skip_empty = true
+exclude_lines = [
+    "pragma: no cover",
+    "if TYPE_CHECKING:",
+    "raise NotImplementedError",
+]
+
 [tool.ruff]
 line-length = 120
 target-version = "py311"

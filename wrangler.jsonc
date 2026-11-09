@@ -1,0 +1,47 @@
+{
+  "$schema": "./node_modules/wrangler/config-schema.json",
+  "name": "weblens-edge",
+  "main": "cloudflare/worker.ts",
+  "upload_source_maps": true,
+  // Keep this aligned with the date you deploy. Cloudflare Containers require
+  // a recent compatibility date.
+  "compatibility_date": "2026-11-09",
+  "observability": {
+    "enabled": true
+  },
+  "vars": {
+    "WEBLENS_INSTANCE_COUNT": "3",
+    "WEBLENS_CONTAINER_INSTANCE": "standard-1",
+    "WEBLENS_MCP_PROFILE": "full",
+    // Tavily is paid. It is first in the Cloudflare profile because the
+    // deployment supplies TAVILY_API_KEY; the keyless fallbacks match the
+    // canonical default chain.
+    "WEBLENS_SEARCH_PROVIDERS": "tavily,mwmbl,wikipedia,bing,yahoo",
+    "WEBLENS_LOG_LEVEL": "INFO"
+  },
+  "containers": [
+    {
+      "class_name": "WebLensContainer",
+      "scheduling_policy": "durable_object",
+      "images": {
+        "base": {
+          "dockerfile": "./Dockerfile.cloudflare"
+        }
+      }
+    }
+  ],
+  "durable_objects": {
+    "bindings": [
+      {
+        "name": "WEBLENS_CONTAINER",
+        "class_name": "WebLensContainer"
+      }
+    ]
+  },
+  "exports": {
+    "WebLensContainer": {
+      "type": "durable-object",
+      "storage": "sqlite"
+    }
+  }
+}

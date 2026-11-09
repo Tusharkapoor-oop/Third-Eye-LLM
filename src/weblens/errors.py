@@ -50,6 +50,17 @@ class BlockedURLError(WebLensError):
 class FetchError(WebLensError):
     code = ErrCode.HTTP
 
+    def __init__(
+        self,
+        message: str,
+        *,
+        code: ErrCode | None = None,
+        retryable: bool = False,
+        status: int | None = None,
+    ):
+        super().__init__(message, code=code, retryable=retryable)
+        self.status = status
+
 
 class ProviderError(WebLensError):
     code = ErrCode.PROVIDER
@@ -75,4 +86,3 @@ def resolve_budget(
             code=ErrCode.BAD_INPUT,
         )
     return min(maximum, requested)
-

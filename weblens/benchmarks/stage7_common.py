@@ -105,17 +105,11 @@ def environment() -> dict[str, Any]:
 
 
 def load_dataset() -> list[dict[str, Any]]:
-    rows = [
-        json.loads(line)
-        for line in DATASET_PATH.read_text(encoding="utf-8").splitlines()
-        if line.strip()
-    ]
+    rows = [json.loads(line) for line in DATASET_PATH.read_text(encoding="utf-8").splitlines() if line.strip()]
     manifest = json.loads(MANIFEST_PATH.read_text(encoding="utf-8"))
     actual = sha256_file(DATASET_PATH)
     if actual != manifest["dataset_sha256"]:
-        raise SystemExit(
-            f"FROZEN DATASET HASH MISMATCH: actual={actual} claimed={manifest['dataset_sha256']}"
-        )
+        raise SystemExit(f"FROZEN DATASET HASH MISMATCH: actual={actual} claimed={manifest['dataset_sha256']}")
     return rows
 
 
@@ -130,11 +124,7 @@ def append_jsonl(path: Path, rows: list[dict[str, Any]]) -> None:
 def read_jsonl(path: Path) -> list[dict[str, Any]]:
     if not path.exists():
         return []
-    return [
-        json.loads(line)
-        for line in path.read_text(encoding="utf-8").splitlines()
-        if line.strip()
-    ]
+    return [json.loads(line) for line in path.read_text(encoding="utf-8").splitlines() if line.strip()]
 
 
 def write_json(path: Path, value: Any) -> None:
@@ -279,9 +269,7 @@ def process_memory() -> dict[str, int] | None:
         kernel32 = ctypes.windll.kernel32
         psapi = ctypes.windll.psapi
         handle = kernel32.GetCurrentProcess()
-        ok = psapi.GetProcessMemoryInfo(
-            handle, ctypes.byref(counters), ctypes.sizeof(counters)
-        )
+        ok = psapi.GetProcessMemoryInfo(handle, ctypes.byref(counters), ctypes.sizeof(counters))
         if not ok:
             return None
     except Exception:

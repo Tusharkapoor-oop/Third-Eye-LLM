@@ -4,12 +4,20 @@ on:
   push:
     paths:
       - "weblens/**"
+      - "src/weblens/**"
+      - "pyproject.toml"
       - ".github/workflows/weblens-ci.yml"
   pull_request:
     paths:
       - "weblens/**"
+      - "src/weblens/**"
+      - "pyproject.toml"
       - ".github/workflows/weblens-ci.yml"
   workflow_dispatch:
+
+concurrency:
+  group: weblens-ci-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   test:
@@ -40,11 +48,28 @@ jobs:
       - name: Install locked dependencies
         run: uv sync --frozen --extra dev --python ${{ matrix.python }}
 
+      - name: Install quality-gate tools
+        run: uv pip install mypy bandit pytest-cov pytest-timeout
+
       - name: Lint
         run: uv run ruff check src tests benchmarks
 
-      - name: Test (offline; live providers are not called)
-        run: uv run pytest -q
+      - name: Format check
+        run: uv run ruff format --check src tests benchmarks
+
+      - name: Type check
+        run: uv run mypy src/weblens
+
+      - name: Static security analysis (fail on medium+)
+        run: uv run bandit -r src/weblens -ll -q
+
+      - name: Mirror drift guard
+        run: uv run pytest tests/test_mirror_drift.py -v
+
+      - name: Test with coverage gate (offline; live providers are not called)
+        run: >-
+          uv run pytest -q --timeout=120
+          --cov=weblens --cov-report=term-missing --cov-fail-under=90
 
       - name: Measure tools/list schema tokens
         run: uv run weblens tokens --pretty

@@ -11,12 +11,11 @@ Autonomous iterative research loop providing:
 from __future__ import annotations
 
 import time
-from urllib.parse import urlsplit
 from typing import Any
+from urllib.parse import urlsplit
 
 from ..service import WebLens
 from ..urls import registrable_domain
-
 
 PRIMARY_TLDS = {".gov", ".edu", ".mil"}
 PRIMARY_INDICATORS = {"docs.", "documentation.", "github.com", "developer.", "api.", "rfc-editor.org"}
@@ -114,4 +113,3 @@ class AdvancedDeepResearch:
 
 # Export alias for compatibility
 DeepResearchAgent = AdvancedDeepResearch
-

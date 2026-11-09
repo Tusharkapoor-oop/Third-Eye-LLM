@@ -10,9 +10,7 @@ from weblens.config import Settings
 from weblens.net.browser_proxy import BrowserEgressProxy
 
 
-async def _http_ok(
-    reader: asyncio.StreamReader, writer: asyncio.StreamWriter, seen: list[bytes]
-) -> None:
+async def _http_ok(reader: asyncio.StreamReader, writer: asyncio.StreamWriter, seen: list[bytes]) -> None:
     request = await reader.readuntil(b"\r\n\r\n")
     seen.append(request)
     body = b"proxied"
@@ -36,9 +34,7 @@ async def _echo(reader: asyncio.StreamReader, writer: asyncio.StreamWriter) -> N
     await writer.wait_closed()
 
 
-async def _http_echo_body(
-    reader: asyncio.StreamReader, writer: asyncio.StreamWriter, seen: list[bytes]
-) -> None:
+async def _http_echo_body(reader: asyncio.StreamReader, writer: asyncio.StreamWriter, seen: list[bytes]) -> None:
     request = await reader.readuntil(b"\r\n\r\n")
     headers = {}
     for line in request.split(b"\r\n")[1:]:
@@ -74,9 +70,7 @@ async def test_http_request_is_forwarded_through_validated_ip():
         await _http_ok(reader, writer, seen)
 
     target, target_port = await _server(handler)
-    proxy = BrowserEgressProxy(
-        Settings(allow_private_networks=True, max_response_bytes=64_000)
-    )
+    proxy = BrowserEgressProxy(Settings(allow_private_networks=True, max_response_bytes=64_000))
     try:
         await proxy.start()
         reader, writer = await asyncio.open_connection("127.0.0.1", int(proxy.url.rsplit(":", 1)[1]))
@@ -108,10 +102,7 @@ async def test_private_destination_is_refused_before_connect():
     try:
         await proxy.start()
         reader, writer = await asyncio.open_connection("127.0.0.1", int(proxy.url.rsplit(":", 1)[1]))
-        writer.write(
-            f"GET http://127.0.0.1:{target_port}/ HTTP/1.1\r\n"
-            f"Host: 127.0.0.1:{target_port}\r\n\r\n".encode()
-        )
+        writer.write(f"GET http://127.0.0.1:{target_port}/ HTTP/1.1\r\nHost: 127.0.0.1:{target_port}\r\n\r\n".encode())
         await writer.drain()
         response = await asyncio.wait_for(reader.read(), 5)
         writer.close()
@@ -257,10 +248,7 @@ async def test_connect_tunnel_uses_validated_ip():
     try:
         await proxy.start()
         reader, writer = await asyncio.open_connection("127.0.0.1", int(proxy.url.rsplit(":", 1)[1]))
-        writer.write(
-            f"CONNECT 127.0.0.1:{target_port} HTTP/1.1\r\n"
-            f"Host: 127.0.0.1:{target_port}\r\n\r\n".encode()
-        )
+        writer.write(f"CONNECT 127.0.0.1:{target_port} HTTP/1.1\r\nHost: 127.0.0.1:{target_port}\r\n\r\n".encode())
         await writer.drain()
         head = await asyncio.wait_for(reader.readuntil(b"\r\n\r\n"), 5)
         writer.write(b"ping")
@@ -285,10 +273,7 @@ async def test_private_connect_is_refused():
     try:
         await proxy.start()
         reader, writer = await asyncio.open_connection("127.0.0.1", int(proxy.url.rsplit(":", 1)[1]))
-        writer.write(
-            f"CONNECT 127.0.0.1:{target_port} HTTP/1.1\r\n"
-            f"Host: 127.0.0.1:{target_port}\r\n\r\n".encode()
-        )
+        writer.write(f"CONNECT 127.0.0.1:{target_port} HTTP/1.1\r\nHost: 127.0.0.1:{target_port}\r\n\r\n".encode())
         await writer.drain()
         response = await asyncio.wait_for(reader.read(), 5)
         writer.close()

@@ -1,0 +1,62 @@
+{
+  "generated_at": "2026-11-08T13:41:42+00:00",
+  "duration_s": 75.03,
+  "requested": [
+    "qwen",
+    "gemma",
+    "mistral",
+    "gemini"
+  ],
+  "verdict": "BLOCKED",
+  "models": [
+    {
+      "name": "qwen",
+      "model": "qwen/qwen3-235b-a22b-instruct",
+      "checks": [
+        {
+          "check": "credential",
+          "status": "BLOCKED",
+          "detail": "missing QWEN_API_KEY and/or QWEN_BASE_URL (no OpenAI-compatible Qwen gateway configured)"
+        }
+      ],
+      "status": "BLOCKED"
+    },
+    {
+      "name": "gemma",
+      "model": "google/gemma-4-31b-it",
+      "checks": [
+        {
+          "check": "reachability",
+          "status": "BLOCKED",
+          "detail": "fell through to local algorithmic synthesizer (model never served the request)"
+        }
+      ],
+      "status": "BLOCKED"
+    },
+    {
+      "name": "mistral",
+      "model": "mistralai/mistral-large-4-1t-a52b",
+      "checks": [
+        {
+          "check": "reachability",
+          "status": "BLOCKED",
+          "detail": "fell through to local algorithmic synthesizer (model never served the request)"
+        }
+      ],
+      "status": "BLOCKED"
+    },
+    {
+      "name": "gemini",
+      "model": "gemini-3.5-flash",
+      "checks": [
+        {
+          "check": "reachability",
+          "status": "BLOCKED",
+          "detail": "fell through to local algorithmic synthesizer (model never served the request)"
+        }
+      ],
+      "status": "BLOCKED"
+    }
+  ],
+  "exit_code": 2
+}

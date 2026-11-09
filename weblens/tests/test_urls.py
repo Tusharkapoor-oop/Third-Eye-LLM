@@ -23,6 +23,11 @@ from weblens.urls import (
         ("https://example.com:443/a//b/", "https://example.com/a/b/"),
         ("https://example.com/a", "https://example.com/a"),
         ("http://example.com/a%20b", "http://example.com/a%20b"),
+        # Percent-encoding is preserved verbatim: decoding it corrupts
+        # double-encoded inputs and can emit invalid URLs.
+        ("https://example.com/x%25y", "https://example.com/x%25y"),
+        ("https://example.com/a%2526b", "https://example.com/a%2526b"),
+        ("https://example.com/p%25q/%20x", "https://example.com/p%25q/%20x"),
     ],
 )
 def test_normalize_url_canonicalizes(raw, expected):
@@ -83,14 +88,10 @@ def test_is_same_site_and_host_of():
 
 
 def test_official_source_urls_cover_high_confidence_common_topics():
-    wave = official_source_urls(
-        "Is light classified as a particle or a wave in quantum mechanics?"
-    )
+    wave = official_source_urls("Is light classified as a particle or a wave in quantum mechanics?")
     assert "https://www.britannica.com/science/wave-particle-duality" in wave
 
-    encryption = official_source_urls(
-        "What is the difference between symmetric and asymmetric encryption?"
-    )
+    encryption = official_source_urls("What is the difference between symmetric and asymmetric encryption?")
     assert any("cloudflare.com" in url for url in encryption)
     assert "https://en.wikipedia.org/wiki/Public-key_cryptography" in encryption
 
@@ -105,58 +106,40 @@ def test_official_source_urls_cover_high_confidence_common_topics():
 
 
 def test_official_source_urls_cover_scarce_primary_source_topics():
-    ten_k = official_source_urls(
-        "What is a 10-K filing that public companies submit to the SEC?"
-    )
+    ten_k = official_source_urls("What is a 10-K filing that public companies submit to the SEC?")
     assert "https://www.sec.gov/edgar/search/" in ten_k
     assert "https://www.investopedia.com/terms/1/10-k.asp" in ten_k
 
-    resnet = official_source_urls(
-        "Which paper introduced the ResNet architecture and when was it published?"
-    )
+    resnet = official_source_urls("Which paper introduced the ResNet architecture and when was it published?")
     assert "https://arxiv.org/pdf/1512.03385" in resnet
 
-    transformer = official_source_urls(
-        "Who are the authors of Attention Is All You Need?"
-    )
+    transformer = official_source_urls("Who are the authors of Attention Is All You Need?")
     assert any(url.endswith("-Paper.pdf") for url in transformer)
 
-    macbook = official_source_urls(
-        "What are the specifications and battery life of the M4 MacBook Pro?"
-    )
+    macbook = official_source_urls("What are the specifications and battery life of the M4 MacBook Pro?")
     assert "https://www.apple.com/macbook-pro/" in macbook
     assert "https://www.apple.com/macbook-pro/specs/" in macbook
 
-    siemens = official_source_urls(
-        "What industry does the company Siemens primarily operate in?"
-    )
+    siemens = official_source_urls("What industry does the company Siemens primarily operate in?")
     assert "https://www.siemens.com/en-us/company/about/" in siemens
 
-    fda = official_source_urls(
-        "Which US agency regulates pharmaceutical drugs and medical devices?"
-    )
+    fda = official_source_urls("Which US agency regulates pharmaceutical drugs and medical devices?")
     assert "https://www.fda.gov/" in fda
 
     p53 = official_source_urls("What is the role of the p53 protein in cancer?")
     assert "https://www.ncbi.nlm.nih.gov/gene/7157" in p53
 
-    netflix = official_source_urls(
-        "Which streaming services compete directly with Netflix?"
-    )
+    netflix = official_source_urls("Which streaming services compete directly with Netflix?")
     assert "https://www.netflix.com/" in netflix
     assert "https://www.disneyplus.com/" in netflix
 
-    microsoft = official_source_urls(
-        "On which stock exchange is Microsoft Corporation primarily listed?"
-    )
+    microsoft = official_source_urls("On which stock exchange is Microsoft Corporation primarily listed?")
     assert "https://www.nasdaq.com/market-activity/stocks/msft" in microsoft
     assert "https://www.microsoft.com/en-us/investor" in microsoft
 
     index = official_source_urls("What does a stock market index measure?")
     assert "https://www.investopedia.com/terms/m/marketindex.asp" in index
 
-    pep = official_source_urls(
-        "What is Python PEP 703 and how does it make the GIL optional?"
-    )
+    pep = official_source_urls("What is Python PEP 703 and how does it make the GIL optional?")
     assert "https://peps.python.org/pep-0703/" in pep
     assert "https://peps.python.org/pep-0008/" in official_source_urls("What is PEP 8?")

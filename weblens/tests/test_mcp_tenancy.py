@@ -28,8 +28,7 @@ class FakeService:
 def _insert_passage(db_path, text: str) -> None:
     with sqlite3.connect(db_path) as conn:
         conn.execute(
-            "INSERT INTO kb_passages(url, title, passage_index, span_start, span_end, text) "
-            "VALUES (?, ?, ?, ?, ?, ?)",
+            "INSERT INTO kb_passages(url, title, passage_index, span_start, span_end, text) VALUES (?, ?, ?, ?, ?, ?)",
             ("https://tenant.example/doc", "Tenant doc", 0, 0, len(text), text),
         )
         conn.commit()
@@ -45,9 +44,7 @@ async def test_stateful_tools_use_per_tenant_database(tmp_path):
 
     token = current_tenant.set("acme")
     try:
-        first = await server.call_tool(
-            "crawl2rag_query", {"question": "widget", "top_k": 3}
-        )
+        first = await server.call_tool("crawl2rag_query", {"question": "widget", "top_k": 3})
     finally:
         current_tenant.reset(token)
     assert first.is_error is False
@@ -58,26 +55,20 @@ async def test_stateful_tools_use_per_tenant_database(tmp_path):
 
     token = current_tenant.set("acme")
     try:
-        acme = await server.call_tool(
-            "crawl2rag_query", {"question": "widget", "top_k": 3}
-        )
+        acme = await server.call_tool("crawl2rag_query", {"question": "widget", "top_k": 3})
     finally:
         current_tenant.reset(token)
     assert "acme secret widget" in acme.content[0].text
 
     token = current_tenant.set("beta")
     try:
-        beta = await server.call_tool(
-            "crawl2rag_query", {"question": "widget", "top_k": 3}
-        )
+        beta = await server.call_tool("crawl2rag_query", {"question": "widget", "top_k": 3})
     finally:
         current_tenant.reset(token)
     assert "acme secret widget" not in beta.content[0].text
     assert (tmp_path / "tenants" / "beta" / "crawl2rag.db").exists()
 
-    default = await server.call_tool(
-        "crawl2rag_query", {"question": "widget", "top_k": 3}
-    )
+    default = await server.call_tool("crawl2rag_query", {"question": "widget", "top_k": 3})
     assert "acme secret widget" not in default.content[0].text
     assert (tmp_path / "crawl2rag.db").exists()
 
@@ -99,9 +90,10 @@ async def test_http_api_key_tenant_reaches_mcp_tool():
     app = server.streamable_http_app(stateless_http=True)
     auth_app = _ApiKeyAuth(app, ApiKeyRegistry({"acme": "12345678", "beta": "abcdefgh"}))
     headers = {"accept": "application/json, text/event-stream"}
-    async with app.router.lifespan_context(app), httpx.AsyncClient(
-        transport=ASGITransport(app=auth_app), base_url="http://127.0.0.1:8765"
-    ) as client:
+    async with (
+        app.router.lifespan_context(app),
+        httpx.AsyncClient(transport=ASGITransport(app=auth_app), base_url="http://127.0.0.1:8765") as client,
+    ):
         for key, expected in (("12345678", "acme"), ("abcdefgh", "beta")):
             r = await client.post(
                 "/mcp",
@@ -118,4 +110,3 @@ async def test_http_api_key_tenant_reaches_mcp_tool():
             assert payload["result"]["content"][0]["text"] == expected
     assert seen == ["acme", "beta"]
     assert current_tenant.get() == "default"
-

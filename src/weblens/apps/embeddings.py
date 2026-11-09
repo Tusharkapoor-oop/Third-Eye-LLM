@@ -12,7 +12,7 @@ from __future__ import annotations
 from collections.abc import Sequence
 from importlib.util import find_spec
 from pathlib import Path
-from typing import Protocol
+from typing import Any, Protocol
 
 from ..config import Settings
 
@@ -67,10 +67,7 @@ def build_default_embedder(settings: Settings) -> OnnxEmbedder | None:
     # Probe for the optional packages without importing them. The heavy ONNX
     # and tokenizer imports stay lazy until the first encode call, so starting
     # the MCP server does not pay that cost when hybrid search is unused.
-    if any(
-        find_spec(name) is None
-        for name in ("numpy", "onnxruntime", "tokenizers")
-    ):
+    if any(find_spec(name) is None for name in ("numpy", "onnxruntime", "tokenizers")):
         return None
 
     return OnnxEmbedder(
@@ -96,9 +93,9 @@ class OnnxEmbedder:
         self.batch_size = max(1, int(batch_size))
         self.model_name = model_name
         self.dim = 384
-        self._session = None
-        self._tokenizer = None
-        self._np = None
+        self._session: Any = None
+        self._tokenizer: Any = None
+        self._np: Any = None
 
     def _ensure_loaded(self) -> None:
         if self._session is not None:
@@ -109,16 +106,12 @@ class OnnxEmbedder:
             import onnxruntime as ort
             from tokenizers import Tokenizer
         except ImportError as exc:  # pragma: no cover - depends on optional extras
-            raise EmbeddingUnavailable(
-                "hybrid search requires numpy, onnxruntime, and tokenizers"
-            ) from exc
+            raise EmbeddingUnavailable("hybrid search requires numpy, onnxruntime, and tokenizers") from exc
 
         model_path = self.model_dir / "model.onnx"
         tokenizer_path = self.model_dir / "tokenizer.json"
         if not model_path.is_file() or not tokenizer_path.is_file():
-            raise EmbeddingUnavailable(
-                f"embedding model not found under {self.model_dir}"
-            )
+            raise EmbeddingUnavailable(f"embedding model not found under {self.model_dir}")
 
         options = ort.SessionOptions()
         options.intra_op_num_threads = 1
@@ -134,9 +127,8 @@ class OnnxEmbedder:
         self._np = np
 
     def _encode_batch(self, texts: Sequence[str]) -> list[list[float]]:
-        assert self._session is not None
-        assert self._tokenizer is not None
-        assert self._np is not None
+        if self._session is None or self._tokenizer is None or self._np is None:
+            raise EmbeddingUnavailable("embedder is not loaded")
         np = self._np
 
         encodings = self._tokenizer.encode_batch([str(t) for t in texts])
@@ -163,9 +155,7 @@ class OnnxEmbedder:
         )
         hidden = outputs[0]
         weights = mask[..., None].astype(np.float32)
-        pooled = (hidden * weights).sum(axis=1) / np.maximum(
-            weights.sum(axis=1), 1e-9
-        )
+        pooled = (hidden * weights).sum(axis=1) / np.maximum(weights.sum(axis=1), 1e-9)
         norms = np.linalg.norm(pooled, axis=1, keepdims=True)
         pooled = pooled / np.maximum(norms, 1e-9)
         vectors = pooled.astype(np.float32, copy=False)

@@ -153,7 +153,7 @@ Remediation Applied:
     )
 ```
 Verification:
-- Evaluated `CONFIG.nvidia_gpt_oss_20b_key` length in `.venv`: exactly 70 characters (`nvapi-cOQ5VU...`).
+- Evaluated `CONFIG.nvidia_gpt_oss_20b_key` length in `.venv`: exactly 70 characters (`nvapi-<redacted>`).
 
 ---
 

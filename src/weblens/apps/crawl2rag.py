@@ -11,6 +11,7 @@ lexical path remains the default and needs no model, network, or extra package.
 
 from __future__ import annotations
 
+import asyncio
 import hashlib
 import math
 import re
@@ -18,18 +19,48 @@ import sqlite3
 import threading
 import time
 from array import array
-from collections.abc import Callable
 from datetime import UTC, datetime
 from functools import lru_cache
 from pathlib import Path
-from typing import Any
+from typing import Any, Protocol
 
 from ..errors import BlockedURLError
 from ..extract.passages import build_chunks
+from ..lexical import query_terms, tokenize
 from ..service import WebLens
 from .embeddings import Embedder, EmbeddingUnavailable, build_default_embedder
 
 _RRF_K = 60
+_MAX_FTS_TOKENS = 64
+# FTS5 treats these as prefix operators; "NEAR" also has special meaning.
+_FTS_OPERATORS = {"not", "and", "or", "near"}
+
+
+def _quote_fts_token(token: str) -> str:
+    """Wrap a token for FTS5 MATCH, escaping embedded double quotes."""
+    escaped = token.replace('"', '""')
+    return f'"{escaped}"'
+
+
+def _build_fts_query(question: str) -> str:
+    """Sanitize free-text question into a safe FTS5 OR query.
+
+    Keeps letters, digits and apostrophes, drops bare FTS operators, and quotes
+    every remaining token so punctuation and reserved words cannot break the
+    MATCH expression.
+    """
+    cleaned = re.sub(r"[^\w\s']", " ", question)
+    tokens = [t for t in cleaned.split() if len(t) > 2]
+    tokens = [t for t in tokens if t.lower() not in _FTS_OPERATORS]
+    if not tokens:
+        return ""
+    return " OR ".join(_quote_fts_token(t) for t in tokens[:_MAX_FTS_TOKENS])
+
+
+# Conservative floor for dense-only matches. Lexically supported passages are
+# always kept; this floor only decides whether an embedding-space neighbour is
+# strong enough to answer a query whose terms do not appear in the passage.
+_DENSE_MIN_SCORE = 0.30
 
 
 class _DenseScanLimitExceeded(RuntimeError):
@@ -59,6 +90,13 @@ def _try_numpy():
     except ImportError:  # pragma: no cover - only needs the optional extra
         return None
     return np
+
+
+class _EncodeQuery(Protocol):
+    """A cached embedder query function exposing ``cache_clear``."""
+
+    def __call__(self, model: str, question: str) -> list[float]: ...
+    def cache_clear(self) -> None: ...
 
 
 class Crawl2RAG:
@@ -93,9 +131,7 @@ class Crawl2RAG:
         else:
             self.embedder = None
 
-        self._encode_query: Callable[[str, str], list[float]] = lru_cache(
-            maxsize=128
-        )(self._encode_query_uncached)
+        self._encode_query: _EncodeQuery = lru_cache(maxsize=128)(self._encode_query_uncached)
 
         self._init_db()
 
@@ -137,14 +173,8 @@ class Crawl2RAG:
                 )
                 """
             )
-            conn.execute(
-                "CREATE INDEX IF NOT EXISTS idx_kb_embeddings_url "
-                "ON kb_embeddings(url)"
-            )
-            conn.execute(
-                "CREATE INDEX IF NOT EXISTS idx_kb_embeddings_model "
-                "ON kb_embeddings(model)"
-            )
+            conn.execute("CREATE INDEX IF NOT EXISTS idx_kb_embeddings_url ON kb_embeddings(url)")
+            conn.execute("CREATE INDEX IF NOT EXISTS idx_kb_embeddings_model ON kb_embeddings(model)")
             conn.commit()
 
     def _invalidate_dense_cache(self) -> None:
@@ -159,16 +189,17 @@ class Crawl2RAG:
         self._invalidate_dense_cache()
 
     def _encode_query_uncached(self, model: str, question: str) -> list[float]:
-        assert self.embedder is not None
-        assert self.embedder.model_name == model
+        if self.embedder is None:
+            raise EmbeddingUnavailable("embedder is not available")
+        if self.embedder.model_name != model:
+            raise EmbeddingUnavailable(f"embedder model mismatch: {self.embedder.model_name} != {model}")
         return self.embedder.encode([question])[0]
 
     def _index_embeddings(self, conn: sqlite3.Connection, url: str) -> int:
         if self.embedder is None:
             return 0
         rows = conn.execute(
-            "SELECT rowid, text FROM kb_passages WHERE url = ? "
-            "ORDER BY passage_index",
+            "SELECT rowid, text FROM kb_passages WHERE url = ? ORDER BY passage_index",
             (url,),
         ).fetchall()
         if not rows:
@@ -180,9 +211,7 @@ class Crawl2RAG:
         for (rowid, _text), vector in zip(rows, vectors, strict=False):
             if not vector:
                 continue
-            payload.append(
-                (rowid, url, model, len(vector), _pack_vector(vector))
-            )
+            payload.append((rowid, url, model, len(vector), _pack_vector(vector)))
         if payload:
             conn.executemany(
                 """
@@ -194,49 +223,11 @@ class Crawl2RAG:
             )
         return len(payload)
 
-    async def ingest(
-        self,
-        start_url: str,
-        *,
-        max_pages: int = 15,
-        max_depth: int = 2,
-    ) -> dict[str, Any]:
-        """Crawl website and index clean passages with source spans into SQLite."""
-        # Validate destination policy upfront to prevent SSRF
-        if hasattr(self.service, "fetcher") and hasattr(self.service.fetcher, "policy"):
-            try:
-                self.service.fetcher.policy.check_url(start_url)
-            except BlockedURLError as e:
-                return {
-                    "status": "error",
-                    "err": "blocked_url",
-                    "msg": f"Destination blocked by SSRF policy: {e}",
-                    "url": start_url,
-                    "pages_crawled": 0,
-                    "pages_indexed": 0,
-                }
+    def _persist_ingest(self, pages) -> dict[str, Any]:
+        """SQLite-heavy ingestion path intended to run in a worker thread.
 
-        t0 = time.perf_counter()
-        crawl_out = await self.service.crawler.crawl(
-            start_url,
-            max_pages=max_pages,
-            max_depth=max_depth,
-            max_tokens=25000,
-        )
-
-        if any(
-            p.status == "error" and any("BlockedURL" in str(w) for w in p.warnings)
-            for p in crawl_out.pages
-        ):
-            return {
-                "status": "error",
-                "err": "blocked_url",
-                "msg": "Destination blocked by SSRF policy",
-                "url": start_url,
-                "pages_crawled": len(crawl_out.pages),
-                "pages_indexed": 0,
-            }
-
+        Keeps the event loop free while crawling has already returned.
+        """
         now_iso = datetime.now(UTC).isoformat()
         indexed_pages = 0
         indexed_passages = 0
@@ -244,11 +235,9 @@ class Crawl2RAG:
         skipped_unchanged = 0
 
         with sqlite3.connect(self.db_path) as conn:
-            for page in crawl_out.pages:
+            for page in pages:
                 text = (getattr(page, "text", "") or "").strip()
                 if not text:
-                    # Backwards-compatible fallback for crawlers that only
-                    # expose budgeted passages/excerpts.
                     passages = getattr(page, "passages", None) or []
                     text = "\n\n".join(str(p.get("x", "")) for p in passages).strip()
                 if not text:
@@ -259,18 +248,14 @@ class Crawl2RAG:
                 page_tokens = getattr(page, "tokens", 0) or 0
 
                 chash = hashlib.sha256(text.encode("utf-8")).hexdigest()
-                row = conn.execute(
-                    "SELECT content_hash FROM kb_docs WHERE url = ?", (page.url,)
-                ).fetchone()
+                row = conn.execute("SELECT content_hash FROM kb_docs WHERE url = ?", (page.url,)).fetchone()
 
                 if row and row[0] == chash:
                     skipped_unchanged += 1
                     continue
 
                 # Remove existing passages and vectors for this URL if updating.
-                conn.execute(
-                    "DELETE FROM kb_embeddings WHERE url = ?", (page.url,)
-                )
+                conn.execute("DELETE FROM kb_embeddings WHERE url = ?", (page.url,))
                 conn.execute("DELETE FROM kb_passages WHERE url = ?", (page.url,))
                 conn.execute(
                     """
@@ -307,6 +292,61 @@ class Crawl2RAG:
                 indexed_pages += 1
             conn.commit()
 
+        return {
+            "indexed_pages": indexed_pages,
+            "indexed_passages": indexed_passages,
+            "indexed_embeddings": indexed_embeddings,
+            "skipped_unchanged": skipped_unchanged,
+        }
+
+    async def ingest(
+        self,
+        start_url: str,
+        *,
+        max_pages: int = 15,
+        max_depth: int = 2,
+    ) -> dict[str, Any]:
+        """Crawl website and index clean passages with source spans into SQLite."""
+        # Validate destination policy upfront to prevent SSRF
+        if hasattr(self.service, "fetcher") and hasattr(self.service.fetcher, "policy"):
+            try:
+                self.service.fetcher.policy.check_url(start_url)
+            except BlockedURLError as e:
+                return {
+                    "status": "error",
+                    "err": "blocked_url",
+                    "msg": f"Destination blocked by SSRF policy: {e}",
+                    "url": start_url,
+                    "pages_crawled": 0,
+                    "pages_indexed": 0,
+                }
+
+        t0 = time.perf_counter()
+        crawl_out = await self.service.crawler.crawl(
+            start_url,
+            max_pages=max_pages,
+            max_depth=max_depth,
+            max_tokens=25000,
+        )
+
+        if any(p.status == "error" and any("BlockedURL" in str(w) for w in p.warnings) for p in crawl_out.pages):
+            return {
+                "status": "error",
+                "err": "blocked_url",
+                "msg": "Destination blocked by SSRF policy",
+                "url": start_url,
+                "pages_crawled": len(crawl_out.pages),
+                "pages_indexed": 0,
+            }
+
+        # SQLite and ONNX encode are blocking; keep them off the event loop.
+        ingest_state = await asyncio.to_thread(self._persist_ingest, crawl_out.pages)
+
+        indexed_pages = ingest_state["indexed_pages"]
+        indexed_passages = ingest_state["indexed_passages"]
+        indexed_embeddings = ingest_state["indexed_embeddings"]
+        skipped_unchanged = ingest_state["skipped_unchanged"]
+
         if indexed_pages:
             self._invalidate_dense_cache()
 
@@ -331,9 +371,7 @@ class Crawl2RAG:
             "pages_indexed": indexed_pages,
             "passages_indexed": indexed_passages,
             "embeddings_indexed": indexed_embeddings,
-            "embedding_model": (
-                self.embedder.model_name if self.embedder is not None else None
-            ),
+            "embedding_model": (self.embedder.model_name if self.embedder is not None else None),
             "embedding_error": self._embedding_error,
             "skipped_unchanged": skipped_unchanged,
             "failures": crawl_warnings,
@@ -342,9 +380,7 @@ class Crawl2RAG:
             "db_path": str(self.db_path),
         }
 
-    def _bm25_rows(
-        self, fts_query: str, limit: int
-    ) -> list[tuple[int, str, str, int, int, str, float]]:
+    def _bm25_rows(self, fts_query: str, limit: int) -> list[tuple[int, str, str, int, int, str, float]]:
         with sqlite3.connect(self.db_path) as conn:
             return conn.execute(
                 """
@@ -376,15 +412,9 @@ class Crawl2RAG:
             db_stat = self.db_path.stat()
             signature = (db_stat.st_mtime_ns, db_stat.st_size)
             if self._dense_overflow == (model, *signature):
-                raise _DenseScanLimitExceeded(
-                    f"dense scan exceeds {max_scan} indexed passages"
-                )
+                raise _DenseScanLimitExceeded(f"dense scan exceeds {max_scan} indexed passages")
             cache = self._dense_cache
-            if (
-                cache is not None
-                and cache[0] == model
-                and cache[4:] == signature
-            ):
+            if cache is not None and cache[0] == model and cache[4:] == signature:
                 ids, matrix = cache[2], cache[3]
             else:
                 with sqlite3.connect(self.db_path) as conn:
@@ -396,12 +426,8 @@ class Crawl2RAG:
                     )
                     if count > max_scan:
                         self._dense_overflow = (model, *signature)
-                        raise _DenseScanLimitExceeded(
-                            f"dense scan exceeds {max_scan} indexed passages"
-                        )
-                    ids, matrix = self._build_dense_matrix(
-                        conn, model, count, int(query_array.size), np
-                    )
+                        raise _DenseScanLimitExceeded(f"dense scan exceeds {max_scan} indexed passages")
+                    ids, matrix = self._build_dense_matrix(conn, model, count, int(query_array.size), np)
                 self._dense_cache = (
                     model,
                     count,
@@ -429,8 +455,7 @@ class Crawl2RAG:
         ids = np.empty(count, dtype=np.int64)
         valid = 0
         cursor = conn.execute(
-            "SELECT passage_rowid, vec FROM kb_embeddings "
-            "WHERE model = ? ORDER BY passage_rowid LIMIT ?",
+            "SELECT passage_rowid, vec FROM kb_embeddings WHERE model = ? ORDER BY passage_rowid LIMIT ?",
             (model, count),
         )
         for rowid, blob in cursor:
@@ -451,38 +476,58 @@ class Crawl2RAG:
     ) -> list[tuple[int, float]]:
         with sqlite3.connect(self.db_path) as conn:
             rows = conn.execute(
-                "SELECT passage_rowid, vec FROM kb_embeddings "
-                "WHERE model = ? LIMIT ?",
+                "SELECT passage_rowid, vec FROM kb_embeddings WHERE model = ? LIMIT ?",
                 (model, max_scan + 1),
             ).fetchall()
         if len(rows) > max_scan:
-            raise _DenseScanLimitExceeded(
-                f"dense scan exceeds {max_scan} indexed passages"
-            )
+            raise _DenseScanLimitExceeded(f"dense scan exceeds {max_scan} indexed passages")
         scored: list[tuple[int, float]] = []
         for rowid, blob in rows:
             vector = _unpack_vector(blob)
             if len(vector) != len(query):
                 continue
-            scored.append(
-                (int(rowid), sum(a * b for a, b in zip(query, vector, strict=True)))
-            )
+            scored.append((int(rowid), sum(a * b for a, b in zip(query, vector, strict=True))))
         scored.sort(key=lambda pair: pair[1], reverse=True)
         return scored[:limit]
 
-    def _fetch_passages(
-        self, rowids: list[int]
-    ) -> dict[int, tuple[int, str, str, int, int, str]]:
+    def _ground_dense_candidates(
+        self,
+        dense_scores: list[tuple[int, float]],
+        terms: list[str],
+    ) -> list[tuple[int, float]]:
+        """Keep dense neighbours with lexical support or a strong similarity.
+
+        Dense retrieval always returns nearest neighbours, even for a query
+        whose topic is absent. A lexical match is sufficient; a dense-only
+        neighbour must clear a conservative similarity floor so an unrelated
+        page cannot answer a false-premise query.
+        """
+        if not dense_scores or not terms:
+            return []
+        details = self._fetch_passages([rowid for rowid, _ in dense_scores])
+        wanted = set(terms)
+        supported: list[tuple[int, float]] = []
+        for rowid, score in dense_scores:
+            row = details.get(rowid)
+            if row is None:
+                continue
+            passage_tokens = set(tokenize(f"{row[2]} {row[5]}"))
+            if wanted.intersection(passage_tokens) or score >= _DENSE_MIN_SCORE:
+                supported.append((rowid, score))
+        return supported
+
+    def _fetch_passages(self, rowids: list[int]) -> dict[int, tuple[int, str, str, int, int, str]]:
         if not rowids:
             return {}
         placeholders = ",".join("?" for _ in rowids)
         query = (
             "SELECT rowid, url, title, span_start, span_end, text "  # noqa: S608
-            f"FROM kb_passages WHERE rowid IN ({placeholders})"
+            f"FROM kb_passages WHERE rowid IN ({placeholders})"  # nosec B608
         )
         with sqlite3.connect(self.db_path) as conn:
-            # The only interpolated text is a run of placeholders generated from
-            # an internal integer rowid list; values still bind through sqlite.
+            # nosec B608: the only interpolated text is a run of "?" placeholders
+            # generated from an internal integer rowid list; every value is bound
+            # through sqlite parameters, so no caller-controlled data reaches SQL.
             rows = conn.execute(query, rowids).fetchall()  # noqa: S608
         return {int(row[0]): row for row in rows}
 
@@ -494,9 +539,7 @@ class Crawl2RAG:
     ) -> list[dict[str, Any]]:
         bm25_by_id = {int(row[0]): row for row in bm25_rows}
         bm25_rank = {int(row[0]): rank for rank, row in enumerate(bm25_rows, 1)}
-        dense_rank = {
-            int(rowid): rank for rank, (rowid, _score) in enumerate(dense_scores, 1)
-        }
+        dense_rank = {int(rowid): rank for rank, (rowid, _score) in enumerate(dense_scores, 1)}
         dense_by_id = {int(rowid): score for rowid, score in dense_scores}
 
         fused: dict[int, float] = {}
@@ -534,11 +577,7 @@ class Crawl2RAG:
                         "bm25_rank": bm25_rank.get(rowid),
                         "dense_rank": dense_rank.get(rowid),
                         "bm25": round(float(bm25[6]), 6) if bm25 else None,
-                        "dense": (
-                            round(float(dense_by_id[rowid]), 6)
-                            if rowid in dense_by_id
-                            else None
-                        ),
+                        "dense": (round(float(dense_by_id[rowid]), 6) if rowid in dense_by_id else None),
                     },
                 }
             )
@@ -553,9 +592,8 @@ class Crawl2RAG:
     ) -> dict[str, Any]:
         """Query the local knowledge base using BM25 or hybrid BM25 + dense RRF."""
         t0 = time.perf_counter()
-        sanitized = re.sub(r"[^\w\s]", " ", question).strip()
-        tokens = [t for t in sanitized.split() if len(t) > 2]
-        if not tokens:
+        fts_query = _build_fts_query(question)
+        if not fts_query:
             return {
                 "status": "ok",
                 "q": question,
@@ -566,15 +604,15 @@ class Crawl2RAG:
                 "ms": int((time.perf_counter() - t0) * 1000),
             }
 
-        fts_query = " OR ".join(tokens)
         candidate_limit = max(top_k * 8, 40)
-        bm25_rows = self._bm25_rows(fts_query, candidate_limit)
+        bm25_rows = await asyncio.to_thread(self._bm25_rows, fts_query, candidate_limit)
 
+        terms, _phrases = query_terms(question)
         dense_scores: list[tuple[int, float]] = []
         warnings: list[str] = []
         if hybrid and self.embedder is not None:
             try:
-                dense_scores = self._dense_scores(question, candidate_limit)
+                dense_scores = await asyncio.to_thread(self._dense_scores, question, candidate_limit)
             except _DenseScanLimitExceeded as exc:
                 # The embedder is healthy; only this knowledge base is too
                 # large for exact scanning. Keep hybrid available for smaller
@@ -586,10 +624,9 @@ class Crawl2RAG:
             except Exception as exc:  # noqa: BLE001 - optional path
                 # Keep the embedder enabled: a transient failure should not
                 # permanently degrade this instance to BM25-only.
-                warnings.append(
-                    f"dense_unavailable:{type(exc).__name__}:{exc}"
-                )
+                warnings.append(f"dense_unavailable:{type(exc).__name__}:{exc}")
 
+        dense_scores = await asyncio.to_thread(self._ground_dense_candidates, dense_scores, terms)
         if dense_scores:
             passages = self._fuse(bm25_rows, dense_scores, top_k)
             mode = "hybrid"
@@ -621,15 +658,10 @@ class Crawl2RAG:
         """Return knowledge base size and summary metrics."""
         with sqlite3.connect(self.db_path) as conn:
             doc_count = conn.execute("SELECT COUNT(*) FROM kb_docs").fetchone()[0]
-            passage_count = conn.execute(
-                "SELECT COUNT(*) FROM kb_passages"
-            ).fetchone()[0]
-            embedding_count = conn.execute(
-                "SELECT COUNT(*) FROM kb_embeddings"
-            ).fetchone()[0]
+            passage_count = conn.execute("SELECT COUNT(*) FROM kb_passages").fetchone()[0]
+            embedding_count = conn.execute("SELECT COUNT(*) FROM kb_embeddings").fetchone()[0]
             model_row = conn.execute(
-                "SELECT model, dim FROM kb_embeddings "
-                "GROUP BY model, dim ORDER BY COUNT(*) DESC LIMIT 1"
+                "SELECT model, dim FROM kb_embeddings GROUP BY model, dim ORDER BY COUNT(*) DESC LIMIT 1"
             ).fetchone()
         size_bytes = self.db_path.stat().st_size if self.db_path.exists() else 0
         return {
@@ -637,14 +669,10 @@ class Crawl2RAG:
             "passages": passage_count,
             "embeddings": embedding_count,
             "embedding_model": (
-                self.embedder.model_name
-                if self.embedder is not None
-                else (model_row[0] if model_row else None)
+                self.embedder.model_name if self.embedder is not None else (model_row[0] if model_row else None)
             ),
             "embedding_dim": (
-                self.embedder.dim
-                if self.embedder is not None
-                else (int(model_row[1]) if model_row else 0)
+                self.embedder.dim if self.embedder is not None else (int(model_row[1]) if model_row else 0)
             ),
             "embedding_error": self._embedding_error,
             "db_bytes": size_bytes,

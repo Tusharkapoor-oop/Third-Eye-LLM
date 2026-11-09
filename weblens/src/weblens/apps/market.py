@@ -72,26 +72,35 @@ class MarketResearcher:
             title = h.get("t", "")
             date_str = h.get("d") or "unspecified"
 
-            recent_disclosures.append({
-                "title": title,
-                "url": url,
-                "date": date_str,
-                "snippet": snippet,
-            })
+            recent_disclosures.append(
+                {
+                    "title": title,
+                    "url": url,
+                    "date": date_str,
+                    "snippet": snippet,
+                }
+            )
 
-            # Check for verifiable financial metrics in text
+            # Check for verifiable financial metrics in text.
+            # Only emit fields that are actually captured from the source snippet;
+            # no currency or date is fabricated when the disclosure omits them.
             matches = list(FINANCIAL_NUMBER_PATTERN.finditer(snippet))
             for m in matches[:2]:
                 val = m.group("val")
-                if len(val) > 1 or m.group("multiplier"):
-                    verified_metrics.append({
+                currency = m.group("currency")
+                multiplier = m.group("multiplier")
+                if len(val) > 1 and (currency or multiplier):
+                    metric: dict[str, Any] = {
                         "metric_mention": m.group(0).strip(),
                         "value": val,
-                        "currency": m.group("currency") or "USD",
-                        "multiplier": m.group("multiplier"),
-                        "as_of_date": date_str,
                         "source_url": url,
-                    })
+                        "multiplier": multiplier,
+                    }
+                    if currency:
+                        metric["currency"] = currency
+                    if date_str and date_str != "unspecified":
+                        metric["as_of_date"] = date_str
+                    verified_metrics.append(metric)
 
         elapsed_ms = int((time.perf_counter() - t0) * 1000)
         return {
@@ -123,7 +132,7 @@ class MarketResearcher:
                 return await self.analyze_asset(asset)
 
         results = await asyncio.gather(*[_bounded(a) for a in clean_assets])
-        asset_reports = {a: res for a, res in zip(clean_assets, results)}
+        asset_reports = {a: res for a, res in zip(clean_assets, results, strict=True)}
 
         total_disclosures = sum(r.get("disclosures_found", 0) for r in results)
         total_metrics = sum(len(r.get("verified_metrics", [])) for r in results)
@@ -137,4 +146,3 @@ class MarketResearcher:
             "disclaimer": DISCLAIMER,
             "ms": int((time.perf_counter() - t0) * 1000),
         }
-

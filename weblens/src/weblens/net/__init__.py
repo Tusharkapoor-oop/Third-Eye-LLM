@@ -5,4 +5,3 @@ from .client import FetchResponse, SafeFetcher
 from .ssrf import DestinationPolicy, SafeNetworkBackend
 
 __all__ = ["BrowserEgressProxy", "DestinationPolicy", "FetchResponse", "SafeFetcher", "SafeNetworkBackend"]
-

@@ -221,12 +221,7 @@ def _candidate_score(
     if overlap == 0 and not fuzzy and not family:
         return -1
     same_dir = _same_directory(source_path, target_path)
-    return (
-        overlap * 3
-        + (3 if family else 0)
-        + (2 if same_dir else 0)
-        + (1 if fuzzy else 0)
-    )
+    return overlap * 3 + (3 if family else 0) + (2 if same_dir else 0) + (1 if fuzzy else 0)
 
 
 def _scored_same_site_links(
@@ -324,9 +319,7 @@ async def expand_official_links(
     for source_url, html_text in pages:
         if not html_text:
             continue
-        for score, url, anchor in _scored_same_site_links(
-            html_text, source_url, query, existing
-        ):
+        for score, url, anchor in _scored_same_site_links(html_text, source_url, query, existing):
             key = url.rstrip("/")
             if key in existing:
                 continue

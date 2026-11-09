@@ -6,6 +6,7 @@ formula defanging, and indirect prompt injection quarantine.
 
 from __future__ import annotations
 
+import asyncio
 import ipaddress
 import re
 import socket
@@ -15,6 +16,7 @@ from pathlib import Path
 from urllib.parse import urlsplit
 
 import certifi
+import httpcore
 import httpx
 
 from config import CONFIG
@@ -189,6 +191,36 @@ def resolve_and_verify_host(host: str, port: int) -> str:
     return v4_ips[0] if v4_ips else candidate_ips[0]
 
 
+class _PinningBackend(httpcore.AnyIOBackend):
+    """httpcore backend that connects to the *validated* IP, not a fresh lookup.
+
+    ``resolve_and_verify_host`` has already rejected non-public answers for this
+    host. Connecting to that exact address closes the DNS-rebinding window
+    between validation and connect, while the request URL keeps its hostname so
+    TLS SNI, virtual hosting and HTTP mocks keep working.
+    """
+
+    async def connect_tcp(
+        self,
+        host: str,
+        port: int,
+        timeout: float | None = None,
+        local_address: str | None = None,
+        socket_options=None,
+    ):
+        try:
+            pinned_ip = resolve_and_verify_host(host, port)
+        except (SecurityValidationError, OSError):
+            raise
+        return await super().connect_tcp(
+            pinned_ip,
+            port,
+            timeout=timeout,
+            local_address=local_address,
+            socket_options=socket_options,
+        )
+
+
 async def safe_fetch_url(
     url: str,
     *,
@@ -217,9 +249,24 @@ async def safe_fetch_url(
         verify=shared_ssl_context(),
         timeout=httpx.Timeout(timeout, connect=CONFIG.connect_timeout_s),
     ) as client:
+        # Pin the TCP connection to the validated IP at the transport layer, the
+        # same way weblens/net does. The request URL keeps its hostname, so TLS
+        # SNI, virtual hosting, HTTP caches and test mocks stay correct while a
+        # DNS-rebinding answer can no longer redirect the socket.
+        try:
+            client._transport._pool._network_backend = _PinningBackend()  # type: ignore[attr-defined]
+        except AttributeError:  # pragma: no cover - httpx internals changed
+            pass  # resolve_and_verify_host still rejects non-public answers
         for _ in range(max_redirects):
             host, port = validate_url_security(current_url)
-            resolve_and_verify_host(host, port)
+            # getaddrinfo blocks; keep DNS work off the event loop so concurrent
+            # extractions do not serialise behind one slow resolver. The resolved
+            # IP is validated here, then the transport pins the socket to it (see
+            # SafeNetworkBackend wiring below) so a rebinding answer cannot
+            # redirect the connection.
+            await asyncio.get_running_loop().run_in_executor(
+                None, resolve_and_verify_host, host, port
+            )
 
             async with client.stream("GET", current_url, headers=req_headers) as resp:
                 if resp.status_code in (301, 302, 303, 307, 308):

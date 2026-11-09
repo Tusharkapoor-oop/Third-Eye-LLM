@@ -9,7 +9,7 @@ import sys
 from typing import Any
 
 from . import __version__
-from .config import Settings
+from .config import Settings, get_settings
 from .ratelimit import TenantRateLimiter, rate_limit_key, trusted_client_ip
 from .service import WebLens
 from .tenancy import ApiKeyRegistry, current_tenant
@@ -18,8 +18,8 @@ from .tokens import count_json_tokens, count_tokens
 
 def _configure_stdout() -> None:
     try:
-        sys.stdout.reconfigure(encoding="utf-8", errors="replace")  # type: ignore[attr-defined]
-        sys.stderr.reconfigure(encoding="utf-8", errors="replace")  # type: ignore[attr-defined]
+        sys.stdout.reconfigure(encoding="utf-8", errors="replace")  # type: ignore[union-attr]
+        sys.stderr.reconfigure(encoding="utf-8", errors="replace")  # type: ignore[union-attr]
     except Exception:
         pass
 
@@ -42,9 +42,7 @@ async def _call(service: WebLens, args: argparse.Namespace) -> dict[str, Any]:
             max_tokens=args.max_tokens,
         )
     if args.command == "extract":
-        return await service.extract(
-            args.url, query=args.query, max_tokens=args.max_tokens, full=args.full
-        )
+        return await service.extract(args.url, query=args.query, max_tokens=args.max_tokens, full=args.full)
     if args.command == "crawl":
         return await service.crawl_site(
             args.url,
@@ -141,9 +139,11 @@ class _ApiKeyAuth:
         *,
         failure_limit: int = 60,
         max_failure_buckets: int = 10_000,
+        trust_proxy_headers: bool = False,
     ):
         self.app = app
         self.registry = registry
+        self.trust_proxy_headers = trust_proxy_headers
         # Authenticated requests are metered by the tenant limiter downstream.
         # Failed attempts never reach it, so they get a separate IP-scoped
         # budget. Without this, a flood of bad keys would bypass backpressure.
@@ -158,6 +158,14 @@ class _ApiKeyAuth:
             return await self.app(scope, receive, send)
         if scope.get("path") in self.PUBLIC_PATHS:
             return await self.app(scope, receive, send)
+
+        state = scope.get("state")
+        if isinstance(state, dict):
+            state["settings"] = state.get("settings") or get_settings()
+        else:
+            state = {"settings": get_settings()}
+            scope["state"] = state
+        state["settings"].trust_proxy_headers = self.trust_proxy_headers
 
         headers = {k.lower(): v for k, v in scope.get("headers") or []}
         authorization = headers.get(b"authorization", b"").decode("latin-1")
@@ -198,10 +206,6 @@ class _ApiKeyAuth:
             await send({"type": "http.response.body", "body": body})
             return
 
-        state = scope.get("state")
-        if not isinstance(state, dict):
-            state = {}
-            scope["state"] = state
         state["tenant_id"] = tenant
         token = current_tenant.set(tenant)
         try:
@@ -266,8 +270,10 @@ class _RateLimit:
         window_s: float = 60.0,
         tenant_limits: dict[str, int] | None = None,
         max_buckets: int = 10_000,
+        trust_proxy_headers: bool = False,
     ):
         self.app = app
+        self.trust_proxy_headers = trust_proxy_headers
         self.limiter = TenantRateLimiter(
             limit,
             window_s=window_s,
@@ -288,6 +294,14 @@ class _RateLimit:
             return await self.app(scope, receive, send)
         if scope.get("path") in {"/", "/healthz"}:
             return await self.app(scope, receive, send)
+
+        state = scope.get("state")
+        if isinstance(state, dict):
+            state["settings"] = state.get("settings") or get_settings()
+        else:
+            state = {"settings": get_settings()}
+            scope["state"] = state
+        state["settings"].trust_proxy_headers = self.trust_proxy_headers
 
         decision = self.limiter.check(rate_limit_key(scope))
         headers = self._headers(decision)
@@ -345,15 +359,9 @@ def _serve_http(args: argparse.Namespace) -> int:
         )
         return 2
 
-    transport_security = None
-    if not loopback or args.allow_insecure:
-        from mcp.server.transport_security import TransportSecuritySettings
-
-        transport_security = TransportSecuritySettings(
-            enable_dns_rebinding_protection=False,
-            allowed_hosts=["*"],
-            allowed_origins=["*"],
-        )
+    transport_security = (
+        _transport_security_settings(settings) if settings.allowed_hosts or settings.allowed_origins else None
+    )
 
     service = WebLens(settings)
     # Stateful tools (Crawl2RAG, research chat) resolve a per-tenant SQLite
@@ -374,12 +382,14 @@ def _serve_http(args: argparse.Namespace) -> int:
     )
 
     async def _health(request):
-        return JSONResponse({
-            "status": "ok",
-            "service": "weblens",
-            "version": "0.1.0",
-            "mcp_endpoint": "/mcp",
-        })
+        return JSONResponse(
+            {
+                "status": "ok",
+                "service": "weblens",
+                "version": "0.1.0",
+                "mcp_endpoint": "/mcp",
+            }
+        )
 
     app.add_route("/", _health, methods=["GET"])
     app.add_route("/healthz", _health, methods=["GET"])
@@ -391,12 +401,14 @@ def _serve_http(args: argparse.Namespace) -> int:
         _RateLimit,
         limit=settings.http_rate_limit_per_minute,
         tenant_limits=settings.tenant_rate_limit_map,
+        trust_proxy_headers=settings.trust_proxy_headers,
     )
     if registry:
         app.add_middleware(
             _ApiKeyAuth,
             registry=registry,
             failure_limit=settings.http_auth_failure_limit_per_minute,
+            trust_proxy_headers=settings.trust_proxy_headers,
         )
     app.add_middleware(_SecurityHeaders)
 
@@ -426,6 +438,7 @@ async def _run_app(args: argparse.Namespace) -> int:
     try:
         if args.app_name == "crawl2rag":
             from .apps.crawl2rag import Crawl2RAG
+
             kb = Crawl2RAG(service)
             if args.action == "ingest":
                 payload = await kb.ingest(args.target, max_pages=args.max_pages)
@@ -435,10 +448,12 @@ async def _run_app(args: argparse.Namespace) -> int:
                 payload = kb.stats()
         elif args.app_name == "company":
             from .apps.company import CompanyResearcher
+
             comp = CompanyResearcher(service)
             payload = await comp.research_company(args.company)
         elif args.app_name == "market":
             from .apps.market import MarketResearcher
+
             mkt = MarketResearcher(service)
             if getattr(args, "portfolio", None):
                 payload = await mkt.analyze_portfolio(args.portfolio)
@@ -446,10 +461,12 @@ async def _run_app(args: argparse.Namespace) -> int:
                 payload = await mkt.analyze_asset(args.asset, question=args.question)
         elif args.app_name == "chat":
             from .apps.chat import ResearchChatSession
+
             chat = ResearchChatSession(service)
             payload = await chat.send_message(args.message)
         elif args.app_name == "research-chat":
             from .apps.research_chat import PersistentResearchChat
+
             pchat = PersistentResearchChat(service, session_id=getattr(args, "session_id", None))
             msg = await pchat.send_query(args.message)
             payload = {
@@ -462,10 +479,12 @@ async def _run_app(args: argparse.Namespace) -> int:
             }
         elif args.app_name == "meeting":
             from .apps.meeting import MeetingPrepAgent
+
             mtg = MeetingPrepAgent(service)
             payload = await mtg.prepare_brief(args.title, args.attendee, company_or_org=args.company)
         elif args.app_name == "sheets":
             from .apps.sheets import SheetsEnricher
+
             col_specs = {}
             for c in args.col:
                 if "=" in c:
@@ -475,6 +494,7 @@ async def _run_app(args: argparse.Namespace) -> int:
             payload = await enricher.process_csv(args.input_csv, args.output_csv, col_specs)
         elif args.app_name == "tutorial":
             from .apps.tutorial_101 import run_tutorial
+
             payload = await run_tutorial(service, step=getattr(args, "step", "all"))
         else:
             payload = {"status": "error", "msg": f"unknown app {args.app_name}"}
@@ -656,6 +676,30 @@ def _build_parser() -> argparse.ArgumentParser:
     a_tut.add_argument("--pretty", action="store_true")
 
     return p
+
+
+def _transport_security_settings(settings: Settings):
+    """Build MCP TransportSecuritySettings from configured allowed hosts/origins."""
+    hosts = [h.strip() for h in settings.allowed_hosts.split(",") if h.strip()]
+    origins = [o.strip() for o in settings.allowed_origins.split(",") if o.strip()]
+    if not hosts and not origins:
+        # Let the MCP transport apply its own defaults rather than enabling
+        # DNS-rebinding protection with an empty allowlist.
+        return None
+
+    from mcp.server.transport_security import TransportSecuritySettings
+
+    if "*" in hosts:
+        return TransportSecuritySettings(
+            enable_dns_rebinding_protection=False,
+            allowed_hosts=["*"],
+            allowed_origins=["*"],
+        )
+    return TransportSecuritySettings(
+        enable_dns_rebinding_protection=True,
+        allowed_hosts=hosts,
+        allowed_origins=origins,
+    )
 
 
 def main(argv: list[str] | None = None) -> int:

@@ -196,12 +196,8 @@ async def test_rate_limit_returns_429_after_burst():
 async def test_rate_limit_uses_the_trusted_forwarded_address():
     inner = DummyApp()
     app = _RateLimit(inner, limit=1, window_s=60)
-    first = await _invoke(
-        app, [(b"x-forwarded-for", b"spoofed-one, 203.0.113.7")]
-    )
-    second = await _invoke(
-        app, [(b"x-forwarded-for", b"spoofed-two, 203.0.113.7")]
-    )
+    first = await _invoke(app, [(b"x-forwarded-for", b"spoofed-one, 203.0.113.7")])
+    second = await _invoke(app, [(b"x-forwarded-for", b"spoofed-two, 203.0.113.7")])
     assert first[0]["status"] == 200
     assert second[0]["status"] == 429
     assert inner.calls == 1

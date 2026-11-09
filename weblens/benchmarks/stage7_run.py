@@ -325,9 +325,7 @@ def _write_meta(
     write_json(path, body)
 
 
-async def _check_budget(
-    direct: TavilyDirect, usage_start: dict[str, Any] | None
-) -> tuple[dict[str, Any], int]:
+async def _check_budget(direct: TavilyDirect, usage_start: dict[str, Any] | None) -> tuple[dict[str, Any], int]:
     now = await direct.usage()
     if now.get("status") != "ok" or usage_start is None or usage_start.get("status") != "ok":
         return now, 0
@@ -419,9 +417,7 @@ async def run_search(split: str, limit: int | None, resume: bool, tag: str = "")
             if (row["id"], "weblens_keyless") not in done:
                 t0 = time.perf_counter()
                 try:
-                    payload = await keyless.search(
-                        row["query"], max_results=MAX_RESULTS, max_tokens=SEARCH_BUDGET
-                    )
+                    payload = await keyless.search(row["query"], max_results=MAX_RESULTS, max_tokens=SEARCH_BUDGET)
                     latency = (time.perf_counter() - t0) * 1000
                     results = payload.get("res") or []
                     rec = _record_common(
@@ -463,9 +459,7 @@ async def run_search(split: str, limit: int | None, resume: bool, tag: str = "")
             if (row["id"], "weblens_tavily") not in done:
                 t0 = time.perf_counter()
                 try:
-                    payload = await tavily.search(
-                        row["query"], max_results=MAX_RESULTS, max_tokens=SEARCH_BUDGET
-                    )
+                    payload = await tavily.search(row["query"], max_results=MAX_RESULTS, max_tokens=SEARCH_BUDGET)
                     latency = (time.perf_counter() - t0) * 1000
                     results = payload.get("res") or []
                     rec = _record_common(
@@ -602,9 +596,7 @@ async def run_research(split: str, limit: int | None, resume: bool, tag: str = "
                         "status_match": status in (row.get("expect_research_status") or []),
                         "abstained": status == "no_reliable_result",
                         "false_confidence": (
-                            status in ("ok", "partial")
-                            and bool(findings)
-                            and row.get("expect_abstention")
+                            status in ("ok", "partial") and bool(findings) and row.get("expect_abstention")
                         ),
                         "citation_errors": [],
                         "raw": payload,
@@ -973,10 +965,10 @@ class _FixtureHandler(BaseHTTPRequestHandler):
         if self.path == "/js":
             body = (
                 "<!doctype html><html><head><title>JS Fixture</title></head><body>"
-                "<div id=\"app\">loading</div><script>"
-                "document.getElementById(\"app\").textContent="
-                "\"Rendered by JavaScript. This paragraph exists only after the browser executes inline script. "
-                "The fixture answer token is stage7-js-visible.\";"
+                '<div id="app">loading</div><script>'
+                'document.getElementById("app").textContent='
+                '"Rendered by JavaScript. This paragraph exists only after the browser executes inline script. '
+                'The fixture answer token is stage7-js-visible.";'
                 "</script></body></html>"
             )
         elif self.path == "/inject":
@@ -1061,17 +1053,12 @@ async def run_browser_fixture() -> None:
                             "status": payload.get("status"),
                             "latency_ms": round(latency, 3),
                             "tokens": int(payload.get("tok") or 0),
-                            "text": payload.get("x") or "\n".join(
-                                str(p.get("x") or "") for p in (payload.get("ps") or [])
-                            ),
+                            "text": payload.get("x")
+                            or "\n".join(str(p.get("x") or "") for p in (payload.get("ps") or [])),
                             "warnings": payload.get("warn"),
                             "injection": payload.get("inj"),
                             "passage_injection": sorted(
-                                {
-                                    flag
-                                    for p in (payload.get("ps") or [])
-                                    for flag in (p.get("inj") or [])
-                                }
+                                {flag for p in (payload.get("ps") or []) for flag in (p.get("inj") or [])}
                             ),
                             "proxy_requests": (
                                 service.extractor._renderer.proxy_requests
@@ -1226,8 +1213,7 @@ async def run_load() -> None:
     rows = [
         r
         for r in load_dataset()
-        if r["split"] == "dev"
-        and r["category"] in ("docs", "current_facts", "niche_technical")
+        if r["split"] == "dev" and r["category"] in ("docs", "current_facts", "niche_technical")
     ][:6]
     out_path = RAW_DIR / "load.jsonl"
     started = now_iso()
@@ -1247,9 +1233,7 @@ async def run_load() -> None:
                     async with sem:
                         t0 = time.perf_counter()
                         try:
-                            payload = await service.search(
-                                row["query"], max_results=5, max_tokens=600
-                            )
+                            payload = await service.search(row["query"], max_results=5, max_tokens=600)
                             return {
                                 "query_id": row["id"],
                                 "status": payload.get("status"),

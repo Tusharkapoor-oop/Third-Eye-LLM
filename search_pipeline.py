@@ -423,10 +423,22 @@ class SearchPipeline:
             except Exception as e:
                 failed_items.append(FailedItem(url="timeout_or_error", error=str(e), blocked_by_waf=False))
 
-        # Cleanly cancel any pending stragglers
+        # Cleanly cancel any pending stragglers and wait for cancellation so
+        # pytest-asyncio does not report leaked tasks during teardown.
         for t in extract_tasks:
             if not t.done():
                 t.cancel()
+        for t in extract_tasks:
+            if t.cancelled():
+                continue
+            try:
+                await t
+            except asyncio.CancelledError:
+                pass
+            except Exception:
+                # A failed extraction task must not turn cleanup into a new
+                # request failure. The failure was already recorded above.
+                pass
 
         # Step 4: If local extraction yielded 0 sources, trigger Tavily rescue fallback
         if len(extracted_sources) == 0 and CONFIG.tavily_api_key:

@@ -69,11 +69,42 @@ _NUMERIC_INTENT = re.compile(
 # shares "maximum" and "size" (for example a WhatsApp group-size paragraph).
 _NUMERIC_GENERIC = frozenset(
     {
-        "maximum", "minimum", "max", "min", "size", "value", "number",
-        "many", "much", "how", "price", "cost", "rate", "speed", "time",
-        "latency", "throughput", "percentage", "percent", "default", "limit",
-        "fast", "long", "have", "has", "had", "does", "do", "did", "is",
-        "are", "was", "were", "be", "been", "being",
+        "maximum",
+        "minimum",
+        "max",
+        "min",
+        "size",
+        "value",
+        "number",
+        "many",
+        "much",
+        "how",
+        "price",
+        "cost",
+        "rate",
+        "speed",
+        "time",
+        "latency",
+        "throughput",
+        "percentage",
+        "percent",
+        "default",
+        "limit",
+        "fast",
+        "long",
+        "have",
+        "has",
+        "had",
+        "does",
+        "do",
+        "did",
+        "is",
+        "are",
+        "was",
+        "were",
+        "be",
+        "been",
+        "being",
     }
 )
 
@@ -153,31 +184,154 @@ _PREDICATE_RE = re.compile(
 )
 
 _PREDICATE_TERMS = {
-    "cause", "causes", "caused", "increase", "increases", "increased", "decrease",
-    "decreases", "decreased", "reduce", "reduces", "reduced", "improve", "improves",
-    "improved", "cancel", "cancels", "cancelled", "remove", "removes", "removed",
-    "support", "supports", "supported", "allow", "allows", "enable", "enables",
-    "provide", "provides", "require", "requires", "use", "uses", "used", "return",
-    "returns", "create", "creates", "prevent", "prevents", "lead", "leads", "result",
-    "results", "mean", "means", "refer", "refers", "work", "works", "happen",
-    "happens", "exist", "exists", "change", "changes", "become", "becomes",
-    "contain", "contains", "include", "includes", "affect", "affects", "help",
-    "helps", "make", "makes", "faster", "slower", "higher", "lower", "better",
-    "worse", "larger", "smaller", "more", "less", "true", "false", "correct",
-    "safe", "legal", "available", "possible", "required", "allowed",
-    "default", "maximum", "minimum", "fast",
+    "cause",
+    "causes",
+    "caused",
+    "increase",
+    "increases",
+    "increased",
+    "decrease",
+    "decreases",
+    "decreased",
+    "reduce",
+    "reduces",
+    "reduced",
+    "improve",
+    "improves",
+    "improved",
+    "cancel",
+    "cancels",
+    "cancelled",
+    "remove",
+    "removes",
+    "removed",
+    "support",
+    "supports",
+    "supported",
+    "allow",
+    "allows",
+    "enable",
+    "enables",
+    "provide",
+    "provides",
+    "require",
+    "requires",
+    "use",
+    "uses",
+    "used",
+    "return",
+    "returns",
+    "create",
+    "creates",
+    "prevent",
+    "prevents",
+    "lead",
+    "leads",
+    "result",
+    "results",
+    "mean",
+    "means",
+    "refer",
+    "refers",
+    "work",
+    "works",
+    "happen",
+    "happens",
+    "exist",
+    "exists",
+    "change",
+    "changes",
+    "become",
+    "becomes",
+    "contain",
+    "contains",
+    "include",
+    "includes",
+    "affect",
+    "affects",
+    "help",
+    "helps",
+    "make",
+    "makes",
+    "faster",
+    "slower",
+    "higher",
+    "lower",
+    "better",
+    "worse",
+    "larger",
+    "smaller",
+    "more",
+    "less",
+    "true",
+    "false",
+    "correct",
+    "safe",
+    "legal",
+    "available",
+    "possible",
+    "required",
+    "allowed",
+    "default",
+    "maximum",
+    "minimum",
+    "fast",
 }
 _POSITIVE_CUES = {
-    "supports", "support", "supported", "confirms", "confirm", "confirmed", "shows",
-    "show", "demonstrates", "demonstrate", "proves", "prove", "causes", "cause",
-    "caused", "allows", "allow", "enables", "enable", "provides", "provide",
-    "returns", "return", "creates", "create", "found", "outperforms", "outperform",
-    "outperformed", "exceeds", "exceed", "superior", "yes", "true", "correct",
+    "supports",
+    "support",
+    "supported",
+    "confirms",
+    "confirm",
+    "confirmed",
+    "shows",
+    "show",
+    "demonstrates",
+    "demonstrate",
+    "proves",
+    "prove",
+    "causes",
+    "cause",
+    "caused",
+    "allows",
+    "allow",
+    "enables",
+    "enable",
+    "provides",
+    "provide",
+    "returns",
+    "return",
+    "creates",
+    "create",
+    "found",
+    "outperforms",
+    "outperform",
+    "outperformed",
+    "exceeds",
+    "exceed",
+    "superior",
+    "yes",
+    "true",
+    "correct",
 }
 _NEGATIVE_CUES = {
-    "prevents", "prevent", "blocks", "block", "inhibits", "inhibit", "fails",
-    "fail", "failed", "lacks", "lack", "cannot", "unable", "false", "incorrect",
-    "underperforms", "underperform",
+    "prevents",
+    "prevent",
+    "blocks",
+    "block",
+    "inhibits",
+    "inhibit",
+    "fails",
+    "fail",
+    "failed",
+    "lacks",
+    "lack",
+    "cannot",
+    "unable",
+    "false",
+    "incorrect",
+    "underperforms",
+    "underperform",
 }
 _OPPOSITE = {
     "faster": {"slower"},
@@ -533,12 +687,12 @@ def _normalize_text(text: str) -> str:
     return t
 
 
-def _dedupe(items: list[str] | tuple[str, ...]) -> list[str]:
+def _dedupe(items: list[str] | tuple[str, ...]) -> tuple[str, ...]:
     out: list[str] = []
     for item in items:
         if item and item not in out:
             out.append(item)
-    return out
+    return tuple(out)
 
 
 def _terms(text: str) -> list[str]:
@@ -616,7 +770,7 @@ def generate_hypotheses(query: str) -> list[Hypothesis]:
                     id=_hyp_id("comparison", ent.lower(), statement),
                     statement=statement,
                     kind="comparison",
-                    terms=tuple(terms),
+                    terms=terms,
                     entity=ent,
                 )
             )
@@ -627,13 +781,13 @@ def generate_hypotheses(query: str) -> list[Hypothesis]:
                     id=_hyp_id("definition", "direct", q_no_punct),
                     statement=f"The evidence addresses: {q_no_punct}",
                     kind="definition",
-                    terms=tuple(direct_terms),
+                    terms=direct_terms,
                 )
             )
         return out
 
     if _POLAR_START.match(q_no_punct):
-        terms = tuple(_dedupe(_terms(q_no_punct)))
+        terms = _dedupe(_terms(q_no_punct))
         if not terms:
             return []
         asked_negated = bool(_NEGATION.search(_normalize_text(q_no_punct)))
@@ -657,7 +811,7 @@ def generate_hypotheses(query: str) -> list[Hypothesis]:
         ]
 
     if _NUMERIC_INTENT.search(low):
-        terms = tuple(_dedupe(_terms(q_no_punct)))
+        terms = _dedupe(_terms(q_no_punct))
         if terms:
             return [
                 Hypothesis(
@@ -668,7 +822,7 @@ def generate_hypotheses(query: str) -> list[Hypothesis]:
                 )
             ]
 
-    terms = tuple(_dedupe(_terms(q_no_punct)))
+    terms = _dedupe(_terms(q_no_punct))
     if not terms:
         return []
     return [
@@ -727,11 +881,7 @@ def _negation_relevant(text: str, hyp_terms: tuple[str, ...]) -> bool:
     ]
     if not positions:
         return False
-    return any(
-        0 <= pos - negation.start() <= 100
-        for negation in _NEGATION.finditer(text)
-        for pos in positions
-    )
+    return any(0 <= pos - negation.start() <= 100 for negation in _NEGATION.finditer(text) for pos in positions)
 
 
 def _neutral(claim_id: str, hyp_id: str, cue: str) -> Assessment:
@@ -869,11 +1019,7 @@ def _numeric_anchors(hyp: Hypothesis) -> frozenset[str]:
     claim is about the requested subject.
     """
 
-    return frozenset(
-        t
-        for t in hyp.terms
-        if len(t) > 2 and t not in STOPWORDS and t not in _NUMERIC_GENERIC
-    )
+    return frozenset(t for t in hyp.terms if len(t) > 2 and t not in STOPWORDS and t not in _NUMERIC_GENERIC)
 
 
 def _numeric_observations(claims: list[Claim], hyp: Hypothesis) -> list[_NumObs]:
@@ -889,11 +1035,7 @@ def _numeric_observations(claims: list[Claim], hyp: Hypothesis) -> list[_NumObs]
             # A claim that only shares "maximum"/"size" with the question is
             # not evidence for this subject. Accept the topic when it appears
             # in the claim, its heading, or its URL (for example sqlite.org).
-            context = (
-                tokens
-                | set(tokenize(claim.finding.heading or ""))
-                | set(tokenize(claim.finding.url or ""))
-            )
+            context = tokens | set(tokenize(claim.finding.heading or "")) | set(tokenize(claim.finding.url or ""))
             if not _match_terms(tuple(anchors), context):
                 continue
         overlap, _ = _overlap(hyp.terms, tokens)
@@ -971,7 +1113,7 @@ def _side_stats(
 
 
 def _ids(assessments: list[Assessment]) -> list[str]:
-    return _dedupe([a.claim_id for a in assessments])
+    return list(_dedupe([a.claim_id for a in assessments]))
 
 
 def _resolve_sides(
@@ -1006,12 +1148,7 @@ def _resolve_sides(
         margin = abs(win_w - lose_w) / max(win_w, lose_w)
     elif margin >= 0.35 and len(win_d) >= 2:
         reason = "independent_domain_majority"
-    elif (
-        win_new is not None
-        and lose_new is not None
-        and (win_new - lose_new).days >= 365
-        and margin >= 0.1
-    ):
+    elif win_new is not None and lose_new is not None and (win_new - lose_new).days >= 365 and margin >= 0.1:
         reason = "newer_source_over_older"
     elif margin >= 0.5:
         reason = "evidence_weight"
@@ -1050,7 +1187,7 @@ def _assess_numeric(hyp: Hypothesis, claims: list[Claim]) -> HypothesisResult:
     values = sorted(by_value)
     if len(values) == 1:
         domains = {o.claim.domain for o in group}
-        evidence = _dedupe([o.claim.id for o in group])
+        evidence = list(_dedupe([o.claim.id for o in group]))
         support = min(0.95, 0.55 + 0.1 * min(3, len(domains)))
         return HypothesisResult(
             hyp,
@@ -1094,8 +1231,8 @@ def _assess_numeric(hyp: Hypothesis, claims: list[Claim]) -> HypothesisResult:
         elif margin >= 0.5:
             reason = "evidence_weight"
 
-    evidence1 = _dedupe([o.claim.id for o in items1])
-    evidence2 = _dedupe([o.claim.id for o in items2])
+    evidence1 = list(_dedupe([o.claim.id for o in items1]))
+    evidence2 = list(_dedupe([o.claim.id for o in items2]))
     subject = " ".join(sorted(group[0].subject)[:4]) or "value"
     if reason:
         resolution = Resolution(
@@ -1136,9 +1273,7 @@ def _assess_hypothesis(
 ) -> HypothesisResult:
     if hyp.kind == "numeric":
         return _assess_numeric(hyp, claims)
-    relevant = [
-        a for a in assessments if a.hypothesis_id == hyp.id and a.stance != "neutral"
-    ]
+    relevant = [a for a in assessments if a.hypothesis_id == hyp.id and a.stance != "neutral"]
     support = [a for a in relevant if a.stance == "supports"]
     refute = [a for a in relevant if a.stance == "refutes"]
 
@@ -1338,22 +1473,15 @@ def _build_answer(results: list[HypothesisResult], claim_by_id: dict[str, Claim]
             claim = claim_by_id.get(result.supporting[0])
             if claim:
                 f = claim.finding
-                quote = (
-                    _numeric_answer_quote(f.claim, hyp)
-                    if hyp.kind == "numeric"
-                    else _clip(f.claim, 320)
-                )
-                parts.append(
-                    f"{hyp.statement} - supported by \"{quote}\" "
-                    f"({f.url}, span {f.span[0]}-{f.span[1]})."
-                )
+                quote = _numeric_answer_quote(f.claim, hyp) if hyp.kind == "numeric" else _clip(f.claim, 320)
+                parts.append(f'{hyp.statement} - supported by "{quote}" ({f.url}, span {f.span[0]}-{f.span[1]}).')
                 continue
         if result.verdict == "refuted" and result.refuting:
             claim = claim_by_id.get(result.refuting[0])
             if claim:
                 f = claim.finding
                 parts.append(
-                    f"{hyp.statement} - contradicted by \"{_clip(f.claim, 320)}\" "
+                    f'{hyp.statement} - contradicted by "{_clip(f.claim, 320)}" '
                     f"({f.url}, span {f.span[0]}-{f.span[1]})."
                 )
                 continue
@@ -1419,9 +1547,7 @@ def synthesize(
             assessments.append(assess_claim(claim, hyp))
     results = [_assess_hypothesis(h, claims, assessments, claim_by_id) for h in hypotheses]
 
-    numeric_resolved = any(
-        r.resolution is not None and r.resolution.topic.startswith("numeric:") for r in results
-    )
+    numeric_resolved = any(r.resolution is not None and r.resolution.topic.startswith("numeric:") for r in results)
     if outcome.conflicts and not numeric_resolved:
         warnings.append("numeric_conflict_detected")
         gaps.append("unresolved_numeric_conflict")
@@ -1435,9 +1561,7 @@ def synthesize(
         status = "conflicting_sources"
     elif all(r.verdict == "insufficient" for r in results):
         status = "no_reliable_result"
-    elif any(r.verdict == "insufficient" for r in results) or any(
-        g.startswith("no_source_for:") for g in gaps
-    ):
+    elif any(r.verdict == "insufficient" for r in results) or any(g.startswith("no_source_for:") for g in gaps):
         status = "partial"
     else:
         status = "ok"
@@ -1503,10 +1627,7 @@ def _covered(term: str, covered: set[str]) -> bool:
         return True
     if len(term) < 4:
         return False
-    return any(
-        len(token) >= 4 and (token.startswith(term) or term.startswith(token))
-        for token in covered
-    )
+    return any(len(token) >= 4 and (token.startswith(term) or term.startswith(token)) for token in covered)
 
 
 def _merge(
@@ -1524,11 +1645,7 @@ def _merge(
         covered |= set(tokenize(finding.claim))
         if finding.heading:
             covered |= set(tokenize(finding.heading))
-    missing = [
-        t
-        for t in terms
-        if not _covered(t, covered) and t not in GAP_IGNORE and t not in FRESH
-    ]
+    missing = [t for t in terms if not _covered(t, covered) and t not in GAP_IGNORE and t not in FRESH]
     base_gaps = [
         g
         for g in dict.fromkeys(gaps)
@@ -1662,9 +1779,7 @@ class SynthesisEngine:
             if new_count == 0 and hop > 0:
                 hops[-1]["stop"] = "no_new_evidence"
                 break
-            if synth.hypotheses and all(
-                r.verdict in {"supported", "refuted"} for r in synth.hypotheses
-            ):
+            if synth.hypotheses and all(r.verdict in {"supported", "refuted"} for r in synth.hypotheses):
                 hops[-1]["stop"] = "resolved"
                 break
             if hop == max_hops - 1:

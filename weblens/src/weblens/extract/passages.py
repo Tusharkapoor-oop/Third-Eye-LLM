@@ -26,6 +26,8 @@ class Chunk:
     heading: str | None
     tokens: list[str]
     tf: dict[str, int]
+    _score: float = 0.0
+    _coverage: float = 0.0
 
 
 @dataclass
@@ -121,8 +123,6 @@ def _chunk(idx: int, start: int, end: int, text: str, heading: str | None) -> Ch
     return Chunk(idx=idx, start=start, end=end, text=text, heading=heading, tokens=toks, tf=tf)
 
 
-
-
 def spread_chunks(chunks: list[Chunk], limit: int) -> list[Chunk]:
     """Evenly spaced chunks including the first and last.
 
@@ -135,6 +135,7 @@ def spread_chunks(chunks: list[Chunk], limit: int) -> list[Chunk]:
         return [chunks[0]]
     indices = sorted({round(i * (len(chunks) - 1) / (limit - 1)) for i in range(limit)})
     return [chunks[i] for i in indices]
+
 
 def score_chunks(chunks: list[Chunk], query: str, title: str = "") -> None:
     """Annotate chunk scores in place. Not exposed to callers."""

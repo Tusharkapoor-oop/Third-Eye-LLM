@@ -41,10 +41,10 @@ class FakeRobots:
         self.denied = set(denied)
 
     async def sitemaps(self, root):
-        return []
+        return [], ""
 
     async def allowed(self, url):
-        return url not in self.denied
+        return url not in self.denied, ""
 
     async def crawl_delay(self, url):
         return 0.0
@@ -83,14 +83,11 @@ def test_crawlable_rejects_assets_offsite_admin_calendar_and_big_queries():
 
 async def test_site_map_keeps_root_first_and_caps(settings, monkeypatch):
     root = "https://example.com/docs/guide"
-    links = [
-        (f"https://example.com/docs/{name}", name)
-        for name in ("zeta", "alpha", "beta", "gamma", "delta")
-    ]
+    links = [(f"https://example.com/docs/{name}", name) for name in ("zeta", "alpha", "beta", "gamma", "delta")]
     docs = {root: _doc(root, "root page content", links)}
     c = _crawler(settings, docs)
 
-    async def no_sitemap(url, cap):
+    async def no_sitemap(url, cap, _warnings):
         return [], False
 
     monkeypatch.setattr(c, "_sitemap_urls", no_sitemap)
@@ -108,7 +105,7 @@ async def test_site_map_no_links_reports_warning(settings, monkeypatch):
     root = "https://example.com/docs/guide"
     c = _crawler(settings, {root: _doc(root, "no links here")})
 
-    async def no_sitemap(url, cap):
+    async def no_sitemap(url, cap, _warnings):
         return [], False
 
     monkeypatch.setattr(c, "_sitemap_urls", no_sitemap)

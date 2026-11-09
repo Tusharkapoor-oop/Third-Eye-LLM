@@ -5,7 +5,7 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Literal
 
-from pydantic import Field, field_validator
+from pydantic import AliasChoices, Field, field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 from .tenancy import (
@@ -25,14 +25,31 @@ class Settings(BaseSettings):
     )
 
     # --- search providers -------------------------------------------------
-    # Comma-separated order. Supported: ddg, mwmbl, brave, tavily, searxng, bing, yahoo, wikipedia
-    # Bing and Yahoo are optional and documented as degraded: their HTML
-    # fallbacks are rate-limited or can return off-topic results, so neither is
-    # part of the default chain.
-    search_providers: str = "ddg,mwmbl,wikipedia"
-    brave_api_key: str | None = None
-    tavily_api_key: str | None = None
-    searxng_url: str | None = None
+    # Comma-separated order. Supported: ddg, mwmbl, brave, tavily, searxng,
+    # bing, yahoo, wikipedia
+    # The default chain is deliberately redundant: keyless HTML providers come
+    # and go (DuckDuckGo blocks or timeouts entire networks, Bing/Yahoo
+    # rate-limit), so a single-provider default silently degrades to two weak
+    # sources. mwmbl and wikipedia are always available; bing and yahoo add
+    # mainstream index coverage and are tried after them. Provider health is
+    # tracked in the router, so an endpoint that is failing is skipped for a
+    # cooldown window instead of stalling every query.
+    search_providers: str = "mwmbl,wikipedia,bing,yahoo"
+    # Accept both the prefixed settings names and the vendor-standard names
+    # commonly placed in `.env` files. The prefixed spelling wins when both are
+    # present, so deployment-specific overrides stay unambiguous.
+    brave_api_key: str | None = Field(
+        default=None,
+        validation_alias=AliasChoices("WEBLENS_BRAVE_API_KEY", "BRAVE_SEARCH_API_KEY", "BRAVE_API_KEY"),
+    )
+    tavily_api_key: str | None = Field(
+        default=None,
+        validation_alias=AliasChoices("WEBLENS_TAVILY_API_KEY", "TAVILY_API_KEY"),
+    )
+    searxng_url: str | None = Field(
+        default=None,
+        validation_alias=AliasChoices("WEBLENS_SEARXNG_URL", "SEARXNG_URL", "SEARXNG_BASE_URL"),
+    )
     search_mode: Literal["fallback", "fuse"] = "fuse"
     provider_timeout_s: float = 3.5
     # Short-lived cache for fused provider results. Repeated queries (for
@@ -40,6 +57,12 @@ class Settings(BaseSettings):
     # of re-hitting free providers. 0 disables it; provider failures are never
     # cached.
     search_cache_ttl_s: int = Field(default=300, ge=0)
+    # Curated "primary source" hints map well-known topics to official URLs.
+    # They improve real-world results, but they are author-curated, so any
+    # evaluation whose relevance labels were written by the same author is
+    # contaminated when they are on. Disable for honest head-to-head
+    # comparisons against other search engines.
+    use_official_source_hints: bool = True
 
     # --- network limits ---------------------------------------------------
     connect_timeout_s: float = 4.0
@@ -59,8 +82,19 @@ class Settings(BaseSettings):
 
     # --- security ---------------------------------------------------------
     allow_private_networks: bool = False
-    allowed_hosts: str = ""  # optional comma-separated allowlist; empty = all public
     block_hosts: str = ""  # comma-separated deny list (suffix match)
+    allow_hosts: str = ""  # outbound SSRF allowlist (optional); empty = any public host
+
+    # X-Forwarded-For handling. Default False: key rate limits on the ASGI peer
+    # address and ignore spoofed XFF values. Set True when running behind a
+    # trusted reverse proxy that appends the real client IP.
+    trust_proxy_headers: bool = False
+
+    # Inbound MCP HTTP transport Host/Origin validation (DNS-rebinding defence).
+    # Loopback only by default. Set WEBLENS_ALLOWED_HOSTS / WEBLENS_ALLOWED_ORIGINS
+    # (comma-separated) to add public hostnames. Use "*" for explicit opt-out.
+    allowed_hosts: str = "localhost,127.0.0.1,[::1]"
+    allowed_origins: str = ""
     allow_browser: bool = False
     browser_timeout_s: float = 20.0
 
@@ -72,6 +106,9 @@ class Settings(BaseSettings):
     cache_max_bytes: int = Field(default=512 * 1024 * 1024, ge=0)
     page_cache_ttl_s: int = 86_400
     robots_cache_ttl_s: int = 3_600
+    # Fail-open by default: missing/malformed robots.txt still allows crawling.
+    # Set True to deny all on any robots.txt fetch/parse failure.
+    robots_fail_closed: bool = False
     # Optional shared cache for multi-instance deployments. SQLite remains the
     # zero-dependency default; Redis is selected explicitly and fails open as a
     # cache miss rather than breaking a request.
@@ -159,9 +196,7 @@ class Settings(BaseSettings):
     def _redis_namespace(cls, v: str) -> str:
         value = (v or "").strip()
         if not value or any(ch.isspace() or ch == ":" for ch in value):
-            raise ValueError(
-                "redis_namespace must be non-empty and contain no whitespace or ':'"
-            )
+            raise ValueError("redis_namespace must be non-empty and contain no whitespace or ':'")
         return value
 
     @property
@@ -169,12 +204,28 @@ class Settings(BaseSettings):
         return [p for p in self.search_providers.split(",") if p]
 
     @property
-    def allowlist(self) -> tuple[str, ...]:
+    def host_allowlist(self) -> tuple[str, ...]:
+        """Outbound hosts permitted by DestinationPolicy when not empty."""
+        return tuple(h.strip().lower() for h in self.allow_hosts.split(",") if h.strip())
+
+    @property
+    def mcp_host_allowlist(self) -> tuple[str, ...]:
+        """Inbound Host header values accepted by the MCP HTTP transport."""
         return tuple(h.strip().lower() for h in self.allowed_hosts.split(",") if h.strip())
+
+    @property
+    def origin_allowlist(self) -> tuple[str, ...]:
+        """Origins permitted by the MCP DNS-rebinding middleware."""
+        return tuple(o.strip().lower() for o in self.allowed_origins.split(",") if o.strip())
 
     @property
     def denylist(self) -> tuple[str, ...]:
         return tuple(h.strip().lower() for h in self.block_hosts.split(",") if h.strip())
+
+    # Backward-compatible alias: outbound SSRF allowlist.
+    @property
+    def allowlist(self) -> tuple[str, ...]:
+        return self.host_allowlist
 
     @property
     def api_key_map(self) -> dict[str, str]:

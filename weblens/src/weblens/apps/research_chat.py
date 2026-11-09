@@ -10,14 +10,15 @@ Distinct from the lightweight single-turn answer engine, this module manages:
 
 from __future__ import annotations
 
+import asyncio
 import json
 import sqlite3
-import time
 import uuid
+from collections.abc import Callable
 from dataclasses import asdict, dataclass, field
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
-from typing import Any, Callable, Literal
+from typing import Any, Literal
 
 from ..service import WebLens
 from .deep_research import DeepResearchAgent
@@ -31,7 +32,7 @@ class ResearchChatMessage:
     citations: list[dict[str, Any]]
     subqueries: list[str]
     tokens_used: int
-    timestamp: str = field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
+    timestamp: str = field(default_factory=lambda: datetime.now(UTC).isoformat())
 
 
 @dataclass
@@ -56,10 +57,25 @@ class PersistentResearchChat:
     ) -> None:
         self.service = service
         self.session_id = session_id or str(uuid.uuid4())
-        self.db_path = Path(db_path) if db_path else Path("~/.weblens/research_sessions.db").expanduser()
+        if db_path:
+            self.db_path = Path(db_path)
+        else:
+            # Honour the configured cache directory instead of hardcoding
+            # ~/.weblens, so deployments (and tests) control where state lives.
+            cache_dir = getattr(getattr(service, "s", None), "cache_dir", None)
+            base = Path(cache_dir) if cache_dir else Path("~/.weblens").expanduser()
+            self.db_path = base / "research_sessions.db"
         self.db_path.parent.mkdir(parents=True, exist_ok=True)
         self.researcher = DeepResearchAgent(service=service)
-        self.job_status: Literal["IDLE", "PLANNING", "SEARCHING", "EXTRACTING", "SYNTHESIZING", "COMPLETED", "FAILED"] = "IDLE"
+        self.job_status: Literal[
+            "IDLE",
+            "PLANNING",
+            "SEARCHING",
+            "EXTRACTING",
+            "SYNTHESIZING",
+            "COMPLETED",
+            "FAILED",
+        ] = "IDLE"
         self._init_db()
 
     def _init_db(self) -> None:
@@ -89,14 +105,14 @@ class PersistentResearchChat:
                 )
                 """
             )
-            now = datetime.now(timezone.utc).isoformat()
+            now = datetime.now(UTC).isoformat()
             conn.execute(
                 "INSERT OR IGNORE INTO sessions (id, topic, created_at, updated_at) VALUES (?, ?, ?, ?)",
                 (self.session_id, "Untitled Research Session", now, now),
             )
 
     def set_topic(self, topic: str) -> None:
-        now = datetime.now(timezone.utc).isoformat()
+        now = datetime.now(UTC).isoformat()
         with sqlite3.connect(self.db_path) as conn:
             conn.execute(
                 "UPDATE sessions SET topic = ?, updated_at = ? WHERE id = ?",
@@ -118,13 +134,13 @@ class PersistentResearchChat:
             subqueries=[],
             tokens_used=len(query) // 4,
         )
-        self._save_message(user_msg)
+        await asyncio.to_thread(self._save_message, user_msg)
 
         if progress_cb:
             progress_cb("PLANNING", f"Formulating research plan for: {query}")
         self.job_status = "PLANNING"
 
-        history = self.get_messages()
+        history = await asyncio.to_thread(self.get_messages)
         prior_context = "\n".join(f"{m.role.upper()}: {m.content}" for m in history[-4:])
 
         composed_query = query
@@ -158,7 +174,7 @@ class PersistentResearchChat:
                 subqueries=res.get("methodology", {}).get("subqueries_searched", []),
                 tokens_used=res.get("methodology", {}).get("tokens_returned", 0),
             )
-            self._save_message(assistant_msg)
+            await asyncio.to_thread(self._save_message, assistant_msg)
             self.job_status = "COMPLETED"
             if progress_cb:
                 progress_cb("COMPLETED", "Research step completed.")
@@ -170,11 +186,14 @@ class PersistentResearchChat:
             raise
 
     def _save_message(self, msg: ResearchChatMessage) -> None:
-        now = datetime.now(timezone.utc).isoformat()
+        now = datetime.now(UTC).isoformat()
         with sqlite3.connect(self.db_path) as conn:
             conn.execute(
                 """
-                INSERT INTO messages (id, session_id, role, content, citations_json, subqueries_json, tokens_used, created_at)
+                INSERT INTO messages (
+                    id, session_id, role, content, citations_json,
+                    subqueries_json, tokens_used, created_at
+                )
                 VALUES (?, ?, ?, ?, ?, ?, ?, ?)
                 """,
                 (
@@ -225,7 +244,10 @@ class PersistentResearchChat:
         all_urls = {c.get("url") for m in msgs for c in m.citations if c.get("url")}
 
         with sqlite3.connect(self.db_path) as conn:
-            row = conn.execute("SELECT topic, created_at, updated_at FROM sessions WHERE id = ?", (self.session_id,)).fetchone()
+            row = conn.execute(
+                "SELECT topic, created_at, updated_at FROM sessions WHERE id = ?",
+                (self.session_id,),
+            ).fetchone()
             topic = row[0] if row else "Untitled"
             created_at = row[1] if row else ""
             updated_at = row[2] if row else ""

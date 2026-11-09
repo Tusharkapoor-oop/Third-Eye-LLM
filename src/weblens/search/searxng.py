@@ -8,7 +8,7 @@ from __future__ import annotations
 
 from urllib.parse import quote_plus
 
-from ..errors import ErrCode, ProviderError
+from ..errors import ErrCode, FetchError, ProviderError
 from ..net import SafeFetcher
 from .base import Hit, make_hit
 
@@ -41,12 +41,17 @@ class SearXNGSsearch:
         url = f"{self.base}/search?q={quote_plus(q)}&format=json&language=en"
         if freshness in _FRESH:
             url += f"&time_range={_FRESH[freshness]}"
-        resp = await self.fetcher.fetch(
-            url,
-            headers={"Accept": "application/json"},
-            cache_ttl=300,
-            max_bytes=2_000_000,
-        )
+        try:
+            resp = await self.fetcher.fetch(
+                url,
+                headers={"Accept": "application/json"},
+                cache_ttl=300,
+                max_bytes=2_000_000,
+            )
+        except FetchError as exc:
+            if exc.status == 429:
+                raise ProviderError("searxng rate-limited the request", code=ErrCode.PROVIDER, retryable=True) from exc
+            raise ProviderError(f"searxng fetch failed: {exc.message}", code=ErrCode.PROVIDER) from exc
         ctype = resp.content_type
         if "json" not in ctype:
             raise ProviderError(

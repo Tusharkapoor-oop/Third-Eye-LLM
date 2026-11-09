@@ -48,11 +48,7 @@ class BingHTML:
             q += " (" + " OR ".join(f"site:{d}" for d in domains[:6]) + ")"
         if exclude_domains:
             q += "".join(f" -site:{d}" for d in exclude_domains[:6])
-        url = (
-            "https://www.bing.com/search?q="
-            + quote_plus(q)
-            + f"&count={max(10, k)}&setlang=en&cc=us"
-        )
+        url = "https://www.bing.com/search?q=" + quote_plus(q) + f"&count={max(10, k)}&setlang=en&cc=us"
         if freshness in _FRESH:
             url += "&qft=" + quote_plus(_FRESH[freshness])
 

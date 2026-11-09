@@ -12,6 +12,8 @@ from __future__ import annotations
 
 import argparse
 import asyncio
+import hmac
+import ipaddress
 import json
 import os
 import sys
@@ -383,6 +385,65 @@ async def shutdown_services() -> None:
     await _close("event_store", event_store.close)
 
 
+LOOPBACK_BIND_HOSTS = frozenset({"127.0.0.1", "::1", "localhost", "0:0:0:0:0:0:0:1"})
+
+
+def _is_loopback_host(host: str) -> bool:
+    """Return True only for addresses that cannot be reached from another machine."""
+    normalized = (host or "").strip().strip("[]").lower()
+    if normalized in LOOPBACK_BIND_HOSTS:
+        return True
+    try:
+        return ipaddress.ip_address(normalized).is_loopback
+    except ValueError:
+        return False
+
+
+def _require_token_for_bind(host: str, token: str) -> None:
+    """Refuse to expose an unauthenticated HTTP transport beyond loopback."""
+    if token:
+        return
+    if _is_loopback_host(host):
+        return
+    raise SystemExit(
+        f"Refusing to expose the HTTP transport on non-loopback host {host!r} "
+        "without authentication. Set WEBINTEL_HTTP_TOKEN, or bind --host 127.0.0.1."
+    )
+
+
+def _bearer_token_guard(app: Any, token: str) -> Any:
+    """ASGI middleware rejecting HTTP requests without the configured bearer token."""
+    expected = f"Bearer {token}"
+
+    async def guarded(scope: dict[str, Any], receive: Any, send: Any) -> None:
+        if scope.get("type") != "http":
+            await app(scope, receive, send)
+            return
+        supplied = ""
+        for key, value in scope.get("headers", []):
+            if key.lower() == b"authorization":
+                supplied = value.decode("latin-1")
+                break
+        if not hmac.compare_digest(supplied, expected):
+            body = b'{"error":"unauthorized"}'
+            await send(
+                {
+                    "type": "http.response.start",
+                    "status": 401,
+                    "headers": [
+                        (b"content-type", b"application/json"),
+                        (b"content-length", str(len(body)).encode()),
+                        (b"www-authenticate", b"Bearer"),
+                    ],
+                }
+            )
+            await send({"type": "http.response.body", "body": body})
+            return
+        await app(scope, receive, send)
+
+    return guarded
+
+
 async def run_server() -> None:
     """Run MCP server over STDIO or Streamable HTTP."""
     parser = argparse.ArgumentParser(description="MyWebEngine MCP Server")
@@ -393,9 +454,14 @@ async def run_server() -> None:
 
     try:
         if args.http:
+            token = CONFIG.http_auth_token.strip()
+            _require_token_for_bind(args.host, token)
             print(f"Starting {CONFIG.server_name} on http://{args.host}:{args.port}/mcp ...", file=sys.stderr)
             import uvicorn
             app = mcp.streamable_http_app()
+            if token:
+                app = _bearer_token_guard(app, token)
+                print("HTTP transport requires a bearer token.", file=sys.stderr)
             config = uvicorn.Config(app, host=args.host, port=args.port, log_level="info")
             server = uvicorn.Server(config)
             await server.serve()

@@ -14,12 +14,12 @@ from dataclasses import asdict, dataclass, field
 from datetime import date, timedelta
 from urllib.parse import urlsplit
 
-from ..cache import cache_key
+from ..cache import Cache, cache_key
 from ..config import Settings
 from ..errors import ErrCode, ProviderError, WebLensError
 from ..lexical import query_terms, tokenize
 from ..net import SafeFetcher
-from ..urls import host_of, official_source_urls, registrable_domain, strip_tracking
+from ..urls import host_of, official_source_urls, registrable_domain
 from .base import Hit, dedupe, diversify, near_duplicate, parse_date
 from .bing import BingHTML
 from .brave import BraveSearch
@@ -195,9 +195,7 @@ def clean_query(query: str) -> str:
     return q or (query or "").strip()
 
 
-_ENTITY_RE = re.compile(
-    r"(?<![A-Za-z0-9_])(?:[A-Z][A-Za-z0-9.+&'-]*|(?:19|20)\d{2}|\d{2,4}(?:\.\d+)*)"
-)
+_ENTITY_RE = re.compile(r"(?<![A-Za-z0-9_])(?:[A-Z][A-Za-z0-9.+&'-]*|(?:19|20)\d{2}|\d{2,4}(?:\.\d+)*)")
 _ROLE_CAPS = {"ceo", "cfo", "cio", "ciso", "coo", "cpo", "cto"}
 _RECALL_NOISE = {
     "about",
@@ -410,24 +408,16 @@ def _official_title(url: str) -> str:
 
 
 def _doc_key(url: str) -> str:
-    """Compare likely-same documents across scheme, www and .html variants.
+    """Single canonical key for search result deduplication.
 
     Query parameters are part of document identity for many primary sources
     (for example, EDGAR pages distinguished only by ``CIK``). Dropping them
     made distinct filings look like duplicates and silently removed valid
     official results.
     """
+    from ..urls import document_canonical_key
 
-    try:
-        parts = urlsplit(strip_tracking((url or "").strip()))
-    except ValueError:
-        return (url or "").split("#", 1)[0].rstrip("/").removesuffix(".html")
-    host = (parts.hostname or "").lower().strip(".")
-    if host.startswith("www."):
-        host = host[4:]
-    path = parts.path.rstrip("/").removesuffix(".html")
-    key = f"{host}{path}".lower()
-    return f"{key}?{parts.query.lower()}" if parts.query else key
+    return document_canonical_key(url)
 
 
 def _domain_allowed(
@@ -622,11 +612,7 @@ class SearchRouter:
 
     def _providers_for_request(self) -> list[object]:
         now = time.monotonic()
-        ready = [
-            p
-            for p in self._providers
-            if self._provider_cooldown_until.get(getattr(p, "name", "?"), 0.0) <= now
-        ]
+        ready = [p for p in self._providers if self._provider_cooldown_until.get(getattr(p, "name", "?"), 0.0) <= now]
         # If every provider is cooling down, try them again rather than
         # returning an artificial "no provider" failure.
         return ready or list(self._providers)
@@ -656,15 +642,11 @@ class SearchRouter:
                 code=ErrCode.NO_PROVIDER,
             )
         providers = self._providers_for_request()
-        skipped = [
-            getattr(p, "name", "?")
-            for p in self._providers
-            if p not in providers
-        ]
+        skipped = [getattr(p, "name", "?") for p in self._providers if p not in providers]
         if skipped:
             outcome.warnings.append("provider_cooldown:" + ",".join(skipped))
         mode = mode or self.s.search_mode
-        cache = getattr(self.fetcher, "cache", None)
+        cache: Cache | None = getattr(self.fetcher, "cache", None)
         cache_key_value: str | None = None
         if cache is not None and self.s.cache_enabled and self.s.search_cache_ttl_s > 0:
             cache_key_value = cache_key(
@@ -687,11 +669,7 @@ class SearchRouter:
                 if cached_hits:
                     outcome.hits = cached_hits
                     raw_providers = payload.get("providers", [])
-                    outcome.providers = (
-                        [str(p) for p in raw_providers]
-                        if isinstance(raw_providers, list)
-                        else []
-                    )
+                    outcome.providers = [str(p) for p in raw_providers] if isinstance(raw_providers, list) else []
                     outcome.status = "ok"
                     outcome.warnings.append("search_cache_hit")
                     outcome.elapsed_ms = int((time.perf_counter() - started) * 1000)
@@ -699,9 +677,7 @@ class SearchRouter:
         stats = {"off_topic": 0, "domain": 0, "version": 0}
         version = _VERSION.search(used)
         terms, _ = query_terms(used)
-        non_version_terms = [
-            t for t in terms if t != (version.group(0) if version else "") and t not in {"python"}
-        ]
+        non_version_terms = [t for t in terms if t != (version.group(0) if version else "") and t not in {"python"}]
 
         def accept(hits: list[Hit]) -> list[Hit]:
             kept, off, dom = filter_hits(
@@ -811,14 +787,15 @@ class SearchRouter:
         # entity that identifies the primary source (for example "In
         # JavaScript, what is the difference between let and const?" becomes
         # "let and const").
-        official_urls = [
-            url
-            for url in official_source_urls(query)
-            if _domain_allowed(url, domains, exclude_domains)
-        ]
-        official_domains = {
-            registrable_domain(host_of(url)) for url in official_urls
-        }
+        # ``use_official_source_hints`` can be disabled for honest head-to-head
+        # evaluation: the hints are author-curated, so any benchmark whose
+        # labels came from the same author is contaminated while they are on.
+        official_urls = (
+            [url for url in official_source_urls(query) if _domain_allowed(url, domains, exclude_domains)]
+            if getattr(self.s, "use_official_source_hints", True)
+            else []
+        )
+        official_domains = {registrable_domain(host_of(url)) for url in official_urls}
         for official_rank, url in enumerate(official_urls):
             key = _doc_key(url)
             existing = next((h for h in merged if _doc_key(h.url) == key), None)
@@ -902,25 +879,18 @@ class SearchRouter:
             # sources (e.g. git-scm.com and atlassian.com) to a single result.
             official = h.provider.startswith("official")
             if not official and any(
-                near_duplicate(h.title + " " + h.snippet, p.title + " " + p.snippet)
-                for p in unique
+                near_duplicate(h.title + " " + h.snippet, p.title + " " + p.snippet) for p in unique
             ):
                 outcome.warnings.append("duplicate_text_removed")
                 continue
             unique.append(h)
         ranked = rank(unique, fused=(mode == "fuse"), query=used)
-        domain_caps: dict[str, int] = {
-            domain: 4 for domain in official_domains if domain
-        }
+        domain_caps: dict[str, int] = {domain: 4 for domain in official_domains if domain}
         # When Wikipedia is effectively the only productive index, allow it to
         # fill the result window. Capping it at three just lets unrelated blogs
         # occupy the remaining slots. Diversity still wins whenever at least
         # three non-Wikipedia candidates are available.
-        non_wiki = sum(
-            1
-            for hit in ranked
-            if registrable_domain(host_of(hit.url)) != "wikipedia.org"
-        )
+        non_wiki = sum(1 for hit in ranked if registrable_domain(host_of(hit.url)) != "wikipedia.org")
         wiki_cap = min(k, 5) if non_wiki < 3 else 3
         for hit in ranked:
             domain = registrable_domain(host_of(hit.url))
@@ -932,7 +902,18 @@ class SearchRouter:
                 # sibling article). Two is too tight for those; unrelated
                 # domains still keep the default cap.
                 domain_caps.setdefault(domain, 3)
-        merged = diversify(ranked, per_domain=2, domain_caps=domain_caps)[:k]
+        merged = diversify(ranked, per_domain=2, domain_caps=domain_caps, strict=True)[:k]
+        # Strict capping guarantees domain diversity but can leave the window
+        # short when only one or two sources matched. Top up from the surplus
+        # only to reach k, and say so, so a padded window is never silent.
+        if len(merged) < k:
+            seen_keys = {_doc_key(h.url) for h in merged}
+            padding = [
+                h for h in diversify(ranked, per_domain=2, domain_caps=domain_caps) if _doc_key(h.url) not in seen_keys
+            ]
+            if padding:
+                merged = [*merged, *padding][:k]
+                outcome.warnings.append(f"diversity_padded:{len(merged) - len(seen_keys)}")
 
         outcome.hits = merged
         if stats["off_topic"]:
@@ -949,11 +930,7 @@ class SearchRouter:
         elif freshness in _FRESH_DAYS:
             window = _FRESH_DAYS[freshness]
             cutoff = date.today() - timedelta(days=window)
-            known = [
-                date.fromisoformat(d[:10])
-                for h in merged[:3]
-                if (d := parse_date(h.date))
-            ]
+            known = [date.fromisoformat(d[:10]) for h in merged[:3] if (d := parse_date(h.date))]
             if known and all(d < cutoff for d in known):
                 outcome.status = "possibly_outdated"
                 outcome.warnings.append(f"top_results_older_than_{freshness}")
@@ -961,22 +938,17 @@ class SearchRouter:
                 outcome.warnings.append("dates_unknown")
         if outcome.failures and merged:
             if outcome.status == "ok":
-                available = [
-                    name
-                    for name in outcome.providers
-                    if name not in outcome.failures
-                ]
+                available = [name for name in outcome.providers if name not in outcome.failures]
                 if len(merged) >= 3 and available:
                     # A single failed provider is not a partial answer when the
                     # remaining providers supplied enough usable results. Keep
                     # the failure visible without mislabelling the response.
-                    outcome.warnings.append(
-                        "provider_degraded:" + ",".join(sorted(outcome.failures))
-                    )
+                    outcome.warnings.append("provider_degraded:" + ",".join(sorted(outcome.failures)))
                 else:
                     outcome.status = "partial"
         if (
             cache_key_value is not None
+            and cache is not None
             and merged
             and outcome.status == "ok"
             and not outcome.failures
@@ -1078,7 +1050,5 @@ class SearchRouter:
                 merged.extend(hits)
             else:
                 self._mark_failure(name)
-                outcome.failures[name] = (
-                    "timeout" if isinstance(err, TimeoutError) else type(err).__name__
-                )
+                outcome.failures[name] = "timeout" if isinstance(err, TimeoutError) else type(err).__name__
         return merged

@@ -26,12 +26,31 @@ from ..urls import official_source_urls, registrable_domain
 FRESH = ("latest", "current", "today", "now", "2026", "2025", "price", "release", "news", "recent")
 STRICT_TERMS = {"exact", "precise"}
 GAP_IGNORE = {
-    "python", "javascript", "typescript", "java", "go", "golang", "rust", "csharp",
-    "php", "ruby", "linux", "windows", "macos", "android", "ios", "web",
+    "python",
+    "javascript",
+    "typescript",
+    "java",
+    "go",
+    "golang",
+    "rust",
+    "csharp",
+    "php",
+    "ruby",
+    "linux",
+    "windows",
+    "macos",
+    "android",
+    "ios",
+    "web",
     # Generic ranking/qualifier words are not evidence requirements. Reporting
     # "no_source_for:major" on a page that documents the new features is a
     # false gap.
-    "major", "main", "key", "top", "best", "important",
+    "major",
+    "main",
+    "key",
+    "top",
+    "best",
+    "important",
 }
 SENT_SPLIT = re.compile(r"(?<=[.!?])\s+(?=[A-Z0-9`#*])")
 NUM = re.compile(
@@ -41,16 +60,37 @@ NUM = re.compile(
     re.I,
 )
 UNIT_NORM = {
-    "ms": "ms", "millisecond": "ms", "milliseconds": "ms",
-    "s": "s", "sec": "s", "second": "s", "seconds": "s",
-    "byte": "b", "bytes": "b",
-    "kilobyte": "kb", "kilobytes": "kb", "kb": "kb",
-    "megabyte": "mb", "megabytes": "mb", "mb": "mb",
-    "gigabyte": "gb", "gigabytes": "gb", "gb": "gb",
-    "terabyte": "tb", "terabytes": "tb", "tb": "tb",
-    "petabyte": "pb", "petabytes": "pb", "pb": "pb",
-    "%": "%", "usd": "usd", "dollar": "usd", "dollars": "usd",
-    "€": "eur", "£": "gbp", "$": "usd",
+    "ms": "ms",
+    "millisecond": "ms",
+    "milliseconds": "ms",
+    "s": "s",
+    "sec": "s",
+    "second": "s",
+    "seconds": "s",
+    "byte": "b",
+    "bytes": "b",
+    "kilobyte": "kb",
+    "kilobytes": "kb",
+    "kb": "kb",
+    "megabyte": "mb",
+    "megabytes": "mb",
+    "mb": "mb",
+    "gigabyte": "gb",
+    "gigabytes": "gb",
+    "gb": "gb",
+    "terabyte": "tb",
+    "terabytes": "tb",
+    "tb": "tb",
+    "petabyte": "pb",
+    "petabytes": "pb",
+    "pb": "pb",
+    "%": "%",
+    "usd": "usd",
+    "dollar": "usd",
+    "dollars": "usd",
+    "€": "eur",
+    "£": "gbp",
+    "$": "usd",
 }
 
 
@@ -100,10 +140,35 @@ def decompose(query: str) -> list[str]:
 
 _FICTION_CUE = re.compile(r"\b(?:fictional|imaginary|made[- ]up|nonexistent)\b", re.I)
 _GENERIC_ENTITY = {
-    "city", "town", "village", "country", "state", "island", "place", "company",
-    "organization", "organisation", "person", "character", "word", "term", "name",
-    "standard", "prize", "award", "product", "brand", "language", "protocol",
-    "version", "thing", "story", "world", "species", "animal", "event",
+    "city",
+    "town",
+    "village",
+    "country",
+    "state",
+    "island",
+    "place",
+    "company",
+    "organization",
+    "organisation",
+    "person",
+    "character",
+    "word",
+    "term",
+    "name",
+    "standard",
+    "prize",
+    "award",
+    "product",
+    "brand",
+    "language",
+    "protocol",
+    "version",
+    "thing",
+    "story",
+    "world",
+    "species",
+    "animal",
+    "event",
 }
 _SENSITIVE = re.compile(
     r"\b(?:private|secret|leaked?|stolen)\s+(?:api[ _-]?key|key|token|credential)s?\b"
@@ -219,9 +284,7 @@ def sentence_candidates(passage: Passage, query: str, limit: int = 2) -> list[Fi
                 score += 0.3
             if re.search(r"(?:async def|>>>|```|\{\s*$)", claim):
                 score -= 0.25
-        if "license" in terms and re.search(
-            r"\b(?:Apache|MIT|GPLv?\d?|BSD|MPL|Unlicense|CC[- ]BY)\b", claim
-        ):
+        if "license" in terms and re.search(r"\b(?:Apache|MIT|GPLv?\d?|BSD|MPL|Unlicense|CC[- ]BY)\b", claim):
             score += 0.8
         # Multi-line code snippets are rarely the answer to a factual question.
         # Keep them only when they read like a sentence (inline API mentions do
@@ -306,7 +369,8 @@ def detect_conflicts(findings: list[Finding], query: str) -> list[dict]:
                 continue
             before = f.claim[max(0, m.start() - 120) : m.start()]
             subject = {
-                t for t in tokenize(before)[-8:]
+                t
+                for t in tokenize(before)[-8:]
                 if len(t) > 2 and t not in {"the", "and", "with", "for", "from", "that", "this"}
             }
             mult = 1.0
@@ -370,9 +434,7 @@ class ResearchEngine:
         max_pages: int = 6,
     ) -> ResearchOutcome:
         started = time.perf_counter()
-        budget = resolve_budget(
-            max_tokens, self.s.max_research_tokens, minimum=300, maximum=8000
-        )
+        budget = resolve_budget(max_tokens, self.s.max_research_tokens, minimum=300, maximum=8000)
         q = clean_query(query)
         # Score evidence against the normalized query. Using the raw phrasing
         # here reintroduced the filler words that clean_query removed, so a
@@ -454,9 +516,7 @@ class ResearchEngine:
 
         ranked = sorted(hit_map.values(), key=lambda h: (-hit_scores.get(h.url, 0.0), h.url))
         official_set = set(official)
-        ranked = [hit_map[u] for u in official if u in hit_map] + [
-            h for h in ranked if h.url not in official_set
-        ]
+        ranked = [hit_map[u] for u in official if u in hit_map] + [h for h in ranked if h.url not in official_set]
         targets = ranked[: max(1, min(12, max_pages))]
         sem = asyncio.Semaphore(4)
 
@@ -486,9 +546,7 @@ class ResearchEngine:
                 warnings.append(f"fetch_failed:{type(doc).__name__}")
                 continue
             if "stale_cache_used" in doc.warnings:
-                warnings.append(
-                    f"stale_source:{registrable_domain(hit.url.split('/')[2])}"
-                )
+                warnings.append(f"stale_source:{registrable_domain(hit.url.split('/')[2])}")
             passages, cov = select_passages(doc.text, score_q, title=doc.title, max_passages=3, max_chars=5000)
             if cov == 0:
                 warnings.append(f"no_query_match:{registrable_domain(hit.url.split('/')[2])}")
@@ -672,14 +730,10 @@ class ResearchEngine:
             if out.status == "ok":
                 out.status = "partial"
             body["status"] = out.status
-            body["warn"] = list(
-                dict.fromkeys([*(body.get("warn") or []), "budget_exhausted"])
-            )
+            body["warn"] = list(dict.fromkeys([*(body.get("warn") or []), "budget_exhausted"]))
         body["tok"] = count_json_tokens({**body, "tok": 0})
         if count_json_tokens(body) > budget:
-            body["warn"] = list(
-                dict.fromkeys([*(body.get("warn") or []), "budget_exhausted"])
-            )
+            body["warn"] = list(dict.fromkeys([*(body.get("warn") or []), "budget_exhausted"]))
             body["tok"] = count_json_tokens({**body, "tok": 0})
         out.findings = findings
         out.tokens = body["tok"]  # type: ignore[assignment]

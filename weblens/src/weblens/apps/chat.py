@@ -9,8 +9,8 @@ Multi-turn conversational research session with:
 
 from __future__ import annotations
 
-import time
 import re
+import time
 import uuid
 from typing import Any
 
@@ -35,9 +35,18 @@ class ResearchChatSession:
             return user_message
         last_turn = self.history[-1]
         last_user = last_turn.get("user", "")
-        # If message is a short follow-up (e.g. "what about pricing?", "how much does it cost?"), enrich with prior topic
+        # If the message is a short follow-up (for example, "what about
+        # pricing?"), enrich it with the prior topic.
         words = user_message.strip().split()
-        if len(words) < 6 and any(p in user_message.lower() for p in ("it", "they", "pricing", "cost", "features", "why")):
+        follow_up_markers = (
+            "it",
+            "they",
+            "pricing",
+            "cost",
+            "features",
+            "why",
+        )
+        if len(words) < 6 and any(marker in user_message.lower() for marker in follow_up_markers):
             return f"{last_user} {user_message}"
         return user_message
 
@@ -61,10 +70,12 @@ class ResearchChatSession:
         terms, phrases = query_terms(query)
         if not text.strip():
             return []
-        boundaries = list(re.finditer(
-            r"(?<=[.!?])(?:\s|\n)+(?=[A-Za-z0-9`#*])|\n{2,}|\n(?=\s*[-*+]\s+)",
-            text,
-        ))
+        boundaries = list(
+            re.finditer(
+                r"(?<=[.!?])(?:\s|\n)+(?=[A-Za-z0-9`#*])|\n{2,}|\n(?=\s*[-*+]\s+)",
+                text,
+            )
+        )
         ranges: list[tuple[int, int]] = []
         start = 0
         for boundary in boundaries:
@@ -82,13 +93,13 @@ class ResearchChatSession:
             heading = re.match(r"(?:#{1,6}[^\n]*\n\s*)+", raw)
             if heading:
                 absolute_begin += heading.end()
-                raw = raw[heading.end():].lstrip()
+                raw = raw[heading.end() :].lstrip()
                 if not raw:
                     continue
             bullet = re.match(r"[-*+]\s+", raw)
             if bullet:
                 absolute_begin += bullet.end()
-                raw = raw[bullet.end():].lstrip()
+                raw = raw[bullet.end() :].lstrip()
                 if not raw:
                     continue
             absolute_end = absolute_begin + len(raw)
@@ -171,15 +182,17 @@ class ResearchChatSession:
                 evidence = self._evidence_sentences(text, clean_msg, limit=2)
                 for _, sentence, local_span in evidence:
                     citation_span = [int(base_span[0]) + local_span[0], int(base_span[0]) + local_span[1]]
-                    citations.append({
-                        "id": len(citations) + 1,
-                        "url": url,
-                        "title": h.get("t", ""),
-                        "fetched_at": extract_out.get("at") or p.get("at"),
-                        "span": citation_span,
-                        "text": sentence,
-                        "source_type": p.get("source_type", "extracted_page"),
-                    })
+                    citations.append(
+                        {
+                            "id": len(citations) + 1,
+                            "url": url,
+                            "title": h.get("t", ""),
+                            "fetched_at": extract_out.get("at") or p.get("at"),
+                            "span": citation_span,
+                            "text": sentence,
+                            "source_type": p.get("source_type", "extracted_page"),
+                        }
+                    )
                     answer_parts.append(sentence)
                     if len(citations) >= 2:
                         break

@@ -7,7 +7,7 @@ from dataclasses import dataclass, field
 from datetime import date
 from typing import Protocol
 
-from ..urls import normalize_url, registrable_domain
+from ..urls import host_of, normalize_url, registrable_domain
 
 
 @dataclass
@@ -45,8 +45,18 @@ _DATE_PATTERNS = [
     re.compile(r"\b(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)[a-z]*\s+(\d{1,2}),?\s+(20\d{2})\b", re.I),
 ]
 _MONTHS = {
-    "jan": 1, "feb": 2, "mar": 3, "apr": 4, "may": 5, "jun": 6,
-    "jul": 7, "aug": 8, "sep": 9, "oct": 10, "nov": 11, "dec": 12,
+    "jan": 1,
+    "feb": 2,
+    "mar": 3,
+    "apr": 4,
+    "may": 5,
+    "jun": 6,
+    "jul": 7,
+    "aug": 8,
+    "sep": 9,
+    "oct": 10,
+    "nov": 11,
+    "dec": 12,
 }
 
 
@@ -119,11 +129,20 @@ def make_hit(
 
 
 def dedupe(hits: list[Hit]) -> list[Hit]:
-    """Exact canonical-URL dedupe, keeping the first (best-ranked) occurrence."""
+    """Canonical-URL dedupe across scheme/www/trailing-slash/fragment variants.
+
+    Keeps the first (best-ranked) occurrence and merges richer metadata from
+    duplicates.
+    """
+    from ..urls import document_canonical_key
+
     seen: dict[str, Hit] = {}
     out: list[Hit] = []
     for h in hits:
-        key = h.url.rstrip("/")
+        key = document_canonical_key(h.url)
+        if not key:
+            out.append(h)
+            continue
         if key in seen:
             # enrich provenance and keep longer snippet
             prev = seen[key]
@@ -139,18 +158,41 @@ def dedupe(hits: list[Hit]) -> list[Hit]:
     return out
 
 
-def diversify(hits: list[Hit], per_domain: int = 2) -> list[Hit]:
-    """Cap results per registrable domain while preserving order."""
+def diversify(
+    hits: list[Hit],
+    per_domain: int = 2,
+    *,
+    domain_caps: dict[str, int] | None = None,
+    strict: bool = False,
+) -> list[Hit]:
+    """Cap results per registrable domain while preserving order.
+
+    ``domain_caps`` lets the router allow more results from primary-source
+    domains (for example, several pages from the same official documentation
+    site) without weakening the default diversity guard for generic domains.
+
+    By default the capped results come first and the surplus follows, so a
+    caller that slices ``[:k]`` only reaches the surplus when the diverse pool
+    is too small (that padding is what previously let one domain fill the whole
+    window). With ``strict=True`` the surplus is dropped entirely, guaranteeing
+    the cap — callers should then accept a shorter list in exchange for
+    diversity.
+    """
     counts: dict[str, int] = {}
     out: list[Hit] = []
     overflow: list[Hit] = []
     for h in hits:
-        d = registrable_domain(h.url.split("/")[2]) if "/" in h.url else ""
-        if counts.get(d, 0) >= per_domain:
+        # Use the URL parser rather than "://"[2] indexing: a malformed or
+        # relative URL must not raise here (this runs twice per search).
+        d = registrable_domain(host_of(h.url))
+        cap = (domain_caps or {}).get(d, per_domain)
+        if counts.get(d, 0) >= cap:
             overflow.append(h)
             continue
         counts[d] = counts.get(d, 0) + 1
         out.append(h)
+    if strict:
+        return out
     return out + overflow
 
 

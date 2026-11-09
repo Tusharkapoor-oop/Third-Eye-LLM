@@ -10,6 +10,15 @@ TAG="${2:-latest}"
 GCP_REGION="${GCP_REGION:-us-central1}"
 GCP_SERVICE="${GCP_SERVICE:-weblens}"
 
+# Authentication is mandatory for a non-loopback listener. Fail fast instead of
+# publishing an unauthenticated MCP endpoint (the server also exits with status 2
+# if this is missing, but the check here produces a clearer message).
+if [ -z "${WEBLENS_HTTP_TOKEN:-}" ]; then
+  echo "ERROR: WEBLENS_HTTP_TOKEN must be set (generate one with: openssl rand -hex 32)" >&2
+  echo "       In production prefer a secret, e.g. --set-secrets WEBLENS_HTTP_TOKEN=weblens-http-token:latest" >&2
+  exit 2
+fi
+
 echo "=================================================="
 echo " WebLens Production Deployment: Target = $TARGET"
 echo "=================================================="
@@ -33,20 +42,24 @@ case "$TARGET" in
       -e WEBLENS_HTTP_HOST=0.0.0.0 \
       -e WEBLENS_HTTP_PORT=8080 \
       -e WEBLENS_MCP_PROFILE=full \
+      -e WEBLENS_HTTP_TOKEN="$WEBLENS_HTTP_TOKEN" \
       "$IMAGE_NAME:$TAG"
 
-    echo "WebLens successfully deployed locally on http://localhost:8080/mcp"
+    echo "WebLens successfully deployed locally on http://localhost:8080/mcp (bearer token required)"
     ;;
 
   cloudrun)
     echo "[1/2] Building and submitting Cloud Run container..."
+    # App-level bearer auth is enforced from WEBLENS_HTTP_TOKEN. For production,
+    # prefer --set-secrets instead of --set-env-vars so the token is not stored
+    # in plain-text revision config (see README deployment section).
     gcloud run deploy "$GCP_SERVICE" \
       --source . \
       --platform managed \
       --region "$GCP_REGION" \
       --allow-unauthenticated \
       --port 8080 \
-      --set-env-vars WEBLENS_HTTP_HOST=0.0.0.0,WEBLENS_HTTP_PORT=8080,WEBLENS_MCP_PROFILE=full
+      --set-env-vars WEBLENS_HTTP_HOST=0.0.0.0,WEBLENS_HTTP_PORT=8080,WEBLENS_MCP_PROFILE=full,WEBLENS_HTTP_TOKEN="$WEBLENS_HTTP_TOKEN"
 
     echo "[2/2] Retrieving Cloud Run endpoint URL..."
     SERVICE_URL=$(gcloud run services describe "$GCP_SERVICE" --platform managed --region "$GCP_REGION" --format 'value(status.url)')

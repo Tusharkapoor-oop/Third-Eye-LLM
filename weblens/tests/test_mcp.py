@@ -1,8 +1,12 @@
 from __future__ import annotations
 
 import json
+import tempfile
+from pathlib import Path
 
+from weblens.config import Settings
 from weblens.mcp_server import build_server
+from weblens.service import WebLens
 from weblens.tokens import count_tokens
 
 
@@ -72,6 +76,36 @@ async def test_research_profile_exposes_evidence_synthesis_and_forwards_argument
     assert call[1]["query"] == "does X cause Y"
     assert call[1]["max_tokens"] == 500
     assert call[1]["max_hops"] == 3
+
+
+async def test_full_profile_tool_annotations_match_mutability():
+    """Read-only tools stay read-only; stateful tools are marked mutating."""
+    cache_dir = Path(tempfile.mkdtemp())
+    service = WebLens(Settings(cache_dir=cache_dir, cache_enabled=False, search_providers="ddg", allow_browser=False))
+    try:
+        server = build_server(service, profile="full")
+        tools = await server.list_tools()
+        by_name = {t.name: t.annotations for t in tools}
+
+        for name in (
+            "web_search",
+            "extract_url",
+            "crawl_site",
+            "deep_research",
+            "evidence_synthesis",
+            "company_research",
+            "market_research",
+            "crawl2rag_query",
+            "tutorial_101",
+        ):
+            assert by_name[name].read_only_hint is True, f"{name} should be read-only"
+            assert by_name[name].destructive_hint is False, f"{name} should not claim destructive"
+
+        for name in ("crawl2rag_index", "research_chat"):
+            assert by_name[name].read_only_hint is False, f"{name} must not claim read-only"
+            assert by_name[name].destructive_hint is False
+    finally:
+        await service.close()
 
 
 async def test_web_search_forwards_arguments_and_returns_compact_json():
@@ -164,9 +198,10 @@ async def test_stateless_http_accepts_modern_and_legacy_requests(tmp_path):
     server = build_server(FakeService())
     app = server.streamable_http_app(stateless_http=True)
     headers = {"accept": "application/json, text/event-stream"}
-    async with app.router.lifespan_context(app), httpx.AsyncClient(
-        transport=ASGITransport(app=app), base_url="http://127.0.0.1:8765"
-    ) as client:
+    async with (
+        app.router.lifespan_context(app),
+        httpx.AsyncClient(transport=ASGITransport(app=app), base_url="http://127.0.0.1:8765") as client,
+    ):
         modern = {
             "jsonrpc": "2.0",
             "id": 1,

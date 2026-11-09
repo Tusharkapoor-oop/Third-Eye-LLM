@@ -20,6 +20,7 @@ from typing import Any, Literal
 import httpx
 
 from config import CONFIG
+from security import shared_ssl_context
 
 logger = logging.getLogger("weblens.models")
 
@@ -146,7 +147,7 @@ class MultiModelClient:
         last_exc: Exception | None = None
         for attempt in range(max_retries + 1):
             try:
-                async with httpx.AsyncClient(timeout=timeout) as client:
+                async with httpx.AsyncClient(timeout=timeout, verify=shared_ssl_context()) as client:
                     resp = await client.post(url, headers=headers, json=payload)
                     return resp
             except (httpx.ConnectError, socket.gaierror, httpx.TimeoutException) as e:
@@ -331,7 +332,15 @@ class MultiModelClient:
         if self.gemini_key:
             try:
                 from google import genai
-                client = genai.Client(api_key=self.gemini_key)
+                from google.genai import types as genai_types
+
+                # Bound the SDK's own HTTP timeout. Without it a stalled request
+                # keeps its worker thread alive long after asyncio.wait_for has
+                # given up, and interpreter shutdown then blocks joining it.
+                client = genai.Client(
+                    api_key=self.gemini_key,
+                    http_options=genai_types.HttpOptions(timeout=20_000),
+                )
                 full_contents = f"{system_prompt}\n\n{prompt}" if system_prompt else prompt
 
                 loop = asyncio.get_running_loop()
@@ -442,7 +451,10 @@ class MultiModelClient:
             for s in sources:
                 t = s.get("title", "Source")[:45]
                 u = s.get("url", "")
-                lines.append(f"| {t} | [{u[:40]}...]({u}) | Grounded |")
+                # Never truncate the visible text into something that looks like a
+                # URL: a "https://…..." fragment is an invalid citation target and
+                # breaks downstream citation-integrity checks.
+                lines.append(f"| {t} | [link]({u}) | Grounded |")
 
             lines.append(f"\n*Synthesized via Autonomous WebLens Engine ({mode} mode) across {len(sources)} sources.*")
             res.content = "\n".join(lines)

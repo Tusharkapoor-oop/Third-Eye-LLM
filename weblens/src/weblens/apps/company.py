@@ -11,23 +11,34 @@ from __future__ import annotations
 
 import re
 import time
-from urllib.parse import urlsplit
 from typing import Any
+from urllib.parse import urlsplit
 
 from ..service import WebLens
 from ..urls import registrable_domain
 
-FICTION_MARKERS = re.compile(
-    r"\b(?:fictional|imaginary|nonexistent|mythical|parody|fake company)\b", re.I
-)
+FICTION_MARKERS = re.compile(r"\b(?:fictional|imaginary|nonexistent|mythical|parody|fake company)\b", re.I)
 
 # Aggregators and social platforms are useful evidence but are poor choices for
 # the "official domain" field.
 NON_OFFICIAL = {
-    "wikipedia.org", "linkedin.com", "bloomberg.com", "crunchbase.com",
-    "reuters.com", "blogspot.com", "wordpress.com", "medium.com",
-    "youtube.com", "facebook.com", "twitter.com", "x.com", "reddit.com",
-    "glassdoor.com", "indeed.com", "pitchbook.com", "zoominfo.com",
+    "wikipedia.org",
+    "linkedin.com",
+    "bloomberg.com",
+    "crunchbase.com",
+    "reuters.com",
+    "blogspot.com",
+    "wordpress.com",
+    "medium.com",
+    "youtube.com",
+    "facebook.com",
+    "twitter.com",
+    "x.com",
+    "reddit.com",
+    "glassdoor.com",
+    "indeed.com",
+    "pitchbook.com",
+    "zoominfo.com",
 }
 
 
@@ -154,12 +165,14 @@ class CompanyResearcher:
         def make_field(results: list[dict]) -> list[dict[str, Any]]:
             items = []
             for r in results:
-                items.append({
-                    "text": r.get("s", ""),
-                    "url": r.get("u", ""),
-                    "title": r.get("t", ""),
-                    "date": r.get("d"),
-                })
+                items.append(
+                    {
+                        "text": r.get("s", ""),
+                        "url": r.get("u", ""),
+                        "title": r.get("t", ""),
+                        "date": r.get("d"),
+                    }
+                )
             return items
 
         return {

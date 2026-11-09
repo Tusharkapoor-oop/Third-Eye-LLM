@@ -70,6 +70,8 @@ class YahooSearch:
             *(self._fetch_host(base, q, freshness, k) for base in hosts),
             return_exceptions=True,
         )
+        from ..urls import document_canonical_key
+
         best: dict[str, Hit] = {}
         errors: list[BaseException] = []
         for result in results:
@@ -77,7 +79,7 @@ class YahooSearch:
                 errors.append(result)
                 continue
             for hit in result:
-                key = hit.url.rstrip("/")
+                key = document_canonical_key(hit.url)
                 prev = best.get(key)
                 if prev is None:
                     best[key] = hit
@@ -100,9 +102,7 @@ class YahooSearch:
             raise ProviderError("yahoo search failed", code=ErrCode.PROVIDER) from errors[0]
         return []
 
-    async def _fetch_host(
-        self, base: str, q: str, freshness: str | None, k: int
-    ) -> list[Hit]:
+    async def _fetch_host(self, base: str, q: str, freshness: str | None, k: int) -> list[Hit]:
         url = f"{base}?p={quote_plus(q)}&ei=UTF-8"
         if freshness in _FRESH:
             url += f"&btf={_FRESH[freshness]}"
@@ -113,12 +113,16 @@ class YahooSearch:
                 cache_ttl=600,
                 max_bytes=1_500_000,
             )
-        except FetchError as e:
-            raise ProviderError("yahoo fetch failed", code=ErrCode.PROVIDER, retryable=True) from e
-        if resp.status in {403, 429} or "unusual traffic" in resp.text.lower():
-            raise ProviderError(
-                "yahoo rate-limited the request", code=ErrCode.PROVIDER, retryable=True
-            )
+        except FetchError as exc:
+            if exc.status == 429:
+                raise ProviderError("yahoo rate-limited the request", code=ErrCode.PROVIDER, retryable=True) from exc
+            if exc.status in (401, 403):
+                # Yahoo blocks/deprecates some clients outright; retrying on the
+                # same response key would just burn another request.
+                raise ProviderError("yahoo blocked the request", code=ErrCode.PROVIDER) from exc
+            raise ProviderError("yahoo fetch failed", code=ErrCode.PROVIDER, retryable=True) from exc
+        if "unusual traffic" in resp.text.lower():
+            raise ProviderError("yahoo rate-limited the request", code=ErrCode.PROVIDER, retryable=True)
         hits = self._parse(resp.text, k)
         if hits:
             return hits
@@ -160,12 +164,8 @@ class YahooSearch:
                     continue
                 title = " ".join(title_node[0].text_content().split())
                 href = unwrap(links[0].get("href", ""))
-                snippet_node = block.cssselect("p.sw-Card__summary") or block.cssselect(
-                    ".sw-Card__summary"
-                )
-                snippet = (
-                    " ".join(snippet_node[0].text_content().split()) if snippet_node else ""
-                )
+                snippet_node = block.cssselect("p.sw-Card__summary") or block.cssselect(".sw-Card__summary")
+                snippet = " ".join(snippet_node[0].text_content().split()) if snippet_node else ""
                 hit = make_hit(title, href, snippet, provider=self.name, rank=i)
                 if hit:
                     hits.append(hit)

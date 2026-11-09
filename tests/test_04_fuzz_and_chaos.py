@@ -22,6 +22,7 @@ from hypothesis import HealthCheck, given, settings
 from hypothesis import strategies as st
 
 from config import CONFIG
+from schemas import ChunkResult, SourceItem
 from server import crawl_website, deep_research, extract_url, shutdown_services, web_map, web_search
 
 
@@ -74,14 +75,45 @@ def mock_all_outbound_http():
         object.__setattr__(CONFIG, "gemini_api_key", orig_gemini)
 
 
+async def _fast_extract(url: str, *, query=None, chunks_per_source=3, force_tier2=False):
+    """Deterministic extractor stand-in: input fuzzing must not wait on ONNX/Playwright."""
+    text = "Genuine test passage text for fuzz and chaos testing."
+    return SourceItem(
+        title="Mock Title",
+        url=url,
+        content=text,
+        score=0.9,
+        chunks=[ChunkResult(content=text, score=0.9, char_count=len(text))],
+    )
+
+
 @settings(max_examples=15, suppress_health_check=[HealthCheck.too_slow, HealthCheck.function_scoped_fixture], deadline=None)
 @given(
     query=st.text(min_size=0, max_size=200),
     max_results=st.integers(min_value=-100, max_value=1000),
 )
 @pytest.mark.asyncio
-async def test_fuzz_web_search_inputs(query: str, max_results: int):
-    """Fuzz web_search with arbitrary strings and integers asserting no unhandled crashes."""
+async def test_fuzz_web_search_inputs(query: str, max_results: int, monkeypatch: pytest.MonkeyPatch):
+    """Fuzz web_search with arbitrary strings and integers asserting no unhandled crashes.
+
+    Search providers are stubbed so the property runs fully offline; without this
+    each Hypothesis example performed live DuckDuckGo traffic and blew the timeout.
+    """
+    import search_pipeline as search_pipeline_module
+
+    async def _offline_results(q, count=15, time_range=None):
+        return [
+            {"url": "https://example.com/item1", "title": "Mock Title 1", "snippet": "Paragraph 1 snippet."},
+            {"url": "https://example.com/item2", "title": "Mock Title 2", "snippet": "Paragraph 2 snippet."},
+        ]
+
+    monkeypatch.setattr(search_pipeline_module, "_search_searxng", _offline_results)
+    monkeypatch.setattr(search_pipeline_module, "_search_ddg_html", _offline_results)
+
+    from server import search_pipeline as server_pipeline
+
+    monkeypatch.setattr(server_pipeline.extractor, "extract_url", _fast_extract)
+
     res_str = await web_search(query=query, max_results=max_results)
     assert isinstance(res_str, str)
     parsed = json.loads(res_str)
@@ -137,8 +169,34 @@ async def test_fuzz_crawl_website_inputs(url: str, instructions: str):
 @settings(max_examples=10, suppress_health_check=[HealthCheck.too_slow, HealthCheck.function_scoped_fixture], deadline=None)
 @given(prompt=st.text(min_size=0, max_size=150))
 @pytest.mark.asyncio
-async def test_fuzz_deep_research_inputs(prompt: str):
-    """Fuzz deep_research with arbitrary strings asserting structured research envelope."""
+async def test_fuzz_deep_research_inputs(prompt: str, monkeypatch: pytest.MonkeyPatch):
+    """Fuzz deep_research with arbitrary strings asserting structured research envelope.
+
+    Providers and the model call are stubbed so the property is hermetic and the
+    deterministic extractive synthesis path is exercised instead.
+    """
+    import search_pipeline as search_pipeline_module
+
+    async def _offline_results(q, count=15, time_range=None):
+        return [
+            {"url": "https://example.com/item1", "title": "Mock Title 1", "snippet": "Paragraph 1 snippet."},
+            {"url": "https://example.com/item2", "title": "Mock Title 2", "snippet": "Paragraph 2 snippet."},
+        ]
+
+    monkeypatch.setattr(search_pipeline_module, "_search_searxng", _offline_results)
+    monkeypatch.setattr(search_pipeline_module, "_search_ddg_html", _offline_results)
+
+    from server import search_pipeline as server_pipeline
+
+    monkeypatch.setattr(server_pipeline.extractor, "extract_url", _fast_extract)
+
+    from model_provider import model_client
+
+    async def _no_synthesis(*args, **kwargs):
+        return None
+
+    monkeypatch.setattr(model_client, "synthesize_research_report", _no_synthesis)
+
     res_str = await deep_research(input_prompt=prompt, mode="mini")
     assert isinstance(res_str, str)
     parsed = json.loads(res_str)

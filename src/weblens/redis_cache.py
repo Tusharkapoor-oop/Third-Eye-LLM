@@ -110,9 +110,7 @@ class RedisCache:
             return None
         return self._client
 
-    async def _load(
-        self, key: str
-    ) -> tuple[Any, bytes, str, float, float] | None:
+    async def _load(self, key: str) -> tuple[Any, bytes, str, float, float] | None:
         """Read and parse a hash without enforcing the logical TTL."""
         client = self._client_or_none()
         if client is None:
@@ -142,9 +140,7 @@ class RedisCache:
         except Exception as exc:
             self._fail(exc)
 
-    async def _decode(
-        self, blob: bytes, meta_raw: str
-    ) -> tuple[bytes, dict[str, Any]] | None:
+    async def _decode(self, blob: bytes, meta_raw: str) -> tuple[bytes, dict[str, Any]] | None:
         try:
             value = await _decompress(blob)
             meta = json.loads(meta_raw)
@@ -176,9 +172,7 @@ class RedisCache:
         self.hits += 1
         return decoded[0], decoded[1], created
 
-    async def get_cached(
-        self, key: str, grace_s: float = 0.0
-    ) -> tuple[bytes, dict[str, Any], float, bool] | None:
+    async def get_cached(self, key: str, grace_s: float = 0.0) -> tuple[bytes, dict[str, Any], float, bool] | None:
         """Return ``(value, meta, created, expired)`` or ``None``."""
         loaded = await self._load(key)
         if loaded is None:
@@ -211,9 +205,7 @@ class RedisCache:
             self.errors += 1
             return None
 
-    async def set(
-        self, key: str, value: bytes, meta: dict[str, Any], ttl: float | None = None
-    ) -> None:
+    async def set(self, key: str, value: bytes, meta: dict[str, Any], ttl: float | None = None) -> None:
         ttl = 600.0 if ttl is None else float(ttl)
         if ttl <= 0:
             await self._delete(key)
@@ -233,11 +225,7 @@ class RedisCache:
         # can use them when a live refetch fails. Other cache kinds keep their
         # normal TTL; the logical expiry remains in the ``e`` field and is
         # enforced by get()/get_cached().
-        grace = (
-            max(0, int(self.s.cache_stale_grace_s))
-            if meta.get("kind") == "http"
-            else 0
-        )
+        grace = max(0, int(self.s.cache_stale_grace_s)) if meta.get("kind") == "http" else 0
         server_ttl = ttl + grace
         try:
             pipeline = getattr(client, "pipeline", None)
@@ -252,9 +240,7 @@ class RedisCache:
         except Exception as exc:
             self._fail(exc)
 
-    async def set_json(
-        self, key: str, obj: Any, meta: dict[str, Any], ttl: float | None = None
-    ) -> None:
+    async def set_json(self, key: str, obj: Any, meta: dict[str, Any], ttl: float | None = None) -> None:
         await self.set(
             key,
             json.dumps(obj, separators=(",", ":"), ensure_ascii=False).encode("utf-8"),

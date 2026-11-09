@@ -32,6 +32,13 @@ BLOCKED_HOSTNAMES = {
     "kubernetes.default.svc",
 }
 
+# Cloud metadata endpoints that SSRF payloads commonly target.
+BLOCKED_IPS = {
+    "169.254.169.254",  # AWS / GCP / Azure IMDS
+    "168.63.129.16",  # Azure WireServer
+    "100.100.100.200",  # Alibaba Cloud metadata
+}
+
 BLOCKED_SUFFIXES = (
     ".localhost",
     ".local",
@@ -64,7 +71,10 @@ class DestinationPolicy:
         if parts.scheme not in ("http", "https"):
             raise BlockedURLError(f"unsupported scheme: {parts.scheme}")
         host = parts.hostname or ""
-        port = parts.port or (443 if parts.scheme == "https" else 80)
+        try:
+            port = parts.port or (443 if parts.scheme == "https" else 80)
+        except ValueError as e:
+            raise BlockedURLError(f"invalid URL port: {url}") from e
         self.check_hostname(host)
         self.check_port(port)
 
@@ -85,7 +95,7 @@ class DestinationPolicy:
         deny = self.s.denylist
         if any(h == d or h.endswith("." + d) for d in deny):
             raise BlockedURLError(f"host denied by policy: {h}")
-        allow = self.s.allowlist
+        allow = self.s.host_allowlist
         if allow and not any(h == a or h.endswith("." + a) for a in allow):
             raise BlockedURLError(f"host not in allowlist: {h}")
 
@@ -104,18 +114,31 @@ class DestinationPolicy:
             addr = addr.ipv4_mapped
         if self.s.allow_private_networks:
             return
+        if str(addr) in BLOCKED_IPS:
+            raise BlockedURLError(f"blocked metadata IP: {addr}")
         if not addr.is_global or addr.is_multicast or addr.is_reserved or addr.is_loopback:
             raise BlockedURLError(f"non-public destination: {ip}")
         if addr.is_link_local:
             raise BlockedURLError(f"link-local destination: {ip}")
 
     async def resolve(self, host: str, port: int) -> Destination:
-        self.check_hostname(host)
-        self.check_port(port)
-        try:
-            infos = await anyio.to_thread.run_sync(
-                lambda: socket.getaddrinfo(host, port, type=socket.SOCK_STREAM)
+        from ..config import Settings
+
+        # Enforce the configured outbound allowlist/denylist at connection time
+        # too, not only in the pre-check: a caller that reaches the transport
+        # directly (SafeNetworkBackend) must not be able to bypass an egress
+        # allowlist. Private/public IP ranges remain the second gate.
+        policy = DestinationPolicy(
+            Settings(
+                allow_private_networks=self.s.allow_private_networks,
+                allow_hosts=",".join(self.s.host_allowlist),
+                block_hosts=",".join(self.s.denylist),
             )
+        )
+        policy.check_hostname(host)
+        policy.check_port(port)
+        try:
+            infos = await anyio.to_thread.run_sync(lambda: socket.getaddrinfo(host, port, type=socket.SOCK_STREAM))
         except socket.gaierror as e:
             raise BlockedURLError(f"DNS resolution failed for {host}: {e}") from e
         if not infos:
@@ -125,7 +148,7 @@ class DestinationPolicy:
         ips: list[str] = []
         for info in infos:
             ip = str(info[4][0])
-            self.check_ip(ip)
+            policy.check_ip(ip)
             ips.append(ip)
         # Prefer IPv4 for stability on Windows dual-stack networks.
         chosen = next((i for i in ips if ":" not in i), ips[0])

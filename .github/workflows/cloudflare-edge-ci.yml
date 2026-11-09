@@ -1,0 +1,67 @@
+name: Cloudflare Edge CI
+
+on:
+  push:
+    paths:
+      - "cloudflare/**"
+      - "weblens/src/**"
+      - "weblens/pyproject.toml"
+      - "Dockerfile.cloudflare"
+      - "wrangler.jsonc"
+      - "package.json"
+      - "package-lock.json"
+      - "tsconfig.json"
+      - ".dockerignore"
+      - ".github/workflows/cloudflare-edge-ci.yml"
+  pull_request:
+    paths:
+      - "cloudflare/**"
+      - "weblens/src/**"
+      - "weblens/pyproject.toml"
+      - "Dockerfile.cloudflare"
+      - "wrangler.jsonc"
+      - "package.json"
+      - "package-lock.json"
+      - "tsconfig.json"
+      - ".dockerignore"
+      - ".github/workflows/cloudflare-edge-ci.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: cloudflare-edge-ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  validate:
+    name: Worker and container validation
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+
+      - name: Install deployment tooling
+        run: npm ci
+
+      - name: Type-check Worker
+        run: npm run check
+
+      - name: Build Cloudflare container image
+        run: docker build -f Dockerfile.cloudflare -t weblens-cloudflare:ci .
+
+      - name: Container import smoke test
+        run: |
+          docker run --rm \
+            -e TAVILY_API_KEY=tvly-ci-placeholder \
+            weblens-cloudflare:ci \
+            python -c "from weblens.config import Settings; s = Settings(_env_file=None); assert s.tavily_api_key == 'tvly-ci-placeholder'; print('container-import-ok')"
+
+      - name: Validate Wrangler bundle
+        run: npx wrangler deploy --dry-run --outdir dist

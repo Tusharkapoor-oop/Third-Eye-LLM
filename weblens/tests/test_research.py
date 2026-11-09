@@ -79,15 +79,11 @@ def test_official_source_urls_targets_versioned_python_docs():
 
 
 def test_official_source_urls_cover_common_primary_facts():
-    assert (
-        "https://www.nasa.gov/mission/apollo-11/"
-        in official_source_urls(
-            "What was the name of the NASA mission that first landed humans on the Moon in July 1969?"
-        )
+    assert "https://www.nasa.gov/mission/apollo-11/" in official_source_urls(
+        "What was the name of the NASA mission that first landed humans on the Moon in July 1969?"
     )
-    assert (
-        "https://platform.openai.com/docs/models/gpt-4"
-        in official_source_urls("Which company developed the GPT-4 model released in March 2023?")
+    assert "https://platform.openai.com/docs/models/gpt-4" in official_source_urls(
+        "Which company developed the GPT-4 model released in March 2023?"
     )
 
 
@@ -106,7 +102,7 @@ def test_sentence_candidates_strip_headings_and_keep_exact_spans():
 
 
 def test_license_pattern_spans_newlines():
-    text = "Licensed under the Apache\nLicense, Version 2.0 (the \"License\"); you may not use this file."
+    text = 'Licensed under the Apache\nLicense, Version 2.0 (the "License"); you may not use this file.'
     p = Passage(start=0, end=len(text), text=text)
     findings = sentence_candidates(p, "license", limit=1)
     assert findings
@@ -272,24 +268,36 @@ def test_evidence_guard_blocks_proprietary_source_requests():
 
 
 def test_evidence_guard_blocks_fictional_entity_without_support():
-    reasons = evidence_guard("exact 2031 population of the fictional city of Zephyria", [
-        _finding("YARA is a fictional world from a video game."),
-    ])
+    reasons = evidence_guard(
+        "exact 2031 population of the fictional city of Zephyria",
+        [
+            _finding("YARA is a fictional world from a video game."),
+        ],
+    )
     assert "unverifiable_entity:zephyria" in reasons
-    supported = evidence_guard("population of the fictional city of Zephyria", [
-        _finding("Zephyria is a fictional city with a small population."),
-    ])
+    supported = evidence_guard(
+        "population of the fictional city of Zephyria",
+        [
+            _finding("Zephyria is a fictional city with a small population."),
+        ],
+    )
     assert supported == []
 
 
 def test_evidence_guard_blocks_exact_number_without_numeric_evidence():
-    reasons = evidence_guard("exact number of grains of sand on Earth", [
-        _finding("Learn how to estimate the number of grains of sand on all beaches."),
-    ])
+    reasons = evidence_guard(
+        "exact number of grains of sand on Earth",
+        [
+            _finding("Learn how to estimate the number of grains of sand on all beaches."),
+        ],
+    )
     assert reasons == ["exact_value_not_found"]
-    with_number = evidence_guard("exact number of grains of sand on Earth", [
-        _finding("The estimate is 7.5e18 grains of sand on Earth."),
-    ])
+    with_number = evidence_guard(
+        "exact number of grains of sand on Earth",
+        [
+            _finding("The estimate is 7.5e18 grains of sand on Earth."),
+        ],
+    )
     assert with_number == []
 
 

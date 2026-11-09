@@ -55,21 +55,13 @@ def _outcome(
 
 
 def _polar(outcome, polarity: str):
-    matches = [
-        r
-        for r in outcome.hypotheses
-        if r.hypothesis.kind == "polar" and r.hypothesis.polarity == polarity
-    ]
+    matches = [r for r in outcome.hypotheses if r.hypothesis.kind == "polar" and r.hypothesis.polarity == polarity]
     assert matches, f"no {polarity} hypothesis"
     return matches[0]
 
 
 def _entity(outcome, entity: str):
-    matches = [
-        r
-        for r in outcome.hypotheses
-        if r.hypothesis.entity and r.hypothesis.entity.lower() == entity.lower()
-    ]
+    matches = [r for r in outcome.hypotheses if r.hypothesis.entity and r.hypothesis.entity.lower() == entity.lower()]
     assert matches, f"no {entity} hypothesis"
     return matches[0]
 

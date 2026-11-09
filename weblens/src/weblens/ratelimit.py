@@ -53,9 +53,7 @@ class TenantRateLimiter:
             raise ValueError("max_buckets must be >= 1")
         self.default_limit = int(default_limit)
         self.window_s = float(window_s)
-        self.per_tenant = {
-            key: max(1, int(value)) for key, value in (per_tenant or {}).items()
-        }
+        self.per_tenant = {key: max(1, int(value)) for key, value in (per_tenant or {}).items()}
         self.max_buckets = int(max_buckets)
         self._clock = clock
         self._buckets: OrderedDict[str, _Bucket] = OrderedDict()
@@ -104,21 +102,37 @@ class TenantRateLimiter:
         return len(self._buckets)
 
 
-def trusted_client_ip(scope: dict) -> str:
-    """Use the address appended by the closest trusted proxy.
+def client_ip_from_scope(scope: dict) -> str:
+    """Return the right-most XFF entry from an ASGI scope.
 
-    The left-most ``X-Forwarded-For`` value is caller-controlled and must never
-    be used as a rate-limit key.
+    The right-most entry is the hop appended by the closest trusted proxy
+    (Cloud Run / load-balancer behavior). It is the hardest for upstream
+    callers to spoof, and the left-most entries are omitted because they are
+    caller-controlled and must not be used as a rate-limit key.
     """
 
     headers = {k.lower(): v for k, v in scope.get("headers") or []}
-    forwarded = [
-        part.strip()
-        for part in headers.get(b"x-forwarded-for", b"").decode("latin-1").split(",")
-        if part.strip()
-    ]
+    forwarded_raw = headers.get(b"x-forwarded-for", b"").decode("latin-1")
+    forwarded = [part.strip() for part in forwarded_raw.split(",") if part.strip()]
     if forwarded:
         return forwarded[-1]
+    client = scope.get("client") or ("unknown", 0)
+    return str(client[0])
+
+
+def trusted_client_ip(scope: dict) -> str:
+    """Return the client address used for rate limiting.
+
+    By default (``trust_proxy_headers`` False) the peer address from the ASGI
+    scope is used and ``X-Forwarded-For`` is ignored entirely, because spoofed
+    XFF values must not bypass per-client limits. When explicitly trusted,
+    the right-most XFF entry is used instead.
+    """
+    state = scope.get("state") or {}
+    if isinstance(state, dict):
+        settings = state.get("settings")
+        if getattr(settings, "trust_proxy_headers", False):
+            return client_ip_from_scope(scope)
     client = scope.get("client") or ("unknown", 0)
     return str(client[0])
 

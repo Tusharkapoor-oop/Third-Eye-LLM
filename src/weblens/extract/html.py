@@ -8,9 +8,18 @@ import unicodedata
 from dataclasses import dataclass, field
 from datetime import date
 
+from lxml import etree as lxml_etree
 from lxml import html as lxml_html
 
+# lxml raises ParserError (not ValueError) on empty or non-XML input; treat it
+# like any other unparseable document so a blank response cannot crash extraction.
+_PARSE_ERRORS: tuple[type[BaseException], ...] = (ValueError, TypeError, lxml_etree.ParserError)
+
 ZERO_WIDTH = dict.fromkeys(map(ord, "\u200b\u200c\u200d\u2060\ufeff"), None)
+# Bullet/decoration characters surrounding boilerplate labels ("· Skip to
+# content •"). Written as escapes so the source stays ASCII and cannot be
+# corrupted by an editor's encoding.
+BULLET_CHARS = "\u00b7\u2022-\u2013\u2014|[]() "
 CONTROL = re.compile(r"[\x00-\x08\x0b\x0c\x0e-\x1f\x7f]")
 
 # Short lines that are almost always site chrome. Long lines are never removed:
@@ -41,7 +50,7 @@ BOILERPLATE = {
     "follow us",
 }
 
-HEADING = re.compile(r"^(#{1,6})\s+(.+?)\s*#*$")
+HEADING = re.compile(r"^(#{1,6})\s+(.+?)\s*#*$", re.MULTILINE)
 
 
 @dataclass
@@ -90,7 +99,8 @@ def _clean_text(text: str) -> str:
             continue
         stripped = line.strip()
         if not in_fence and stripped and len(stripped) <= 60:
-            probe = stripped.strip("·•-–—|[]() ").lower()
+            # Strip common bullet/marker characters before matching boilerplate.
+            probe = stripped.strip(BULLET_CHARS).lower()
             if probe in BOILERPLATE:
                 continue
         # GitHub-style source tables emit one line number per line; they are
@@ -108,9 +118,9 @@ def _is_js_shell(html_text: str) -> bool:
     markers = (
         "enable javascript",
         "javascript is required",
-        "id=\"root\"",
+        'id="root"',
         "id='root'",
-        "id=\"app\"",
+        'id="app"',
         "__next_data__",
         "noscript",
     )
@@ -121,7 +131,7 @@ def _fallback_extract(html_text: str) -> tuple[str, str]:
     """Last-resort main-content extraction when trafilatura returns little."""
     try:
         doc = lxml_html.fromstring(html_text)
-    except (ValueError, TypeError):
+    except _PARSE_ERRORS:
         return "", ""
     title = ""
     t = doc.find(".//title")
@@ -152,7 +162,7 @@ def extract_meta(html_text: str) -> dict[str, str | None]:
     out: dict[str, str | None] = {"title": None, "author": None, "published": None, "sitename": None}
     try:
         doc = lxml_html.fromstring(html_text)
-    except (ValueError, TypeError):
+    except _PARSE_ERRORS:
         return out
     title = doc.find(".//title")
     if title is not None and title.text_content().strip():
@@ -241,7 +251,7 @@ def extract_html(html_text: str, url: str, *, include_links: bool = False) -> Ex
             t = doc.find(".//title")
             if t is not None:
                 title = " ".join(t.text_content().split())
-        except (ValueError, TypeError):
+        except _PARSE_ERRORS:
             pass
 
     warnings: list[str] = []
@@ -268,7 +278,7 @@ def extract_html(html_text: str, url: str, *, include_links: bool = False) -> Ex
             links.append((canon, text_a))
             if len(links) >= 400:
                 break
-    except (ValueError, TypeError):
+    except _PARSE_ERRORS:
         pass
 
     return ExtractedDoc(
