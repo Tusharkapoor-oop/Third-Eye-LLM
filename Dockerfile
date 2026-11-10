@@ -4,7 +4,7 @@ FROM python:3.11-slim
 # Prevent python from writing pyc files and buffering stdout/stderr
 ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
-    PYTHONPATH=/app/weblens/src:/app/src:/app \
+    PYTHONPATH=/app/weblens/src \
     PORT=7860 \
     WEBLENS_HTTP_HOST=0.0.0.0 \
     WEBLENS_MCP_PROFILE=full \
@@ -24,15 +24,18 @@ RUN useradd -m -u 1000 user \
     && mkdir -p /tmp/weblens \
     && chown -R user:user /app /tmp/weblens
 
-# Copy configuration and manifests
+# Copy only the active package and root manifest
 COPY README.md pyproject.toml /app/
-COPY weblens/ /app/weblens/
-COPY src/ /app/src/
-COPY *.py /app/
+COPY weblens/pyproject.toml weblens/README.md /app/weblens/
+COPY weblens/src /app/weblens/src
 
-# Install weblens and root package with all dependencies
-RUN pip install --no-cache-dir ./weblens . \
-    && chown -R user:user /app /tmp/weblens
+
+# Install weblens and root package with only the runtime extras needed.
+# Avoid browser/hybrid/redis extras: they pull chromium, ~500MB of ML wheels,
+# and Redis clients that are never used by the HTTP MCP profile.
+RUN pip install --no-cache-dir --no-compile ./weblens . \
+    && chown -R user:user /app /tmp/weblens \
+    && find /app -type d -name __pycache__ -exec rm -rf {} + 2>/dev/null || true
 
 USER user
 

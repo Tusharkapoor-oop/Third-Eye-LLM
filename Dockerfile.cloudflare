@@ -26,11 +26,13 @@ RUN apt-get update \
     && apt-get install -y --no-install-recommends ca-certificates \
     && rm -rf /var/lib/apt/lists/*
 
-# The root .dockerignore excludes tests, caches, local virtualenvs, and secrets
-# while keeping the package sources available to the build.
-COPY weblens/ /app/weblens/
+# The root .dockerignore excludes tests, caches, local virtualenvs, legacy code,
+# and secrets while keeping the package sources available to the build.
+COPY weblens/pyproject.toml weblens/README.md /app/weblens/
+COPY weblens/src /app/weblens/src
 
-RUN pip install --no-cache-dir --no-compile ./weblens
+RUN pip install --no-cache-dir --no-compile ./weblens \
+    && find /app/weblens -type d -name __pycache__ -exec rm -rf {} + 2>/dev/null || true
 
 RUN useradd --create-home --uid 10001 weblens \
     && mkdir -p /tmp/weblens \

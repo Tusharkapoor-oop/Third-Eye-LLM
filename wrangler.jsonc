@@ -31,6 +31,11 @@
     "WEBLENS_FUSE_EARLY_MIN_DOMAINS": "3",
     "WEBLENS_LOG_LEVEL": "INFO"
   },
+  // NOTE: Cloudflare Containers is a limited-availability feature. If deploy fails
+  // with "A request to the Cloudflare API (/accounts/.../containers/me) failed",
+  // your account does not have Containers access yet. In that case deploy the
+  // worker only (omit the "containers", "durable_objects" and "exports" blocks)
+  // and point WEBLENS_UPSTREAM_URL at an existing WebLens HTTP endpoint.
   "containers": [
     {
       "class_name": "WebLensContainer",
