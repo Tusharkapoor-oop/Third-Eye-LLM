@@ -28,7 +28,7 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
-pdf = ["pymupdf>=1.28,<2"]
+pdf = ["pymupdf>=1.28,<3"]
 browser = ["playwright>=1.49,<2"]
 redis = ["redis>=5,<7"]
 hybrid = [
