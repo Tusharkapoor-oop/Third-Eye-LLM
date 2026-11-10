@@ -191,7 +191,15 @@ class Settings(BaseSettings):
 
     # --- server -----------------------------------------------------------
     http_host: str = "127.0.0.1"
-    http_port: int = 8765
+    # Render, Cloudflare Containers, Google Cloud Run and Heroku all inject the
+    # listen port as $PORT and route only to that port. Reading it here means the
+    # image binds where the platform sends traffic; without it the server bound
+    # 8765 and every platform health check failed. Explicit WEBLENS_HTTP_PORT
+    # still wins because it is the more specific name.
+    http_port: int = Field(
+        default=8765,
+        validation_alias=AliasChoices("WEBLENS_HTTP_PORT", "PORT"),
+    )
     http_token: str | None = Field(default=None, repr=False)
     # JSON {"tenant": "key"} or comma-separated tenant=key pairs. The legacy
     # single http_token maps to the "default" tenant.
