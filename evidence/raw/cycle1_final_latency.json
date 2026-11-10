@@ -1,0 +1,22 @@
+{
+  "n": 40,
+  "p50_ms": 1497.5,
+  "p95_ms": 3010.4,
+  "mean_ms": 1595.5,
+  "min_ms": 645.9,
+  "max_ms": 3601.3,
+  "mean_tokens": 552,
+  "mean_results": 7.4,
+  "provider_chain": [
+    "mwmbl",
+    "wikipedia",
+    "bing",
+    "yahoo"
+  ],
+  "zero_result_queries": 0,
+  "statuses": {
+    "ok": 40
+  },
+  "gate_p50_1500ms": "PASS",
+  "gate_p95_5000ms": "PASS"
+}

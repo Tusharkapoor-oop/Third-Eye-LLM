@@ -112,10 +112,14 @@ class DestinationPolicy:
             raise BlockedURLError(f"invalid IP: {ip}") from e
         if addr.version == 6 and addr.ipv4_mapped is not None:
             addr = addr.ipv4_mapped
-        if self.s.allow_private_networks:
-            return
+        # Cloud-metadata endpoints are never a legitimate destination, so they are
+        # rejected BEFORE the private-network opt-in. Previously the opt-in
+        # returned early and silently re-enabled 169.254.169.254, which is the one
+        # address whose entire purpose is to hand out instance credentials.
         if str(addr) in BLOCKED_IPS:
             raise BlockedURLError(f"blocked metadata IP: {addr}")
+        if self.s.allow_private_networks:
+            return
         if not addr.is_global or addr.is_multicast or addr.is_reserved or addr.is_loopback:
             raise BlockedURLError(f"non-public destination: {ip}")
         if addr.is_link_local:

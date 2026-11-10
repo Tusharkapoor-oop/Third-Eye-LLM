@@ -1,0 +1,30 @@
+{
+  "cycle": 1,
+  "candidate": "bounded_provider_fuse_early_stop",
+  "status": "REJECTED",
+  "target_metric": "search latency p50/p95",
+  "shipped_behaviour": "asyncio.gather over all providers (waits for slowest)",
+  "proposed_behaviour": "stop waiting once len(seen_urls) >= k; cancel stragglers",
+  "measured": {
+    "unpaired_single_run_latency_p50_ms": {"before": 1515, "after": 664},
+    "paired_n_queries": 80,
+    "latency_diff_ms": -1012.8,
+    "latency_diff_ci95": [-1331.6, -780.5],
+    "p_at_5_diff": -0.07,
+    "p_at_5_diff_ci95": [-0.1075, -0.035],
+    "ndcg_at_5_diff": -0.0733,
+    "ndcg_at_5_diff_ci95": [-0.1134, -0.0381],
+    "quality_guard": "VIOLATED"
+  },
+  "rule_applied": "evidence/prereg.md quality-first: a latency/token win counts only if quality is non-inferior on the SAME queries (answer-support/P@5 lower CI bound no worse than -0.02)",
+  "reason": "Early stop returned results before slower providers could contribute, removing relevant URLs. The latency gain was bought with a measurable relevance loss; the lower confidence bound excludes any non-inferiority reading.",
+  "confound_checked": "An unpaired comparison was misleading: identical code scored P@5 0.575 / 0.500 / 0.485 on three consecutive runs of the same split (search-index drift). The decision therefore rests on the interleaved paired test (n=80), not on the unpaired numbers.",
+  "action_taken": "Reverted weblens/src/weblens/search/router.py and the mirror to HEAD; deleted the accompanying test_bounded_fuse.py; both trees verified byte-identical and the suite re-run green.",
+  "evidence_ids": [
+    "cycle1-fuse-ab",
+    "cycle1-final-latency-v2",
+    "cycle1-benchmark-weblens-only",
+    "cycle1-paired-fuse-quality"
+  ],
+  "kept_instead": "No latency change shipped this cycle. The p50/p95 gates are already PASS on the shipped code (p50 739ms, p95 2062ms, n=40, evidence cycle1-final-latency-v2), so the rejected change addressed a gate that was not failing."
+}

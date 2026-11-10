@@ -6,6 +6,11 @@ interface Env {
   WEBLENS_CONTAINER_INSTANCE: string;
   WEBLENS_MCP_PROFILE: string;
   WEBLENS_SEARCH_PROVIDERS: string;
+  WEBLENS_SUPPLEMENT_PROVIDERS: string;
+  WEBLENS_FUSE_SOFT_TIMEOUT_S?: string;
+  WEBLENS_FUSE_GRACE_S?: string;
+  WEBLENS_FUSE_EARLY_MIN_EXTRA?: string;
+  WEBLENS_FUSE_EARLY_MIN_DOMAINS?: string;
   WEBLENS_LOG_LEVEL: string;
   WEBLENS_API_KEY?: string;
   WEBLENS_API_KEYS?: string;
@@ -176,6 +181,14 @@ function containerEnvironment(env: Env): Record<string, string> {
     WEBLENS_MCP_PROFILE: env.WEBLENS_MCP_PROFILE ?? "full",
     WEBLENS_SEARCH_PROVIDERS:
       env.WEBLENS_SEARCH_PROVIDERS ?? "tavily,mwmbl,wikipedia,bing,yahoo",
+    WEBLENS_SUPPLEMENT_PROVIDERS:
+      env.WEBLENS_SUPPLEMENT_PROVIDERS ?? "stackexchange",
+    // Hosted fast path: stop a short grace after Tavily fills the visible
+    // window. Keyless pools never early-stop (see config.py).
+    WEBLENS_FUSE_SOFT_TIMEOUT_S: env.WEBLENS_FUSE_SOFT_TIMEOUT_S ?? "2.0",
+    WEBLENS_FUSE_GRACE_S: env.WEBLENS_FUSE_GRACE_S ?? "0.25",
+    WEBLENS_FUSE_EARLY_MIN_EXTRA: env.WEBLENS_FUSE_EARLY_MIN_EXTRA ?? "0",
+    WEBLENS_FUSE_EARLY_MIN_DOMAINS: env.WEBLENS_FUSE_EARLY_MIN_DOMAINS ?? "3",
     WEBLENS_LOG_LEVEL: env.WEBLENS_LOG_LEVEL ?? "INFO",
     WEBLENS_TRUST_PROXY_HEADERS: "true",
     // The container is private to this Worker. The Worker validates the

@@ -1,0 +1,45 @@
+preflight ok (WebLens reachable)
+
+[1/40] general_factual_q01 wl=5u/879ms tv=NOT_RUN
+[2/40] general_factual_q04 wl=5u/2158ms tv=NOT_RUN
+[3/40] current_events_news_q04 wl=5u/3179ms tv=NOT_RUN
+[4/40] current_events_news_q01 wl=5u/6335ms tv=NOT_RUN
+[5/40] technical_research_q01 wl=5u/3446ms tv=NOT_RUN
+[6/40] technical_research_q04 wl=5u/3031ms tv=NOT_RUN
+[7/40] programming_developer_docs_q01 wl=3u/3391ms tv=NOT_RUN
+[8/40] programming_developer_docs_q04 wl=5u/3061ms tv=NOT_RUN
+[9/40] scientific_research_q01 wl=5u/2612ms tv=NOT_RUN
+[10/40] scientific_research_q04 wl=5u/3034ms tv=NOT_RUN
+[11/40] academic_research_q01 wl=5u/3216ms tv=NOT_RUN
+[12/40] academic_research_q04 wl=5u/3226ms tv=NOT_RUN
+[13/40] multihop_reasoning_q04 wl=5u/3094ms tv=NOT_RUN
+[14/40] multihop_reasoning_q01 wl=5u/6206ms tv=NOT_RUN
+[15/40] long_document_extraction_q04 wl=5u/3156ms tv=NOT_RUN
+[16/40] long_document_extraction_q01 wl=5u/6147ms tv=NOT_RUN
+[17/40] company_research_q04 wl=5u/3077ms tv=NOT_RUN
+[18/40] company_research_q01 wl=5u/6069ms tv=NOT_RUN
+[19/40] startup_research_q04 wl=5u/3234ms tv=NOT_RUN
+[20/40] startup_research_q01 wl=5u/6309ms tv=NOT_RUN
+[21/40] industry_research_q01 wl=5u/3033ms tv=NOT_RUN
+[22/40] industry_research_q04 wl=5u/3019ms tv=NOT_RUN
+[23/40] market_research_q04 wl=5u/3199ms tv=NOT_RUN
+[24/40] market_research_q01 wl=5u/6335ms tv=NOT_RUN
+[25/40] stock_portfolio_research_q04 wl=5u/3431ms tv=NOT_RUN
+[26/40] stock_portfolio_research_q01 wl=4u/6529ms tv=NOT_RUN
+[27/40] product_research_q01 wl=5u/3012ms tv=NOT_RUN
+[28/40] product_research_q04 wl=5u/3057ms tv=NOT_RUN
+[29/40] competitive_intelligence_q01 wl=5u/6226ms tv=NOT_RUN
+[30/40] competitive_intelligence_q04 wl=5u/6176ms tv=NOT_RUN
+[31/40] legal_policy_research_q01 wl=5u/2956ms tv=NOT_RUN
+[32/40] legal_policy_research_q04 wl=5u/3101ms tv=NOT_RUN
+[33/40] public_sector_research_q04 wl=5u/3500ms tv=NOT_RUN
+[34/40] public_sector_research_q01 wl=5u/6583ms tv=NOT_RUN
+[35/40] healthcare_information_q01 wl=5u/6415ms tv=NOT_RUN
+[36/40] healthcare_information_q04 wl=5u/6570ms tv=NOT_RUN
+[37/40] structured_data_enrichment_q01 wl=5u/3100ms tv=NOT_RUN
+[38/40] structured_data_enrichment_q04 wl=5u/3035ms tv=NOT_RUN
+[39/40] website_crawling_q04 wl=5u/3639ms tv=NOT_RUN
+[40/40] website_crawling_q01 wl=5u/6541ms tv=NOT_RUN
+
+WebLens[keyless] P@5=0.395 nDCG@5=0.406 MRR=0.528 p50=3221ms tok=345
+Tavily  NOT RUN (no key used, no credits spent)

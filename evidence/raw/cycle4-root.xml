@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="1" failures="0" skipped="0" tests="1" time="6.604" timestamp="2026-11-09T23:10:39.687634+05:30" hostname="DESKTOP-0V817SS"><testcase classname="" name="" time="0.000"><error message="collection failure">..\..\AppData\Roaming\uv\python\cpython-3.14-windows-x86_64-none\Lib\pathlib\__init__.py:666: in lstat
+    return os.lstat(self)
+           ^^^^^^^^^^^^^^
+E   FileNotFoundError: [WinError 2] The system cannot find the file specified: 'C:\\Users\\ACER\\Downloads\\Broswer for ai agnets\\inline-snapshot-y4gdcobs'</error></testcase></testsuite></testsuites>

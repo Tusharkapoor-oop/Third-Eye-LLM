@@ -1,0 +1,19 @@
+{
+  "n_pairs": 80,
+  "p5_diff_mean": -0.07,
+  "p5_diff_ci95": [
+    -0.1075,
+    -0.035
+  ],
+  "ndcg_diff_mean": -0.0733,
+  "ndcg_diff_ci95": [
+    -0.1134,
+    -0.0381
+  ],
+  "ms_diff_mean": -1012.8,
+  "ms_diff_ci95": [
+    -1331.6,
+    -780.5
+  ],
+  "quality_guard": "VIOLATED"
+}

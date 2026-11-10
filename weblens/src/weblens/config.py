@@ -15,6 +15,18 @@ from .tenancy import (
     parse_tenant_rate_limits,
 )
 
+_ALLOWED_PROVIDERS = {
+    "ddg",
+    "brave",
+    "tavily",
+    "searxng",
+    "bing",
+    "yahoo",
+    "mwmbl",
+    "wikipedia",
+    "stackexchange",
+}
+
 
 class Settings(BaseSettings):
     model_config = SettingsConfigDict(
@@ -26,15 +38,21 @@ class Settings(BaseSettings):
 
     # --- search providers -------------------------------------------------
     # Comma-separated order. Supported: ddg, mwmbl, brave, tavily, searxng,
-    # bing, yahoo, wikipedia
+    # bing, yahoo, wikipedia, stackexchange
     # The default chain is deliberately redundant: keyless HTML providers come
     # and go (DuckDuckGo blocks or timeouts entire networks, Bing/Yahoo
     # rate-limit), so a single-provider default silently degrades to two weak
     # sources. mwmbl and wikipedia are always available; bing and yahoo add
-    # mainstream index coverage and are tried after them. Provider health is
-    # tracked in the router, so an endpoint that is failing is skipped for a
-    # cooldown window instead of stalling every query.
+    # mainstream index coverage and are tried after them; stackexchange is a
+    # narrow technical supplement. Provider health is tracked in the router, so
+    # an endpoint that is failing is skipped for a cooldown window instead of
+    # stalling every query.
     search_providers: str = "mwmbl,wikipedia,bing,yahoo"
+    # Providers tried only when the primary fuse leaves fewer than k accepted
+    # results. Narrow supplements (stackexchange for technical questions) add
+    # coverage when the general index is thin without competing for top-k
+    # precision on every query.
+    supplement_providers: str = "stackexchange"
     # Accept both the prefixed settings names and the vendor-standard names
     # commonly placed in `.env` files. The prefixed spelling wins when both are
     # present, so deployment-specific overrides stay unambiguous.
@@ -50,8 +68,33 @@ class Settings(BaseSettings):
         default=None,
         validation_alias=AliasChoices("WEBLENS_SEARXNG_URL", "SEARXNG_URL", "SEARXNG_BASE_URL"),
     )
+    # Optional Stack Apps key. The Stack Exchange API is usable without one
+    # (300 requests/day per IP); a key raises that quota for deployments that
+    # field many technical queries.
+    stackexchange_key: str | None = Field(
+        default=None,
+        validation_alias=AliasChoices("WEBLENS_STACKEXCHANGE_KEY", "STACKEXCHANGE_KEY"),
+    )
+    # When a Tavily key is configured, prepend the hosted Tavily provider even
+    # if ``search_providers`` does not mention it. Tavily is the fastest and
+    # most reliable participant in the fuse; the keyless providers still run as
+    # the free backstop. Set False to keep a strictly keyless chain even when a
+    # key is present (for example to measure keyless-only quality).
+    auto_include_tavily: bool = True
     search_mode: Literal["fallback", "fuse"] = "fuse"
     provider_timeout_s: float = 3.5
+    # Quality-guarded early stop for the hosted fast path. Once a Tavily hit is
+    # in the accepted pool and the Tavily subset alone holds at least
+    # ``k + fuse_early_min_extra`` distinct results across at least
+    # ``fuse_early_min_domains`` registrable domains, the router waits
+    # ``fuse_grace_s`` for in-flight providers and then cancels the rest. A
+    # keyless pool never early-stops: the confirmatory n=40 paired run showed a
+    # P@5 loss beyond the pre-registered margin when slow keyless providers were
+    # cut. Set ``fuse_soft_timeout_s`` to 0 to always wait for every provider.
+    fuse_soft_timeout_s: float = Field(default=2.0, ge=0.0, le=30.0)
+    fuse_early_min_extra: int = Field(default=0, ge=0, le=20)
+    fuse_early_min_domains: int = Field(default=3, ge=1, le=50)
+    fuse_grace_s: float = Field(default=0.25, ge=0.0, le=5.0)
     # Short-lived cache for fused provider results. Repeated queries (for
     # example a synthesis follow-up hop) reuse the same ranked hit list instead
     # of re-hitting free providers. 0 disables it; provider failures are never
@@ -148,7 +191,15 @@ class Settings(BaseSettings):
 
     # --- server -----------------------------------------------------------
     http_host: str = "127.0.0.1"
-    http_port: int = 8765
+    # Render, Cloudflare Containers, Google Cloud Run and Heroku all inject the
+    # listen port as $PORT and route only to that port. Reading it here means the
+    # image binds where the platform sends traffic; without it the server bound
+    # 8765 and every platform health check failed. Explicit WEBLENS_HTTP_PORT
+    # still wins because it is the more specific name.
+    http_port: int = Field(
+        default=8765,
+        validation_alias=AliasChoices("WEBLENS_HTTP_PORT", "PORT"),
+    )
     http_token: str | None = Field(default=None, repr=False)
     # JSON {"tenant": "key"} or comma-separated tenant=key pairs. The legacy
     # single http_token maps to the "default" tenant.
@@ -162,11 +213,19 @@ class Settings(BaseSettings):
     @field_validator("search_providers")
     @classmethod
     def _providers(cls, v: str) -> str:
-        allowed = {"ddg", "brave", "tavily", "searxng", "bing", "yahoo", "mwmbl", "wikipedia"}
         names = [p.strip().lower() for p in v.split(",") if p.strip()]
-        bad = [p for p in names if p not in allowed]
+        bad = [p for p in names if p not in _ALLOWED_PROVIDERS]
         if bad:
-            raise ValueError(f"unknown search provider(s): {bad}; allowed={sorted(allowed)}")
+            raise ValueError(f"unknown search provider(s): {bad}; allowed={sorted(_ALLOWED_PROVIDERS)}")
+        return ",".join(names)
+
+    @field_validator("supplement_providers")
+    @classmethod
+    def _supplement_providers(cls, v: str) -> str:
+        names = [p.strip().lower() for p in v.split(",") if p.strip()]
+        bad = [p for p in names if p not in _ALLOWED_PROVIDERS]
+        if bad:
+            raise ValueError(f"unknown search provider(s): {bad}; allowed={sorted(_ALLOWED_PROVIDERS)}")
         return ",".join(names)
 
     @field_validator("cache_dir", mode="after")
@@ -202,6 +261,10 @@ class Settings(BaseSettings):
     @property
     def provider_list(self) -> list[str]:
         return [p for p in self.search_providers.split(",") if p]
+
+    @property
+    def supplement_list(self) -> list[str]:
+        return [p for p in self.supplement_providers.split(",") if p]
 
     @property
     def host_allowlist(self) -> tuple[str, ...]:

@@ -10,6 +10,7 @@ Run with:
 
 from __future__ import annotations
 
+import json
 import math
 import sys
 from pathlib import Path
@@ -210,3 +211,93 @@ def test_dataset_selection_is_deterministic_and_heldout_first():
     assert all(q["split"] == "development" for q in dev)
     # Limit larger than the pool returns the pool, not an error.
     assert len(v11.select_queries(limit=10_000)) >= 100
+
+
+# --------------------------------------------------------------------------- #
+# WebLens-only runs must never masquerade as a head-to-head
+# --------------------------------------------------------------------------- #
+def test_find_anomalies_suppresses_tavily_reasons_when_arm_not_run():
+    row = v11.Row(
+        id="q1",
+        query="q1",
+        category="general",
+        split="heldout",
+        labels=LABELS,
+        order=["weblens"],
+        weblens_urls=[IRREL],
+        weblens_status="ok",
+        weblens_ms=12.0,
+    )
+    reasons = [r for a in v11.find_anomalies([row]) for r in a["reasons"]]
+    # The skipped Tavily arm must not be reported as "returned nothing".
+    assert "tavily_returned_nothing" not in reasons
+    assert "no_relevant_result_from_either" not in reasons
+
+    # A genuine WebLens-side problem is still flagged.
+    broken = v11.Row(
+        id="q2",
+        query="q2",
+        category="general",
+        split="heldout",
+        labels=LABELS,
+        order=["weblens"],
+        weblens_status="ok",
+        weblens_error="boom",
+    )
+    assert any("weblens_error" in a["reasons"][0] for a in v11.find_anomalies([broken]))
+
+
+def _weblens_only_summary() -> dict:
+    """Minimal serialisable summary for the WebLens-only report branch."""
+    wl = {
+        "n": 3,
+        "hit_at_5": 1.0,
+        "p_at_5": 0.4,
+        "p_at_5_ci95": [0.2, 0.6],
+        "ndcg_at_5": 0.5,
+        "ndcg_at_5_ci95": [0.3, 0.7],
+        "ndcg_at_5_label_cap": 0.6,
+        "mrr": 0.7,
+        "mrr_ci95": [0.5, 0.9],
+        "success_rate": 1.0,
+        "p50_ms": 900.0,
+        "p95_ms": 1800.0,
+        "mean_tokens": 300.0,
+        "mean_payload_tokens": 350.0,
+    }
+    return {
+        "generated_at": "2026-11-09T00:00:00Z",
+        "weblens_only": True,
+        "tavily_arm_status": "NOT_RUN",
+        "dataset": "weblens-lab/datasets/eval_benchmark_suite_v10.json",
+        "dataset_sha256": "a" * 64,
+        "selection_rule": "eligible rows, dataset order",
+        "k": 5,
+        "wall_clock_s": 1.0,
+        "config": {
+            "weblens_providers": ["mwmbl", "wikipedia"],
+            "weblens_search_mode": "fuse",
+            "per_query_timeout_s": 30.0,
+            "concurrency": 2,
+            "sleep_between_queries_s": 0.5,
+            "weblens_official_source_hints": False,
+        },
+        "weblens": wl,
+        "anomalies": [],
+    }
+
+
+def test_weblens_only_report_never_claims_a_tavily_win(tmp_path: Path):
+    summary = _weblens_only_summary()
+    v11.write_report(summary, tmp_path)
+
+    text = (tmp_path / "REPORT.md").read_text(encoding="utf-8")
+    # The arm that did not run must be labelled, not scored as a zero.
+    assert "Tavily arm: NOT RUN" in text
+    assert "WebLens vs Tavily" not in text
+    assert "| Better |" not in text
+    assert "0.000" not in text
+
+    data = json.loads((tmp_path / "results.json").read_text(encoding="utf-8"))
+    assert data["tavily_arm_status"] == "NOT_RUN"
+    assert data["weblens_only"] is True

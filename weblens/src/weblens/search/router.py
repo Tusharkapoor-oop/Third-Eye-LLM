@@ -28,6 +28,7 @@ from .link_expand import expand_official_links
 from .mwmbl import MwmblSearch
 from .relevance import filter_hits
 from .searxng import SearXNGSsearch
+from .stackexchange import StackExchangeSearch
 from .tavily import TavilySearch
 from .wikipedia import WikipediaSearch
 from .yahoo import YahooSearch
@@ -551,6 +552,9 @@ class SearchOutcome:
     status: str = "ok"
     elapsed_ms: int = 0
     warnings: list[str] = field(default_factory=list)
+    # True when the fuse returned without waiting for every provider. Such a
+    # result is timing-dependent and must not be cached as if it were complete.
+    early_stopped: bool = False
 
 
 class SearchRouter:
@@ -558,6 +562,7 @@ class SearchRouter:
         self.s = settings
         self.fetcher = fetcher
         self._providers: list[object] = []
+        self._supplements: list[object] = []
         self.unavailable: dict[str, str] = {}
         self._provider_failures: dict[str, int] = {}
         self._provider_cooldown_until: dict[str, float] = {}
@@ -565,39 +570,66 @@ class SearchRouter:
 
     def _build(self) -> None:
         s = self.s
-        for name in s.provider_list:
-            try:
-                if name == "brave":
-                    if not s.brave_api_key:
-                        self.unavailable[name] = "BRAVE_API_KEY not set"
-                        continue
-                    self._providers.append(BraveSearch(self.fetcher, s.brave_api_key))
-                elif name == "ddg":
-                    self._providers.append(DuckDuckGoLite(self.fetcher))
-                elif name == "tavily":
-                    if not s.tavily_api_key:
-                        self.unavailable[name] = "TAVILY_API_KEY not set"
-                        continue
-                    self._providers.append(TavilySearch(self.fetcher, s.tavily_api_key))
-                elif name == "searxng":
-                    if not s.searxng_url:
-                        self.unavailable[name] = "WEBLENS_SEARXNG_URL not set"
-                        continue
-                    self._providers.append(SearXNGSsearch(self.fetcher, s.searxng_url))
-                elif name == "bing":
-                    self._providers.append(BingHTML(self.fetcher))
-                elif name == "yahoo":
-                    self._providers.append(YahooSearch(self.fetcher))
-                elif name == "mwmbl":
-                    self._providers.append(MwmblSearch(self.fetcher))
-                elif name == "wikipedia":
-                    self._providers.append(WikipediaSearch(self.fetcher))
-            except ProviderError as e:
-                self.unavailable[name] = e.message
+        names = list(s.provider_list)
+        # A configured Tavily key is an explicit signal that the hosted provider
+        # should be used. Prepend it (fuse mode runs every provider concurrently,
+        # so order only breaks ties) unless the caller already placed it.
+        if s.auto_include_tavily and s.tavily_api_key and "tavily" not in names:
+            names.insert(0, "tavily")
+        for name in names:
+            provider = self._instantiate(name)
+            if provider is not None:
+                self._providers.append(provider)
+        # Supplements are only tried when the primary pool is thin. A provider
+        # that is already primary is not instantiated twice.
+        for name in s.supplement_list:
+            if name in names:
+                continue
+            provider = self._instantiate(name)
+            if provider is not None:
+                self._supplements.append(provider)
+
+    def _instantiate(self, name: str):
+        s = self.s
+        try:
+            if name == "brave":
+                if not s.brave_api_key:
+                    self.unavailable[name] = "BRAVE_API_KEY not set"
+                    return None
+                return BraveSearch(self.fetcher, s.brave_api_key)
+            if name == "ddg":
+                return DuckDuckGoLite(self.fetcher)
+            if name == "tavily":
+                if not s.tavily_api_key:
+                    self.unavailable[name] = "TAVILY_API_KEY not set"
+                    return None
+                return TavilySearch(self.fetcher, s.tavily_api_key)
+            if name == "searxng":
+                if not s.searxng_url:
+                    self.unavailable[name] = "WEBLENS_SEARXNG_URL not set"
+                    return None
+                return SearXNGSsearch(self.fetcher, s.searxng_url)
+            if name == "bing":
+                return BingHTML(self.fetcher)
+            if name == "yahoo":
+                return YahooSearch(self.fetcher)
+            if name == "mwmbl":
+                return MwmblSearch(self.fetcher)
+            if name == "wikipedia":
+                return WikipediaSearch(self.fetcher)
+            if name == "stackexchange":
+                return StackExchangeSearch(self.fetcher, s.stackexchange_key)
+        except ProviderError as e:
+            self.unavailable[name] = e.message
+        return None
 
     @property
     def provider_names(self) -> list[str]:
         return [getattr(p, "name", "?") for p in self._providers]
+
+    @property
+    def supplement_names(self) -> list[str]:
+        return [getattr(p, "name", "?") for p in self._supplements]
 
     def _mark_success(self, name: str) -> None:
         self._provider_failures.pop(name, None)
@@ -770,6 +802,13 @@ class SearchRouter:
                 if extra:
                     merged.extend(extra)
                     outcome.warnings.append(f"query_expanded:{alt}")
+                    # The recall pass runs its own _fuse into a throwaway
+                    # outcome. If THAT pass stopped early, the merged list is
+                    # just as timing-dependent as a primary early stop, so the
+                    # flag must be propagated or a partial result gets cached
+                    # for the full TTL.
+                    if alt_outcome.early_stopped:
+                        outcome.early_stopped = True
                     for name in alt_outcome.providers:
                         if name not in outcome.providers:
                             outcome.providers.append(name)
@@ -915,6 +954,30 @@ class SearchRouter:
                 merged = [*merged, *padding][:k]
                 outcome.warnings.append(f"diversity_padded:{len(merged) - len(seen_keys)}")
 
+        # Narrow supplements (for example Stack Exchange for technical
+        # questions) fill *empty* slots only, after the primary results have
+        # been ranked and diversified. They cannot displace a primary hit, so
+        # coverage improves without trading away precision.
+        if len(merged) < k:
+            extra = await self._supplement_pass(
+                used,
+                k=k,
+                freshness=freshness,
+                domains=domains,
+                exclude_domains=exclude_domains,
+                outcome=outcome,
+                accept=accept,
+            )
+            seen_keys = {_doc_key(h.url) for h in merged}
+            for h in extra:
+                if len(merged) >= k:
+                    break
+                key = _doc_key(h.url)
+                if key in seen_keys:
+                    continue
+                seen_keys.add(key)
+                merged.append(h)
+
         outcome.hits = merged
         if stats["off_topic"]:
             outcome.warnings.append(f"off_topic_filtered:{stats['off_topic']}")
@@ -952,6 +1015,7 @@ class SearchRouter:
             and merged
             and outcome.status == "ok"
             and not outcome.failures
+            and not outcome.early_stopped
         ):
             await cache.set_json(
                 cache_key_value,
@@ -1012,6 +1076,43 @@ class SearchRouter:
                 outcome.failures[name] = type(e).__name__
         return collected
 
+    async def _supplement_pass(
+        self,
+        q: str,
+        *,
+        k: int,
+        freshness,
+        domains,
+        exclude_domains,
+        outcome: SearchOutcome,
+        accept,
+    ) -> list[Hit]:
+        """Try supplement providers when the primary pool is thin.
+
+        Failures are isolated in a private outcome: an optional supplement that
+        times out must not downgrade the response status or make the primary
+        result look partial.
+        """
+        if not self._supplements:
+            return []
+        sup_outcome = SearchOutcome(query=outcome.query, used_query=q, hits=[])
+        extra = await self._fallback(
+            q,
+            k=k,
+            freshness=freshness,
+            domains=domains,
+            exclude_domains=exclude_domains,
+            outcome=sup_outcome,
+            accept=accept,
+            providers=self._supplements,
+        )
+        for name in sup_outcome.providers:
+            if name not in outcome.providers:
+                outcome.providers.append(name)
+        if extra:
+            outcome.warnings.append("supplement:" + ",".join(sup_outcome.providers))
+        return extra
+
     async def _fuse(
         self,
         q: str,
@@ -1041,7 +1142,48 @@ class SearchRouter:
             except Exception as e:
                 return name, [], e
 
-        results = await asyncio.gather(*(one(p) for p in providers))
+        if not providers:
+            return []
+
+        soft = self.s.fuse_soft_timeout_s
+        if soft <= 0:
+            results = await asyncio.gather(*(one(p) for p in providers))
+        else:
+            tasks = {asyncio.create_task(one(p)): getattr(p, "name", "?") for p in providers}
+            pending: set = set(tasks)
+            done: set = set()
+            deadline = time.monotonic() + soft
+            early = False
+            while pending:
+                remaining = deadline - time.monotonic()
+                if remaining <= 0:
+                    break
+                finished, pending = await asyncio.wait(pending, timeout=remaining, return_when=asyncio.FIRST_COMPLETED)
+                done |= finished
+                if not finished:
+                    break
+                if self._early_pool_is_enough(self._accepted_from(done), k):
+                    grace = self.s.fuse_grace_s
+                    if grace > 0 and pending:
+                        grace_done, pending = await asyncio.wait(pending, timeout=grace)
+                        done |= grace_done
+                    early = True
+                    break
+            if pending:
+                if not early and self._early_pool_is_enough(self._accepted_from(done), k):
+                    early = True
+                if early:
+                    outcome.early_stopped = True
+                    cancelled = sorted(tasks[task] for task in pending)
+                    for task in pending:
+                        task.cancel()
+                    await asyncio.gather(*pending, return_exceptions=True)
+                    outcome.warnings.append("early_stop:" + ",".join(cancelled))
+                else:
+                    more, _ = await asyncio.wait(pending)
+                    done |= more
+            results = [task.result() for task in done]
+
         merged: list[Hit] = []
         for name, hits, err in results:
             if err is None:
@@ -1052,3 +1194,33 @@ class SearchRouter:
                 self._mark_failure(name)
                 outcome.failures[name] = "timeout" if isinstance(err, TimeoutError) else type(err).__name__
         return merged
+
+    def _accepted_from(self, tasks) -> list[Hit]:
+        hits: list[Hit] = []
+        for task in tasks:
+            if task.cancelled():
+                continue
+            _name, accepted, err = task.result()
+            if err is None:
+                hits.extend(accepted)
+        return hits
+
+    def _early_pool_is_enough(self, hits: list[Hit], k: int) -> bool:
+        """True when the Tavily subset alone can fill the visible window.
+
+        Only the hosted provider is considered. Keyless pools never early-stop:
+        the confirmatory n=40 paired run measured a P@5 loss beyond the
+        pre-registered margin when slow keyless providers were cancelled. The
+        domain floor keeps the fast path from closing on a single-domain pool.
+        """
+        tavily = [h for h in hits if getattr(h, "provider", "") == "tavily"]
+        urls = {h.url for h in tavily}
+        if len(urls) < k + self.s.fuse_early_min_extra:
+            return False
+        # registrable_domain() expects a HOST. Passing the full URL turned every
+        # path into its own "domain", so a six-page single-host pool (or six URL
+        # spellings of one document) satisfied a floor of three and the guard
+        # certified a deep, diverse pool it did not have -- cancelling healthy
+        # slow providers and then shrinking below k in diversify(strict=True).
+        domains = {registrable_domain(host_of(h.url)) for h in tavily}
+        return len(domains) >= self.s.fuse_early_min_domains

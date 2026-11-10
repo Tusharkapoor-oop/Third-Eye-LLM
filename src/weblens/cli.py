@@ -695,9 +695,31 @@ def _transport_security_settings(settings: Settings):
             allowed_hosts=["*"],
             allowed_origins=["*"],
         )
+
+    # The MCP transport matches the Host header EXACTLY, or against an explicit
+    # "host:*" pattern. A bare entry such as "127.0.0.1" therefore never matches
+    # the real header "127.0.0.1:8765", so the documented default rejected every
+    # legitimate client with 421. Operators then "fixed" it with "*", which turns
+    # DNS-rebinding protection off entirely. Expanding each entry to also allow
+    # any port keeps the protection on and makes the default usable as written.
+    expanded: list[str] = []
+    for host in hosts:
+        expanded.append(host)
+        # Already port-scoped, already a wildcard, or an IPv6 literal in brackets.
+        if host.endswith(":*") or host == "*":
+            continue
+        expanded.append(f"{host}:*")
+        # Also accept the bracket-less IPv6 spelling clients sometimes send.
+        if host.startswith("[") and host.endswith("]"):
+            expanded.append(f"{host[1:-1]}:*")
+
+    # De-duplicate while preserving order.
+    seen: set[str] = set()
+    allowed_hosts = [h for h in expanded if not (h in seen or seen.add(h))]
+
     return TransportSecuritySettings(
         enable_dns_rebinding_protection=True,
-        allowed_hosts=hosts,
+        allowed_hosts=allowed_hosts,
         allowed_origins=origins,
     )
 

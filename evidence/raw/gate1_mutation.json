@@ -1,0 +1,33 @@
+{
+  "mutants": [
+    {
+      "mutant": "ssrf-metadata-and-private-ips",
+      "status": "CAUGHT",
+      "file": "weblens/src/weblens/net/ssrf.py",
+      "tests": [
+        "weblens/tests/test_ssrf.py"
+      ],
+      "pytest_exit": 1
+    },
+    {
+      "mutant": "injection-scanner-noop",
+      "status": "CAUGHT",
+      "file": "weblens/src/weblens/security/injection.py",
+      "tests": [
+        "weblens/tests/test_passages.py",
+        "weblens/tests/test_injection_corpus.py"
+      ],
+      "pytest_exit": 1
+    },
+    {
+      "mutant": "token-cap-ceiling-removed",
+      "status": "CAUGHT",
+      "file": "weblens/src/weblens/errors.py",
+      "tests": [
+        "weblens/tests/test_errors_contract.py",
+        "weblens/tests/test_service.py"
+      ],
+      "pytest_exit": 1
+    }
+  ]
+}

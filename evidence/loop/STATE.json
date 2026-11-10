@@ -1,16 +1,29 @@
 {
   "cycle": 1,
-  "phase": "C1_ERROR_HUNT_AND_MUTATION",
+  "phase": "C2_HYBRID_QUALITY_AND_DEPLOY",
   "status": "RUNNING",
-  "next_step": "Complete D1 reconciliation, D2 noise floor calibration, and Gate 1 mutation test suite",
+  "next_step": "The hybrid product is now quality-superior to raw Tavily on n=40 (P@5 +0.165, nDCG +0.184, Hit@5 0.775 vs 0.625, 419 vs 1678 mean tokens) with the fast path firing in 36/40 rows after the relevance-filter fix. Remaining product gaps: p95 tail (2040 vs 501 ms), one fast-path recall loss (technical_research_q04, CAP theorem), and Cloudflare deployment verification. Do not claim overall best-in-field: p95 and deployment are still unproven.",
   "pending_tasks": [
-    "D1_reconcile_git_and_ledger",
-    "D2_measure_noise_floor",
-    "D3_D4_verify_tail_chunker_fix",
-    "gate1_tamper_mutation_verification"
+    "cloudflare_deploy_verification",
+    "tavily_key_rotation_and_history_purge",
+    "loop_report_generator_derive_claims_from_artifacts",
+    "hybrid_p95_tail_investigation",
+    "recall_threshold_ab_k_plus_2_vs_k",
+    "scale_and_adversarial_unmeasured",
+    "review_and_stage_changes_for_commit"
   ],
   "open_defects": [
-    "Gemini API Quota 429 Resource Exhausted on current API keys"
+    "Hybrid p95 is 2040 ms vs Tavily 501 ms. The tail is dominated by rows where the Tavily pool is not deep/diverse enough to trigger the fast path and a keyless provider stalls (e.g. multihop_reasoning_q01 5609 ms in the first hybrid run).",
+    "One hybrid loss remains (technical_research_q04, CAP theorem): the fast path cancelled bing/wikipedia after the Tavily+wikipedia pool was accepted. A follow-up probe returned 8/8 Tavily hits kept by the filter, so this is provider-set/ranking variance rather than a filter drop. Net effect is positive (losses 4 -> 1), but it remains a real recall risk.",
+    "No actual Cloudflare deployment. Workers Paid status, account access and deploy credentials are unverified; local wrangler dev is unsupported on Windows (use WSL).",
+    "Tavily key exposed in git history at 1c11ac3 and a93e61b still requires rotation and history purge.",
+    "tools/generate_loop_report.py hardcodes D1-D4 COMPLETED, parity 31-of-35, Gemini 8.7x and Gate 1 PASSED; reports/loop/STATUS.md and cycle-1.md remain stale. Do not regenerate until those claims are derived from artifacts.",
+    "Concurrent OpenCode/Python sessions edit the same working tree; re-check git status and tree hash before trusting any raw artifact.",
+    "Scale targets 100k/250k/500k and 10k adversarial cases are unmeasured; ANN/HNSW above 50k is not implemented; live Redis and global distributed rate limiting are untested.",
+    "omni-web-mcp remains an empty scaffold.",
+    "LOGFARE_API_KEY is missing (blocks strict Qwen/Gemma audits and OpenCode agent-team creation); Gemini API 429 quota is exhausted.",
+    "The recall pass triggers a second full search when the primary pool is below k+2, which is most queries. A k-only threshold is a candidate latency/quality experiment, not yet A/B tested.",
+    "The StackExchange supplement did not fire in any n=40 keyless or hybrid confirmatory row. It is a dormant thin-pool filler with a unit-tested non-displacement invariant."
   ],
   "rejected_ideas": [
     {
@@ -18,6 +31,44 @@
       "reason": "Failed tests due to chunks below 40-char minimum and p95 latency regression",
       "cycle": 1,
       "date": "2026-11-01"
+    },
+    {
+      "idea": "bounded_fuse_early_stop_v1",
+      "reason": "NOT ACCEPTED and reverted by a concurrent session. Latency improved (dev_before p50 3257.6 ms -> dev_after 1012.6 ms; separate run p50 739.4 ms) but the quality comparison is confounded: the SAME pre-fix code scored P@5 0.575 in dev_before and 0.360 in the cycle1 WebLens-only run. Provider noise is at least as large as the arm difference, so neither a keep nor a reject verdict is justified until an interleaved repeated A/B is run.",
+      "status": "NEEDS_INTERLEAVED_RETEST",
+      "cycle": 1,
+      "date": "2026-11-09",
+      "evidence": [
+        "evidence/raw/dev_before/REPORT.md",
+        "evidence/raw/dev_after/REPORT.md",
+        "evidence/raw/cycle1-benchmark-weblens-only/stdout.txt",
+        "evidence/raw/cycle1-final-latency-v2/stdout.txt",
+        "evidence/ledger.jsonl"
+      ]
+    },
+    {
+      "idea": "recall_skip_timedout_provider_v1",
+      "reason": "Recall pass was changed to drop providers that had just timed out on the primary query. The A/B against the paired run's WebLens arm (same 40 queries) was confounded: aggregate p50/p95 got worse (+242/+374 ms) while five queries moved ~3.3 s the other way, which the change cannot cause, so provider variance dominates. A provider that times out on the long question may still answer the shorter recall query quickly, so skipping it can silently cost recall. Not accepted; router and test reverted to HEAD. Kept only as a reverted experiment.",
+      "status": "INCONCLUSIVE_REVERTED",
+      "cycle": 1,
+      "date": "2026-11-09",
+      "evidence": [
+        "evidence/raw/R-20261109-WEBLENS-AFTER-TIMEOUT-FIX-40/run/REPORT.md",
+        "evidence/raw/R-20261109-PAIRED-TAVILY-40/run/REPORT.md",
+        "evidence/ledger.jsonl"
+      ]
+    },
+    {
+      "idea": "keyless_early_stop_fuse_soft_timeout_2s",
+      "reason": "Confirmatory 2x2 keyless n=40 (AB5) failed the pre-registered non-inferiority test: paired C-A P@5 -0.0075 CI [-0.0300,+0.0100] vs margin -0.020; nDCG -0.0058 CI [-0.0237,+0.0091] vs -0.020; Hit@5 -0.0125 CI [-0.0500,+0.0250] vs -0.025. Latency passed (p50 -36%, p95 -29%). The early stop is now gated to pools containing a Tavily hit; keyless pools always wait.",
+      "status": "REJECTED_FOR_KEYLESS",
+      "cycle": 1,
+      "date": "2026-11-09",
+      "evidence": [
+        "evidence/raw/R-20261109-AB5-r1-*",
+        "evidence/raw/R-20261109-AB5-r2-*",
+        "evidence/loop/PREREG-20261109-CONFIRM.md"
+      ]
     }
   ],
   "backlog": [
@@ -28,15 +79,220 @@
   "held_out_slices_used": [
     "benchmarks/eval_dataset_expanded.json"
   ],
+  "latest_paired_result": {
+    "evidence_id": "R-20261109-HYBRID-40-FILTER",
+    "kind": "REAL",
+    "scope": "Hybrid WebLens (Tavily provider enabled + keyless fuse + stackexchange supplement + Tavily-gated fast path) vs Tavily hosted API called directly; hints off; k=5; Tavily search_depth=basic; relevance filter v2 (stemming + authority bypass + reference-site denylist).",
+    "n": 40,
+    "dataset": "weblens-lab/datasets/eval_benchmark_suite_v10.json",
+    "dataset_sha256_prefix": "a42d4004fb91208f",
+    "weblens": {
+      "hit_at_5": 0.775,
+      "p_at_5": 0.365,
+      "ndcg_at_5": 0.399,
+      "mrr": 0.613,
+      "success_rate": 1.0,
+      "p50_ms": 717.6,
+      "p95_ms": 2040.4,
+      "mean_tokens": 419.4,
+      "early_stop_rows": 36
+    },
+    "tavily": {
+      "hit_at_5": 0.625,
+      "p_at_5": 0.2,
+      "ndcg_at_5": 0.214,
+      "mrr": 0.392,
+      "success_rate": 1.0,
+      "p50_ms": 330.8,
+      "p95_ms": 501.0,
+      "mean_tokens": 1677.7
+    },
+    "paired": {
+      "p_at_5_diff": 0.165,
+      "p_at_5_diff_ci95": [
+        0.095,
+        0.245
+      ],
+      "ndcg_at_5_diff": 0.184,
+      "ndcg_at_5_diff_ci95": [
+        0.108,
+        0.268
+      ],
+      "wins": 18,
+      "ties": 21,
+      "losses": 1
+    },
+    "reading": "The shipped hybrid beats raw Tavily on precision (P@5 +0.165, nDCG +0.184, both paired CIs exclude zero), Hit@5 (0.775 vs 0.625) and token cost (419 vs 1678 mean tokens), with one loss in 40. It is still slower: p50 718 vs 331 ms and p95 2040 vs 501 ms. Cross-run P@5 vs the pre-fix hybrid is -0.02 with a bootstrap CI [-0.10, +0.055], i.e. within provider noise; Hit@5 improved and losses fell 4 -> 1. The fast path fired in 36/40 rows. The single loss is provider-set/ranking variance (a follow-up probe kept 8/8 Tavily hits), not a filter drop. Fairness note: the WebLens Tavily adapter requests up to 8 results and fuses to 5, while the direct Tavily arm requests 5; both spend one credit per query. Labels are domains, not judged answers; one confirmatory run.",
+    "artifact": "evidence/raw/R-20261109-HYBRID-40-FILTER/REPORT.md",
+    "previous_hybrid_without_filter_fix": {
+      "evidence_id": "R-20261109-HYBRID-40",
+      "scope": "First hybrid run, before the relevance-filter fix; fast path fired in only 2/40 rows.",
+      "n": 40,
+      "weblens": {
+        "hit_at_5": 0.75,
+        "p_at_5": 0.385,
+        "ndcg_at_5": 0.399,
+        "success_rate": 1.0,
+        "p50_ms": 1923.1,
+        "p95_ms": 4287.3,
+        "mean_tokens": 400.0,
+        "early_stop_rows": 2
+      },
+      "tavily": {
+        "hit_at_5": 0.625,
+        "p_at_5": 0.2,
+        "ndcg_at_5": 0.214,
+        "success_rate": 1.0,
+        "p50_ms": 1902.1,
+        "p95_ms": 3308.0,
+        "mean_tokens": 1678.0
+      },
+      "paired": {
+        "p_at_5_diff": 0.185,
+        "p_at_5_diff_ci95": [
+          0.1,
+          0.275
+        ],
+        "ndcg_at_5_diff": 0.185,
+        "ndcg_at_5_diff_ci95": [
+          0.099,
+          0.275
+        ],
+        "wins": 21,
+        "ties": 15,
+        "losses": 4
+      },
+      "artifact": "evidence/raw/R-20261109-HYBRID-40/REPORT.md"
+    },
+    "previous_keyless_paired": {
+      "evidence_id": "R-20261109-PAIRED-TAVILY-40",
+      "kind": "REAL",
+      "scope": "WebLens keyless providers (tavily provider disabled) vs Tavily hosted API; hints off; k=5; Tavily search_depth=basic",
+      "n": 40,
+      "dataset": "weblens-lab/datasets/eval_benchmark_suite_v10.json",
+      "dataset_sha256_prefix": "a42d4004fb91208f",
+      "weblens": {
+        "hit_at_5": 0.55,
+        "p_at_5": 0.325,
+        "ndcg_at_5": 0.336,
+        "mrr": 0.412,
+        "success_rate": 0.975,
+        "p50_ms": 3121.0,
+        "p95_ms": 6196.9,
+        "mean_tokens": 316.4
+      },
+      "tavily": {
+        "hit_at_5": 0.6,
+        "p_at_5": 0.18,
+        "ndcg_at_5": 0.196,
+        "mrr": 0.38,
+        "success_rate": 1.0,
+        "p50_ms": 1080.9,
+        "p95_ms": 3242.1,
+        "mean_tokens": 1666.1
+      },
+      "paired": {
+        "p_at_5_diff": 0.145,
+        "p_at_5_diff_ci95": [
+          0.035,
+          0.255
+        ],
+        "ndcg_at_5_diff": 0.14,
+        "ndcg_at_5_diff_ci95": [
+          0.034,
+          0.248
+        ],
+        "wins": 19,
+        "ties": 14,
+        "losses": 7
+      },
+      "reading": "Authoritative sample (n=40). WebLens leads on precision (P@5 +0.145 and nDCG +0.140, both paired CIs exclude zero) but trails on Hit@5 (0.550 vs 0.600), reliability (97.5% vs 100%), p50 (3121 vs 1081 ms) and p95 (6197 vs 3242 ms). It is NOT best-in-field overall: it is the more precise but slower and less reliable system. Labels are domains, not judged answers; one run per arm.",
+      "artifact": "evidence/raw/R-20261109-PAIRED-TAVILY-40/run/REPORT.md",
+      "previous_sample_n20": {
+        "evidence_id": "R-20261109-PAIRED-TAVILY-20",
+        "p_at_5": 0.45,
+        "tavily_p_at_5": 0.16,
+        "p_at_5_diff": 0.29,
+        "p_at_5_diff_ci95": [
+          0.17,
+          0.43
+        ],
+        "reading": "First valid paired run. The first 20 queries are easier for WebLens, so this overstated the edge relative to n=40. Retained as subset evidence, not the headline.",
+        "artifact": "evidence/raw/R-20261109-PAIRED-TAVILY-20/run/REPORT.md"
+      }
+    }
+  },
   "credit_plan_and_spend": {
     "tavily_budget_cap": 500,
-    "tavily_credits_spent": 12,
-    "tavily_credits_remaining": 488,
+    "tavily_credits_spent": 239,
+    "tavily_credits_remaining": 261,
+    "session_credits_spent": 167,
+    "session_cap": 257,
+    "session_credits_remaining": 90,
+    "accounting_note": "Estimated from artifacts: two hybrid n=40 runs at 80 credits each (40 WebLens + 40 direct Tavily), two one-query live smokes (2), two two-query filter probes (4), and one CAP-query provider probe (1). No preflight Tavily calls were observed.",
     "gemini_api_status": "BLOCKED_429_QUOTA_EXHAUSTED"
   },
-  "ledger_head_hash": "191f1345dea9a02eb9c54cafd3509826d5abae7ed53f495ef7a2cf5cd34d16ae",
-  "git_commit": "f3401c7794fb74f8682340d81b3580333abe4b2c",
+  "ledger_head_hash": "cfacf8a7ccba1d29aae5e17101eb74cdcda92081933cfb18e91ae4bd04beba01",
+  "git_commit": "4c99e93491e3855679a28d43e8ab317c67cf6584",
   "owner_notes_read_at": "2026-11-04T09:25:21+05:30",
-  "updated_at": "2026-11-04T09:38:00+05:30"
+  "updated_at": "2026-11-09T17:47:54.748870+00:00",
+  "pending_tasks_previous": [
+    "D1_reconcile_git_and_ledger",
+    "D2_measure_noise_floor",
+    "gate1_tamper_mutation_verification",
+    "bounded_fuse_interleaved_retest",
+    "paired_tavily_n40_repeat_interleaved",
+    "hit_at_5_coverage_and_reliability",
+    "latency_work_without_quality_regression"
+  ],
+  "resolved_defects": [
+    {
+      "defect": "Relevance filter discarded authoritative opaque-title hits (SEC filings, Apple IR, NVIDIA product pages) and admitted thesaurus junk.",
+      "resolution": "Added light plural/verb stemming, a one-term authority bypass for .gov/.edu/.mil and entity hosts, and a dictionary/thesaurus denylist for non-definition queries.",
+      "evidence": [
+        ".tmp/filter_probe.txt (before: Tavily Apple 2/8 kept, NVIDIA 5/8 kept)",
+        ".tmp/filter_probe2.txt (after: Tavily Apple 7/8 kept, NVIDIA 8/8 kept; dictionary junk still dropped)",
+        "weblens/tests/test_search_router.py filter tests",
+        "evidence/raw/R-20261109-HYBRID-40-FILTER/REPORT.md"
+      ]
+    },
+    {
+      "defect": "Hybrid latency p50 1923 ms / p95 4287 ms (first hybrid run).",
+      "resolution": "Tavily-gated fast path with a 250 ms grace window; the filter fix made the Tavily pool visible, so the fast path fired in 36/40 rows. p50 1923 -> 718 ms, p95 4287 -> 2040 ms in the confirmatory re-run.",
+      "evidence": [
+        "evidence/raw/R-20261109-HYBRID-40/REPORT.md",
+        "evidence/raw/R-20261109-HYBRID-40-FILTER/REPORT.md"
+      ]
+    },
+    {
+      "defect": "Keyless early stop traded quality for latency beyond the pre-registered margin.",
+      "resolution": "Rejected for keyless pools; the early stop is now gated on a Tavily hit. Keyless pools always wait for every provider.",
+      "evidence": [
+        "evidence/raw/R-20261109-AB5-r1-*",
+        "evidence/raw/R-20261109-AB5-r2-*",
+        "evidence/loop/PREREG-20261109-CONFIRM.md"
+      ]
+    }
+  ],
+  "open_defects_previous": [
+    "Gemini API Quota 429 Resource Exhausted on current API keys",
+    "Concurrent OpenCode sessions edit the same working tree; the bounded-fuse change was reverted mid-session and weblens/tests/test_bounded_fuse.py was deleted (not by this session). Re-check git status and tree_hash before trusting any raw artifact.",
+    "reports/weblens-vs-tavily-v11/cycle1/REPORT.md and evidence/raw/dev_before|dev_after|dev_reverted*/REPORT.md came from WebLens-only runs whose Tavily arm never executed, yet rendered Tavily as 0.000 / 0% success. They are NOT_RUN artifacts, not head-to-heads. The generator now emits a distinct NOT_RUN report and a NOT_RUN console line (R-20261109-V11-REPORT-HONESTY, R-20261109-V11-ONLY-SMOKE); the old files are left byte-untouched as evidence of the defect.",
+    "Legacy root aggregator normalize_url lowercased path case and accepted control-character/whitespace hosts; fixed and covered by R-20261109-ROOT-URL-NORMALIZE and R-20261109-ROOT-EDGE-NORMALIZE (the old edge-fuzz expectation encoded the bug and was corrected).",
+    "tools/generate_loop_report.py hardcodes D1-D4 COMPLETED, parity 31-of-35, Gemini 8.7x and Gate 1 PASSED instead of deriving them from artifacts. Do not regenerate reports/loop/STATUS.md or cycle-1.md with it until those claims are derived; doing so would re-assert unmeasured numbers with a fresh timestamp.",
+    "reports/loop/STATUS.md and reports/loop/cycle-1.md are stale (2026-11-04, ledger head 191f1345...). The current verified head is recorded here, not in those files.",
+    "Latency deficit is large and measured at n=40: WebLens p50 3121 ms vs Tavily 1081 ms and p95 6197 ms vs 3242 ms. A recall-pass timeout guard was tested (R-20261109-WEBLENS-AFTER-TIMEOUT-FIX-40) but its aggregate A/B was INCONCLUSIVE and it was reverted, because it can silently cost recall and the evidence did not justify it. The next latency candidate should be a bounded, quality-guarded design (for example a short grace timeout for stragglers) measured with interleaved repetitions.",
+    "Coverage/reliability gap at n=40: Hit@5 0.550 vs Tavily 0.600 and success 97.5% vs 100%. programming_developer_docs_q01 returns no_reliable_result in both n=40 runs because mwmbl/wikipedia/bing return off-topic pages and only Yahoo carries docs.python.org hits; when Yahoo errors or times out the keyless backend returns nothing. The product default with the Tavily provider enabled is not affected; the benchmark disables it to measure independence.",
+    "Bing returned generic/redirect pages (claude.ai links) for the developer-docs query; the relevance filter correctly drops them, so Bing contributes nothing and the slot is wasted. Do not add anti-bot evasion; treat as degraded provider coverage and prefer a reliable provider in the product chain."
+  ],
+  "working_tree_dirty": true,
+  "verification_20261109": {
+    "canonical_suite": "exit 0, coverage 90.95% (weblens, 7815 statements)",
+    "root_suite": "363 passed, 3 skipped, exit 0 in 1036.74s",
+    "targeted_router": "41 passed; ruff clean",
+    "lab_v11": "13 passed",
+    "mirror_drift": "byte-identical: config.py, search/router.py, search/relevance.py, search/stackexchange.py",
+    "cloudflare": "tsc --noEmit exit 0; wrangler deploy --dry-run exit 0 (image built, bindings validated, no deploy)",
+    "evidence_chain": "70 entries verified, head cfacf8a7ccba1d29aae5e17101eb74cdcda92081933cfb18e91ae4bd04beba01"
+  }
 }
-

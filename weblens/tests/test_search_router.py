@@ -1,6 +1,8 @@
 from __future__ import annotations
 
+import asyncio
 import json
+import time
 
 import pytest
 
@@ -9,8 +11,9 @@ from weblens.errors import ProviderError
 from weblens.net import FetchResponse
 from weblens.search.base import Hit
 from weblens.search.mwmbl import MwmblSearch
-from weblens.search.relevance import domain_matches, domain_pattern, is_relevant
+from weblens.search.relevance import domain_matches, domain_pattern, filter_hits, is_relevant
 from weblens.search.router import (
+    SearchOutcome,
     SearchRouter,
     _doc_key,
     _skip_link_expansion,
@@ -129,6 +132,194 @@ def test_provider_timeout_override(settings):
     assert router._provider_timeout(FakeProvider("plain", [])) == settings.provider_timeout_s
 
 
+def test_configured_tavily_key_is_prepended_to_the_provider_chain(tmp_path):
+    settings = Settings(
+        cache_dir=tmp_path / "cache",
+        search_providers="mwmbl,wikipedia",
+        tavily_api_key="tvly-test",
+        auto_include_tavily=True,
+    )
+    router = SearchRouter(settings, fetcher=None)  # type: ignore[arg-type]
+    assert router.provider_names == ["tavily", "mwmbl", "wikipedia"]
+
+
+def test_tavily_is_not_duplicated_when_already_listed(tmp_path):
+    settings = Settings(
+        cache_dir=tmp_path / "cache",
+        search_providers="tavily,mwmbl",
+        tavily_api_key="tvly-test",
+    )
+    router = SearchRouter(settings, fetcher=None)  # type: ignore[arg-type]
+    assert router.provider_names == ["tavily", "mwmbl"]
+
+
+def test_auto_include_tavily_can_be_disabled(tmp_path):
+    settings = Settings(
+        cache_dir=tmp_path / "cache",
+        search_providers="mwmbl",
+        tavily_api_key="tvly-test",
+        auto_include_tavily=False,
+    )
+    router = SearchRouter(settings, fetcher=None)  # type: ignore[arg-type]
+    assert router.provider_names == ["mwmbl"]
+
+
+class DelayedProvider(FakeProvider):
+    def __init__(self, name: str, hits: list[Hit], delay: float):
+        super().__init__(name, hits)
+        self.delay = delay
+
+    async def search(self, query: str, **kwargs):
+        self.calls += 1
+        await asyncio.sleep(self.delay)
+        return list(self.hits)
+
+
+def _domained_hits(prefix: str, n: int, domain: str) -> list[Hit]:
+    return [hit(f"{prefix} {i}", f"https://{domain}/{prefix}{i}") for i in range(n)]
+
+
+def _fuse_settings(tmp_path, **kwargs) -> Settings:
+    return Settings(
+        cache_dir=tmp_path / "cache",
+        cache_enabled=False,
+        allow_browser=False,
+        search_providers="ddg",
+        **kwargs,
+    )
+
+
+async def _run_fuse(router: SearchRouter, providers, *, k: int = 5) -> tuple[list[Hit], SearchOutcome]:
+    outcome = SearchOutcome(query="q", used_query="q", hits=[])
+    merged = await router._fuse(
+        "q",
+        k=k,
+        freshness=None,
+        domains=None,
+        exclude_domains=None,
+        outcome=outcome,
+        accept=lambda hs: hs,
+        providers=providers,
+    )
+    return merged, outcome
+
+
+@pytest.mark.asyncio
+async def test_fuse_stops_early_when_the_pool_is_deep_and_diverse(tmp_path):
+    settings = _fuse_settings(
+        tmp_path,
+        fuse_soft_timeout_s=0.05,
+        fuse_early_min_extra=0,
+        fuse_early_min_domains=2,
+        fuse_grace_s=0.01,
+    )
+    router = SearchRouter(settings, fetcher=None)  # type: ignore[arg-type]
+    # The floor counts *registrable* domains, so the fixture must use two
+    # genuinely distinct sites. Subdomains of one site (a.example.com +
+    # b.example.com) both resolve to example.com and correctly fail the floor.
+    fast = FakeProvider(
+        "fast",
+        _domained_hits("a", 4, "alpha.example") + _domained_hits("b", 4, "beta.example"),
+    )
+    for item in fast.hits:
+        item.provider = "tavily"
+    slow = DelayedProvider("slow", [hit("late", "https://c.example.com/late")], 0.4)
+    started = time.perf_counter()
+    merged, outcome = await _run_fuse(router, [fast, slow])
+    elapsed = time.perf_counter() - started
+    assert elapsed < 0.2
+    assert {h.url for h in merged} == {h.url for h in fast.hits}
+    assert outcome.early_stopped is True
+    assert outcome.warnings == ["early_stop:slow"]
+    assert "slow" not in outcome.failures
+
+
+@pytest.mark.asyncio
+async def test_fuse_does_not_early_stop_on_a_single_domain_pool(tmp_path):
+    """The domain floor must count registrable domains, not URL paths.
+
+    Regression for a real defect: the guard passed the whole URL to
+    ``registrable_domain()``, which expects a host, so every path became its own
+    "domain". Six pages on one host therefore satisfied a floor of three,
+    certified the pool as diverse, and cancelled healthy slow providers while the
+    post-diversity window shrank below k. This test fails if the guard regresses.
+    """
+    settings = _fuse_settings(
+        tmp_path,
+        fuse_soft_timeout_s=0.05,
+        fuse_early_min_extra=0,
+        fuse_early_min_domains=3,
+        fuse_grace_s=0.01,
+    )
+    router = SearchRouter(settings, fetcher=None)  # type: ignore[arg-type]
+    # Six distinct URLs, all on ONE registrable domain, all from the only
+    # provider eligible for early stopping.
+    one_host = FakeProvider(
+        "fast",
+        [hit(f"post {i}", f"https://blog.single-domain.example/post-{i}") for i in range(6)],
+    )
+    for item in one_host.hits:
+        item.provider = "tavily"
+    slow = DelayedProvider("slow", [hit("late", "https://other.example/late")], 0.3)
+
+    merged, outcome = await _run_fuse(router, [one_host, slow])
+
+    assert outcome.early_stopped is False, (
+        "a six-page single-domain pool must not satisfy a 3-domain floor; "
+        "the guard is counting URL paths instead of registrable domains"
+    )
+    assert "https://other.example/late" in {h.url for h in merged}, "the slow provider must not be cancelled"
+
+
+@pytest.mark.asyncio
+async def test_fuse_waits_for_a_deep_keyless_pool(tmp_path):
+    settings = _fuse_settings(tmp_path, fuse_soft_timeout_s=0.05, fuse_early_min_extra=0, fuse_early_min_domains=2)
+    router = SearchRouter(settings, fetcher=None)  # type: ignore[arg-type]
+    fast = FakeProvider(
+        "fast",
+        _domained_hits("a", 4, "a.example.com") + _domained_hits("b", 4, "b.example.com"),
+    )
+    slow = DelayedProvider("slow", [hit("late", "https://c.example.com/late")], 0.2)
+    merged, outcome = await _run_fuse(router, [fast, slow])
+    assert "https://c.example.com/late" in {h.url for h in merged}
+    assert outcome.early_stopped is False
+    assert not any(w.startswith("early_stop:") for w in outcome.warnings)
+
+
+@pytest.mark.asyncio
+async def test_fuse_waits_when_the_pool_is_thin(tmp_path):
+    settings = _fuse_settings(
+        tmp_path,
+        fuse_soft_timeout_s=0.05,
+        fuse_early_min_extra=2,
+        fuse_early_min_domains=2,
+        fuse_grace_s=0.01,
+    )
+    router = SearchRouter(settings, fetcher=None)  # type: ignore[arg-type]
+    fast = FakeProvider("fast", _domained_hits("a", 2, "a.example.com"))
+    for item in fast.hits:
+        item.provider = "tavily"
+    slow = DelayedProvider("slow", _domained_hits("b", 5, "b.example.com"), 0.2)
+    merged, outcome = await _run_fuse(router, [fast, slow])
+    assert "https://b.example.com/b0" in {h.url for h in merged}
+    assert outcome.early_stopped is False
+    assert not any(w.startswith("early_stop:") for w in outcome.warnings)
+
+
+@pytest.mark.asyncio
+async def test_fuse_early_stop_can_be_disabled(tmp_path):
+    settings = _fuse_settings(tmp_path, fuse_soft_timeout_s=0, fuse_early_min_extra=0, fuse_early_min_domains=1)
+    router = SearchRouter(settings, fetcher=None)  # type: ignore[arg-type]
+    fast = FakeProvider(
+        "fast",
+        _domained_hits("a", 4, "a.example.com") + _domained_hits("b", 4, "b.example.com"),
+    )
+    slow = DelayedProvider("slow", [hit("late", "https://c.example.com/late")], 0.2)
+    merged, outcome = await _run_fuse(router, [fast, slow])
+    assert "https://c.example.com/late" in {h.url for h in merged}
+    assert outcome.early_stopped is False
+
+
 @pytest.mark.asyncio
 async def test_mwmbl_joins_segment_arrays():
     body = json.dumps(
@@ -177,11 +368,66 @@ def test_is_relevant_requires_half_of_terms_and_phrase():
 
 def test_authoritative_page_with_partial_term_coverage_is_kept():
     docs = hit(
-        "asyncio — Asynchronous I/O — Python 3.15.0 documentation",
+        "asyncio - Asynchronous I/O - Python 3.15.0 documentation",
         "https://docs.python.org/3/library/asyncio.html",
         "asyncio is a library to write concurrent code.",
     )
     assert is_relevant(docs, ["python", "asyncio.timeout", "asyncio", "timeout", "usage"], [])
+
+
+def test_filter_keeps_opaque_official_filings():
+    query = "What were Apple's reported total net sales in its official FY2024 10-K SEC regulatory filing?"
+    sec = hit(
+        "aapl-20240928",
+        "https://www.sec.gov/Archives/edgar/data/320193/aapl-20240928.htm",
+        "Net sales $167,045",
+    )
+    investor = hit(
+        "Investor Relations - Apple",
+        "https://investor.apple.com/investor-relations/default.aspx",
+    )
+    kept, off_topic, _ = filter_hits([sec, investor], query)
+    assert {h.url for h in kept} == {sec.url, investor.url}
+    assert off_topic == 0
+
+
+def test_filter_stems_plural_and_verb_forms():
+    query = "What are the major commercial AI hardware chip families produced by NVIDIA for data centers?"
+    products = hit(
+        "Accelerating the Next Wave of AI Innovation | NVIDIA Data Center Products",
+        "https://www.nvidia.com/en-us/data-center/products",
+    )
+    kept, _, _ = filter_hits([products], query)
+    assert [h.url for h in kept] == [products.url]
+
+
+def test_filter_keeps_stemmed_alphafold_page():
+    query = "What is AlphaFold 3 capable of predicting beyond protein structures?"
+    page = hit(
+        "AlphaFold 3 predicts the structure and interactions of all of life's molecules",
+        "https://deepmind.google/science/alphafold",
+    )
+    kept, _, _ = filter_hits([page], query)
+    assert [h.url for h in kept] == [page.url]
+
+
+def test_filter_drops_thesaurus_pages_unless_definitions_are_requested():
+    junk = hit(
+        "Muscatel synonyms",
+        "https://www.freethesaurus.com/muscatel",
+        "total reported net sales",
+    )
+    query = "What were Apple's reported total net sales in its official FY2024 10-K SEC regulatory filing?"
+    kept, off_topic, _ = filter_hits([junk], query)
+    assert kept == [] and off_topic == 1
+    kept2, _, _ = filter_hits([junk], "What is a synonym for muscatel?")
+    assert [h.url for h in kept2] == [junk.url]
+
+
+def test_filter_drops_an_unrelated_gov_page():
+    page = hit("Weather forecast", "https://www.weather.gov/", "sunny")
+    kept, off_topic, _ = filter_hits([page], "What were Apple's FY2024 net sales?")
+    assert kept == [] and off_topic == 1
 
 
 def test_domain_patterns():

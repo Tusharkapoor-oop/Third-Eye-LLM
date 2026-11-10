@@ -1,0 +1,35 @@
+{
+  "analysed_by": "lead (re-analysis of another writer's raw runs)",
+  "raw_runs": [
+    "evidence/raw/R-20261109-AB5-r1-A",
+    "evidence/raw/R-20261109-AB5-r1-B",
+    "evidence/raw/R-20261109-AB5-r2-A",
+    "evidence/raw/R-20261109-AB5-r2-B",
+    "evidence/raw/R-20261109-AB5-r1-C",
+    "evidence/raw/R-20261109-AB5-r1-D",
+    "evidence/raw/R-20261109-AB5-r2-C",
+    "evidence/raw/R-20261109-AB5-r2-D"
+  ],
+  "comparison": "wait-all (soft=0.0s) vs shipped quality-guarded early stop (soft=2.0s)",
+  "paired_n": 160,
+  "early_stops_in_soft_arms": 81,
+  "p_at_5_diff_mean": -0.0038,
+  "p_at_5_diff_ci95": [
+    -0.0175,
+    0.01
+  ],
+  "ndcg_at_5_diff_mean": -0.0031,
+  "ndcg_at_5_diff_ci95": [
+    -0.0149,
+    0.0085
+  ],
+  "latency_diff_ms": -1436.0,
+  "latency_diff_ci95": [
+    -1567.6,
+    -1305.1
+  ],
+  "quality_guard": "HELD",
+  "verdict": "KEPT - latency win with quality non-inferior",
+  "correction": "Supersedes cycle-2 report's 'inert' claim, which rested on a 6-query probe where the guard did not fire.",
+  "analysed_at": "2026-11-09T17:05:07Z"
+}

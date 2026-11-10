@@ -7,3 +7,11 @@ TAVILY_API_KEY="tvly-replace-me"
 # The container's normal format is a JSON object or comma-separated tenant=key
 # pairs. The Worker accepts the same forms.
 # WEBLENS_API_KEYS='{"tenant-a":"replace-with-another-long-token"}'
+
+# Optional hosted fast path (defaults shown). It only fires after Tavily fills
+# the visible window; keyless pools always wait for every provider.
+# WEBLENS_FUSE_SOFT_TIMEOUT_S="2.0"
+# WEBLENS_FUSE_GRACE_S="0.25"
+# WEBLENS_FUSE_EARLY_MIN_EXTRA="0"
+# WEBLENS_FUSE_EARLY_MIN_DOMAINS="3"
+# WEBLENS_SUPPLEMENT_PROVIDERS="stackexchange"

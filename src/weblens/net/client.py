@@ -8,6 +8,7 @@ import time
 from dataclasses import dataclass, field
 from datetime import UTC, datetime
 from typing import Any
+from urllib.parse import parse_qsl, urlencode, urlsplit, urlunsplit
 
 import httpx
 
@@ -64,6 +65,90 @@ def _auth_fingerprint(headers: dict[str, str] | None) -> str:
         if k.lower() == "authorization":
             return hashlib.sha256(v.encode("utf-8")).hexdigest()
     return ""
+
+
+# Header names that carry caller credentials and must never cross an origin
+# boundary on a redirect. Search-provider API keys travel in these.
+_CREDENTIAL_HEADERS = frozenset(
+    {
+        "authorization",
+        "proxy-authorization",
+        "x-subscription-token",
+        "x-api-key",
+        "api-key",
+        "cookie",
+    }
+)
+
+
+def _origin_of(url: str) -> tuple[str, str, int] | None:
+    """(scheme, host, port) with default ports resolved, or None if unparseable."""
+    try:
+        parsed = urlsplit(url)
+        scheme = (parsed.scheme or "").lower()
+        host = (parsed.hostname or "").lower()
+        port = parsed.port
+        if port is None:
+            port = 443 if scheme == "https" else 80
+        return scheme, host, port
+    except (ValueError, AttributeError):
+        return None
+
+
+def _same_origin(a: str, b: str) -> bool:
+    """True only when both URLs share scheme, host and port."""
+    oa, ob = _origin_of(a), _origin_of(b)
+    return oa is not None and oa == ob
+
+
+def _strip_credentials(headers: dict[str, str]) -> dict[str, str]:
+    """Return a copy of ``headers`` without credential-bearing entries."""
+    return {k: v for k, v in headers.items() if k.lower() not in _CREDENTIAL_HEADERS}
+
+
+# Query parameters that routinely carry API keys. Providers such as Stack
+# Exchange put their key in the URL, so the URL itself must be redacted before it
+# is written to the on-disk cache or interpolated into an error message.
+_SECRET_QUERY_PARAMS = frozenset(
+    {
+        "key",
+        "api_key",
+        "apikey",
+        "access_token",
+        "token",
+        "secret",
+        "client_secret",
+        "password",
+        "auth",
+        "sig",
+        "signature",
+    }
+)
+
+
+def redact_url(url: str) -> str:
+    """Return ``url`` with secret-looking query values replaced by ``REDACTED``.
+
+    Used anywhere a URL can be persisted or surfaced (cache metadata, error text,
+    logs). Failure to parse leaves the URL untouched rather than raising, because
+    redaction must never break a fetch.
+    """
+    try:
+        parsed = urlsplit(url)
+    except (ValueError, AttributeError):
+        return url
+    if not parsed.query:
+        return url
+    try:
+        pairs = parse_qsl(parsed.query, keep_blank_values=True)
+    except ValueError:
+        return url
+    if not any(k.lower() in _SECRET_QUERY_PARAMS for k, _ in pairs):
+        return url
+    redacted = [
+        (k, "REDACTED" if k.lower() in _SECRET_QUERY_PARAMS else v) for k, v in pairs
+    ]
+    return urlunsplit((parsed.scheme, parsed.netloc, parsed.path, urlencode(redacted), parsed.fragment))
 
 
 @dataclass
@@ -264,7 +349,7 @@ class SafeFetcher:
                     cached_resp.body,
                     {
                         "kind": "http",
-                        "final_url": cached_resp.final_url,
+                        "final_url": redact_url(cached_resp.final_url),
                         "status": cached_resp.status,
                         "headers": cached_resp.headers,
                         "fetched_at": cached_resp.fetched_at,
@@ -282,13 +367,21 @@ class SafeFetcher:
                     raise FetchError(f"redirect to disallowed URL: {location[:100]}", code=ErrCode.BLOCKED_URL)
                 if nxt in hops:
                     raise FetchError("redirect loop", code=ErrCode.HTTP)
+                # Caller credentials (Tavily's Authorization, Brave's
+                # X-Subscription-Token) must not follow a redirect to a different
+                # origin. httpx drops Authorization on cross-host redirects;
+                # this loop is hand-rolled and previously did not, so a 30x from
+                # an API host -- or one injected via a misconfigured base_url --
+                # would have forwarded the operator's paid key to the target.
+                if not _same_origin(current, nxt):
+                    req_headers = _strip_credentials(req_headers)
                 hops.append(current)
                 current = nxt
                 continue
 
             if not resp.ok:
                 fetch_err = FetchError(
-                    f"HTTP {resp.status} for {current}",
+                    f"HTTP {resp.status} for {redact_url(current)}",
                     code=ErrCode.HTTP,
                     retryable=resp.status in RETRY_CODES,
                     status=resp.status,
@@ -298,14 +391,14 @@ class SafeFetcher:
                 raise fetch_err
 
             resp.redirects = hops
-            resp.final_url = current
+            resp.final_url = redact_url(current)
             if use_cache and self.cache.s.cache_enabled and resp.status == 200:
                 await self.cache.set(
                     key,
                     resp.body,
                     {
                         "kind": "http",
-                        "final_url": current,
+                        "final_url": redact_url(current),
                         "status": resp.status,
                         "headers": {
                             k: v

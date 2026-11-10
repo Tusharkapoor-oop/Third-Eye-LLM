@@ -3,12 +3,24 @@
 
 WebLens v8/v9 Part D2: A/A calibration measuring the machine-specific noise floor
 for p50 and p95 latencies under randomized interleaved execution.
+
+Two paths can be calibrated, because a noise floor is only meaningful for the
+path the claim is about:
+
+  --path chunk   (default) local chunker + BM25 scoring; sub-millisecond, so its
+                 noise floor says nothing about a network-backed search claim.
+  --path search  the real WebLens search path against live providers. Use this
+                 one to bound any search-latency delta; it is network-bound and
+                 its noise floor is tens to hundreds of milliseconds.
 """
 
 from __future__ import annotations
 
+import argparse
+import asyncio
 import json
 import random
+import statistics
 import sys
 import time
 from pathlib import Path
@@ -18,6 +30,21 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 import numpy as np
 
 from reranker import StructureAwareChunker, TwoStageReranker
+
+SEARCH_QUERIES = [
+    "python asyncio tutorial",
+    "kubernetes ingress tls",
+    "sqlite fts5 bm25",
+    "react server components",
+    "postgres vacuum full",
+    "rust ownership borrow checker",
+    "pandas groupby agg",
+    "docker compose healthcheck",
+    "numpy broadcasting rules",
+    "git rebase vs merge",
+    "typescript generics constraints",
+    "redis persistence aof rdb",
+]
 
 
 def generate_benchmark_document() -> str:
@@ -88,7 +115,70 @@ def run_aa_calibration(n_trials: int = 40) -> dict:
     return result
 
 
+def run_search_aa_calibration(repeats: int = 3) -> dict:
+    """A/A on the real search path: the same code measured against itself.
+
+    Each query is run twice back to back. Because both arms are the *same*
+    implementation, any difference between them is noise: provider jitter,
+    connection setup and search-index drift during the run.
+    """
+    sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "weblens" / "src"))
+    from weblens.service import WebLens  # noqa: PLC0415 - optional heavy import
+
+    async def _measure() -> list[float]:
+        svc = WebLens()
+        diffs: list[float] = []
+        try:
+            for rep in range(repeats):
+                order = list(SEARCH_QUERIES)
+                random.Random(rep).shuffle(order)
+                for query in order:
+                    started = time.perf_counter()
+                    await svc.search(query, max_results=8)
+                    arm_a = (time.perf_counter() - started) * 1000.0
+                    started = time.perf_counter()
+                    await svc.search(query, max_results=8)
+                    arm_b = (time.perf_counter() - started) * 1000.0
+                    diffs.append(arm_b - arm_a)
+        finally:
+            await svc.close()
+        return diffs
+
+    diffs = asyncio.run(_measure())
+    ordered = sorted(diffs)
+    n = len(ordered)
+    mean_diff = statistics.mean(diffs)
+    sd = statistics.pstdev(diffs)
+    median_diff = statistics.median(diffs)
+    p95_diff = ordered[min(n - 1, int(0.95 * (n - 1)))]
+    result = {
+        "path": "search",
+        "n_pairs": n,
+        "mean_paired_diff_ms": round(mean_diff, 1),
+        "sd_ms": round(sd, 1),
+        "median_paired_diff_ms": round(median_diff, 1),
+        "p95_paired_diff_ms": round(p95_diff, 1),
+        "p50_noise_floor_ms": round(abs(median_diff), 1),
+        "calibrated_at": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
+    }
+    out_path = Path("evidence/loop/NOISE_FLOOR_SEARCH.json")
+    out_path.parent.mkdir(parents=True, exist_ok=True)
+    out_path.write_text(json.dumps(result, indent=2), encoding="utf-8")
+    return result
+
+
 if __name__ == "__main__":
-    res = run_aa_calibration()
-    print("A/A Noise Floor Calibration Result:")
-    print(json.dumps(res, indent=2))
+    ap = argparse.ArgumentParser(description="A/A noise floor calibration")
+    ap.add_argument(
+        "--path",
+        choices=("chunk", "search"),
+        default="chunk",
+        help="chunk = local chunker/BM25 (default); search = live WebLens search path",
+    )
+    ns = ap.parse_args()
+    if ns.path == "search":
+        print("A/A Noise Floor Calibration Result (search path):")
+        print(json.dumps(run_search_aa_calibration(), indent=2))
+    else:
+        print("A/A Noise Floor Calibration Result (chunker path):")
+        print(json.dumps(run_aa_calibration(), indent=2))

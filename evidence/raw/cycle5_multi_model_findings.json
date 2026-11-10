@@ -1,0 +1,86 @@
+﻿{
+  "cycle": 5,
+  "title": "multi-model audit -> 5 defects found, 4 fixed, 1 measurement correction",
+  "models_and_areas": [
+    {"model":"glm-5.3","area":"security (SSRF, auth, secrets, injection, SQL)","verdict":"3 findings F1/F2/F3; 4 areas held under concrete attack"},
+    {"model":"kimi-k2.7-code","area":"search-layer correctness","verdict":"2 P0 + 8 more; several verified-correct checks too"},
+    {"model":"kimi-k2.6","area":"independent re-derivation","verdict":"headline CONFIRMED with own code"},
+    {"model":"qwen-3.8-27b","area":"test quality","verdict":"~2% padding proven by breaking the implementation"},
+    {"model":"gemma-4-31b-it","area":"documentation honesty","verdict":"numbers cited no source -> STATUS rewritten"}
+  ],
+  "defects_fixed": [
+    {
+      "id":"P0-domain-floor-dead-code",
+      "found_by":"kimi-k2.7-code",
+      "file":"weblens/src/weblens/search/router.py",
+      "defect":"_early_pool_is_enough passed a full URL to registrable_domain(), which expects a host; every path became its own domain, so 6 pages on ONE host satisfied a 3-domain floor",
+      "impact":"guard certified single-source pools as deep+diverse, cancelled healthy slow providers, then diversify(strict=True) shrank below k",
+      "fix":"registrable_domain(host_of(h.url))",
+      "regression_test":"weblens/tests/test_search_router.py::test_fuse_does_not_early_stop_on_a_single_domain_pool",
+      "gate1":"CAUGHT - test fails on the mutant (early_stopped=True on a single-domain pool)"
+    },
+    {
+      "id":"P0-recall-pass-cache-bypass",
+      "found_by":"kimi-k2.7-code",
+      "file":"weblens/src/weblens/search/router.py",
+      "defect":"the recall/query_expanded pass runs a second _fuse into a throwaway outcome; its early_stopped was discarded",
+      "impact":"a timing-dependent partial result from the recall pass was cached for the full TTL",
+      "fix":"propagate alt_outcome.early_stopped into the main outcome"
+    },
+    {
+      "id":"SEC-metadata-ip-via-private-optin",
+      "found_by":"lead (while strengthening a zero-assertion test qwen flagged)",
+      "file":"weblens/src/weblens/net/ssrf.py",
+      "defect":"check_ip returned early when allow_private_networks=True, BEFORE the BLOCKED_IPS metadata check",
+      "impact":"169.254.169.254 / 168.63.129.16 / 100.100.100.200 were reachable whenever the private-network opt-in was enabled - the exact addresses whose purpose is to hand out instance credentials",
+      "fix":"move the metadata blocklist above the allow_private_networks early return",
+      "regression_test":"weblens/tests/test_ssrf.py::test_private_networks_can_be_enabled now asserts metadata raises"
+    },
+    {
+      "id":"TEST-theatre-10-tool-forwarding",
+      "found_by":"qwen-3.8-27b",
+      "file":"weblens/tests/test_mcp_full_gaps.py",
+      "defect":"claimed 10 full-profile tools forward arguments; only asserted is_error is False",
+      "fix":"assert each forwarded argument appears in the result payload",
+      "gate1":"CAUGHT - sabotaging a stub to return a constant makes the test fail"
+    },
+    {
+      "id":"TEST-theatre-zero-assertions",
+      "found_by":"qwen-3.8-27b + independent confirmation",
+      "files":["test_cli_coverage.py:test_security_headers_inject_on_http","test_cli_coverage.py:test_serve_http_http_token_from_settings","test_ssrf.py:test_check_ip_allows_public","test_browser_proxy_unit.py:test_read_chunked_full"],
+      "fix":"each now asserts real behaviour (header presence, server bootstrap, explicit None, exact de-chunked bytes + size cap)"
+    },
+    {
+      "id":"TEST-browser-suite-isolation",
+      "found_by":"lead (full-suite run)",
+      "file":"weblens/tests/test_browser_optional.py",
+      "defect":"skips alone but failed in the full suite: the env guard only handled raised launch exceptions, not an error-status payload",
+      "fix":"also skip when status=error with no passages, still failing on a genuine product bug"
+    }
+  ],
+  "measurement_corrections": [
+    {
+      "id":"CONTAMINATED-KEYLESS-LATENCY",
+      "found_by":"kimi-k2.7-code (auto_include_tavily analysis), confirmed by lead",
+      "defect":"cycle1_final_latency.py called bare WebLens(); Settings() read TAVILY_API_KEY from .env and auto_include_tavily=True prepended tavily. A measurement labelled 'keyless' actually used Tavily.",
+      "contaminated_result":{"p50_ms":739.4,"p95_ms":2062.3},
+      "corrected_result":{"p50_ms":1497.5,"p95_ms":3010.4,"provider_chain":["mwmbl","wikipedia","bing","yahoo"]},
+      "correction":"harness now pins tavily_api_key=None + auto_include_tavily=False and refuses to run if tavily appears in the chain",
+      "evidence_id":"cycle5-keyless-latency-corrected",
+      "note":"p50 1497.5ms is barely under the 1500ms gate - the honest margin is far thinner than previously reported"
+    }
+  ],
+  "not_fixed": [
+    {"id":"F1-redirect-header-forwarding","severity":"MEDIUM","detail":"SafeFetcher reuses caller headers across cross-host redirects; real callers are Tavily (Authorization) and Brave (X-Subscription-Token). Confirmed structurally at net/client.py:236 + :278-287; my own end-to-end repro was blocked first by DNS, so it stands as a code-read finding, not a reproduced one.","next":"strip Authorization/X-Subscription-Token on host change"},
+    {"id":"F2-stackexchange-key-in-cache","severity":"MEDIUM","detail":"Stack Exchange key is a URL query param, so the full URL lands in cache meta and FetchError text","next":"redact query keys before caching/erroring"},
+    {"id":"F3-allowed-hosts-no-port-wildcard","severity":"LOW","detail":"default allowed_hosts lacks a port wildcard so a real client gets 421; the documented workaround '*' disables DNS-rebinding protection","next":"support host:port matching without requiring '*'"}
+  ],
+  "verified_correct_by_models": [
+    "SSRF connect-time pinning (SafeNetworkBackend on both httpx pools; connect to validated dest.ip)",
+    "browser egress proxy rejected 12/12 hostile raw-socket cases",
+    "inbound MCP auth: 401/421/403 enforced, no scheme-case/bare-token/NUL/duplicate-header bypass, timing-safe compare",
+    "SQL fully parameterized; hostile FTS queries left schema and row counts intact",
+    "no live API key in any shipped report/evidence file (1067 files scanned)",
+    "dual trees byte-identical across 55 modules"
+  ]
+}

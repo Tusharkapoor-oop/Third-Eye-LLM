@@ -1,0 +1,62 @@
+[
+  {
+    "q": "python asyncio tutorial",
+    "n": 8,
+    "ndom": 5
+  },
+  {
+    "q": "kubernetes ingress tls",
+    "n": 7,
+    "ndom": 5
+  },
+  {
+    "q": "sqlite fts5 bm25",
+    "n": 7,
+    "ndom": 3
+  },
+  {
+    "q": "react server components",
+    "n": 8,
+    "ndom": 7
+  },
+  {
+    "q": "postgres vacuum full",
+    "n": 5,
+    "ndom": 3
+  },
+  {
+    "q": "rust ownership borrow checker",
+    "n": 8,
+    "ndom": 6
+  },
+  {
+    "q": "pandas groupby agg",
+    "n": 7,
+    "ndom": 5
+  },
+  {
+    "q": "docker compose healthcheck",
+    "n": 8,
+    "ndom": 5
+  },
+  {
+    "q": "numpy broadcasting rules",
+    "n": 8,
+    "ndom": 8
+  },
+  {
+    "q": "git rebase vs merge",
+    "n": 8,
+    "ndom": 3
+  },
+  {
+    "q": "typescript generics constraints",
+    "n": 8,
+    "ndom": 5
+  },
+  {
+    "q": "redis persistence aof rdb",
+    "n": 7,
+    "ndom": 5
+  }
+]

@@ -1,0 +1,2263 @@
+{
+  "generated_at": "2026-11-09T12:07:44Z",
+  "benchmark": "weblens-vs-tavily-v11",
+  "dataset": "weblens-lab\\datasets\\eval_benchmark_suite_v10.json",
+  "dataset_sha256": "a42d4004fb91208f1ae18de89e2337f2ccf5e7cb580a3c600a8ec7d8057d6361",
+  "k": 5,
+  "limit": 40,
+  "limit_requested": 40,
+  "split_filter": "development",
+  "selection_rule": "eligible (is_unanswerable=false, web_search_equivalent=true, >=1 label); heldout first then development, dataset order; fixed prefix of --limit",
+  "query_ids": [
+    "general_factual_q02",
+    "general_factual_q03",
+    "current_events_news_q02",
+    "current_events_news_q03",
+    "technical_research_q02",
+    "technical_research_q03",
+    "programming_developer_docs_q02",
+    "programming_developer_docs_q03",
+    "scientific_research_q02",
+    "scientific_research_q03",
+    "academic_research_q02",
+    "academic_research_q03",
+    "multihop_reasoning_q02",
+    "multihop_reasoning_q03",
+    "long_document_extraction_q02",
+    "long_document_extraction_q03",
+    "company_research_q02",
+    "company_research_q03",
+    "startup_research_q02",
+    "startup_research_q03",
+    "industry_research_q02",
+    "industry_research_q03",
+    "market_research_q02",
+    "market_research_q03",
+    "stock_portfolio_research_q02",
+    "stock_portfolio_research_q03",
+    "product_research_q02",
+    "product_research_q03",
+    "competitive_intelligence_q02",
+    "competitive_intelligence_q03",
+    "legal_policy_research_q02",
+    "legal_policy_research_q03",
+    "public_sector_research_q02",
+    "public_sector_research_q03",
+    "healthcare_information_q02",
+    "healthcare_information_q03",
+    "structured_data_enrichment_q02",
+    "structured_data_enrichment_q03",
+    "website_crawling_q02",
+    "website_crawling_q03"
+  ],
+  "config": {
+    "weblens_api": "weblens.service.WebLens.search(query, max_results=5)",
+    "weblens_providers": "mwmbl,wikipedia,bing,yahoo",
+    "weblens_search_mode": "fuse",
+    "weblens_cache_enabled": false,
+    "weblens_use_official_source_hints": false,
+    "weblens_tavily_provider_disabled": true,
+    "weblens_official_source_hints": false,
+    "tavily": {
+      "search_depth": "basic",
+      "max_results": 5
+    },
+    "per_query_timeout_s": 30.0,
+    "retries": 0,
+    "concurrency": 2,
+    "sleep_between_queries_s": 0.5,
+    "tokens_headline": "count_json_tokens(results array) for both systems",
+    "tokens_secondary": "count_json_tokens(full response payload) for both systems"
+  },
+  "environment": {
+    "python": "3.14.0",
+    "platform": "Windows-11-10.0.26300-SP0",
+    "pytest_not_used": true
+  },
+  "wall_clock_s": 37.5,
+  "data_quality": {
+    "tavily_error_rate": 0.0,
+    "weblens_error_rate": 0.0,
+    "loud_warning": null
+  },
+  "weblens": {
+    "n": 40,
+    "success_rate": 1.0,
+    "hit_at_5": 0.8,
+    "p_at_5": 0.41,
+    "ndcg_at_5": 0.4612170935459801,
+    "ndcg_at_5_label_cap": 0.5952355197597163,
+    "mrr": 0.6854166666666667,
+    "p50_ms": 1012.6317999965977,
+    "p95_ms": 2954.08783997409,
+    "mean_ms": 1319.735637503618,
+    "mean_tokens": 329.125,
+    "mean_payload_tokens": 389.175,
+    "errors": 0,
+    "p_at_5_ci95": [
+      0.31,
+      0.505
+    ],
+    "ndcg_at_5_ci95": [
+      0.353953277043728,
+      0.561317536750791
+    ],
+    "mrr_ci95": [
+      0.5583333333333333,
+      0.8
+    ]
+  },
+  "tavily": {
+    "n": 40,
+    "success_rate": 0.0,
+    "hit_at_5": 0.0,
+    "p_at_5": 0.0,
+    "ndcg_at_5": 0.0,
+    "ndcg_at_5_label_cap": 0.0,
+    "mrr": 0.0,
+    "p50_ms": 0.0,
+    "p95_ms": 0.0,
+    "mean_ms": 0.0,
+    "mean_tokens": 0.0,
+    "mean_payload_tokens": 0.0,
+    "errors": 0,
+    "p_at_5_ci95": [
+      0.0,
+      0.0
+    ],
+    "ndcg_at_5_ci95": [
+      0.0,
+      0.0
+    ],
+    "mrr_ci95": [
+      0.0,
+      0.0
+    ]
+  },
+  "paired": {
+    "p_at_5_diff": 0.41,
+    "p_at_5_diff_ci95": [
+      0.31,
+      0.505
+    ],
+    "ndcg_at_5_diff": 0.4612170935459801,
+    "ndcg_at_5_diff_ci95": [
+      0.353953277043728,
+      0.561317536750791
+    ],
+    "wins": 32,
+    "ties": 8,
+    "losses": 0
+  },
+  "anomalies": [
+    {
+      "id": "general_factual_q02",
+      "query": "What is the capital city of Australia?",
+      "weblens_relevant": 5,
+      "tavily_relevant": 0,
+      "weblens_urls": [
+        "https://en.wikipedia.org/wiki/List_of_Australian_capital_cities",
+        "https://en.wikipedia.org/wiki/Australian_Capital_Territory",
+        "https://en.wikipedia.org/wiki/Capital_city",
+        "https://en.wikipedia.org/wiki/Canberra",
+        "https://en.wikipedia.org/wiki/List_of_cities_in_Australia_by_population"
+      ],
+      "tavily_urls": [],
+      "reasons": [
+        "tavily_returned_nothing"
+      ]
+    },
+    {
+      "id": "general_factual_q03",
+      "query": "How many bones are in the adult human body?",
+      "weblens_relevant": 5,
+      "tavily_relevant": 0,
+      "weblens_urls": [
+        "https://en.wikipedia.org/wiki/List_of_bones_of_the_human_skeleton",
+        "https://en.wikipedia.org/wiki/Composition_of_the_human_body",
+        "https://en.wikipedia.org/wiki/Human_skeleton",
+        "https://en.wikipedia.org/wiki/Human_body",
+        "https://en.wikipedia.org/wiki/Human_body_weight"
+      ],
+      "tavily_urls": [],
+      "reasons": [
+        "tavily_returned_nothing"
+      ]
+    },
+    {
+      "id": "current_events_news_q02",
+      "query": "Which company developed the GPT-4 model released in March 2023?",
+      "weblens_relevant": 4,
+      "tavily_relevant": 0,
+      "weblens_urls": [
+        "https://en.wikipedia.org/wiki/GPT-4",
+        "https://en.wikipedia.org/wiki/GPT-3",
+        "https://en.wikipedia.org/wiki/Generative_pre-trained_transformer",
+        "https://openai.com/index/gpt-4-research/",
+        "https://www.speechmatics.com/company/articles-and-news/gpt-4-how-does-it-work"
+      ],
+      "tavily_urls": [],
+      "reasons": [
+        "tavily_returned_nothing"
+      ]
+    },
+    {
+      "id": "current_events_news_q03",
+      "query": "What was the name of the NASA mission that first landed humans on the Moon in July 1969?",
+      "weblens_relevant": 2,
+      "tavily_relevant": 0,
+      "weblens_urls": [
+        "http://earthobservatory.nasa.gov/images/153044/earths-reflections-on-the-moon",
+        "https://airandspace.si.edu/events/apollo11/",
+        "https://en.wikipedia.org/wiki/Exploration_of_the_Moon",
+        "https://wikivisually.com/wiki/Neil_Armstrong",
+        "https://scitechdaily.com/moonlight-mysteries-how-the-moon-helps-us-understand-earths-climate/"
+      ],
+      "tavily_urls": [],
+      "reasons": [
+        "tavily_returned_nothing"
+      ]
+    },
+    {
+      "id": "technical_research_q02",
+      "query": "What does the HTTP 429 status code indicate?",
+      "weblens_relevant": 2,
+      "tavily_relevant": 0,
+      "weblens_urls": [
+        "https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Status/429",
+        "https://developer.mozilla.org/docs/Web/HTTP/Status/429",
+        "http://stackoverflow.com/tags/http-status-code-429/info",
+        "http://en.wikipedia.org/wiki/HTTP_402",
+        "https://http.cat/status/429"
+      ],
+      "tavily_urls": [],
+      "reasons": [
+        "tavily_returned_nothing"
+      ]
+    },
+    {
+      "id": "technical_research_q03",
+      "query": "What is the difference between symmetric and asymmetric encryption?",
+      "weblens_relevant": 1,
+      "tavily_relevant": 0,
+      "weblens_urls": [
+        "https://stackoverflow.com/q/41891989",
+        "https://arxiv.org/abs/2104.09553",
+        "https://www.nature.com/articles/s41589-022-00981-0",
+        "https://en.wikipedia.org/wiki/Symmetric-key_algorithm",
+        "https://security.stackexchange.com/q/89351"
+      ],
+      "tavily_urls": [],
+      "reasons": [
+        "tavily_returned_nothing"
+      ]
+    },
+    {
+      "id": "programming_developer_docs_q02",
+      "query": "In Python, what does the with statement guarantee when used with a context manager?",
+      "weblens_relevant": 3,
+      "tavily_relevant": 0,
+      "weblens_urls": [
+        "https://docs.python.org/2.5/ref/with.html",
+        "https://docs.python.org/id/3.6/library/trace.html",
+        "http://docs.python.org/library/trace",
+        "https://en.wikipedia.org/wiki/Python_syntax_and_semantics",
+        "https://stackoverflow.com/a/49564729"
+      ],
+      "tavily_urls": [],
+      "reasons": [
+        "tavily_returned_nothing"
+      ]
+    },
+    {
+      "id": "programming_developer_docs_q03",
+      "query": "What is the purpose of the git rebase command?",
+      "weblens_relevant": 0,
+      "tavily_relevant": 0,
+      "weblens_urls": [
+        "https://docs.github.com/en/enterprise/2.15/user/articles/about-git-rebase",
+        "http://docs.github.com/en/enterprise-server@3.6/get-started/using-git/about-git-rebase",
+        "https://stackoverflow.com/a/39081674",
+        "https://git.sr.ht/~niklaseklund/egerrit/log/0.3",
+        "http://opensource.com/article/23/1/git-reflog"
+      ],
+      "tavily_urls": [],
+      "reasons": [
+        "no_relevant_result_from_either",
+        "tavily_returned_nothing"
+      ]
+    },
+    {
+      "id": "scientific_research_q02",
+      "query": "What is the primary greenhouse gas responsible for most human-caused global warming?",
+      "weblens_relevant": 0,
+      "tavily_relevant": 0,
+      "weblens_urls": [
+        "https://pubmed.ncbi.nlm.nih.gov/30709818/",
+        "https://www.osti.gov/biblio/891228",
+        "http://dspace.mit.edu/handle/1721.1/33954",
+        "https://www.statista.com/statistics/1345801/share-of-global-greenhouse-gas-emissions-by-gas-type/",
+        "http://www.pubmed.gov/37513061/"
+      ],
+      "tavily_urls": [],
+      "reasons": [
+        "no_relevant_result_from_either",
+        "tavily_returned_nothing"
+      ]
+    },
+    {
+      "id": "scientific_research_q03",
+      "query": "What did the discovery of the Higgs boson confirm about elementary particles?",
+      "weblens_relevant": 3,
+      "tavily_relevant": 0,
+      "weblens_urls": [
+        "https://en.wikipedia.org/wiki/Peter_Higgs",
+        "https://en.wikipedia.org/wiki/W_and_Z_bosons",
+        "https://en.wikipedia.org/wiki/Gauge_boson",
+        "https://news.brown.edu/articles/2012/07/higgs",
+        "http://www.bnl.gov/newsroom/news.php?a=111579"
+      ],
+      "tavily_urls": [],
+      "reasons": [
+        "tavily_returned_nothing"
+      ]
+    },
+    {
+      "id": "academic_research_q02",
+      "query": "Which paper introduced the ResNet architecture and in what year was it published?",
+      "weblens_relevant": 1,
+      "tavily_relevant": 0,
+      "weblens_urls": [
+        "https://cse.umn.edu/node/79016",
+        "http://math.mit.edu/",
+        "http://arxiv.org/abs/0906.5170",
+        "http://dl.acm.org/doi/10.1016/j.jss.2015.05.037",
+        "https://en.wikipedia.org/wiki/Paper"
+      ],
+      "tavily_urls": [],
+      "reasons": [
+        "tavily_returned_nothing"
+      ]
+    },
+    {
+      "id": "academic_research_q03",
+      "query": "What does the acronym BERT stand for in natural language processing?",
+      "weblens_relevant": 2,
+      "tavily_relevant": 0,
+      "weblens_urls": [
+        "https://en.wikipedia.org/wiki/Google_Search",
+        "https://www.snowflake.com/en/fundamentals/bert/",
+        "http://research.microsoft.com/nlp",
+        "https://huggingface.co/blog/bert-101",
+        "http://arxiv.org/abs/2003.01200v3"
+      ],
+      "tavily_urls": [],
+      "reasons": [
+        "tavily_returned_nothing"
+      ]
+    },
+    {
+      "id": "multihop_reasoning_q02",
+      "query": "Which company owns Instagram, and in what year was Instagram founded?",
+      "weblens_relevant": 3,
+      "tavily_relevant": 0,
+      "weblens_urls": [
+        "https://en.wikipedia.org/wiki/Meta_Platforms",
+        "https://en.wikipedia.org/wiki/Kevin_Systrom",
+        "https://en.wikipedia.org/wiki/Amyris,_Inc.",
+        "https://www.britannica.com/money/Instagram",
+        "https://www.investopedia.com/articles/personal-finance/051815/top-11-companies-owned-facebook.asp"
+      ],
+      "tavily_urls": [],
+      "reasons": [
+        "tavily_returned_nothing"
+      ]
+    },
+    {
+      "id": "multihop_reasoning_q03",
+      "query": "What is the headquarters city of the company that develops the Windows operating system?",
+      "weblens_relevant": 4,
+      "tavily_relevant": 0,
+      "weblens_urls": [
+        "https://technet.microsoft.com/library/ms176116(v=sql.105)",
+        "http://www.microsoft.com/WINDOWS",
+        "http://en.wikipedia.org/wiki/GDI32",
+        "https://en.wikipedia.org/wiki/Microsoft",
+        "https://press.aboutamazon.com/2017/9/amazon-opens-search-for-amazon-hq2-a-second-headquarters-city-in-north-america"
+      ],
+      "tavily_urls": [],
+      "reasons": [
+        "tavily_returned_nothing"
+      ]
+    },
+    {
+      "id": "long_document_extraction_q02",
+      "query": "According to the IPCC Sixth Assessment Report, what global temperature limit is central to the Paris Agreement?",
+      "weblens_relevant": 1,
+      "tavily_relevant": 0,
+      "weblens_urls": [
+        "https://www.un.org/en/climatechange/science/climate-issues/degrees-matter",
+        "https://www.ipcc.ch/report/ar6/syr/downloads/report/IPCC_AR6_SYR_FullVolume.pdf",
+        "https://pubmed.ncbi.nlm.nih.gov/37014233/",
+        "http://en.wikipedia.org/wiki/Paris_Agreement",
+        "https://en.wikipedia.org/wiki/Global_surface_temperature"
+      ],
+      "tavily_urls": [],
+      "reasons": [
+        "tavily_returned_nothing"
+      ]
+    },
+    {
+      "id": "long_document_extraction_q03",
+      "query": "What does Article 5 of the North Atlantic Treaty commit NATO members to?",
+      "weblens_relevant": 1,
+      "tavily_relevant": 0,
+      "weblens_urls": [
+        "https://en.wikipedia.org/wiki/2025_The_Hague_NATO_summit",
+        "https://nypost.com/tag/nato/",
+        "https://www.npr.org/2022/02/26/1082964072/russia-ukraine-nato-article-5",
+        "http://rt.com/shows/crosstalk/",
+        "https://www.weforum.org/stories/2025/06/75-years-nato-explainer/"
+      ],
+      "tavily_urls": [],
+      "reasons": [
+        "tavily_returned_nothing"
+      ]
+    },
+    {
+      "id": "company_research_q02",
+      "query": "Who is the CEO of Microsoft as of 2025?",
+      "weblens_relevant": 5,
+      "tavily_relevant": 0,
+      "weblens_urls": [
+        "https://en.wikipedia.org/wiki/Microsoft_AI",
+        "https://en.wikipedia.org/wiki/Asha_Sharma",
+        "https://en.wikipedia.org/wiki/Microsoft",
+        "https://en.wikipedia.org/wiki/Satya_Nadella",
+        "https://en.wikipedia.org/wiki/Thomas_Dohmke"
+      ],
+      "tavily_urls": [],
+      "reasons": [
+        "tavily_returned_nothing"
+      ]
+    },
+    {
+      "id": "company_research_q03",
+      "query": "Where is the headquarters of NVIDIA located?",
+      "weblens_relevant": 4,
+      "tavily_relevant": 0,
+      "weblens_urls": [
+        "https://en.wikipedia.org/wiki/Alienware",
+        "https://nvidianews.nvidia.com/multimedia/santa-clara-headquarters",
+        "https://maps.apple.com/place?place-id=I237C9ABA42372A16",
+        "https://en.wikipedia.org/wiki/Neihu_Technology_Park",
+        "https://en.wikipedia.org/wiki/Deep_Instinct"
+      ],
+      "tavily_urls": [],
+      "reasons": [
+        "tavily_returned_nothing"
+      ]
+    },
+    {
+      "id": "startup_research_q02",
+      "query": "What does the company Anthropic develop?",
+      "weblens_relevant": 4,
+      "tavily_relevant": 0,
+      "weblens_urls": [
+        "https://en.wikipedia.org/wiki/Anthropic%E2%80%93United_States_Department_of_Defense_dispute",
+        "https://en.wikipedia.org/wiki/Claude_%28AI%29",
+        "https://en.wikipedia.org/wiki/Recursive_self-improvement",
+        "https://www.lesswrong.com/w/anthropic-org",
+        "https://www.anthropic.com/company"
+      ],
+      "tavily_urls": [],
+      "reasons": [
+        "tavily_returned_nothing"
+      ]
+    },
+    {
+      "id": "startup_research_q03",
+      "query": "Who founded the payments company Stripe?",
+      "weblens_relevant": 4,
+      "tavily_relevant": 0,
+      "weblens_urls": [
+        "https://en.wikipedia.org/wiki/Stripe,_Inc.",
+        "https://en.wikipedia.org/wiki/Shola_Akinlade",
+        "https://en.wikipedia.org/wiki/Allinson",
+        "https://arc.dev/company/stripe",
+        "https://stripe.com/en-lv/docs/payments"
+      ],
+      "tavily_urls": [],
+      "reasons": [
+        "tavily_returned_nothing"
+      ]
+    },
+    {
+      "id": "industry_research_q02",
+      "query": "Which are the three largest cloud infrastructure providers by market share?",
+      "weblens_relevant": 2,
+      "tavily_relevant": 0,
+      "weblens_urls": [
+        "https://en.wikipedia.org/wiki/Cloud_computing",
+        "https://en.wikipedia.org/wiki/Amazon_Web_Services",
+        "https://www.statista.com/chart/18819/worldwide-market-share-of-leading-cloud-infrastructure-service-providers/?srsltid=AYCX9vKGEO-FqBV7yrdRbja_muMwHs8SomSl9yOIwqsXvndDbV8rk8qV",
+        "https://www.statista.com/chart/18819/worldwide-market-share-of-leading-cloud-infrastructure-service-providers/",
+        "https://businesstats.com/big-three-hold-dominant-lead-in-accelerating-cloud-market/"
+      ],
+      "tavily_urls": [],
+      "reasons": [
+        "tavily_returned_nothing"
+      ]
+    },
+    {
+      "id": "industry_research_q03",
+      "query": "Which company is the world's largest contract manufacturer of semiconductors?",
+      "weblens_relevant": 3,
+      "tavily_relevant": 0,
+      "weblens_urls": [
+        "https://en.wikipedia.org/wiki/BYD_Company",
+        "https://en.wikipedia.org/wiki/Rapidus",
+        "https://en.wikipedia.org/wiki/STMicroelectronics",
+        "http://arstechnica.com/apple/guides/2011/08/does-this-metric-make-my-company-look-big.ars/",
+        "http://www.forbes.com/companies/novarex/"
+      ],
+      "tavily_urls": [],
+      "reasons": [
+        "tavily_returned_nothing"
+      ]
+    },
+    {
+      "id": "market_research_q02",
+      "query": "What does a stock market index measure?",
+      "weblens_relevant": 0,
+      "tavily_relevant": 0,
+      "weblens_urls": [
+        "http://www.sec.gov/answers/indices.htm",
+        "https://en.wikipedia.org/wiki/Stock_market_index",
+        "https://cleartax.in/glossary/market-index",
+        "https://www.forbes.com/advisor/retirement/best-total-stock-market-index-funds/",
+        "https://groww.in/p/stock-market-index"
+      ],
+      "tavily_urls": [],
+      "reasons": [
+        "no_relevant_result_from_either",
+        "tavily_returned_nothing"
+      ]
+    },
+    {
+      "id": "market_research_q03",
+      "query": "What does a company's price-to-earnings ratio measure?",
+      "weblens_relevant": 0,
+      "tavily_relevant": 0,
+      "weblens_urls": [
+        "https://www.businessinsider.com/personal-finance/what-is-pe-ratio",
+        "https://stockanalysis.com/term/pe-ratio/",
+        "https://www.nerdwallet.com/article/investing/pe-ratio-definition",
+        "https://www.fidelity.com/learning-center/trading-investing/pe-ratio",
+        "https://www.fool.com.au/definitions/p-e-ratio/"
+      ],
+      "tavily_urls": [],
+      "reasons": [
+        "no_relevant_result_from_either",
+        "tavily_returned_nothing"
+      ]
+    },
+    {
+      "id": "stock_portfolio_research_q02",
+      "query": "What is Apple Inc.'s stock ticker symbol?",
+      "weblens_relevant": 0,
+      "tavily_relevant": 0,
+      "weblens_urls": [
+        "https://en.wikipedia.org/wiki/Ticker_symbol",
+        "https://stockanalysis.com/actions/changes/2026/",
+        "http://www.theverge.com/2015/10/12/9508429/ferrari-ipo-nyse-ticker-symbol-race",
+        "https://www.kiplinger.com/tfn/ticker.html?ticker=Z",
+        "https://www.fool.com/terms/s/stock-ticker/"
+      ],
+      "tavily_urls": [],
+      "reasons": [
+        "no_relevant_result_from_either",
+        "tavily_returned_nothing"
+      ]
+    },
+    {
+      "id": "stock_portfolio_research_q03",
+      "query": "On which stock exchange is Microsoft Corporation primarily listed?",
+      "weblens_relevant": 1,
+      "tavily_relevant": 0,
+      "weblens_urls": [
+        "https://en.wikipedia.org/wiki/Oracle_Corporation",
+        "http://www.nasdaq.com/symbol/MSFT",
+        "https://en.wikipedia.org/wiki/Charles_Schwab_Corporation",
+        "https://www.kuppingercole.com/vendors/microsoft",
+        "https://finance.yahoo.com/quote/MSFT/history/"
+      ],
+      "tavily_urls": [],
+      "reasons": [
+        "tavily_returned_nothing"
+      ]
+    },
+    {
+      "id": "product_research_q02",
+      "query": "Which charging connector did the iPhone 15 introduce?",
+      "weblens_relevant": 3,
+      "tavily_relevant": 0,
+      "weblens_urls": [
+        "https://support.apple.com/en-us/105099",
+        "https://discussions.apple.com/thread/255155991",
+        "https://en.wikipedia.org/wiki/IPhone_4s",
+        "https://oskotech.com/iphone-with-usb-c-iphone-15-and-later-usb-c-charging-guide/",
+        "https://www.anker.com/blogs/chargers/what-charger-does-iphone-15-use"
+      ],
+      "tavily_urls": [],
+      "reasons": [
+        "tavily_returned_nothing"
+      ]
+    },
+    {
+      "id": "product_research_q03",
+      "query": "What is the main difference between the Amazon Kindle Paperwhite and the Kindle Scribe?",
+      "weblens_relevant": 0,
+      "tavily_relevant": 0,
+      "weblens_urls": [
+        "http://abcnews.go.com/blogs/technology/2012/09/amazon-event-liveblog-new-kindle-fire-kindle-paperwhite-and-more/",
+        "https://domainnamewire.com/tag/amazon-kindle/",
+        "https://www.engadget.com/tag/paperwhite",
+        "https://allthingsd.com/tag/e-readers/",
+        "https://blog.the-ebook-reader.com/2012/09/06/new-kindle-paperwhite-and-69-basic-kindle/"
+      ],
+      "tavily_urls": [],
+      "reasons": [
+        "no_relevant_result_from_either",
+        "tavily_returned_nothing"
+      ]
+    },
+    {
+      "id": "competitive_intelligence_q02",
+      "query": "Which company is Intel's main competitor in the x86 CPU market?",
+      "weblens_relevant": 3,
+      "tavily_relevant": 0,
+      "weblens_urls": [
+        "https://en.wikipedia.org/wiki/Intel",
+        "https://en.wikipedia.org/wiki/Intel_Core",
+        "https://en.wikipedia.org/wiki/Pentium_%28original%29",
+        "http://www.theverge.com/2013/10/17/4850256/silk-roads-main-competitor-shuts-down-indefinitely-black-market-reloaded",
+        "https://www.intel.ie/content/www/ie/en/company-overview/company-overview.html"
+      ],
+      "tavily_urls": [],
+      "reasons": [
+        "tavily_returned_nothing"
+      ]
+    },
+    {
+      "id": "competitive_intelligence_q03",
+      "query": "Which streaming services compete directly with Netflix?",
+      "weblens_relevant": 1,
+      "tavily_relevant": 0,
+      "weblens_urls": [
+        "https://en.wikipedia.org/wiki/Criticism_of_Netflix",
+        "https://lamag.com/tv/streaming-services-best/",
+        "http://bgp.he.net/AS2906",
+        "https://www.pymnts.com/streaming/2023/streaming-services-compete-consumers-holiday-spending-with-giftable-subscriptions/",
+        "https://www.wired.com/gallery/best-streaming-services/"
+      ],
+      "tavily_urls": [],
+      "reasons": [
+        "tavily_returned_nothing"
+      ]
+    },
+    {
+      "id": "legal_policy_research_q02",
+      "query": "What does GDPR stand for and what does it regulate?",
+      "weblens_relevant": 1,
+      "tavily_relevant": 0,
+      "weblens_urls": [
+        "https://gdpr.eu/what-does-it-stand-for/",
+        "https://www.delphix.com/glossary/what-is-gdpr-compliance-requirements"
+      ],
+      "tavily_urls": [],
+      "reasons": [
+        "tavily_returned_nothing",
+        "latency_outlier"
+      ]
+    },
+    {
+      "id": "legal_policy_research_q03",
+      "query": "What is the purpose of the Digital Millennium Copyright Act?",
+      "weblens_relevant": 1,
+      "tavily_relevant": 0,
+      "weblens_urls": [
+        "https://www.bu.edu/copyright/",
+        "https://en.wikipedia.org/wiki/Digital_Millennium_Copyright_Act",
+        "https://allthingsd.com/tag/digital-millennium-copyright-act/",
+        "http://radar.oreilly.com/tag/digital-millennium-copyright-act",
+        "https://www.aclu.org/text-digital-millennium-copyright-act-dmca"
+      ],
+      "tavily_urls": [],
+      "reasons": [
+        "tavily_returned_nothing"
+      ]
+    },
+    {
+      "id": "public_sector_research_q02",
+      "query": "Which US federal agency publishes the Consumer Price Index?",
+      "weblens_relevant": 3,
+      "tavily_relevant": 0,
+      "weblens_urls": [
+        "https://apps.apple.com/iq/app/davis-index/id1511034038",
+        "https://en.wikipedia.org/wiki/Consumer_price_index",
+        "https://en.wikipedia.org/wiki/Consumer_price_index_by_country",
+        "https://en.wikipedia.org/wiki/CPI",
+        "http://news.ycombinator.com/item?id=37900343"
+      ],
+      "tavily_urls": [],
+      "reasons": [
+        "tavily_returned_nothing"
+      ]
+    },
+    {
+      "id": "public_sector_research_q03",
+      "query": "What is the core mission of the World Health Organization?",
+      "weblens_relevant": 1,
+      "tavily_relevant": 0,
+      "weblens_urls": [
+        "http://www.cia.gov/about/organization",
+        "https://en.wikipedia.org/wiki/World_Health_Organization",
+        "https://www.seda.ac.uk/about-seda/core-mission-and-values/",
+        "http://smxi.org/docs/inxi-core-mission.htm",
+        "https://cpj.org/?p=24348"
+      ],
+      "tavily_urls": [],
+      "reasons": [
+        "tavily_returned_nothing"
+      ]
+    },
+    {
+      "id": "healthcare_information_q02",
+      "query": "What are common symptoms of type 2 diabetes?",
+      "weblens_relevant": 3,
+      "tavily_relevant": 0,
+      "weblens_urls": [
+        "https://pubmed.ncbi.nlm.nih.gov/30202906",
+        "http://www.ncbi.nlm.nih.gov/pubmed/12766105",
+        "https://pubmed.ncbi.nlm.nih.gov/34553836",
+        "https://en.wikipedia.org/wiki/Type_2_diabetes",
+        "https://en.wikipedia.org/wiki/Type_3c_diabetes"
+      ],
+      "tavily_urls": [],
+      "reasons": [
+        "tavily_returned_nothing"
+      ]
+    },
+    {
+      "id": "healthcare_information_q03",
+      "query": "What does body mass index measure?",
+      "weblens_relevant": 0,
+      "tavily_relevant": 0,
+      "weblens_urls": [
+        "https://en.wikipedia.org/wiki/Body_mass_index",
+        "https://en.wikipedia.org/wiki/Corpulence_index",
+        "https://en.wikipedia.org/wiki/Female_body_shape",
+        "https://en.wikipedia.org/wiki/Classification_of_obesity",
+        "https://en.wikipedia.org/wiki/Waist%E2%80%93hip_ratio"
+      ],
+      "tavily_urls": [],
+      "reasons": [
+        "no_relevant_result_from_either",
+        "tavily_returned_nothing"
+      ]
+    },
+    {
+      "id": "structured_data_enrichment_q02",
+      "query": "What is the ISO 3166-1 alpha-2 country code for Germany?",
+      "weblens_relevant": 1,
+      "tavily_relevant": 0,
+      "weblens_urls": [
+        "https://en.wikipedia.org/wiki/ISO_3166-1_alpha-2",
+        "https://developer.spotify.com/console/get-user-player/",
+        "http://icannwiki.org/.mv",
+        "https://getprospect.com/api-docs/enums/countries",
+        "https://www.wikiwand.com/en/ISO_3166-1"
+      ],
+      "tavily_urls": [],
+      "reasons": [
+        "tavily_returned_nothing"
+      ]
+    },
+    {
+      "id": "structured_data_enrichment_q03",
+      "query": "What is the ISO 4217 currency code for the Japanese yen?",
+      "weblens_relevant": 1,
+      "tavily_relevant": 0,
+      "weblens_urls": [
+        "https://www.iso.org/iso-4217-currency-codes.html",
+        "https://github.com/NIEM/NIEM-Releases/issues/55",
+        "https://stackoverflow.com/a/3889573",
+        "http://cr.openjdk.java.net/~iris/se/10/latestSpec/api/java/util/Currency.html",
+        "https://kids.kiddle.co/ISO_4217"
+      ],
+      "tavily_urls": [],
+      "reasons": [
+        "tavily_returned_nothing"
+      ]
+    },
+    {
+      "id": "website_crawling_q02",
+      "query": "What is robots.txt and where must it be located on a website?",
+      "weblens_relevant": 4,
+      "tavily_relevant": 0,
+      "weblens_urls": [
+        "https://en.wikipedia.org/wiki/Sitemaps",
+        "https://en.wikipedia.org/wiki/Search_engine",
+        "https://en.wikipedia.org/wiki/Search_engine_optimization",
+        "https://en.wikipedia.org/wiki/Email-address_harvesting",
+        "https://stackoverflow.com/q/633479"
+      ],
+      "tavily_urls": [],
+      "reasons": [
+        "tavily_returned_nothing"
+      ]
+    },
+    {
+      "id": "website_crawling_q03",
+      "query": "What is a sitemap.xml file used for?",
+      "weblens_relevant": 0,
+      "tavily_relevant": 0,
+      "weblens_urls": [
+        "http://automad.org/system/sitemap-xml",
+        "https://medevel.com/seo-2024/",
+        "https://meta.stackexchange.com/a/332607",
+        "http://mintlify.com/docs/settings/seo",
+        "https://elgg.org/plugins/2917249"
+      ],
+      "tavily_urls": [],
+      "reasons": [
+        "no_relevant_result_from_either",
+        "tavily_returned_nothing"
+      ]
+    }
+  ],
+  "rows": [
+    {
+      "id": "general_factual_q02",
+      "query": "What is the capital city of Australia?",
+      "category": "general_factual",
+      "split": "development",
+      "labels": [
+        "wikipedia.org",
+        "australia.gov.au"
+      ],
+      "order": [
+        "weblens"
+      ],
+      "weblens_urls": [
+        "https://en.wikipedia.org/wiki/List_of_Australian_capital_cities",
+        "https://en.wikipedia.org/wiki/Australian_Capital_Territory",
+        "https://en.wikipedia.org/wiki/Capital_city",
+        "https://en.wikipedia.org/wiki/Canberra",
+        "https://en.wikipedia.org/wiki/List_of_cities_in_Australia_by_population"
+      ],
+      "tavily_urls": [],
+      "weblens_ms": 1659.3931000097655,
+      "tavily_ms": 0.0,
+      "weblens_tokens": 315,
+      "tavily_tokens": 0,
+      "weblens_payload_tokens": 380,
+      "tavily_payload_tokens": 0,
+      "weblens_status": "ok",
+      "weblens_providers": [
+        "wikipedia",
+        "bing"
+      ],
+      "tavily_status": "",
+      "weblens_error": null,
+      "tavily_error": null
+    },
+    {
+      "id": "general_factual_q03",
+      "query": "How many bones are in the adult human body?",
+      "category": "general_factual",
+      "split": "development",
+      "labels": [
+        "wikipedia.org",
+        "clevelandclinic.org",
+        "nih.gov"
+      ],
+      "order": [
+        "weblens"
+      ],
+      "weblens_urls": [
+        "https://en.wikipedia.org/wiki/List_of_bones_of_the_human_skeleton",
+        "https://en.wikipedia.org/wiki/Composition_of_the_human_body",
+        "https://en.wikipedia.org/wiki/Human_skeleton",
+        "https://en.wikipedia.org/wiki/Human_body",
+        "https://en.wikipedia.org/wiki/Human_body_weight"
+      ],
+      "tavily_urls": [],
+      "weblens_ms": 1632.551400049124,
+      "tavily_ms": 0.0,
+      "weblens_tokens": 319,
+      "tavily_tokens": 0,
+      "weblens_payload_tokens": 389,
+      "tavily_payload_tokens": 0,
+      "weblens_status": "ok",
+      "weblens_providers": [
+        "wikipedia"
+      ],
+      "tavily_status": "",
+      "weblens_error": null,
+      "tavily_error": null
+    },
+    {
+      "id": "current_events_news_q02",
+      "query": "Which company developed the GPT-4 model released in March 2023?",
+      "category": "current_events_news",
+      "split": "development",
+      "labels": [
+        "openai.com",
+        "wikipedia.org",
+        "techcrunch.com"
+      ],
+      "order": [
+        "weblens"
+      ],
+      "weblens_urls": [
+        "https://en.wikipedia.org/wiki/GPT-4",
+        "https://en.wikipedia.org/wiki/GPT-3",
+        "https://en.wikipedia.org/wiki/Generative_pre-trained_transformer",
+        "https://openai.com/index/gpt-4-research/",
+        "https://www.speechmatics.com/company/articles-and-news/gpt-4-how-does-it-work"
+      ],
+      "tavily_urls": [],
+      "weblens_ms": 3031.127900001593,
+      "tavily_ms": 0.0,
+      "weblens_tokens": 428,
+      "tavily_tokens": 0,
+      "weblens_payload_tokens": 485,
+      "tavily_payload_tokens": 0,
+      "weblens_status": "ok",
+      "weblens_providers": [
+        "mwmbl",
+        "wikipedia",
+        "bing",
+        "yahoo"
+      ],
+      "tavily_status": "",
+      "weblens_error": null,
+      "tavily_error": null
+    },
+    {
+      "id": "current_events_news_q03",
+      "query": "What was the name of the NASA mission that first landed humans on the Moon in July 1969?",
+      "category": "current_events_news",
+      "split": "development",
+      "labels": [
+        "nasa.gov",
+        "wikipedia.org",
+        "britannica.com"
+      ],
+      "order": [
+        "weblens"
+      ],
+      "weblens_urls": [
+        "http://earthobservatory.nasa.gov/images/153044/earths-reflections-on-the-moon",
+        "https://airandspace.si.edu/events/apollo11/",
+        "https://en.wikipedia.org/wiki/Exploration_of_the_Moon",
+        "https://wikivisually.com/wiki/Neil_Armstrong",
+        "https://scitechdaily.com/moonlight-mysteries-how-the-moon-helps-us-understand-earths-climate/"
+      ],
+      "tavily_urls": [],
+      "weblens_ms": 615.46110000927,
+      "tavily_ms": 0.0,
+      "weblens_tokens": 346,
+      "tavily_tokens": 0,
+      "weblens_payload_tokens": 411,
+      "tavily_payload_tokens": 0,
+      "weblens_status": "ok",
+      "weblens_providers": [
+        "mwmbl"
+      ],
+      "tavily_status": "",
+      "weblens_error": null,
+      "tavily_error": null
+    },
+    {
+      "id": "technical_research_q02",
+      "query": "What does the HTTP 429 status code indicate?",
+      "category": "technical_research",
+      "split": "development",
+      "labels": [
+        "developer.mozilla.org",
+        "rfc-editor.org",
+        "httpwg.org"
+      ],
+      "order": [
+        "weblens"
+      ],
+      "weblens_urls": [
+        "https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Status/429",
+        "https://developer.mozilla.org/docs/Web/HTTP/Status/429",
+        "http://stackoverflow.com/tags/http-status-code-429/info",
+        "http://en.wikipedia.org/wiki/HTTP_402",
+        "https://http.cat/status/429"
+      ],
+      "tavily_urls": [],
+      "weblens_ms": 848.0489000212401,
+      "tavily_ms": 0.0,
+      "weblens_tokens": 303,
+      "tavily_tokens": 0,
+      "weblens_payload_tokens": 353,
+      "tavily_payload_tokens": 0,
+      "weblens_status": "ok",
+      "weblens_providers": [
+        "mwmbl"
+      ],
+      "tavily_status": "",
+      "weblens_error": null,
+      "tavily_error": null
+    },
+    {
+      "id": "technical_research_q03",
+      "query": "What is the difference between symmetric and asymmetric encryption?",
+      "category": "technical_research",
+      "split": "development",
+      "labels": [
+        "owasp.org",
+        "cloudflare.com",
+        "wikipedia.org"
+      ],
+      "order": [
+        "weblens"
+      ],
+      "weblens_urls": [
+        "https://stackoverflow.com/q/41891989",
+        "https://arxiv.org/abs/2104.09553",
+        "https://www.nature.com/articles/s41589-022-00981-0",
+        "https://en.wikipedia.org/wiki/Symmetric-key_algorithm",
+        "https://security.stackexchange.com/q/89351"
+      ],
+      "tavily_urls": [],
+      "weblens_ms": 740.0215000379831,
+      "tavily_ms": 0.0,
+      "weblens_tokens": 307,
+      "tavily_tokens": 0,
+      "weblens_payload_tokens": 353,
+      "tavily_payload_tokens": 0,
+      "weblens_status": "ok",
+      "weblens_providers": [
+        "mwmbl"
+      ],
+      "tavily_status": "",
+      "weblens_error": null,
+      "tavily_error": null
+    },
+    {
+      "id": "programming_developer_docs_q02",
+      "query": "In Python, what does the with statement guarantee when used with a context manager?",
+      "category": "programming_developer_docs",
+      "split": "development",
+      "labels": [
+        "docs.python.org",
+        "python.org"
+      ],
+      "order": [
+        "weblens"
+      ],
+      "weblens_urls": [
+        "https://docs.python.org/2.5/ref/with.html",
+        "https://docs.python.org/id/3.6/library/trace.html",
+        "http://docs.python.org/library/trace",
+        "https://en.wikipedia.org/wiki/Python_syntax_and_semantics",
+        "https://stackoverflow.com/a/49564729"
+      ],
+      "tavily_urls": [],
+      "weblens_ms": 1906.5109000075608,
+      "tavily_ms": 0.0,
+      "weblens_tokens": 316,
+      "tavily_tokens": 0,
+      "weblens_payload_tokens": 392,
+      "tavily_payload_tokens": 0,
+      "weblens_status": "ok",
+      "weblens_providers": [
+        "mwmbl",
+        "wikipedia"
+      ],
+      "tavily_status": "",
+      "weblens_error": null,
+      "tavily_error": null
+    },
+    {
+      "id": "programming_developer_docs_q03",
+      "query": "What is the purpose of the git rebase command?",
+      "category": "programming_developer_docs",
+      "split": "development",
+      "labels": [
+        "git-scm.com",
+        "atlassian.com"
+      ],
+      "order": [
+        "weblens"
+      ],
+      "weblens_urls": [
+        "https://docs.github.com/en/enterprise/2.15/user/articles/about-git-rebase",
+        "http://docs.github.com/en/enterprise-server@3.6/get-started/using-git/about-git-rebase",
+        "https://stackoverflow.com/a/39081674",
+        "https://git.sr.ht/~niklaseklund/egerrit/log/0.3",
+        "http://opensource.com/article/23/1/git-reflog"
+      ],
+      "tavily_urls": [],
+      "weblens_ms": 456.0238000121899,
+      "tavily_ms": 0.0,
+      "weblens_tokens": 374,
+      "tavily_tokens": 0,
+      "weblens_payload_tokens": 432,
+      "tavily_payload_tokens": 0,
+      "weblens_status": "ok",
+      "weblens_providers": [
+        "mwmbl"
+      ],
+      "tavily_status": "",
+      "weblens_error": null,
+      "tavily_error": null
+    },
+    {
+      "id": "scientific_research_q02",
+      "query": "What is the primary greenhouse gas responsible for most human-caused global warming?",
+      "category": "scientific_research",
+      "split": "development",
+      "labels": [
+        "ipcc.ch",
+        "nasa.gov",
+        "noaa.gov"
+      ],
+      "order": [
+        "weblens"
+      ],
+      "weblens_urls": [
+        "https://pubmed.ncbi.nlm.nih.gov/30709818/",
+        "https://www.osti.gov/biblio/891228",
+        "http://dspace.mit.edu/handle/1721.1/33954",
+        "https://www.statista.com/statistics/1345801/share-of-global-greenhouse-gas-emissions-by-gas-type/",
+        "http://www.pubmed.gov/37513061/"
+      ],
+      "tavily_urls": [],
+      "weblens_ms": 2468.7127000070177,
+      "tavily_ms": 0.0,
+      "weblens_tokens": 344,
+      "tavily_tokens": 0,
+      "weblens_payload_tokens": 404,
+      "tavily_payload_tokens": 0,
+      "weblens_status": "ok",
+      "weblens_providers": [
+        "mwmbl"
+      ],
+      "tavily_status": "",
+      "weblens_error": null,
+      "tavily_error": null
+    },
+    {
+      "id": "scientific_research_q03",
+      "query": "What did the discovery of the Higgs boson confirm about elementary particles?",
+      "category": "scientific_research",
+      "split": "development",
+      "labels": [
+        "home.cern",
+        "wikipedia.org",
+        "nobelprize.org"
+      ],
+      "order": [
+        "weblens"
+      ],
+      "weblens_urls": [
+        "https://en.wikipedia.org/wiki/Peter_Higgs",
+        "https://en.wikipedia.org/wiki/W_and_Z_bosons",
+        "https://en.wikipedia.org/wiki/Gauge_boson",
+        "https://news.brown.edu/articles/2012/07/higgs",
+        "http://www.bnl.gov/newsroom/news.php?a=111579"
+      ],
+      "tavily_urls": [],
+      "weblens_ms": 2349.851899954956,
+      "tavily_ms": 0.0,
+      "weblens_tokens": 359,
+      "tavily_tokens": 0,
+      "weblens_payload_tokens": 431,
+      "tavily_payload_tokens": 0,
+      "weblens_status": "ok",
+      "weblens_providers": [
+        "mwmbl",
+        "wikipedia"
+      ],
+      "tavily_status": "",
+      "weblens_error": null,
+      "tavily_error": null
+    },
+    {
+      "id": "academic_research_q02",
+      "query": "Which paper introduced the ResNet architecture and in what year was it published?",
+      "category": "academic_research",
+      "split": "development",
+      "labels": [
+        "arxiv.org",
+        "openaccess.thecvf.com"
+      ],
+      "order": [
+        "weblens"
+      ],
+      "weblens_urls": [
+        "https://cse.umn.edu/node/79016",
+        "http://math.mit.edu/",
+        "http://arxiv.org/abs/0906.5170",
+        "http://dl.acm.org/doi/10.1016/j.jss.2015.05.037",
+        "https://en.wikipedia.org/wiki/Paper"
+      ],
+      "tavily_urls": [],
+      "weblens_ms": 2189.6283000241965,
+      "tavily_ms": 0.0,
+      "weblens_tokens": 293,
+      "tavily_tokens": 0,
+      "weblens_payload_tokens": 358,
+      "tavily_payload_tokens": 0,
+      "weblens_status": "ok",
+      "weblens_providers": [
+        "mwmbl",
+        "wikipedia",
+        "bing",
+        "yahoo"
+      ],
+      "tavily_status": "",
+      "weblens_error": null,
+      "tavily_error": null
+    },
+    {
+      "id": "academic_research_q03",
+      "query": "What does the acronym BERT stand for in natural language processing?",
+      "category": "academic_research",
+      "split": "development",
+      "labels": [
+        "arxiv.org",
+        "wikipedia.org"
+      ],
+      "order": [
+        "weblens"
+      ],
+      "weblens_urls": [
+        "https://en.wikipedia.org/wiki/Google_Search",
+        "https://www.snowflake.com/en/fundamentals/bert/",
+        "http://research.microsoft.com/nlp",
+        "https://huggingface.co/blog/bert-101",
+        "http://arxiv.org/abs/2003.01200v3"
+      ],
+      "tavily_urls": [],
+      "weblens_ms": 1070.580700004939,
+      "tavily_ms": 0.0,
+      "weblens_tokens": 303,
+      "tavily_tokens": 0,
+      "weblens_payload_tokens": 364,
+      "tavily_payload_tokens": 0,
+      "weblens_status": "ok",
+      "weblens_providers": [
+        "mwmbl",
+        "wikipedia",
+        "yahoo"
+      ],
+      "tavily_status": "",
+      "weblens_error": null,
+      "tavily_error": null
+    },
+    {
+      "id": "multihop_reasoning_q02",
+      "query": "Which company owns Instagram, and in what year was Instagram founded?",
+      "category": "multihop_reasoning",
+      "split": "development",
+      "labels": [
+        "wikipedia.org",
+        "about.instagram.com",
+        "meta.com"
+      ],
+      "order": [
+        "weblens"
+      ],
+      "weblens_urls": [
+        "https://en.wikipedia.org/wiki/Meta_Platforms",
+        "https://en.wikipedia.org/wiki/Kevin_Systrom",
+        "https://en.wikipedia.org/wiki/Amyris,_Inc.",
+        "https://www.britannica.com/money/Instagram",
+        "https://www.investopedia.com/articles/personal-finance/051815/top-11-companies-owned-facebook.asp"
+      ],
+      "tavily_urls": [],
+      "weblens_ms": 1319.14700003108,
+      "tavily_ms": 0.0,
+      "weblens_tokens": 352,
+      "tavily_tokens": 0,
+      "weblens_payload_tokens": 413,
+      "tavily_payload_tokens": 0,
+      "weblens_status": "ok",
+      "weblens_providers": [
+        "mwmbl",
+        "wikipedia",
+        "yahoo"
+      ],
+      "tavily_status": "",
+      "weblens_error": null,
+      "tavily_error": null
+    },
+    {
+      "id": "multihop_reasoning_q03",
+      "query": "What is the headquarters city of the company that develops the Windows operating system?",
+      "category": "multihop_reasoning",
+      "split": "development",
+      "labels": [
+        "microsoft.com",
+        "wikipedia.org",
+        "britannica.com"
+      ],
+      "order": [
+        "weblens"
+      ],
+      "weblens_urls": [
+        "https://technet.microsoft.com/library/ms176116(v=sql.105)",
+        "http://www.microsoft.com/WINDOWS",
+        "http://en.wikipedia.org/wiki/GDI32",
+        "https://en.wikipedia.org/wiki/Microsoft",
+        "https://press.aboutamazon.com/2017/9/amazon-opens-search-for-amazon-hq2-a-second-headquarters-city-in-north-america"
+      ],
+      "tavily_urls": [],
+      "weblens_ms": 555.5100999772549,
+      "tavily_ms": 0.0,
+      "weblens_tokens": 338,
+      "tavily_tokens": 0,
+      "weblens_payload_tokens": 409,
+      "tavily_payload_tokens": 0,
+      "weblens_status": "ok",
+      "weblens_providers": [
+        "mwmbl"
+      ],
+      "tavily_status": "",
+      "weblens_error": null,
+      "tavily_error": null
+    },
+    {
+      "id": "long_document_extraction_q02",
+      "query": "According to the IPCC Sixth Assessment Report, what global temperature limit is central to the Paris Agreement?",
+      "category": "long_document_extraction",
+      "split": "development",
+      "labels": [
+        "ipcc.ch",
+        "unfccc.int"
+      ],
+      "order": [
+        "weblens"
+      ],
+      "weblens_urls": [
+        "https://www.un.org/en/climatechange/science/climate-issues/degrees-matter",
+        "https://www.ipcc.ch/report/ar6/syr/downloads/report/IPCC_AR6_SYR_FullVolume.pdf",
+        "https://pubmed.ncbi.nlm.nih.gov/37014233/",
+        "http://en.wikipedia.org/wiki/Paris_Agreement",
+        "https://en.wikipedia.org/wiki/Global_surface_temperature"
+      ],
+      "tavily_urls": [],
+      "weblens_ms": 1350.4756000475027,
+      "tavily_ms": 0.0,
+      "weblens_tokens": 340,
+      "tavily_tokens": 0,
+      "weblens_payload_tokens": 419,
+      "tavily_payload_tokens": 0,
+      "weblens_status": "ok",
+      "weblens_providers": [
+        "mwmbl",
+        "bing",
+        "yahoo"
+      ],
+      "tavily_status": "",
+      "weblens_error": null,
+      "tavily_error": null
+    },
+    {
+      "id": "long_document_extraction_q03",
+      "query": "What does Article 5 of the North Atlantic Treaty commit NATO members to?",
+      "category": "long_document_extraction",
+      "split": "development",
+      "labels": [
+        "nato.int",
+        "wikipedia.org"
+      ],
+      "order": [
+        "weblens"
+      ],
+      "weblens_urls": [
+        "https://en.wikipedia.org/wiki/2025_The_Hague_NATO_summit",
+        "https://nypost.com/tag/nato/",
+        "https://www.npr.org/2022/02/26/1082964072/russia-ukraine-nato-article-5",
+        "http://rt.com/shows/crosstalk/",
+        "https://www.weforum.org/stories/2025/06/75-years-nato-explainer/"
+      ],
+      "tavily_urls": [],
+      "weblens_ms": 253.5937000066042,
+      "tavily_ms": 0.0,
+      "weblens_tokens": 337,
+      "tavily_tokens": 0,
+      "weblens_payload_tokens": 398,
+      "tavily_payload_tokens": 0,
+      "weblens_status": "ok",
+      "weblens_providers": [
+        "mwmbl"
+      ],
+      "tavily_status": "",
+      "weblens_error": null,
+      "tavily_error": null
+    },
+    {
+      "id": "company_research_q02",
+      "query": "Who is the CEO of Microsoft as of 2025?",
+      "category": "company_research",
+      "split": "development",
+      "labels": [
+        "microsoft.com",
+        "wikipedia.org",
+        "bloomberg.com"
+      ],
+      "order": [
+        "weblens"
+      ],
+      "weblens_urls": [
+        "https://en.wikipedia.org/wiki/Microsoft_AI",
+        "https://en.wikipedia.org/wiki/Asha_Sharma",
+        "https://en.wikipedia.org/wiki/Microsoft",
+        "https://en.wikipedia.org/wiki/Satya_Nadella",
+        "https://en.wikipedia.org/wiki/Thomas_Dohmke"
+      ],
+      "tavily_urls": [],
+      "weblens_ms": 786.0238999710418,
+      "tavily_ms": 0.0,
+      "weblens_tokens": 348,
+      "tavily_tokens": 0,
+      "weblens_payload_tokens": 405,
+      "tavily_payload_tokens": 0,
+      "weblens_status": "ok",
+      "weblens_providers": [
+        "mwmbl",
+        "wikipedia"
+      ],
+      "tavily_status": "",
+      "weblens_error": null,
+      "tavily_error": null
+    },
+    {
+      "id": "company_research_q03",
+      "query": "Where is the headquarters of NVIDIA located?",
+      "category": "company_research",
+      "split": "development",
+      "labels": [
+        "nvidia.com",
+        "wikipedia.org",
+        "britannica.com"
+      ],
+      "order": [
+        "weblens"
+      ],
+      "weblens_urls": [
+        "https://en.wikipedia.org/wiki/Alienware",
+        "https://nvidianews.nvidia.com/multimedia/santa-clara-headquarters",
+        "https://maps.apple.com/place?place-id=I237C9ABA42372A16",
+        "https://en.wikipedia.org/wiki/Neihu_Technology_Park",
+        "https://en.wikipedia.org/wiki/Deep_Instinct"
+      ],
+      "tavily_urls": [],
+      "weblens_ms": 1926.091700035613,
+      "tavily_ms": 0.0,
+      "weblens_tokens": 331,
+      "tavily_tokens": 0,
+      "weblens_payload_tokens": 385,
+      "tavily_payload_tokens": 0,
+      "weblens_status": "ok",
+      "weblens_providers": [
+        "mwmbl",
+        "wikipedia",
+        "yahoo"
+      ],
+      "tavily_status": "",
+      "weblens_error": null,
+      "tavily_error": null
+    },
+    {
+      "id": "startup_research_q02",
+      "query": "What does the company Anthropic develop?",
+      "category": "startup_research",
+      "split": "development",
+      "labels": [
+        "anthropic.com",
+        "wikipedia.org",
+        "techcrunch.com"
+      ],
+      "order": [
+        "weblens"
+      ],
+      "weblens_urls": [
+        "https://en.wikipedia.org/wiki/Anthropic%E2%80%93United_States_Department_of_Defense_dispute",
+        "https://en.wikipedia.org/wiki/Claude_%28AI%29",
+        "https://en.wikipedia.org/wiki/Recursive_self-improvement",
+        "https://www.lesswrong.com/w/anthropic-org",
+        "https://www.anthropic.com/company"
+      ],
+      "tavily_urls": [],
+      "weblens_ms": 879.038600018248,
+      "tavily_ms": 0.0,
+      "weblens_tokens": 333,
+      "tavily_tokens": 0,
+      "weblens_payload_tokens": 393,
+      "tavily_payload_tokens": 0,
+      "weblens_status": "ok",
+      "weblens_providers": [
+        "mwmbl",
+        "wikipedia",
+        "yahoo"
+      ],
+      "tavily_status": "",
+      "weblens_error": null,
+      "tavily_error": null
+    },
+    {
+      "id": "startup_research_q03",
+      "query": "Who founded the payments company Stripe?",
+      "category": "startup_research",
+      "split": "development",
+      "labels": [
+        "stripe.com",
+        "wikipedia.org",
+        "forbes.com"
+      ],
+      "order": [
+        "weblens"
+      ],
+      "weblens_urls": [
+        "https://en.wikipedia.org/wiki/Stripe,_Inc.",
+        "https://en.wikipedia.org/wiki/Shola_Akinlade",
+        "https://en.wikipedia.org/wiki/Allinson",
+        "https://arc.dev/company/stripe",
+        "https://stripe.com/en-lv/docs/payments"
+      ],
+      "tavily_urls": [],
+      "weblens_ms": 2175.8926000329666,
+      "tavily_ms": 0.0,
+      "weblens_tokens": 241,
+      "tavily_tokens": 0,
+      "weblens_payload_tokens": 298,
+      "tavily_payload_tokens": 0,
+      "weblens_status": "ok",
+      "weblens_providers": [
+        "mwmbl"
+      ],
+      "tavily_status": "",
+      "weblens_error": null,
+      "tavily_error": null
+    },
+    {
+      "id": "industry_research_q02",
+      "query": "Which are the three largest cloud infrastructure providers by market share?",
+      "category": "industry_research",
+      "split": "development",
+      "labels": [
+        "gartner.com",
+        "canalys.com",
+        "statista.com",
+        "synergyrg.com"
+      ],
+      "order": [
+        "weblens"
+      ],
+      "weblens_urls": [
+        "https://en.wikipedia.org/wiki/Cloud_computing",
+        "https://en.wikipedia.org/wiki/Amazon_Web_Services",
+        "https://www.statista.com/chart/18819/worldwide-market-share-of-leading-cloud-infrastructure-service-providers/?srsltid=AYCX9vKGEO-FqBV7yrdRbja_muMwHs8SomSl9yOIwqsXvndDbV8rk8qV",
+        "https://www.statista.com/chart/18819/worldwide-market-share-of-leading-cloud-infrastructure-service-providers/",
+        "https://businesstats.com/big-three-hold-dominant-lead-in-accelerating-cloud-market/"
+      ],
+      "tavily_urls": [],
+      "weblens_ms": 2950.033099972643,
+      "tavily_ms": 0.0,
+      "weblens_tokens": 437,
+      "tavily_tokens": 0,
+      "weblens_payload_tokens": 501,
+      "tavily_payload_tokens": 0,
+      "weblens_status": "ok",
+      "weblens_providers": [
+        "mwmbl",
+        "wikipedia",
+        "yahoo"
+      ],
+      "tavily_status": "",
+      "weblens_error": null,
+      "tavily_error": null
+    },
+    {
+      "id": "industry_research_q03",
+      "query": "Which company is the world's largest contract manufacturer of semiconductors?",
+      "category": "industry_research",
+      "split": "development",
+      "labels": [
+        "tsmc.com",
+        "wikipedia.org",
+        "britannica.com"
+      ],
+      "order": [
+        "weblens"
+      ],
+      "weblens_urls": [
+        "https://en.wikipedia.org/wiki/BYD_Company",
+        "https://en.wikipedia.org/wiki/Rapidus",
+        "https://en.wikipedia.org/wiki/STMicroelectronics",
+        "http://arstechnica.com/apple/guides/2011/08/does-this-metric-make-my-company-look-big.ars/",
+        "http://www.forbes.com/companies/novarex/"
+      ],
+      "tavily_urls": [],
+      "weblens_ms": 590.159599960316,
+      "tavily_ms": 0.0,
+      "weblens_tokens": 307,
+      "tavily_tokens": 0,
+      "weblens_payload_tokens": 366,
+      "tavily_payload_tokens": 0,
+      "weblens_status": "ok",
+      "weblens_providers": [
+        "mwmbl"
+      ],
+      "tavily_status": "",
+      "weblens_error": null,
+      "tavily_error": null
+    },
+    {
+      "id": "market_research_q02",
+      "query": "What does a stock market index measure?",
+      "category": "market_research",
+      "split": "development",
+      "labels": [
+        "investopedia.com",
+        "nyse.com",
+        "spglobal.com"
+      ],
+      "order": [
+        "weblens"
+      ],
+      "weblens_urls": [
+        "http://www.sec.gov/answers/indices.htm",
+        "https://en.wikipedia.org/wiki/Stock_market_index",
+        "https://cleartax.in/glossary/market-index",
+        "https://www.forbes.com/advisor/retirement/best-total-stock-market-index-funds/",
+        "https://groww.in/p/stock-market-index"
+      ],
+      "tavily_urls": [],
+      "weblens_ms": 348.0340000241995,
+      "tavily_ms": 0.0,
+      "weblens_tokens": 299,
+      "tavily_tokens": 0,
+      "weblens_payload_tokens": 347,
+      "tavily_payload_tokens": 0,
+      "weblens_status": "ok",
+      "weblens_providers": [
+        "mwmbl"
+      ],
+      "tavily_status": "",
+      "weblens_error": null,
+      "tavily_error": null
+    },
+    {
+      "id": "market_research_q03",
+      "query": "What does a company's price-to-earnings ratio measure?",
+      "category": "market_research",
+      "split": "development",
+      "labels": [
+        "investopedia.com",
+        "sec.gov",
+        "corporatefinanceinstitute.com"
+      ],
+      "order": [
+        "weblens"
+      ],
+      "weblens_urls": [
+        "https://www.businessinsider.com/personal-finance/what-is-pe-ratio",
+        "https://stockanalysis.com/term/pe-ratio/",
+        "https://www.nerdwallet.com/article/investing/pe-ratio-definition",
+        "https://www.fidelity.com/learning-center/trading-investing/pe-ratio",
+        "https://www.fool.com.au/definitions/p-e-ratio/"
+      ],
+      "tavily_urls": [],
+      "weblens_ms": 297.26179997669533,
+      "tavily_ms": 0.0,
+      "weblens_tokens": 390,
+      "tavily_tokens": 0,
+      "weblens_payload_tokens": 461,
+      "tavily_payload_tokens": 0,
+      "weblens_status": "ok",
+      "weblens_providers": [
+        "mwmbl"
+      ],
+      "tavily_status": "",
+      "weblens_error": null,
+      "tavily_error": null
+    },
+    {
+      "id": "stock_portfolio_research_q02",
+      "query": "What is Apple Inc.'s stock ticker symbol?",
+      "category": "stock_portfolio_research",
+      "split": "development",
+      "labels": [
+        "nasdaq.com",
+        "apple.com",
+        "sec.gov"
+      ],
+      "order": [
+        "weblens"
+      ],
+      "weblens_urls": [
+        "https://en.wikipedia.org/wiki/Ticker_symbol",
+        "https://stockanalysis.com/actions/changes/2026/",
+        "http://www.theverge.com/2015/10/12/9508429/ferrari-ipo-nyse-ticker-symbol-race",
+        "https://www.kiplinger.com/tfn/ticker.html?ticker=Z",
+        "https://www.fool.com/terms/s/stock-ticker/"
+      ],
+      "tavily_urls": [],
+      "weblens_ms": 726.5810000244528,
+      "tavily_ms": 0.0,
+      "weblens_tokens": 291,
+      "tavily_tokens": 0,
+      "weblens_payload_tokens": 343,
+      "tavily_payload_tokens": 0,
+      "weblens_status": "ok",
+      "weblens_providers": [
+        "mwmbl"
+      ],
+      "tavily_status": "",
+      "weblens_error": null,
+      "tavily_error": null
+    },
+    {
+      "id": "stock_portfolio_research_q03",
+      "query": "On which stock exchange is Microsoft Corporation primarily listed?",
+      "category": "stock_portfolio_research",
+      "split": "development",
+      "labels": [
+        "nasdaq.com",
+        "microsoft.com",
+        "sec.gov"
+      ],
+      "order": [
+        "weblens"
+      ],
+      "weblens_urls": [
+        "https://en.wikipedia.org/wiki/Oracle_Corporation",
+        "http://www.nasdaq.com/symbol/MSFT",
+        "https://en.wikipedia.org/wiki/Charles_Schwab_Corporation",
+        "https://www.kuppingercole.com/vendors/microsoft",
+        "https://finance.yahoo.com/quote/MSFT/history/"
+      ],
+      "tavily_urls": [],
+      "weblens_ms": 1505.7599000283517,
+      "tavily_ms": 0.0,
+      "weblens_tokens": 335,
+      "tavily_tokens": 0,
+      "weblens_payload_tokens": 403,
+      "tavily_payload_tokens": 0,
+      "weblens_status": "ok",
+      "weblens_providers": [
+        "mwmbl",
+        "wikipedia"
+      ],
+      "tavily_status": "",
+      "weblens_error": null,
+      "tavily_error": null
+    },
+    {
+      "id": "product_research_q02",
+      "query": "Which charging connector did the iPhone 15 introduce?",
+      "category": "product_research",
+      "split": "development",
+      "labels": [
+        "apple.com",
+        "wikipedia.org",
+        "theverge.com"
+      ],
+      "order": [
+        "weblens"
+      ],
+      "weblens_urls": [
+        "https://support.apple.com/en-us/105099",
+        "https://discussions.apple.com/thread/255155991",
+        "https://en.wikipedia.org/wiki/IPhone_4s",
+        "https://oskotech.com/iphone-with-usb-c-iphone-15-and-later-usb-c-charging-guide/",
+        "https://www.anker.com/blogs/chargers/what-charger-does-iphone-15-use"
+      ],
+      "tavily_urls": [],
+      "weblens_ms": 1447.7853999705985,
+      "tavily_ms": 0.0,
+      "weblens_tokens": 388,
+      "tavily_tokens": 0,
+      "weblens_payload_tokens": 446,
+      "tavily_payload_tokens": 0,
+      "weblens_status": "ok",
+      "weblens_providers": [
+        "mwmbl",
+        "yahoo"
+      ],
+      "tavily_status": "",
+      "weblens_error": null,
+      "tavily_error": null
+    },
+    {
+      "id": "product_research_q03",
+      "query": "What is the main difference between the Amazon Kindle Paperwhite and the Kindle Scribe?",
+      "category": "product_research",
+      "split": "development",
+      "labels": [
+        "amazon.com",
+        "wikipedia.org",
+        "theverge.com"
+      ],
+      "order": [
+        "weblens"
+      ],
+      "weblens_urls": [
+        "http://abcnews.go.com/blogs/technology/2012/09/amazon-event-liveblog-new-kindle-fire-kindle-paperwhite-and-more/",
+        "https://domainnamewire.com/tag/amazon-kindle/",
+        "https://www.engadget.com/tag/paperwhite",
+        "https://allthingsd.com/tag/e-readers/",
+        "https://blog.the-ebook-reader.com/2012/09/06/new-kindle-paperwhite-and-69-basic-kindle/"
+      ],
+      "tavily_urls": [],
+      "weblens_ms": 544.7402999852784,
+      "tavily_ms": 0.0,
+      "weblens_tokens": 360,
+      "tavily_tokens": 0,
+      "weblens_payload_tokens": 412,
+      "tavily_payload_tokens": 0,
+      "weblens_status": "ok",
+      "weblens_providers": [
+        "mwmbl"
+      ],
+      "tavily_status": "",
+      "weblens_error": null,
+      "tavily_error": null
+    },
+    {
+      "id": "competitive_intelligence_q02",
+      "query": "Which company is Intel's main competitor in the x86 CPU market?",
+      "category": "competitive_intelligence",
+      "split": "development",
+      "labels": [
+        "intel.com",
+        "amd.com",
+        "wikipedia.org"
+      ],
+      "order": [
+        "weblens"
+      ],
+      "weblens_urls": [
+        "https://en.wikipedia.org/wiki/Intel",
+        "https://en.wikipedia.org/wiki/Intel_Core",
+        "https://en.wikipedia.org/wiki/Pentium_%28original%29",
+        "http://www.theverge.com/2013/10/17/4850256/silk-roads-main-competitor-shuts-down-indefinitely-black-market-reloaded",
+        "https://www.intel.ie/content/www/ie/en/company-overview/company-overview.html"
+      ],
+      "tavily_urls": [],
+      "weblens_ms": 2049.2225000052713,
+      "tavily_ms": 0.0,
+      "weblens_tokens": 359,
+      "tavily_tokens": 0,
+      "weblens_payload_tokens": 435,
+      "tavily_payload_tokens": 0,
+      "weblens_status": "ok",
+      "weblens_providers": [
+        "mwmbl",
+        "wikipedia",
+        "bing",
+        "yahoo"
+      ],
+      "tavily_status": "",
+      "weblens_error": null,
+      "tavily_error": null
+    },
+    {
+      "id": "competitive_intelligence_q03",
+      "query": "Which streaming services compete directly with Netflix?",
+      "category": "competitive_intelligence",
+      "split": "development",
+      "labels": [
+        "netflix.com",
+        "disneyplus.com",
+        "wikipedia.org"
+      ],
+      "order": [
+        "weblens"
+      ],
+      "weblens_urls": [
+        "https://en.wikipedia.org/wiki/Criticism_of_Netflix",
+        "https://lamag.com/tv/streaming-services-best/",
+        "http://bgp.he.net/AS2906",
+        "https://www.pymnts.com/streaming/2023/streaming-services-compete-consumers-holiday-spending-with-giftable-subscriptions/",
+        "https://www.wired.com/gallery/best-streaming-services/"
+      ],
+      "tavily_urls": [],
+      "weblens_ms": 701.7593000200577,
+      "tavily_ms": 0.0,
+      "weblens_tokens": 316,
+      "tavily_tokens": 0,
+      "weblens_payload_tokens": 372,
+      "tavily_payload_tokens": 0,
+      "weblens_status": "ok",
+      "weblens_providers": [
+        "mwmbl"
+      ],
+      "tavily_status": "",
+      "weblens_error": null,
+      "tavily_error": null
+    },
+    {
+      "id": "legal_policy_research_q02",
+      "query": "What does GDPR stand for and what does it regulate?",
+      "category": "legal_policy_research",
+      "split": "development",
+      "labels": [
+        "eur-lex.europa.eu",
+        "gdpr.eu",
+        "ec.europa.eu"
+      ],
+      "order": [
+        "weblens"
+      ],
+      "weblens_urls": [
+        "https://gdpr.eu/what-does-it-stand-for/",
+        "https://www.delphix.com/glossary/what-is-gdpr-compliance-requirements"
+      ],
+      "tavily_urls": [],
+      "weblens_ms": 5378.741499967873,
+      "tavily_ms": 0.0,
+      "weblens_tokens": 158,
+      "tavily_tokens": 0,
+      "weblens_payload_tokens": 219,
+      "tavily_payload_tokens": 0,
+      "weblens_status": "ok",
+      "weblens_providers": [
+        "mwmbl",
+        "wikipedia",
+        "bing",
+        "yahoo"
+      ],
+      "tavily_status": "",
+      "weblens_error": null,
+      "tavily_error": null
+    },
+    {
+      "id": "legal_policy_research_q03",
+      "query": "What is the purpose of the Digital Millennium Copyright Act?",
+      "category": "legal_policy_research",
+      "split": "development",
+      "labels": [
+        "copyright.gov",
+        "wikipedia.org",
+        "eff.org"
+      ],
+      "order": [
+        "weblens"
+      ],
+      "weblens_urls": [
+        "https://www.bu.edu/copyright/",
+        "https://en.wikipedia.org/wiki/Digital_Millennium_Copyright_Act",
+        "https://allthingsd.com/tag/digital-millennium-copyright-act/",
+        "http://radar.oreilly.com/tag/digital-millennium-copyright-act",
+        "https://www.aclu.org/text-digital-millennium-copyright-act-dmca"
+      ],
+      "tavily_urls": [],
+      "weblens_ms": 785.4954999638721,
+      "tavily_ms": 0.0,
+      "weblens_tokens": 347,
+      "tavily_tokens": 0,
+      "weblens_payload_tokens": 395,
+      "tavily_payload_tokens": 0,
+      "weblens_status": "ok",
+      "weblens_providers": [
+        "mwmbl"
+      ],
+      "tavily_status": "",
+      "weblens_error": null,
+      "tavily_error": null
+    },
+    {
+      "id": "public_sector_research_q02",
+      "query": "Which US federal agency publishes the Consumer Price Index?",
+      "category": "public_sector_research",
+      "split": "development",
+      "labels": [
+        "bls.gov",
+        "wikipedia.org",
+        "usa.gov"
+      ],
+      "order": [
+        "weblens"
+      ],
+      "weblens_urls": [
+        "https://apps.apple.com/iq/app/davis-index/id1511034038",
+        "https://en.wikipedia.org/wiki/Consumer_price_index",
+        "https://en.wikipedia.org/wiki/Consumer_price_index_by_country",
+        "https://en.wikipedia.org/wiki/CPI",
+        "http://news.ycombinator.com/item?id=37900343"
+      ],
+      "tavily_urls": [],
+      "weblens_ms": 1849.539199960418,
+      "tavily_ms": 0.0,
+      "weblens_tokens": 302,
+      "tavily_tokens": 0,
+      "weblens_payload_tokens": 363,
+      "tavily_payload_tokens": 0,
+      "weblens_status": "ok",
+      "weblens_providers": [
+        "mwmbl"
+      ],
+      "tavily_status": "",
+      "weblens_error": null,
+      "tavily_error": null
+    },
+    {
+      "id": "public_sector_research_q03",
+      "query": "What is the core mission of the World Health Organization?",
+      "category": "public_sector_research",
+      "split": "development",
+      "labels": [
+        "who.int",
+        "wikipedia.org",
+        "un.org"
+      ],
+      "order": [
+        "weblens"
+      ],
+      "weblens_urls": [
+        "http://www.cia.gov/about/organization",
+        "https://en.wikipedia.org/wiki/World_Health_Organization",
+        "https://www.seda.ac.uk/about-seda/core-mission-and-values/",
+        "http://smxi.org/docs/inxi-core-mission.htm",
+        "https://cpj.org/?p=24348"
+      ],
+      "tavily_urls": [],
+      "weblens_ms": 1211.7427000193857,
+      "tavily_ms": 0.0,
+      "weblens_tokens": 292,
+      "tavily_tokens": 0,
+      "weblens_payload_tokens": 341,
+      "tavily_payload_tokens": 0,
+      "weblens_status": "ok",
+      "weblens_providers": [
+        "mwmbl"
+      ],
+      "tavily_status": "",
+      "weblens_error": null,
+      "tavily_error": null
+    },
+    {
+      "id": "healthcare_information_q02",
+      "query": "What are common symptoms of type 2 diabetes?",
+      "category": "healthcare_information",
+      "split": "development",
+      "labels": [
+        "cdc.gov",
+        "mayoclinic.org",
+        "nih.gov",
+        "diabetes.org"
+      ],
+      "order": [
+        "weblens"
+      ],
+      "weblens_urls": [
+        "https://pubmed.ncbi.nlm.nih.gov/30202906",
+        "http://www.ncbi.nlm.nih.gov/pubmed/12766105",
+        "https://pubmed.ncbi.nlm.nih.gov/34553836",
+        "https://en.wikipedia.org/wiki/Type_2_diabetes",
+        "https://en.wikipedia.org/wiki/Type_3c_diabetes"
+      ],
+      "tavily_urls": [],
+      "weblens_ms": 559.0613000094891,
+      "tavily_ms": 0.0,
+      "weblens_tokens": 327,
+      "tavily_tokens": 0,
+      "weblens_payload_tokens": 375,
+      "tavily_payload_tokens": 0,
+      "weblens_status": "ok",
+      "weblens_providers": [
+        "mwmbl"
+      ],
+      "tavily_status": "",
+      "weblens_error": null,
+      "tavily_error": null
+    },
+    {
+      "id": "healthcare_information_q03",
+      "query": "What does body mass index measure?",
+      "category": "healthcare_information",
+      "split": "development",
+      "labels": [
+        "cdc.gov",
+        "nih.gov",
+        "mayoclinic.org"
+      ],
+      "order": [
+        "weblens"
+      ],
+      "weblens_urls": [
+        "https://en.wikipedia.org/wiki/Body_mass_index",
+        "https://en.wikipedia.org/wiki/Corpulence_index",
+        "https://en.wikipedia.org/wiki/Female_body_shape",
+        "https://en.wikipedia.org/wiki/Classification_of_obesity",
+        "https://en.wikipedia.org/wiki/Waist%E2%80%93hip_ratio"
+      ],
+      "tavily_urls": [],
+      "weblens_ms": 765.3466999763623,
+      "tavily_ms": 0.0,
+      "weblens_tokens": 337,
+      "tavily_tokens": 0,
+      "weblens_payload_tokens": 385,
+      "tavily_payload_tokens": 0,
+      "weblens_status": "ok",
+      "weblens_providers": [
+        "mwmbl",
+        "wikipedia"
+      ],
+      "tavily_status": "",
+      "weblens_error": null,
+      "tavily_error": null
+    },
+    {
+      "id": "structured_data_enrichment_q02",
+      "query": "What is the ISO 3166-1 alpha-2 country code for Germany?",
+      "category": "structured_data_enrichment",
+      "split": "development",
+      "labels": [
+        "iso.org",
+        "wikipedia.org"
+      ],
+      "order": [
+        "weblens"
+      ],
+      "weblens_urls": [
+        "https://en.wikipedia.org/wiki/ISO_3166-1_alpha-2",
+        "https://developer.spotify.com/console/get-user-player/",
+        "http://icannwiki.org/.mv",
+        "https://getprospect.com/api-docs/enums/countries",
+        "https://www.wikiwand.com/en/ISO_3166-1"
+      ],
+      "tavily_urls": [],
+      "weblens_ms": 309.151399997063,
+      "tavily_ms": 0.0,
+      "weblens_tokens": 330,
+      "tavily_tokens": 0,
+      "weblens_payload_tokens": 390,
+      "tavily_payload_tokens": 0,
+      "weblens_status": "ok",
+      "weblens_providers": [
+        "mwmbl"
+      ],
+      "tavily_status": "",
+      "weblens_error": null,
+      "tavily_error": null
+    },
+    {
+      "id": "structured_data_enrichment_q03",
+      "query": "What is the ISO 4217 currency code for the Japanese yen?",
+      "category": "structured_data_enrichment",
+      "split": "development",
+      "labels": [
+        "iso.org",
+        "wikipedia.org"
+      ],
+      "order": [
+        "weblens"
+      ],
+      "weblens_urls": [
+        "https://www.iso.org/iso-4217-currency-codes.html",
+        "https://github.com/NIEM/NIEM-Releases/issues/55",
+        "https://stackoverflow.com/a/3889573",
+        "http://cr.openjdk.java.net/~iris/se/10/latestSpec/api/java/util/Currency.html",
+        "https://kids.kiddle.co/ISO_4217"
+      ],
+      "tavily_urls": [],
+      "weblens_ms": 1003.3890000195242,
+      "tavily_ms": 0.0,
+      "weblens_tokens": 337,
+      "tavily_tokens": 0,
+      "weblens_payload_tokens": 406,
+      "tavily_payload_tokens": 0,
+      "weblens_status": "ok",
+      "weblens_providers": [
+        "mwmbl"
+      ],
+      "tavily_status": "",
+      "weblens_error": null,
+      "tavily_error": null
+    },
+    {
+      "id": "website_crawling_q02",
+      "query": "What is robots.txt and where must it be located on a website?",
+      "category": "website_crawling",
+      "split": "development",
+      "labels": [
+        "robotstxt.org",
+        "developers.google.com",
+        "wikipedia.org"
+      ],
+      "order": [
+        "weblens"
+      ],
+      "weblens_urls": [
+        "https://en.wikipedia.org/wiki/Sitemaps",
+        "https://en.wikipedia.org/wiki/Search_engine",
+        "https://en.wikipedia.org/wiki/Search_engine_optimization",
+        "https://en.wikipedia.org/wiki/Email-address_harvesting",
+        "https://stackoverflow.com/q/633479"
+      ],
+      "tavily_urls": [],
+      "weblens_ms": 1021.8745999736711,
+      "tavily_ms": 0.0,
+      "weblens_tokens": 319,
+      "tavily_tokens": 0,
+      "weblens_payload_tokens": 379,
+      "tavily_payload_tokens": 0,
+      "weblens_status": "ok",
+      "weblens_providers": [
+        "mwmbl",
+        "wikipedia"
+      ],
+      "tavily_status": "",
+      "weblens_error": null,
+      "tavily_error": null
+    },
+    {
+      "id": "website_crawling_q03",
+      "query": "What is a sitemap.xml file used for?",
+      "category": "website_crawling",
+      "split": "development",
+      "labels": [
+        "sitemaps.org",
+        "developers.google.com"
+      ],
+      "order": [
+        "weblens"
+      ],
+      "weblens_urls": [
+        "http://automad.org/system/sitemap-xml",
+        "https://medevel.com/seo-2024/",
+        "https://meta.stackexchange.com/a/332607",
+        "http://mintlify.com/docs/settings/seo",
+        "https://elgg.org/plugins/2917249"
+      ],
+      "tavily_urls": [],
+      "weblens_ms": 530.0613000290468,
+      "tavily_ms": 0.0,
+      "weblens_tokens": 307,
+      "tavily_tokens": 0,
+      "weblens_payload_tokens": 356,
+      "tavily_payload_tokens": 0,
+      "weblens_status": "ok",
+      "weblens_providers": [
+        "mwmbl"
+      ],
+      "tavily_status": "",
+      "weblens_error": null,
+      "tavily_error": null
+    }
+  ]
+}

@@ -60,7 +60,7 @@ Systems measured independently, same queries, no merged results:
 
 95% CIs for P@5: local `[0.484, 0.624]`, deployed `[0.411, 0.533]`, Tavily `[0.675, 0.804]`.
 
-**Honest reading:** WebLens is ~1.8× faster and returns ~7.5× fewer tokens than Tavily, but Tavily is more relevant and more reliable on this dataset. Paired local−Tavily P@5 is **−0.187**, 95% CI `[−0.265, −0.108]` (24 wins / 34 ties / 49 losses). Do not claim WebLens beats Tavily on retrieval quality.
+**Honest reading:** WebLens is ~1.8× faster and returns ~7.5× fewer tokens than Tavily, but Tavily is more relevant and more reliable on this dataset. Paired local−Tavily P@5 is **−0.187**, 95% CI `[−0.265, −0.108]` (24 wins / 34 ties / 49 losses). Do not claim WebLens beats Tavily on retrieval quality **on this v10 suite**; the v11 n=40 hybrid table below is a different, smaller measurement and is labeled hybrid.
 
 Full report: `reports/three-system-comparison-v10/V10_REPORT.md`.
 
@@ -227,7 +227,7 @@ python -m weblens.cli app tutorial --step all
 | Mirror drift guard (`test_mirror_drift.py`) | **pass** |
 | Tracked-secret scan (`tests/test_no_tracked_secrets.py`) | **pass** |
 | Provider status classification (tavily/brave/searxng/yahoo) | **pass** (401/403 terminal, 429 retryable) |
-| Benchmark metric unit tests (`test_v11_metrics.py`) | **11 passed** |
+| Benchmark metric unit tests (`test_v11_metrics.py`) | **13 passed** |
 | Nine apps live runner | **9/9 PASS** |
 | Local security v2 | **38/38 PASS** |
 | Deployed security v2 (historical revision `00006-l9h`) | **18 PASS / 4 FAIL / 1 UNSUPPORTED** |
@@ -236,22 +236,36 @@ Measured on Windows with Python 3.14 in this workspace. CI additionally runs bot
 
 ### Measured head-to-head vs Tavily (live API, 40 held-out queries)
 
-See [reports/weblens-vs-tavily-v11/README.md](reports/weblens-vs-tavily-v11/README.md) for the full method, raw rows and the contamination analysis.
+The shipped default when a Tavily key is configured is a **hybrid**: Tavily is
+one of WebLens's providers, then WebLens filters, ranks and fuses it with
+keyless providers. This is **not** an independence claim, and each WebLens query
+also spends one Tavily credit.
 
-| Metric | WebLens | Tavily |
+Artifact: `evidence/raw/R-20261109-HYBRID-40-FILTER/REPORT.md` (ledger
+`cfacf8a7…`, exit 0, uncontaminated, n=40, 2026-11-09).
+
+| Metric | WebLens hybrid (shipped) | Tavily direct |
 |---|---:|---:|
-| Hit@5 | **0.775** | 0.600 |
-| P@5 | **0.410** | 0.210 |
-| nDCG@5 | **0.416** | 0.232 |
-| MRR | **0.523** | 0.423 |
-| p50 / p95 latency | 3057 / 6391 ms | **295 / 344 ms** |
-| Mean payload tokens | **367** | 1680 |
+| Hit@5 | **0.775** | 0.625 |
+| P@5 | **0.365** | 0.200 |
+| nDCG@5 | **0.399** | 0.214 |
+| MRR | **0.613** | 0.392 |
+| p50 / p95 latency | 718 / 2040 ms | **331 / 501 ms** |
+| Mean result tokens | **419** | 1678 |
 
-Paired P@5 difference **+0.200** (95% CI **+0.110 … +0.295**), win/tie/loss **22 / 12 / 6**.
+Paired P@5 difference **+0.165** (95% CI **+0.095 … +0.245**), win/tie/loss
+**18 / 21 / 1**.
+
+**Honest reading:** on this n=40 suite the hybrid leads on precision, Hit@5 and
+token cost, and is still slower than Tavily at p50 and p95. The keyless fallback
+(no Tavily key) is measured separately: P@5 0.325 vs Tavily 0.180, n=40, but
+Hit@5 0.550 vs 0.600 and p50 ~3.1 s. The keyless early-stop experiment was
+rejected on a pre-registered non-inferiority test; the hosted fast path is
+gated on a Tavily pool and fired in 36/40 rows.
 
 **Important:** WebLens ships an author-curated "primary source" hint table whose
-labels overlap this dataset's labels. Left enabled it inflates P@5 from 0.410 to
-**0.805** — pure label leakage. The benchmark disables it
+labels overlap this dataset's labels. Left enabled it inflates P@5 (a prior run
+went from 0.410 to **0.805** — pure label leakage). The benchmark disables it
 (`use_official_source_hints=False`) and records that setting in `results.json`.
 An earlier revision of this README would have quoted the inflated figure.
 

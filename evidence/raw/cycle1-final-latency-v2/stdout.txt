@@ -1,0 +1,16 @@
+{
+  "n": 40,
+  "p50_ms": 739.4,
+  "p95_ms": 2062.3,
+  "mean_ms": 916.6,
+  "min_ms": 395.8,
+  "max_ms": 2947.0,
+  "mean_tokens": 541.8,
+  "mean_results": 7.58,
+  "zero_result_queries": 0,
+  "statuses": {
+    "ok": 40
+  },
+  "gate_p50_1500ms": "PASS",
+  "gate_p95_5000ms": "PASS"
+}

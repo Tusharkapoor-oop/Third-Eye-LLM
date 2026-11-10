@@ -1,4 +1,4 @@
-﻿{
+{
     "run":  "security-suite-run2",
     "command":  "pytest -q --tb=short -rA tests/test_security.py tests/test_ssrf_penetration.py tests/test_injection_sanitization.py tests/test_p9_canary_secrets.py",
     "exit_code":  0,

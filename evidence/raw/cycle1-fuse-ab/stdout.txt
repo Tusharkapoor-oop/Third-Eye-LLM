@@ -1,0 +1,5 @@
+paired n = 36
+BEFORE p50=   1287ms   AFTER p50=   1287ms
+mean latency delta = -922 ms  CI95=(-1265, -620)
+mean results delta = +0.194  CI95=(0.083, 0.333)
+mean domains delta = +0.250  CI95=(-0.278, 0.75)

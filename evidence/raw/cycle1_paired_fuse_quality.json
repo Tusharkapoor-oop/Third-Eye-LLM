@@ -1,0 +1,583 @@
+{
+  "summary": {
+    "n_pairs": 80,
+    "p5_diff_mean": -0.07,
+    "p5_diff_ci95": [
+      -0.1075,
+      -0.035
+    ],
+    "ndcg_diff_mean": -0.0733,
+    "ndcg_diff_ci95": [
+      -0.1134,
+      -0.0381
+    ],
+    "ms_diff_mean": -1012.8,
+    "ms_diff_ci95": [
+      -1331.6,
+      -780.5
+    ],
+    "quality_guard": "VIOLATED"
+  },
+  "detail": [
+    {
+      "q": "What does body mass index measure?",
+      "p5_shipped": 1.0,
+      "p5_bounded": 1.0,
+      "ms_shipped": 13669.327999989036,
+      "ms_bounded": 3400.0896000070497
+    },
+    {
+      "q": "What is the capital city of Australia?",
+      "p5_shipped": 1.0,
+      "p5_bounded": 0.6,
+      "ms_shipped": 739.3702999688685,
+      "ms_bounded": 292.3018999863416
+    },
+    {
+      "q": "Which company owns Instagram, and in what year was Instagram founded?",
+      "p5_shipped": 1.0,
+      "p5_bounded": 1.0,
+      "ms_shipped": 4001.280400028918,
+      "ms_bounded": 2714.4663999788463
+    },
+    {
+      "q": "What is Apple Inc.'s stock ticker symbol?",
+      "p5_shipped": 0.6,
+      "p5_bounded": 0.6,
+      "ms_shipped": 5285.447800008114,
+      "ms_bounded": 4403.998300025705
+    },
+    {
+      "q": "What does the company Anthropic develop?",
+      "p5_shipped": 0.8,
+      "p5_bounded": 0.8,
+      "ms_shipped": 3861.6667999885976,
+      "ms_bounded": 3299.892299983185
+    },
+    {
+      "q": "Which company is Intel's main competitor in the x86 CPU market?",
+      "p5_shipped": 0.6,
+      "p5_bounded": 0.6,
+      "ms_shipped": 3051.728299993556,
+      "ms_bounded": 1645.3352999524213
+    },
+    {
+      "q": "What does Article 5 of the North Atlantic Treaty commit NATO members to?",
+      "p5_shipped": 1.0,
+      "p5_bounded": 1.0,
+      "ms_shipped": 4170.480100030545,
+      "ms_bounded": 1877.774299995508
+    },
+    {
+      "q": "Who founded the payments company Stripe?",
+      "p5_shipped": 1.0,
+      "p5_bounded": 1.0,
+      "ms_shipped": 3684.2999000218697,
+      "ms_bounded": 2539.435099984985
+    },
+    {
+      "q": "What is the ISO 3166-1 alpha-2 country code for Germany?",
+      "p5_shipped": 0.8,
+      "p5_bounded": 0.4,
+      "ms_shipped": 1192.7065000054426,
+      "ms_bounded": 501.7682000179775
+    },
+    {
+      "q": "Which charging connector did the iPhone 15 introduce?",
+      "p5_shipped": 1.0,
+      "p5_bounded": 1.0,
+      "ms_shipped": 3828.4652999718674,
+      "ms_bounded": 2023.5717000323348
+    },
+    {
+      "q": "What does GDPR stand for and what does it regulate?",
+      "p5_shipped": 0.6,
+      "p5_bounded": 0.6,
+      "ms_shipped": 4172.28730005445,
+      "ms_bounded": 3260.904799972195
+    },
+    {
+      "q": "What are common symptoms of type 2 diabetes?",
+      "p5_shipped": 0.8,
+      "p5_bounded": 1.0,
+      "ms_shipped": 2195.68010000512,
+      "ms_bounded": 1241.3046000292525
+    },
+    {
+      "q": "What is the headquarters city of the company that develops the Windows operating system?",
+      "p5_shipped": 1.0,
+      "p5_bounded": 0.8,
+      "ms_shipped": 2808.912400039844,
+      "ms_bounded": 530.1607000292279
+    },
+    {
+      "q": "Who is the CEO of Microsoft as of 2025?",
+      "p5_shipped": 0.8,
+      "p5_bounded": 0.8,
+      "ms_shipped": 1821.7959000030532,
+      "ms_bounded": 1137.53980002366
+    },
+    {
+      "q": "What is the ISO 4217 currency code for the Japanese yen?",
+      "p5_shipped": 0.8,
+      "p5_bounded": 0.8,
+      "ms_shipped": 2271.9054999761283,
+      "ms_bounded": 1203.7772999610752
+    },
+    {
+      "q": "What does the HTTP 429 status code indicate?",
+      "p5_shipped": 1.0,
+      "p5_bounded": 1.0,
+      "ms_shipped": 4534.7169999731705,
+      "ms_bounded": 1675.032300001476
+    },
+    {
+      "q": "What is the difference between symmetric and asymmetric encryption?",
+      "p5_shipped": 1.0,
+      "p5_bounded": 1.0,
+      "ms_shipped": 2103.76049997285,
+      "ms_bounded": 1219.8534000199288
+    },
+    {
+      "q": "What is the core mission of the World Health Organization?",
+      "p5_shipped": 1.0,
+      "p5_bounded": 0.8,
+      "ms_shipped": 1921.9936999725178,
+      "ms_bounded": 631.4813999924809
+    },
+    {
+      "q": "What is a sitemap.xml file used for?",
+      "p5_shipped": 1.0,
+      "p5_bounded": 1.0,
+      "ms_shipped": 4073.7910000025295,
+      "ms_bounded": 2011.6130000096746
+    },
+    {
+      "q": "What is the purpose of the Digital Millennium Copyright Act?",
+      "p5_shipped": 0.8,
+      "p5_bounded": 0.4,
+      "ms_shipped": 1121.3235000032,
+      "ms_bounded": 750.0936000142246
+    },
+    {
+      "q": "Which paper introduced the ResNet architecture and in what year was it published?",
+      "p5_shipped": 1.0,
+      "p5_bounded": 1.0,
+      "ms_shipped": 4530.8291999972425,
+      "ms_bounded": 3668.897499970626
+    },
+    {
+      "q": "In Python, what does the with statement guarantee when used with a context manager?",
+      "p5_shipped": 0.8,
+      "p5_bounded": 0.8,
+      "ms_shipped": 6400.545999989845,
+      "ms_bounded": 4740.030699991621
+    },
+    {
+      "q": "Which are the three largest cloud infrastructure providers by market share?",
+      "p5_shipped": 1.0,
+      "p5_bounded": 0.6,
+      "ms_shipped": 6064.37909998931,
+      "ms_bounded": 4559.576200030278
+    },
+    {
+      "q": "Which company is the world's largest contract manufacturer of semiconductors?",
+      "p5_shipped": 0.8,
+      "p5_bounded": 0.8,
+      "ms_shipped": 853.2845999579877,
+      "ms_bounded": 395.63820004696026
+    },
+    {
+      "q": "How many bones are in the adult human body?",
+      "p5_shipped": 0.6,
+      "p5_bounded": 0.0,
+      "ms_shipped": 977.8927000006661,
+      "ms_bounded": 295.0923999887891
+    },
+    {
+      "q": "What is the primary greenhouse gas responsible for most human-caused global warming?",
+      "p5_shipped": 1.0,
+      "p5_bounded": 1.0,
+      "ms_shipped": 4262.086500006262,
+      "ms_bounded": 2780.449800018687
+    },
+    {
+      "q": "According to the IPCC Sixth Assessment Report, what global temperature limit is central to the Paris Agreement?",
+      "p5_shipped": 0.4,
+      "p5_bounded": 0.4,
+      "ms_shipped": 2753.5032000159845,
+      "ms_bounded": 1961.868799990043
+    },
+    {
+      "q": "What does a company's price-to-earnings ratio measure?",
+      "p5_shipped": 0.0,
+      "p5_bounded": 0.0,
+      "ms_shipped": 824.9927000142634,
+      "ms_bounded": 273.1864000088535
+    },
+    {
+      "q": "Which company developed the GPT-4 model released in March 2023?",
+      "p5_shipped": 1.0,
+      "p5_bounded": 1.0,
+      "ms_shipped": 5565.502500045113,
+      "ms_bounded": 3686.3639000221156
+    },
+    {
+      "q": "What was the name of the NASA mission that first landed humans on the Moon in July 1969?",
+      "p5_shipped": 1.0,
+      "p5_bounded": 0.8,
+      "ms_shipped": 1983.433099987451,
+      "ms_bounded": 1062.269100046251
+    },
+    {
+      "q": "Where is the headquarters of NVIDIA located?",
+      "p5_shipped": 1.0,
+      "p5_bounded": 1.0,
+      "ms_shipped": 2632.832800038159,
+      "ms_bounded": 1779.8327999771573
+    },
+    {
+      "q": "What is the purpose of the git rebase command?",
+      "p5_shipped": 1.0,
+      "p5_bounded": 1.0,
+      "ms_shipped": 3202.2285999846645,
+      "ms_bounded": 2686.026600014884
+    },
+    {
+      "q": "Which US federal agency publishes the Consumer Price Index?",
+      "p5_shipped": 0.8,
+      "p5_bounded": 0.8,
+      "ms_shipped": 1468.8948999973945,
+      "ms_bounded": 643.2552000042051
+    },
+    {
+      "q": "What is the main difference between the Amazon Kindle Paperwhite and the Kindle Scribe?",
+      "p5_shipped": 0.4,
+      "p5_bounded": 0.0,
+      "ms_shipped": 1221.3085000403225,
+      "ms_bounded": 278.2062000478618
+    },
+    {
+      "q": "What does a stock market index measure?",
+      "p5_shipped": 0.6,
+      "p5_bounded": 0.6,
+      "ms_shipped": 3519.8581000440754,
+      "ms_bounded": 877.6693000108935
+    },
+    {
+      "q": "On which stock exchange is Microsoft Corporation primarily listed?",
+      "p5_shipped": 1.0,
+      "p5_bounded": 1.0,
+      "ms_shipped": 6464.702699973714,
+      "ms_bounded": 5037.934600026347
+    },
+    {
+      "q": "What does the acronym BERT stand for in natural language processing?",
+      "p5_shipped": 0.6,
+      "p5_bounded": 0.6,
+      "ms_shipped": 2328.126300009899,
+      "ms_bounded": 1539.6226000157185
+    },
+    {
+      "q": "What is robots.txt and where must it be located on a website?",
+      "p5_shipped": 1.0,
+      "p5_bounded": 1.0,
+      "ms_shipped": 2806.5525999991223,
+      "ms_bounded": 2041.5417000185698
+    },
+    {
+      "q": "Which streaming services compete directly with Netflix?",
+      "p5_shipped": 1.0,
+      "p5_bounded": 1.0,
+      "ms_shipped": 5038.949400011916,
+      "ms_bounded": 5413.818300003186
+    },
+    {
+      "q": "What did the discovery of the Higgs boson confirm about elementary particles?",
+      "p5_shipped": 1.0,
+      "p5_bounded": 1.0,
+      "ms_shipped": 4214.752400002908,
+      "ms_bounded": 2082.524299970828
+    },
+    {
+      "q": "How many bones are in the adult human body?",
+      "p5_shipped": 0.6,
+      "p5_bounded": 0.0,
+      "ms_shipped": 750.6054999539629,
+      "ms_bounded": 300.08159996941686
+    },
+    {
+      "q": "What does the HTTP 429 status code indicate?",
+      "p5_shipped": 1.0,
+      "p5_bounded": 1.0,
+      "ms_shipped": 3316.318700031843,
+      "ms_bounded": 1952.9427000088617
+    },
+    {
+      "q": "Which company is the world's largest contract manufacturer of semiconductors?",
+      "p5_shipped": 0.8,
+      "p5_bounded": 0.8,
+      "ms_shipped": 908.1827000482008,
+      "ms_bounded": 408.73249998549
+    },
+    {
+      "q": "What does the company Anthropic develop?",
+      "p5_shipped": 0.8,
+      "p5_bounded": 0.8,
+      "ms_shipped": 3160.2703999960795,
+      "ms_bounded": 1584.213100024499
+    },
+    {
+      "q": "What is the core mission of the World Health Organization?",
+      "p5_shipped": 1.0,
+      "p5_bounded": 0.8,
+      "ms_shipped": 1066.7533000232652,
+      "ms_bounded": 589.9146999581717
+    },
+    {
+      "q": "Where is the headquarters of NVIDIA located?",
+      "p5_shipped": 1.0,
+      "p5_bounded": 1.0,
+      "ms_shipped": 2583.9189999969676,
+      "ms_bounded": 2298.591699975077
+    },
+    {
+      "q": "What is the capital city of Australia?",
+      "p5_shipped": 0.6,
+      "p5_bounded": 0.6,
+      "ms_shipped": 885.5690999771468,
+      "ms_bounded": 318.16349999280646
+    },
+    {
+      "q": "Who is the CEO of Microsoft as of 2025?",
+      "p5_shipped": 0.8,
+      "p5_bounded": 0.8,
+      "ms_shipped": 2020.4316999879666,
+      "ms_bounded": 942.3359000356868
+    },
+    {
+      "q": "What does GDPR stand for and what does it regulate?",
+      "p5_shipped": 0.6,
+      "p5_bounded": 0.6,
+      "ms_shipped": 3730.241200013552,
+      "ms_bounded": 3517.6383000216447
+    },
+    {
+      "q": "Which company is Intel's main competitor in the x86 CPU market?",
+      "p5_shipped": 0.6,
+      "p5_bounded": 0.6,
+      "ms_shipped": 2120.0270999688655,
+      "ms_bounded": 1432.9681000090204
+    },
+    {
+      "q": "What is Apple Inc.'s stock ticker symbol?",
+      "p5_shipped": 0.6,
+      "p5_bounded": 0.6,
+      "ms_shipped": 5097.807999991346,
+      "ms_bounded": 3841.908300004434
+    },
+    {
+      "q": "What is a sitemap.xml file used for?",
+      "p5_shipped": 1.0,
+      "p5_bounded": 1.0,
+      "ms_shipped": 3747.0810000086203,
+      "ms_bounded": 2692.157099954784
+    },
+    {
+      "q": "Who founded the payments company Stripe?",
+      "p5_shipped": 1.0,
+      "p5_bounded": 1.0,
+      "ms_shipped": 2691.5905000059865,
+      "ms_bounded": 2519.88950005034
+    },
+    {
+      "q": "What is robots.txt and where must it be located on a website?",
+      "p5_shipped": 1.0,
+      "p5_bounded": 1.0,
+      "ms_shipped": 2413.8549999915995,
+      "ms_bounded": 2286.3792999996804
+    },
+    {
+      "q": "What is the purpose of the git rebase command?",
+      "p5_shipped": 1.0,
+      "p5_bounded": 1.0,
+      "ms_shipped": 3749.515099974815,
+      "ms_bounded": 2099.945599969942
+    },
+    {
+      "q": "Which are the three largest cloud infrastructure providers by market share?",
+      "p5_shipped": 1.0,
+      "p5_bounded": 1.0,
+      "ms_shipped": 4533.961900044233,
+      "ms_bounded": 3676.8772000214085
+    },
+    {
+      "q": "What does the acronym BERT stand for in natural language processing?",
+      "p5_shipped": 0.6,
+      "p5_bounded": 0.6,
+      "ms_shipped": 2288.056899968069,
+      "ms_bounded": 2022.8497000061907
+    },
+    {
+      "q": "What does a company's price-to-earnings ratio measure?",
+      "p5_shipped": 0.0,
+      "p5_bounded": 0.0,
+      "ms_shipped": 841.4328999933787,
+      "ms_bounded": 385.9762999927625
+    },
+    {
+      "q": "What is the main difference between the Amazon Kindle Paperwhite and the Kindle Scribe?",
+      "p5_shipped": 0.4,
+      "p5_bounded": 0.0,
+      "ms_shipped": 977.3093999829143,
+      "ms_bounded": 655.5214999825694
+    },
+    {
+      "q": "What is the difference between symmetric and asymmetric encryption?",
+      "p5_shipped": 1.0,
+      "p5_bounded": 1.0,
+      "ms_shipped": 1352.3188999970444,
+      "ms_bounded": 606.516300002113
+    },
+    {
+      "q": "Which charging connector did the iPhone 15 introduce?",
+      "p5_shipped": 1.0,
+      "p5_bounded": 1.0,
+      "ms_shipped": 2379.099900019355,
+      "ms_bounded": 2958.6217000032775
+    },
+    {
+      "q": "What is the primary greenhouse gas responsible for most human-caused global warming?",
+      "p5_shipped": 1.0,
+      "p5_bounded": 1.0,
+      "ms_shipped": 3137.316699954681,
+      "ms_bounded": 4694.194299983792
+    },
+    {
+      "q": "Which company developed the GPT-4 model released in March 2023?",
+      "p5_shipped": 1.0,
+      "p5_bounded": 1.0,
+      "ms_shipped": 4342.33439998934,
+      "ms_bounded": 3355.0906000309624
+    },
+    {
+      "q": "What is the purpose of the Digital Millennium Copyright Act?",
+      "p5_shipped": 0.8,
+      "p5_bounded": 0.4,
+      "ms_shipped": 1083.5424999822862,
+      "ms_bounded": 516.895399952773
+    },
+    {
+      "q": "Which paper introduced the ResNet architecture and in what year was it published?",
+      "p5_shipped": 1.0,
+      "p5_bounded": 1.0,
+      "ms_shipped": 3191.3900000508875,
+      "ms_bounded": 2200.8838999900036
+    },
+    {
+      "q": "In Python, what does the with statement guarantee when used with a context manager?",
+      "p5_shipped": 0.8,
+      "p5_bounded": 0.8,
+      "ms_shipped": 3607.5509999645874,
+      "ms_bounded": 2342.469700030051
+    },
+    {
+      "q": "On which stock exchange is Microsoft Corporation primarily listed?",
+      "p5_shipped": 1.0,
+      "p5_bounded": 1.0,
+      "ms_shipped": 5806.977599975653,
+      "ms_bounded": 5161.437399976421
+    },
+    {
+      "q": "What is the ISO 3166-1 alpha-2 country code for Germany?",
+      "p5_shipped": 0.8,
+      "p5_bounded": 0.4,
+      "ms_shipped": 1029.8674999503419,
+      "ms_bounded": 503.2640999997966
+    },
+    {
+      "q": "What does Article 5 of the North Atlantic Treaty commit NATO members to?",
+      "p5_shipped": 1.0,
+      "p5_bounded": 1.0,
+      "ms_shipped": 2607.27079998469,
+      "ms_bounded": 1468.2472000131384
+    },
+    {
+      "q": "What did the discovery of the Higgs boson confirm about elementary particles?",
+      "p5_shipped": 1.0,
+      "p5_bounded": 1.0,
+      "ms_shipped": 3545.4062999924645,
+      "ms_bounded": 2194.1104999859817
+    },
+    {
+      "q": "What does body mass index measure?",
+      "p5_shipped": 1.0,
+      "p5_bounded": 1.0,
+      "ms_shipped": 3358.8883000193164,
+      "ms_bounded": 2621.6601000051014
+    },
+    {
+      "q": "According to the IPCC Sixth Assessment Report, what global temperature limit is central to the Paris Agreement?",
+      "p5_shipped": 1.0,
+      "p5_bounded": 1.0,
+      "ms_shipped": 3302.65430000145,
+      "ms_bounded": 3766.794899944216
+    },
+    {
+      "q": "What is the headquarters city of the company that develops the Windows operating system?",
+      "p5_shipped": 1.0,
+      "p5_bounded": 0.8,
+      "ms_shipped": 722.4357000086457,
+      "ms_bounded": 703.9579999982379
+    },
+    {
+      "q": "Which US federal agency publishes the Consumer Price Index?",
+      "p5_shipped": 0.8,
+      "p5_bounded": 0.8,
+      "ms_shipped": 1323.2086999923922,
+      "ms_bounded": 909.080300014466
+    },
+    {
+      "q": "What was the name of the NASA mission that first landed humans on the Moon in July 1969?",
+      "p5_shipped": 1.0,
+      "p5_bounded": 0.8,
+      "ms_shipped": 2525.80719999969,
+      "ms_bounded": 1128.749700030312
+    },
+    {
+      "q": "Which streaming services compete directly with Netflix?",
+      "p5_shipped": 1.0,
+      "p5_bounded": 1.0,
+      "ms_shipped": 6245.3628000221215,
+      "ms_bounded": 5758.9044000487775
+    },
+    {
+      "q": "What does a stock market index measure?",
+      "p5_shipped": 0.6,
+      "p5_bounded": 0.6,
+      "ms_shipped": 1530.0213000155054,
+      "ms_bounded": 857.2391999769025
+    },
+    {
+      "q": "What are common symptoms of type 2 diabetes?",
+      "p5_shipped": 0.8,
+      "p5_bounded": 1.0,
+      "ms_shipped": 1692.5679999985732,
+      "ms_bounded": 649.4004999985918
+    },
+    {
+      "q": "Which company owns Instagram, and in what year was Instagram founded?",
+      "p5_shipped": 1.0,
+      "p5_bounded": 1.0,
+      "ms_shipped": 2866.3005999987945,
+      "ms_bounded": 1372.5149999954738
+    },
+    {
+      "q": "What is the ISO 4217 currency code for the Japanese yen?",
+      "p5_shipped": 0.8,
+      "p5_bounded": 0.4,
+      "ms_shipped": 966.8933000066318,
+      "ms_bounded": 639.606199983973
+    }
+  ]
+}

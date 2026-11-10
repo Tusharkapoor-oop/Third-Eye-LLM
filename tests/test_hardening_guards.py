@@ -41,20 +41,58 @@ async def test_tier2_rejects_private_targets_before_browser_launch(monkeypatch):
 
 
 @pytest.mark.asyncio
-async def test_safe_fetch_url_pins_resolved_ip(monkeypatch):
-    """The socket target is the validated IP; Host carries the public hostname."""
+async def test_safe_fetch_url_pins_validated_ip_at_transport(monkeypatch):
+    """The socket connects to the validated IP while the request keeps its hostname.
+
+    Pinning is done by ``_PinningBackend`` (transport layer), not by rewriting the
+    URL to the literal IP. Rewriting broke TLS/SNI, HTTP caches and respx mocks,
+    and — because ``crawl_engine`` treats a robots.txt fetch failure as
+    allow-all — it silently disabled robots.txt enforcement. This test therefore
+    asserts the *security property* and the intact hostname, not a rewritten URL.
+    """
+    import httpcore
+
+    from security import _PinningBackend
+
     monkeypatch.setattr("security.resolve_and_verify_host", lambda host, port: "93.184.216.34")
 
+    connected: list[tuple[str, int]] = []
+
+    async def fake_connect(self, host, port, timeout=None, local_address=None, socket_options=None):
+        connected.append((host, port))
+        raise RuntimeError("stop-after-connect")
+
+    monkeypatch.setattr(httpcore.AnyIOBackend, "connect_tcp", fake_connect)
+
+    backend = _PinningBackend()
+    with pytest.raises(RuntimeError, match="stop-after-connect"):
+        await backend.connect_tcp("example.com", 80)
+
+    # The decisive assertion: the socket target is the validated IP, not the name.
+    assert connected == [("93.184.216.34", 80)]
+
+
+@pytest.mark.asyncio
+async def test_safe_fetch_url_keeps_hostname_in_request(monkeypatch):
+    """The request URL is never rewritten to a bare IP, so mocks/Host/SNI stay valid."""
+    monkeypatch.setattr("security.resolve_and_verify_host", lambda host, port: "93.184.216.34")
+
+    seen: list[str] = []
+
     with respx.mock(assert_all_called=False) as router:
-        route = router.get("http://93.184.216.34/").mock(
-            return_value=httpx.Response(200, text="pinned-ok")
-        )
+
+        def _capture(request: httpx.Request) -> httpx.Response:
+            seen.append(str(request.url))
+            return httpx.Response(200, text="pinned-ok")
+
+        router.get("http://example.com/").mock(side_effect=_capture)
         status, _headers, body = await safe_fetch_url("http://example.com/")
 
     assert status == 200
     assert body == b"pinned-ok"
-    request = route.calls[0].request
-    assert request.headers["host"] == "example.com"
+    assert seen and seen[0].startswith("http://example.com"), (
+        f"request URL was rewritten to {seen!r}; that breaks SNI/mocks and disables robots.txt"
+    )
 
 
 @pytest.mark.asyncio

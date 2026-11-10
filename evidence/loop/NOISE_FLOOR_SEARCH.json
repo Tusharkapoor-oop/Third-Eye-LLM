@@ -1,0 +1,10 @@
+{
+  "path": "search",
+  "n_pairs": 36,
+  "mean_paired_diff_ms": -381.8,
+  "sd_ms": 759.9,
+  "median_paired_diff_ms": -145.5,
+  "p95_paired_diff_ms": 424.6,
+  "p50_noise_floor_ms": 145.5,
+  "calibrated_at": "2026-11-09T16:26:46Z"
+}

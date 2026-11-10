@@ -10,12 +10,12 @@ import asyncio
 import json
 import re
 import time
-from datetime import datetime, timezone
 from urllib.parse import parse_qsl, urlencode, urlparse, urlunparse
 
 import tiktoken
 
 from src.engine.config import CONFIG
+from src.engine.query_engine import optimize_query_async
 from src.engine.search.base import SearchProvider, SearchResponse, SearchResult
 from src.engine.search.bing_provider import BingSearchProvider
 from src.engine.search.brave_provider import BraveSearchProvider, SearXNGProvider
@@ -23,7 +23,6 @@ from src.engine.search.ddg_html_provider import DDGHTMLSearchProvider
 from src.engine.search.ddgs_provider import DDGSearchProvider
 from src.engine.search.tavily_provider import TavilySearchProvider
 from src.engine.search.wiki_provider import WikipediaSearchProvider
-from src.engine.query_engine import optimize_query_async
 
 # Common marketing and analytics tracking parameters to strip
 TRACKING_PARAMS = {
@@ -80,18 +79,34 @@ def authority_tier(url: str, title: str = "") -> float:
 
 
 def normalize_url(url: str) -> str:
-    """Normalizes a URL by stripping tracking parameters, fragments, and standardizing casing."""
+    """Canonical http(s) URL for dedupe; unusable input is returned unchanged.
+
+    Only the scheme and host are case-insensitive (RFC 3986 §6.2.2.1). The path
+    is case-sensitive, so lowercasing it merged distinct resources such as
+    ``/Wiki/Foo`` and ``/wiki/foo`` into one hit. ASCII control characters are
+    rejected rather than rewritten because ``urlsplit`` silently deletes tabs
+    and newlines (``exam\\tple.com`` would otherwise become ``example.com``).
+    """
+    if not isinstance(url, str) or not url.strip():
+        return url
+    url = url.strip()
+    if any(ord(ch) < 0x20 or ord(ch) == 0x7F for ch in url):
+        return url
     try:
         parsed = urlparse(url)
+        if parsed.scheme.lower() not in ("http", "https"):
+            return url
+        if any(ch.isspace() for ch in parsed.netloc):
+            return url
         # Filter query parameters
         filtered_q = [
             (k, v) for k, v in parse_qsl(parsed.query, keep_blank_values=True)
             if k.lower() not in TRACKING_PARAMS
         ]
         new_query = urlencode(filtered_q)
-        # Collapse multiple slashes, strip fragment and normalize path
+        # Collapse duplicate slashes and strip the fragment, but keep path case.
         raw_path = re.sub(r"/+", "/", parsed.path)
-        path = (raw_path.rstrip("/") if raw_path != "/" else "/").lower()
+        path = raw_path.rstrip("/") if raw_path != "/" else "/"
         normalized = urlunparse((
             parsed.scheme.lower(),
             parsed.netloc.lower(),
@@ -262,7 +277,7 @@ class SearchAggregator:
             for name in ["ddg_html", "ddgs", "bing", "wikipedia", "tavily"]:
                 if name in self.providers and name != provider_name:
                     fallback_order.append(name)
-            
+
             for fallback_name in fallback_order:
                 try:
                     fb_res = await asyncio.wait_for(

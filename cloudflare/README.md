@@ -117,6 +117,11 @@ through Docker. Do not put real secrets in `wrangler.jsonc` or commit
 | `WEBLENS_CONTAINER_INSTANCE` | Var. `lite`, `basic`, or `standard-1` … `standard-4`. |
 | `WEBLENS_MCP_PROFILE` | Var. Defaults to `full`; `core` or `research` reduce tools. |
 | `WEBLENS_SEARCH_PROVIDERS` | Var. Defaults to `tavily,mwmbl,wikipedia,bing,yahoo`. |
+| `WEBLENS_SUPPLEMENT_PROVIDERS` | Var. Defaults to `stackexchange`. Fills empty slots only when the primary window is thin; it cannot displace a primary hit. |
+| `WEBLENS_FUSE_SOFT_TIMEOUT_S` | Var. Defaults to `2.0`. Hosted fast-path deadline; only fires once Tavily fills the visible window. `0` waits for every provider. |
+| `WEBLENS_FUSE_GRACE_S` | Var. Defaults to `0.25`. Extra wait for in-flight providers before the fast path cancels the rest. |
+| `WEBLENS_FUSE_EARLY_MIN_EXTRA` | Var. Defaults to `0`. Extra distinct Tavily results required beyond `k`. |
+| `WEBLENS_FUSE_EARLY_MIN_DOMAINS` | Var. Defaults to `3`. Minimum registrable domains in the Tavily subset. |
 
 Secrets are read by the Durable Object at container start. Updating a secret
 does not change the environment of an already-running container; Cloudflare
@@ -161,8 +166,10 @@ The container health endpoint is `/healthz`; the Worker readiness endpoint is
 
 ## Validation performed locally
 
-- `npm run check` — TypeScript type-check of the Worker.
-- `npm run deploy:dry-run` — Wrangler configuration/bundle validation.
+- `npm run check` — TypeScript type-check of the Worker (passes).
+- `npm run deploy:dry-run` — Wrangler builds the container image, bundles the
+  Worker, and validates every binding. Last run 2026-11-09: exit 0, image built,
+  `WEBLENS_FUSE_*` bindings present, no deployment performed.
 - `docker build -f Dockerfile.cloudflare -t weblens-cloudflare:test .` — image
   build and Python import smoke test.
 

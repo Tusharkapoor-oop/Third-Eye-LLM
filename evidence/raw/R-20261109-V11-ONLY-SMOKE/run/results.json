@@ -1,0 +1,191 @@
+{
+  "generated_at": "2026-11-09T12:26:13Z",
+  "benchmark": "weblens-vs-tavily-v11",
+  "weblens_only": true,
+  "tavily_arm_status": "NOT_RUN",
+  "dataset": "weblens-lab\\datasets\\eval_benchmark_suite_v10.json",
+  "dataset_sha256": "a42d4004fb91208f1ae18de89e2337f2ccf5e7cb580a3c600a8ec7d8057d6361",
+  "k": 5,
+  "limit": 2,
+  "limit_requested": 2,
+  "split_filter": null,
+  "selection_rule": "eligible (is_unanswerable=false, web_search_equivalent=true, >=1 label); heldout first then development, dataset order; fixed prefix of --limit",
+  "query_ids": [
+    "general_factual_q01",
+    "general_factual_q04"
+  ],
+  "config": {
+    "weblens_api": "weblens.service.WebLens.search(query, max_results=5)",
+    "weblens_providers": "mwmbl,wikipedia,bing,yahoo",
+    "weblens_search_mode": "fuse",
+    "weblens_cache_enabled": false,
+    "weblens_use_official_source_hints": false,
+    "weblens_tavily_provider_disabled": true,
+    "weblens_official_source_hints": false,
+    "tavily": {
+      "search_depth": "basic",
+      "max_results": 5
+    },
+    "per_query_timeout_s": 25.0,
+    "retries": 0,
+    "concurrency": 1,
+    "sleep_between_queries_s": 0.0,
+    "tokens_headline": "count_json_tokens(results array) for both systems",
+    "tokens_secondary": "count_json_tokens(full response payload) for both systems"
+  },
+  "environment": {
+    "python": "3.14.0",
+    "platform": "Windows-11-10.0.26300-SP0",
+    "pytest_not_used": true
+  },
+  "wall_clock_s": 9.9,
+  "data_quality": {
+    "tavily_error_rate": 0.0,
+    "weblens_error_rate": 0.0,
+    "loud_warning": "Tavily arm NOT RUN (weblens-only): tavily zeros are not measurements"
+  },
+  "weblens": {
+    "n": 2,
+    "success_rate": 1.0,
+    "hit_at_5": 1.0,
+    "p_at_5": 0.8,
+    "ndcg_at_5": 0.8613632863224759,
+    "ndcg_at_5_label_cap": 1.0,
+    "mrr": 1.0,
+    "p50_ms": 1560.884799953783,
+    "p95_ms": 1770.340539960307,
+    "mean_ms": 1560.884799953783,
+    "mean_tokens": 365.5,
+    "mean_payload_tokens": 433.0,
+    "errors": 0,
+    "p_at_5_ci95": [
+      0.6,
+      1.0
+    ],
+    "ndcg_at_5_ci95": [
+      0.7227265726449519,
+      1.0
+    ],
+    "mrr_ci95": [
+      1.0,
+      1.0
+    ]
+  },
+  "tavily": {
+    "n": 2,
+    "success_rate": 0.0,
+    "hit_at_5": 0.0,
+    "p_at_5": 0.0,
+    "ndcg_at_5": 0.0,
+    "ndcg_at_5_label_cap": 0.0,
+    "mrr": 0.0,
+    "p50_ms": 0.0,
+    "p95_ms": 0.0,
+    "mean_ms": 0.0,
+    "mean_tokens": 0.0,
+    "mean_payload_tokens": 0.0,
+    "errors": 0,
+    "p_at_5_ci95": [
+      0.0,
+      0.0
+    ],
+    "ndcg_at_5_ci95": [
+      0.0,
+      0.0
+    ],
+    "mrr_ci95": [
+      0.0,
+      0.0
+    ]
+  },
+  "paired": {
+    "p_at_5_diff": 0.8,
+    "p_at_5_diff_ci95": [
+      0.6,
+      1.0
+    ],
+    "ndcg_at_5_diff": 0.8613632863224759,
+    "ndcg_at_5_diff_ci95": [
+      0.7227265726449519,
+      1.0
+    ],
+    "wins": 2,
+    "ties": 0,
+    "losses": 0
+  },
+  "anomalies": [],
+  "rows": [
+    {
+      "id": "general_factual_q01",
+      "query": "What year was the Python programming language first released by Guido van Rossum?",
+      "category": "general_factual",
+      "split": "heldout",
+      "labels": [
+        "python.org",
+        "wikipedia.org"
+      ],
+      "order": [
+        "weblens"
+      ],
+      "weblens_urls": [
+        "https://en.wikipedia.org/wiki/Python_%28programming_language%29",
+        "https://en.wikipedia.org/wiki/Monty_Python%27s_Flying_Circus",
+        "https://en.wikipedia.org/wiki/Monty_Python",
+        "https://en.wikipedia.org/wiki/List_of_Dutch_inventions_and_innovations",
+        "https://en.wikipedia.org/wiki/Glossary_of_artificial_intelligence"
+      ],
+      "tavily_urls": [],
+      "weblens_ms": 1328.156199946534,
+      "tavily_ms": 0.0,
+      "weblens_tokens": 354,
+      "tavily_tokens": 0,
+      "weblens_payload_tokens": 428,
+      "tavily_payload_tokens": 0,
+      "weblens_status": "ok",
+      "weblens_providers": [
+        "wikipedia",
+        "bing"
+      ],
+      "tavily_status": "",
+      "weblens_error": null,
+      "tavily_error": null
+    },
+    {
+      "id": "general_factual_q04",
+      "query": "What is the tallest mountain above sea level on Earth?",
+      "category": "general_factual",
+      "split": "heldout",
+      "labels": [
+        "wikipedia.org",
+        "nationalgeographic.com",
+        "britannica.com"
+      ],
+      "order": [
+        "weblens"
+      ],
+      "weblens_urls": [
+        "https://en.wikipedia.org/wiki/List_of_highest_mountains_on_Earth",
+        "https://en.wikipedia.org/wiki/Extremes_on_Earth",
+        "https://en.wikipedia.org/wiki/List_of_mountains_by_elevation",
+        "https://earthobservatory.nasa.gov/IOTD/view.php?id=82578",
+        "http://www.nasa.gov/content/the-worlds-tallest-mountain/"
+      ],
+      "tavily_urls": [],
+      "weblens_ms": 1793.613399961032,
+      "tavily_ms": 0.0,
+      "weblens_tokens": 377,
+      "tavily_tokens": 0,
+      "weblens_payload_tokens": 438,
+      "tavily_payload_tokens": 0,
+      "weblens_status": "ok",
+      "weblens_providers": [
+        "mwmbl",
+        "wikipedia",
+        "bing"
+      ],
+      "tavily_status": "",
+      "weblens_error": null,
+      "tavily_error": null
+    }
+  ]
+}

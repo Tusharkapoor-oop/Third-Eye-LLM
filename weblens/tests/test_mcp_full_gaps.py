@@ -6,6 +6,7 @@ stateful tool bodies that are only registered for the ``full`` profile.
 
 from __future__ import annotations
 
+import json
 from types import SimpleNamespace
 
 from weblens import mcp_server
@@ -123,6 +124,40 @@ async def test_full_profile_tool_closures_forward_to_apps(tmp_path, monkeypatch)
         ("research_chat", {"message": "again"}),
         ("tutorial_101", {"step": "search"}),
     ]
+    # Each stub echoes the arguments it received, so the assertion below proves the
+    # closure actually forwarded them. Previously this only checked
+    # `is_error is False`, which an app that ignored every argument still passed.
+    expectations = {
+        "company_research": ("company", "Acme"),
+        "market_research": ("asset", "ACME"),
+        "market_portfolio": ("assets", ["A", "B"]),
+        "meeting_prep": ("title", "Sync"),
+        "sheets_enrich": ("prompts", {"revenue": "revenue"}),
+        "crawl2rag_index": ("url", "https://e.com"),
+        "crawl2rag_query": ("q", "what"),
+        "research_chat": ("content", "hello"),
+        "tutorial_101": ("step", "search"),
+    }
     for name, args in cases:
         result = await server.call_tool(name, args)
         assert result.is_error is False, name
+
+        # Flatten the MCP content payload to text/JSON for inspection.
+        payload = result.content[0].text if result.content else ""
+        assert payload, f"{name}: empty payload"
+
+        key, expected = expectations[name]
+        if name == "research_chat":
+            expected = args["message"]  # the chat stub echoes the user message
+        assert key in payload, f"{name}: forwarded argument {key!r} missing from result"
+
+        # Compare structurally rather than by substring: the closure serialises the
+        # result to JSON, and separators/ordering need not match repr() or
+        # json.dumps defaults. A no-forwarding stub would omit the value entirely.
+        def _norm(text: str) -> str:
+            return text.replace(" ", "").replace("'", '"')
+
+        needles = [_norm(json.dumps(expected)), _norm(str(expected))]
+        assert any(n in _norm(payload) for n in needles), (
+            f"{name}: the closure did not forward {key}={expected!r}; got {payload[:200]}"
+        )

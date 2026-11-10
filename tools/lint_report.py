@@ -98,7 +98,39 @@ def main() -> int:
                 problems.append("simulated metrics present but report does not label them")
 
     # 6. run ids referenced by metrics must exist in the ledger
-    ids = {json.loads(line)["id"] for line in build_report.LEDGER.read_text(encoding="utf-8").splitlines() if line.strip()}
+    # The inherited chain mixes three schema generations:
+    #   (a) current:   id, started_utc, ended_utc, duration_s
+    #   (b) legacy A:  experiment instead of id (V8_SESSION_SUMMARY)
+    #   (c) legacy B:  single `utc` stamp and no duration (quality-loop records)
+    # All three are hash-committed, so rewriting them would break a chain that
+    # verifies. Instead the id is normalised, and a record is only treated as
+    # malformed when it cannot be identified at all. A linter that crashes is a
+    # linter that silently passes everything downstream of it.
+    def _record_id(row: dict) -> str | None:
+        for key in ("id", "experiment"):
+            value = row.get(key)
+            if isinstance(value, str) and value.strip():
+                return value.strip()
+        return None
+
+    ledger_rows: list[dict] = []
+    for lineno, line in enumerate(build_report.LEDGER.read_text(encoding="utf-8").splitlines(), 1):
+        if not line.strip():
+            continue
+        try:
+            row = json.loads(line)
+        except json.JSONDecodeError as exc:
+            problems.append(f"ledger line {lineno}: not valid JSON ({exc})")
+            continue
+        if not isinstance(row, dict):
+            problems.append(f"ledger line {lineno}: record is not a JSON object")
+            continue
+        rid = _record_id(row)
+        if rid is None:
+            problems.append(f"ledger line {lineno}: record has neither 'id' nor 'experiment'")
+            continue
+        ledger_rows.append({**row, "_rid": rid})
+    ids = {row["_rid"] for row in ledger_rows}
     for key, metric in manifest.get("metrics", {}).items():
         for evidence in metric.get("evidence", []):
             if evidence.startswith("EXP-") and evidence not in ids:
@@ -109,24 +141,34 @@ def main() -> int:
     # this pass's runs (sorted by start). The inherited chain came from a prior
     # parallel session and contains genuine overlaps; that fact is reported in
     # meta.timeline_note instead of being silently ignored.
+    # Only claims the record actually makes are checked: a legacy record with a
+    # single `utc` stamp states no duration, so there is nothing to contradict.
     records = []
-    for line in build_report.LEDGER.read_text(encoding="utf-8").splitlines():
-        if not line.strip():
+    for row in ledger_rows:
+        rid = row["_rid"]
+        started_raw = row.get("started_utc") or row.get("utc_start")
+        ended_raw = row.get("ended_utc") or row.get("utc_end")
+        if not (started_raw and ended_raw):
+            # Legacy single-stamp record: no interval claimed, nothing to verify.
             continue
-        rec = json.loads(line)
         try:
-            started_raw = rec.get("started_utc") or rec.get("utc_start")
-            ended_raw = rec.get("ended_utc") or rec.get("utc_end")
-            started = datetime.fromisoformat(started_raw.replace("Z", "+00:00"))
-            ended = datetime.fromisoformat(ended_raw.replace("Z", "+00:00"))
-        except (KeyError, ValueError, AttributeError):
-            problems.append(f"{rec.get('id')}: unparseable timestamp")
+            started = datetime.fromisoformat(str(started_raw).replace("Z", "+00:00"))
+            ended = datetime.fromisoformat(str(ended_raw).replace("Z", "+00:00"))
+        except (TypeError, ValueError, AttributeError):
+            problems.append(f"{rid}: unparseable timestamp")
             continue
         if ended < started:
-            problems.append(f"{rec['id']}: ended before started")
-        if abs((ended - started).total_seconds() - float(rec["duration_s"])) > 5:
-            problems.append(f"{rec['id']}: duration does not match start/end")
-        records.append((rec["id"], started, ended))
+            problems.append(f"{rid}: ended before started")
+        duration_raw = row.get("duration_s")
+        if duration_raw is not None:
+            try:
+                duration_s = float(duration_raw)
+            except (TypeError, ValueError):
+                problems.append(f"{rid}: 'duration_s' is not numeric")
+                continue
+            if abs((ended - started).total_seconds() - duration_s) > 5:
+                problems.append(f"{rid}: duration does not match start/end")
+        records.append((rid, started, ended))
 
     current = sorted((r for r in records if r[0] in build_report.REQUIRED), key=lambda r: r[1])
     previous_end = None

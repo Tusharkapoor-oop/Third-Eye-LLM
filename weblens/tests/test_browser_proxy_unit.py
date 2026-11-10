@@ -187,12 +187,33 @@ async def test_read_body_both_chunked_and_length():
 
 @pytest.mark.asyncio
 async def test_read_chunked_full():
+    """_read_chunked must re-frame the whole body, not just return the prefix.
+
+    The previous assertion (``out.startswith`` the raw input) passes for an
+    implementation that does no chunked parsing at all. This asserts the exact
+    re-framed bytes for a multi-chunk body plus the terminating chunk.
+    """
     proxy = bp.BrowserEgressProxy(Settings(allow_private_networks=True))
+    raw = b"5\r\nhello\r\n6\r\n world\r\n0\r\n\r\n"
     reader = asyncio.StreamReader()
-    reader.feed_data(b"5\r\nhello\r\n0\r\n\r\n")
+    reader.feed_data(raw)
     reader.feed_eof()
     out = await proxy._read_chunked(reader)
-    assert out.startswith(b"5\r\nhello\r\n0\r\n\r\n")
+    # Every chunk is preserved in order, and the zero chunk closes the body.
+    assert out == raw
+    assert out.count(b"\r\n") == raw.count(b"\r\n")
+
+
+@pytest.mark.asyncio
+async def test_read_chunked_rejects_oversized_body():
+    """The size cap must actually fire; a no-op reader would return the data."""
+    proxy = bp.BrowserEgressProxy(Settings(allow_private_networks=True))
+    proxy._max_body = 4  # anything larger than this must be refused
+    reader = asyncio.StreamReader()
+    reader.feed_data(b"10\r\n0123456789abcdef\r\n0\r\n\r\n")
+    reader.feed_eof()
+    with pytest.raises(ValueError):
+        await proxy._read_chunked(reader)
 
 
 @pytest.mark.asyncio

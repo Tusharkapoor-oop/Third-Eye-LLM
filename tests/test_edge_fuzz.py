@@ -20,7 +20,9 @@ NORMALIZATION_CASES = [
      "https://example.com/blog/article"),
     ("https://docs.python.org/3/library/asyncio.html?fbclid=12345",
      "https://docs.python.org/3/library/asyncio.html"),
-    ("https://Example.COM/Path/", "https://example.com/path"),
+    # Only scheme and host are case-insensitive (RFC 3986 §6.2.2.1); a path is
+    # case-sensitive, so /Path and /path are different resources.
+    ("https://Example.COM/Path/", "https://example.com/Path"),
     ("https://example.com/path//double///slash", "https://example.com/path"),
     ("https://example.com/path/", "https://example.com/path"),
 ]

@@ -277,20 +277,33 @@ async def test_rate_limit_blocks_excessive_requests(monkeypatch):
 
 
 async def test_security_headers_inject_on_http():
+    """The middleware must actually add the security headers to the response.
+
+    Previously this test invoked the inner send() and asserted nothing, so a
+    _SecurityHeaders that added no headers at all still passed. It now inspects
+    the emitted response headers.
+    """
     app = AsyncMock()
     middleware = cli._SecurityHeaders(app)
 
     async def receive():
         return {"type": "http.request"}
 
+    sent = []
+
     async def send(msg):
-        return
+        sent.append(msg)
 
     await middleware({"type": "http", "path": "/", "headers": []}, receive, send)
     app.assert_awaited_once()
-    call_args = app.await_args
-    inner_scope, _, inner_send = call_args[0]
+    inner_scope, _, inner_send = app.await_args[0]
     await inner_send({"type": "http.response.start", "status": 200, "headers": []})
+
+    start = [m for m in sent if m.get("type") == "http.response.start"]
+    assert start, "the middleware must forward the response start"
+    names = {k.decode().lower() for k, _ in start[0]["headers"]}
+    for expected in ("x-content-type-options", "x-frame-options", "strict-transport-security"):
+        assert expected in names, f"missing security header {expected}; got {sorted(names)}"
 
 
 @pytest.mark.parametrize(
@@ -362,6 +375,11 @@ async def test_run_app_unknown_app(monkeypatch, capsys):
 
 
 def test_serve_http_http_token_from_settings(monkeypatch):
+    """A non-loopback bind must take its token from settings, not be left open.
+
+    The previous version made the same setup calls and asserted nothing, so a
+    _serve_http that ignored http_token entirely would still pass.
+    """
     settings = SimpleNamespace(
         allowed_hosts="localhost,127.0.0.1",
         allowed_origins="",
@@ -377,7 +395,10 @@ def test_serve_http_http_token_from_settings(monkeypatch):
     monkeypatch.setattr("weblens.cli.WebLens", MagicMock)
     monkeypatch.setattr("weblens.mcp_server.build_server", MagicMock())
 
+    captured: dict[str, object] = {}
+
     def fake_run(coro):
+        captured["coro"] = coro
         coro.close()
         return None
 
@@ -386,3 +407,9 @@ def test_serve_http_http_token_from_settings(monkeypatch):
         host="0.0.0.0", port=8080, token=None, allow_insecure=False, stateful=False, profile="core", log_level=None
     )
     cli._serve_http(ns)
+
+    # The command must actually reach the server bootstrap rather than bail out.
+    assert "coro" in captured, "_serve_http never launched the HTTP server coroutine"
+    # And a non-loopback bind without an explicit --token must not be insecure.
+    assert settings.http_token, "settings must carry a token for a non-loopback bind"
+    assert "$" not in settings.http_token, "token must be the configured value, not a placeholder"

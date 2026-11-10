@@ -1,12 +1,12 @@
 {
   "n_trials_per_arm": 40,
-  "a1_p50_ms": 0.098,
-  "a1_p95_ms": 0.138,
-  "a2_p50_ms": 0.105,
-  "a2_p95_ms": 0.141,
-  "p50_noise_floor_ms": 0.007,
-  "p95_noise_floor_ms": 0.002,
-  "relative_p50_noise_pct": 7.15,
-  "relative_p95_noise_pct": 1.63,
-  "calibrated_at": "2026-11-04T04:10:22Z"
+  "a1_p50_ms": 0.246,
+  "a1_p95_ms": 0.584,
+  "a2_p50_ms": 0.247,
+  "a2_p95_ms": 0.377,
+  "p50_noise_floor_ms": 0.0,
+  "p95_noise_floor_ms": 0.207,
+  "relative_p50_noise_pct": 0.08,
+  "relative_p95_noise_pct": 35.43,
+  "calibrated_at": "2026-11-09T16:24:38Z"
 }

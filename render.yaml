@@ -1,0 +1,41 @@
+# Render blueprint for WebLens (Streamable HTTP MCP server).
+#
+# Deploy: point Render at this repo and it reads this file. The service builds
+# from the repo Dockerfile, which already pins the non-root user, the health
+# check, and refuses to bind a public address without a token.
+#
+# BEFORE DEPLOYING, set these in the Render dashboard (never in git):
+#   WEBLENS_HTTP_TOKEN   required. A long random value; the server exits with
+#                        status 2 if a public bind has no token.
+#   TAVILY_API_KEY       optional. Enables the hosted search provider.
+#   BRAVE_SEARCH_API_KEY optional.
+#
+# The server treats /  and /healthz as public (liveness) and everything under
+# /mcp as authenticated. Render's health check below therefore needs no token.
+services:
+  - type: web
+    name: weblens-mcp
+    runtime: docker
+    dockerfilePath: ./Dockerfile
+    plan: starter
+    region: oregon
+    healthCheckPath: /healthz
+    autoDeploy: true
+    envVars:
+      # Render injects PORT; the image already reads it.
+      - key: WEBLENS_HTTP_HOST
+        value: 0.0.0.0
+      - key: WEBLENS_MCP_PROFILE
+        value: core
+      - key: WEBLENS_LOG_LEVEL
+        value: INFO
+      # Render's filesystem is ephemeral; keep the cache inside the container.
+      - key: WEBLENS_CACHE_DIR
+        value: /tmp/weblens
+      # Prompt for the secret at deploy time rather than storing it in the repo.
+      - key: WEBLENS_HTTP_TOKEN
+        sync: false
+      - key: TAVILY_API_KEY
+        sync: false
+      - key: BRAVE_SEARCH_API_KEY
+        sync: false

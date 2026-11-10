@@ -1,4 +1,4 @@
-﻿[
+[
     {
         "run":  "nested-weblens-run2",
         "command":  "pytest --tb=no -rA",

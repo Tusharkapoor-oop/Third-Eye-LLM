@@ -38,14 +38,21 @@ def test_check_ip_blocks_non_public(policy, ip):
 
 @pytest.mark.parametrize("ip", ["1.1.1.1", "8.8.8.8", "2606:4700::1111"])
 def test_check_ip_allows_public(policy, ip):
-    policy.check_ip(ip)
+    # Must return normally for a public address. Asserting an explicit None makes
+    # the test fail if check_ip ever starts returning a rejection value or raises.
+    assert policy.check_ip(ip) is None
 
 
 def test_private_networks_can_be_enabled(settings):
     settings.allow_private_networks = True
     p = DestinationPolicy(settings)
-    p.check_ip("127.0.0.1")
-    p.check_port(8080)
+    # With the opt-in enabled, loopback must be accepted...
+    assert p.check_ip("127.0.0.1") is None
+    assert p.check_port(8080) is None
+    # ...but the cloud-metadata endpoints stay blocked regardless of the opt-in,
+    # because allowing them is never a legitimate configuration.
+    with pytest.raises(BlockedURLError):
+        p.check_ip("169.254.169.254")
 
 
 @pytest.mark.parametrize(

@@ -1,0 +1,46 @@
+preflight ok (WebLens reachable)
+
+[1/40] general_factual_q04 wl=5u/833ms tv=0u/0ms
+[2/40] general_factual_q01 wl=5u/1111ms tv=0u/0ms
+[3/40] current_events_news_q04 wl=5u/524ms tv=0u/0ms
+[4/40] technical_research_q01 wl=5u/460ms tv=0u/0ms
+[5/40] technical_research_q04 wl=5u/1022ms tv=0u/0ms
+[6/40] current_events_news_q01 wl=5u/3912ms tv=0u/0ms
+[7/40] programming_developer_docs_q01 wl=5u/1906ms tv=0u/0ms
+[8/40] programming_developer_docs_q04 wl=5u/628ms tv=0u/0ms
+[9/40] scientific_research_q04 wl=5u/309ms tv=0u/0ms
+[10/40] academic_research_q01 wl=5u/365ms tv=0u/0ms
+[11/40] academic_research_q04 wl=5u/595ms tv=0u/0ms
+[12/40] scientific_research_q01 wl=5u/2300ms tv=0u/0ms
+[13/40] multihop_reasoning_q04 wl=5u/275ms tv=0u/0ms
+[14/40] multihop_reasoning_q01 wl=5u/1449ms tv=0u/0ms
+[15/40] long_document_extraction_q04 wl=5u/322ms tv=0u/0ms
+[16/40] company_research_q01 wl=5u/1278ms tv=0u/0ms
+[17/40] long_document_extraction_q01 wl=5u/2748ms tv=0u/0ms
+[18/40] company_research_q04 wl=5u/1040ms tv=0u/0ms
+[19/40] startup_research_q04 wl=5u/742ms tv=0u/0ms
+[20/40] industry_research_q01 wl=5u/1786ms tv=0u/0ms
+[21/40] startup_research_q01 wl=5u/3936ms tv=0u/0ms
+[22/40] industry_research_q04 wl=5u/1556ms tv=0u/0ms
+[23/40] market_research_q04 wl=5u/1028ms tv=0u/0ms
+[24/40] market_research_q01 wl=5u/3031ms tv=0u/0ms
+[25/40] stock_portfolio_research_q04 wl=5u/309ms tv=0u/0ms
+[26/40] product_research_q01 wl=3u/389ms tv=0u/0ms
+[27/40] product_research_q04 wl=5u/279ms tv=0u/0ms
+[28/40] stock_portfolio_research_q01 wl=5u/3006ms tv=0u/0ms
+[29/40] competitive_intelligence_q01 wl=5u/2588ms tv=0u/0ms
+[30/40] competitive_intelligence_q04 wl=5u/2423ms tv=0u/0ms
+[31/40] legal_policy_research_q04 wl=5u/439ms tv=0u/0ms
+[32/40] legal_policy_research_q01 wl=5u/1674ms tv=0u/0ms
+[33/40] public_sector_research_q04 wl=5u/1195ms tv=0u/0ms
+[34/40] public_sector_research_q01 wl=5u/3151ms tv=0u/0ms
+[35/40] healthcare_information_q01 wl=5u/2954ms tv=0u/0ms
+[36/40] structured_data_enrichment_q01 wl=5u/1157ms tv=0u/0ms
+[37/40] healthcare_information_q04 wl=5u/3135ms tv=0u/0ms
+[38/40] structured_data_enrichment_q04 wl=5u/734ms tv=0u/0ms
+[39/40] website_crawling_q04 wl=5u/1738ms tv=0u/0ms
+[40/40] website_crawling_q01 wl=5u/2457ms tv=0u/0ms
+
+WebLens P@5=0.360 nDCG@5=0.380 MRR=0.495 p50=1176ms tok=347
+Tavily  P@5=0.000 nDCG@5=0.000 MRR=0.000 p50=0ms tok=0
+paired P@5 diff=+0.360 [+0.255, +0.470] W/T/L=25/15/0

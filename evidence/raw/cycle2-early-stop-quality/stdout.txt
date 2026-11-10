@@ -1,0 +1,20 @@
+{
+  "n_pairs": 80,
+  "early_stop_fired": 0,
+  "p5_diff_mean": 0.0075,
+  "p5_diff_ci95": [
+    -0.0125,
+    0.0275
+  ],
+  "ndcg_diff_mean": 0.0046,
+  "ndcg_diff_ci95": [
+    -0.0088,
+    0.0192
+  ],
+  "ms_diff_mean": -56.9,
+  "ms_diff_ci95": [
+    -203.0,
+    66.8
+  ],
+  "quality_guard": "HELD"
+}

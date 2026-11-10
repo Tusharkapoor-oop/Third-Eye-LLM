@@ -1,0 +1,12 @@
+﻿{
+  "audit": "multi-model independent review",
+  "models_used": [
+    {"model":"logfare/glm-5.3","area":"SSRF connect-time pinning","result":"CONNECT-TIME PINNED - no DNS-rebinding window on the httpx path","proof":"client.py:157 installs SafeNetworkBackend; ssrf.py:172 resolves policy, :174 connects to dest.ip not hostname","not_verified":"browser/renderer fetch path; no real-network DNS test"},
+    {"model":"logfare/kimi-k2.7-code","area":"early-stop cache safety","result":"SAFE - early_stopped results are not cached; no spurious failure entries on cancellation","proof":"router.py cache guard includes 'not outcome.early_stopped'; cancelled tasks have err=None so are skipped","not_verified":"every non-early path writes cache"},
+    {"model":"logfare/kimi-k2.6","area":"independent re-derivation of headline","result":"CONFIRMED","computed":{"p_at_5_diff":-0.00458,"ci95":[-0.0192,0.0096],"latency_ms":-1436,"latency_ci":[-1567,-1305],"n":160,"early_stop_fires":"81/160"},"claimed":{"p_at_5_diff":-0.0038,"ci95":[-0.0175,0.0100],"latency_ms":-1436,"n":160},"note":"rounding differences only; both CIs above the -0.02 guard floor; apples-to-apples verified (40 identical query ids per replicate pair)"},
+    {"model":"logfare/gemma-4-31b-it","area":"documentation honesty","result":"numeric claims previously cited NO SOURCE","action":"STATUS rewritten with a source column on every row"},
+    {"model":"logfare/qwen-3.8-27b","area":"test-suite quality (weak tests)","result":"RUNNING"}
+  ],
+  "lead_verification": "lead independently confirmed the SSRF claim at source (client.py:157, ssrf.py:172-174) and re-derived the headline twice with independent code, matching kimi-k2.6's numbers",
+  "note": "Teammates spawned via spawn_teammate default to DeepSeek regardless of requested model; true model diversity required subagent with explicit provider=logfare and bare model ids."
+}

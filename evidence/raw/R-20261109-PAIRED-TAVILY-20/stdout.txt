@@ -1,0 +1,26 @@
+preflight ok (both systems reachable)
+
+[1/20] general_factual_q04 wl=5u/1676ms tv=5u/2801ms
+[2/20] general_factual_q01 wl=5u/2127ms tv=5u/2663ms
+[3/20] current_events_news_q04 wl=5u/2792ms tv=5u/1836ms
+[4/20] current_events_news_q01 wl=5u/3158ms tv=5u/1803ms
+[5/20] technical_research_q01 wl=5u/1666ms tv=5u/2914ms
+[6/20] technical_research_q04 wl=5u/3199ms tv=5u/2484ms
+[7/20] programming_developer_docs_q01 wl=5u/2198ms tv=5u/1246ms
+[8/20] programming_developer_docs_q04 wl=5u/931ms tv=5u/1968ms
+[9/20] scientific_research_q01 wl=5u/1924ms tv=5u/1396ms
+[10/20] scientific_research_q04 wl=5u/1959ms tv=5u/3166ms
+[11/20] academic_research_q01 wl=5u/970ms tv=5u/1561ms
+[12/20] academic_research_q04 wl=5u/2261ms tv=5u/1690ms
+[13/20] multihop_reasoning_q04 wl=5u/992ms tv=5u/2053ms
+[14/20] multihop_reasoning_q01 wl=5u/5309ms tv=5u/2102ms
+[15/20] long_document_extraction_q04 wl=5u/2926ms tv=5u/1358ms
+[16/20] long_document_extraction_q01 wl=5u/3329ms tv=5u/1554ms
+[17/20] company_research_q04 wl=5u/3188ms tv=5u/1511ms
+[18/20] company_research_q01 wl=5u/3087ms tv=5u/1720ms
+[19/20] startup_research_q04 wl=5u/2712ms tv=5u/1924ms
+[20/20] startup_research_q01 wl=5u/3203ms tv=5u/1608ms
+
+WebLens P@5=0.450 nDCG@5=0.465 MRR=0.583 p50=2486ms tok=368
+Tavily  P@5=0.160 nDCG@5=0.181 MRR=0.383 p50=1820ms tok=1549
+paired P@5 diff=+0.290 [+0.170, +0.430] W/T/L=14/5/1

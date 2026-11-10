@@ -304,6 +304,8 @@ class Row:
     tavily_payload_tokens: int = 0
     weblens_status: str = ""
     weblens_providers: list[str] = field(default_factory=list)
+    weblens_warnings: list[str] = field(default_factory=list)
+    weblens_early_stopped: bool = False
     tavily_status: str = ""
     weblens_error: str | None = None
     tavily_error: str | None = None
@@ -318,12 +320,15 @@ async def _weblens_search(service, query: str, timeout_s: float) -> dict[str, An
         raise TypeError(f"WebLens.search returned {type(payload).__name__}, expected dict")
     hits = payload.get("res") or []
     urls = [str(h.get("u") or "") for h in hits if isinstance(h, dict)]
+    warnings = [str(w) for w in (payload.get("warn") or [])]
     return {
         "urls": [u for u in urls if u],
         "tokens": count_json_tokens(hits),
         "payload_tokens": count_json_tokens(payload),
         "status": str(payload.get("status") or ""),
         "providers": [str(p) for p in (payload.get("prov") or [])],
+        "warnings": warnings,
+        "early_stopped": any(w.startswith("early_stop:") for w in warnings),
         "error": None if payload.get("status") != "error" else str(payload.get("msg") or payload.get("err") or "error"),
     }
 
@@ -354,7 +359,15 @@ async def _tavily_search(client, key: str, query: str, timeout_s: float) -> dict
     }
 
 
-async def _grade_one(service, client, key: str, item: dict[str, Any], index: int, timeout_s: float) -> Row:
+async def _grade_one(
+    service,
+    client,
+    key: str,
+    item: dict[str, Any],
+    index: int,
+    timeout_s: float,
+    weblens_only: bool = False,
+) -> Row:
     """Run both systems on one query and record everything, including failures."""
     row = Row(
         id=str(item["id"]),
@@ -365,6 +378,11 @@ async def _grade_one(service, client, key: str, item: dict[str, Any], index: int
     )
     # Alternate which system goes first so neither always gets the colder path.
     row.order = ["weblens", "tavily"] if index % 2 == 0 else ["tavily", "weblens"]
+    if weblens_only:
+        # Quality/latency of the WebLens arm alone. Used to re-measure the
+        # product after a change without spending Tavily credits; a paired
+        # comparison needs the full run.
+        row.order = ["weblens"]
 
     for system in row.order:
         if system == "weblens":
@@ -376,6 +394,8 @@ async def _grade_one(service, client, key: str, item: dict[str, Any], index: int
                 row.weblens_payload_tokens = int(out["payload_tokens"])
                 row.weblens_status = out["status"]
                 row.weblens_providers = out["providers"]
+                row.weblens_warnings = out["warnings"]
+                row.weblens_early_stopped = bool(out["early_stopped"])
                 row.weblens_error = out["error"]
             except Exception as exc:  # noqa: BLE001 - every failure is recorded, then graded as a miss
                 row.weblens_error = f"{type(exc).__name__}: {exc}"[:220]
@@ -397,16 +417,19 @@ async def _grade_one(service, client, key: str, item: dict[str, Any], index: int
     return row
 
 
-async def _preflight(service, client, key: str, timeout_s: float) -> None:
+async def _preflight(service, client, key: str, timeout_s: float, weblens_only: bool = False) -> None:
     """Fail loudly when either system cannot be reached at all."""
     probe = "python programming language"
-    try:
-        await _tavily_search(client, key, probe, timeout_s)
-    except Exception as exc:  # noqa: BLE001 - preflight is exactly where we must be loud
-        raise SystemExit(
-            "PREFLIGHT FAILED: Tavily is unreachable or rejected the key "
-            f"({type(exc).__name__}: {exc}). Refusing to emit a table of silent misses."
-        ) from exc
+    # A WebLens-only run has no Tavily arm to preflight, so it must not demand a
+    # key merely to measure the product.
+    if not weblens_only:
+        try:
+            await _tavily_search(client, key, probe, timeout_s)
+        except Exception as exc:  # noqa: BLE001 - preflight is exactly where we must be loud
+            raise SystemExit(
+                "PREFLIGHT FAILED: Tavily is unreachable or rejected the key "
+                f"({type(exc).__name__}: {exc}). Refusing to emit a table of silent misses."
+            ) from exc
     try:
         out = await _weblens_search(service, probe, timeout_s * 2)
     except Exception as exc:  # noqa: BLE001
@@ -479,6 +502,7 @@ def find_anomalies(rows: list[Row]) -> list[dict[str, Any]]:
     both_zero = sum(1 for r in rows if not r.weblens_urls and not r.tavily_urls) or 1
     lat_cut = percentile([r.weblens_ms for r in rows] + [r.tavily_ms for r in rows], 95) * 2
     for row in rows:
+        tavily_ran = "tavily" in row.order
         wl_rel = sum(1 for u in row.weblens_urls[:K] if is_relevant(u, row.labels))
         tv_rel = sum(1 for u in row.tavily_urls[:K] if is_relevant(u, row.labels))
         reasons = []
@@ -488,9 +512,9 @@ def find_anomalies(rows: list[Row]) -> list[dict[str, Any]]:
             reasons.append(f"tavily_error={row.tavily_error}")
         if row.weblens_status not in ("ok", "partial", ""):
             reasons.append(f"weblens_status={row.weblens_status}")
-        if row.weblens_urls and wl_rel == 0 and tv_rel == 0:
+        if tavily_ran and row.weblens_urls and wl_rel == 0 and tv_rel == 0:
             reasons.append("no_relevant_result_from_either")
-        if row.weblens_urls and not row.tavily_urls:
+        if tavily_ran and row.weblens_urls and not row.tavily_urls:
             reasons.append("tavily_returned_nothing")
         if row.tavily_urls and not row.weblens_urls:
             reasons.append("weblens_returned_nothing")
@@ -523,20 +547,29 @@ async def run(
     concurrency: int,
     timeout_s: float,
     hints: bool = False,
+    weblens_only: bool = False,
+    hybrid: bool = False,
 ) -> dict[str, Any]:
     import httpx
 
     from weblens.config import Settings
     from weblens.service import WebLens
 
-    key = _load_tavily_key()
+    if hybrid and weblens_only:
+        raise SystemExit("--hybrid and --weblens-only are mutually exclusive")
+
+    # A WebLens-only run measures the product arm alone and must not require (or
+    # spend) a Tavily key. When Tavily is in scope the key is mandatory.
+    key = "" if weblens_only else _load_tavily_key()
     queries = select_queries(limit, split)
     if not queries:
         raise SystemExit("no eligible queries selected from the dataset")
 
     CACHE_DIR.mkdir(parents=True, exist_ok=True)
     # Provider list follows the *product* default unless an ablation override is
-    # explicitly requested, so the benchmark always measures what ships.
+    # explicitly requested, so the benchmark always measures what ships. The
+    # default arm keeps the Tavily *provider* disabled (it is the system under
+    # test); --hybrid enables it to measure the fused product.
     overrides: dict[str, Any] = {}
     provider_override = os.environ.get("WEBLENS_SEARCH_PROVIDERS", "").strip()
     if provider_override:
@@ -545,7 +578,7 @@ async def run(
         cache_dir=CACHE_DIR,
         cache_enabled=False,
         allow_browser=False,
-        tavily_api_key=None,  # WebLens must NOT use the system under test (Tavily) as a provider
+        tavily_api_key=(key or None) if hybrid else None,
         total_timeout_s=max(30.0, timeout_s),
         **overrides,
     )
@@ -562,14 +595,19 @@ async def run(
 
     async def worker(sem: asyncio.Semaphore, index: int, item: dict[str, Any], client) -> Row:
         async with sem:
-            row = await _grade_one(service, client, key, item, index, timeout_s)
+            row = await _grade_one(service, client, key, item, index, timeout_s, weblens_only=weblens_only)
         progress["done"] += 1
+        tv_part = (
+            "tv=NOT_RUN"
+            if weblens_only
+            else f"tv={len(row.tavily_urls)}u/{row.tavily_ms:.0f}ms"
+            f"{'/ERR' if row.tavily_error else ''}"
+        )
         print(
             f"[{progress['done']}/{progress['total']}] {row.id} "
             f"wl={len(row.weblens_urls)}u/{row.weblens_ms:.0f}ms"
             f"{'/ERR' if row.weblens_error else ''} "
-            f"tv={len(row.tavily_urls)}u/{row.tavily_ms:.0f}ms"
-            f"{'/ERR' if row.tavily_error else ''}",
+            f"{tv_part}",
             flush=True,
         )
         if sleep_s > 0:
@@ -578,8 +616,11 @@ async def run(
 
     try:
         async with httpx.AsyncClient(follow_redirects=True) as client:
-            await _preflight(service, client, key, min(timeout_s, 30.0))
-            print("preflight ok (both systems reachable)\n", flush=True)
+            await _preflight(service, client, key, min(timeout_s, 30.0), weblens_only=weblens_only)
+            print(
+                "preflight ok (WebLens reachable)\n" if weblens_only else "preflight ok (both systems reachable)\n",
+                flush=True,
+            )
             sem = asyncio.Semaphore(max(1, concurrency))
             rows = list(
                 await asyncio.gather(
@@ -607,6 +648,12 @@ async def run(
     summary: dict[str, Any] = {
         "generated_at": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
         "benchmark": "weblens-vs-tavily-v11",
+        # A WebLens-only run must be machine-distinguishable from a real
+        # head-to-head: the Tavily arm was never called, so every Tavily metric
+        # below is an artefact of a skipped arm, not a measured zero.
+        "weblens_only": bool(weblens_only),
+        "weblens_arm": "hybrid" if hybrid else "keyless",
+        "tavily_arm_status": "NOT_RUN" if weblens_only else "RUN",
         "dataset": str(DATASET.relative_to(REPO_ROOT)),
         "dataset_sha256": hashlib.sha256(DATASET.read_bytes()).hexdigest(),
         "k": K,
@@ -618,11 +665,20 @@ async def run(
         "query_ids": [r.id for r in rows],
         "config": {
             "weblens_api": f"weblens.service.WebLens.search(query, max_results={K})",
-            "weblens_providers": settings.search_providers,
+            "weblens_providers": ",".join(
+                getattr(getattr(service, "router", None), "provider_names", []) or settings.provider_list
+            ),
+            "weblens_supplement_providers": ",".join(
+                getattr(getattr(service, "router", None), "supplement_names", []) or settings.supplement_list
+            ),
             "weblens_search_mode": settings.search_mode,
             "weblens_cache_enabled": False,
             "weblens_use_official_source_hints": bool(settings.use_official_source_hints),
-            "weblens_tavily_provider_disabled": True,
+            "weblens_tavily_provider_disabled": not hybrid,
+            "weblens_hybrid_tavily_provider": bool(hybrid),
+            "weblens_fuse_soft_timeout_s": settings.fuse_soft_timeout_s,
+            "weblens_fuse_early_min_extra": settings.fuse_early_min_extra,
+            "weblens_fuse_early_min_domains": settings.fuse_early_min_domains,
             "weblens_official_source_hints": bool(hints),
             "tavily": {"search_depth": "basic", "max_results": K},
             "per_query_timeout_s": timeout_s,
@@ -642,7 +698,13 @@ async def run(
             "tavily_error_rate": round(tavily_fail_rate, 3),
             "weblens_error_rate": round(wl["errors"] / wl["n"], 3) if wl["n"] else 0.0,
             "loud_warning": (
-                "tavily error rate > 10%: treat this run as INVALID and re-run" if tavily_fail_rate > 0.10 else None
+                "Tavily arm NOT RUN (weblens-only): tavily zeros are not measurements"
+                if weblens_only
+                else (
+                    "tavily error rate > 10%: treat this run as INVALID and re-run"
+                    if tavily_fail_rate > 0.10
+                    else None
+                )
             ),
         },
         "weblens": wl,
@@ -705,17 +767,131 @@ def _verdict(wl: dict[str, Any], tv: dict[str, Any], paired: dict[str, Any], n: 
     return out
 
 
-def write_report(summary: dict[str, Any], out_dir: Path) -> None:
-    out_dir.mkdir(parents=True, exist_ok=True)
-    (out_dir / "results.json").write_text(json.dumps(summary, indent=2), encoding="utf-8")
+def _weblens_only_lines(summary: dict[str, Any]) -> list[str]:
+    """Report for a WebLens-only re-measure, with Tavily explicitly NOT RUN.
 
-    wl, tv, paired = summary["weblens"], summary["tavily"], summary["paired"]
+    The paired report template compares two measured arms. Rendering a skipped
+    Tavily arm as ``0.000``/``0% success`` produced an accidental-looking win
+    over a system that was never called. This branch makes that impossible.
+    """
+    wl = summary["weblens"]
+    cfg = summary["config"]
 
     def f(x: float, nd: int = 3) -> str:
         return f"{x:.{nd}f}"
 
     lines = [
-        "# WebLens vs Tavily — measured head-to-head (v11)",
+        "# WebLens-only re-measure (Tavily arm NOT RUN)",
+        "",
+        f"- Generated: {summary['generated_at']}",
+        f"- Dataset: `{summary['dataset']}` (sha256 `{summary['dataset_sha256'][:16]}…`)",
+        f"- Queries graded: **{wl['n']}** (fixed prefix; exact ids in `results.json`)",
+        f"- Selection: {summary['selection_rule']}",
+        f"- k = {summary['k']}; WebLens: `WebLens.search(query, max_results={summary['k']})`, "
+        f"providers `{cfg['weblens_providers']}`, supplements "
+        f"`{cfg.get('weblens_supplement_providers') or 'none'}`, mode `{cfg['weblens_search_mode']}`, cache disabled",
+        f"- Fuse policy: soft deadline {cfg.get('weblens_fuse_soft_timeout_s', 'n/a')}s; early stop needs "
+        f"k+{cfg.get('weblens_fuse_early_min_extra', 'n/a')} distinct hits across "
+        f">={cfg.get('weblens_fuse_early_min_domains', 'n/a')} domains (0s = wait for all)",
+        f"- Per-query timeout {cfg['per_query_timeout_s']:.0f}s, no retries, "
+        f"concurrency {cfg['concurrency']}, sleep {cfg['sleep_between_queries_s']}s",
+        f"- Wall clock: {summary['wall_clock_s']}s",
+        "",
+        "> **Tavily arm: NOT RUN.** No Tavily key was used and no credits were spent.",
+        "> The `tavily` block in `results.json` is a skipped-arm placeholder, not a",
+        "> measured zero. This file must never be quoted as a WebLens-vs-Tavily",
+        "> head-to-head or as evidence that WebLens beat Tavily.",
+        "",
+        "## WebLens results",
+        "",
+        "| Metric | WebLens |",
+        "|---|---:|",
+        f"| Hit@5 | {f(wl['hit_at_5'])} |",
+        f"| P@5 | {f(wl['p_at_5'])} |",
+        f"| nDCG@5 | {f(wl['ndcg_at_5'])} |",
+        f"| nDCG@5 (label-capped IDCG, sensitivity) | {f(wl['ndcg_at_5_label_cap'])} |",
+        f"| MRR | {f(wl['mrr'])} |",
+        f"| Success rate | {f(wl['success_rate'])} |",
+        f"| p50 latency (ms) | {f(wl['p50_ms'], 1)} |",
+        f"| p95 latency (ms) | {f(wl['p95_ms'], 1)} |",
+        f"| Mean result tokens | {f(wl['mean_tokens'], 1)} |",
+        f"| Mean full-payload tokens | {f(wl['mean_payload_tokens'], 1)} |",
+        "",
+        "## 95% bootstrap CIs (2000 resamples, seeded)",
+        "",
+        "| Metric | WebLens mean [CI] |",
+        "|---|---|",
+        f"| P@5 | {f(wl['p_at_5'])} [{f(wl['p_at_5_ci95'][0])}, {f(wl['p_at_5_ci95'][1])}] |",
+        f"| nDCG@5 | {f(wl['ndcg_at_5'])} [{f(wl['ndcg_at_5_ci95'][0])}, {f(wl['ndcg_at_5_ci95'][1])}] |",
+        f"| MRR | {f(wl['mrr'])} [{f(wl['mrr_ci95'][0])}, {f(wl['mrr_ci95'][1])}] |",
+        "",
+        "## Anomalies flagged for human review (WebLens side only)",
+        "",
+    ]
+    if summary["anomalies"]:
+        for a in summary["anomalies"][:25]:
+            lines.append(f"- `{a['id']}` — {', '.join(a['reasons'])}")
+        if len(summary["anomalies"]) > 25:
+            lines.append(f"- … and {len(summary['anomalies']) - 25} more in `results.json` (`anomalies`)")
+    else:
+        lines.append("- None.")
+
+    hints = bool(cfg["weblens_official_source_hints"])
+    lines += [
+        "",
+        "## What the labels actually measure (read this before quoting anything)",
+        "",
+        "Relevance is domain matching against the dataset's `acceptable_sources`: it rewards",
+        "*authoritative sources*, not *correct answers*. A page on the right domain can still",
+        "be off-topic, and a perfect answer on an unlabelled domain scores zero. Read this as",
+        "an authority / source-selection signal, not a truth benchmark.",
+        "",
+        "## Contamination control",
+        "",
+        f"WebLens's author-curated `official_source_urls` hints are "
+        f"{'**ENABLED** (label-contaminated — do not quote as retrieval quality)' if hints else 'disabled'}.",
+        "They must stay off for any honest comparison because the hint list and the dataset",
+        "labels share an author.",
+        "",
+        "## Run-to-run stability",
+        "",
+        "Not asserted here. Keyless HTML providers return partly different result sets per call,",
+        "so quality metrics wobble between runs. Treat one run as indicative; the CIs above are",
+        "the intended uncertainty estimate.",
+        "",
+        "## Caveats",
+        "",
+        "- **This is not a comparison.** No baseline was measured in this run.",
+        "- **Labels are domains, not judged documents.**",
+        "- **nDCG IDCG convention:** the judged-set size is unknown, so absolute values are conservative.",
+        "- **One run, one machine, one network path.** Latency is indicative only; caching is disabled.",
+        f"- **Providers:** keyless `{cfg['weblens_providers']}` with the Tavily provider explicitly disabled.",
+        "",
+    ]
+    return lines
+
+
+def write_report(summary: dict[str, Any], out_dir: Path) -> None:
+    out_dir.mkdir(parents=True, exist_ok=True)
+    (out_dir / "results.json").write_text(json.dumps(summary, indent=2), encoding="utf-8")
+
+    if summary.get("weblens_only"):
+        lines = _weblens_only_lines(summary)
+        (out_dir / "REPORT.md").write_text("\n".join(lines) + "\n", encoding="utf-8")
+        return
+
+    wl, tv, paired = summary["weblens"], summary["tavily"], summary["paired"]
+    hybrid = summary.get("weblens_arm") == "hybrid"
+
+    def f(x: float, nd: int = 3) -> str:
+        return f"{x:.{nd}f}"
+
+    lines = [
+        (
+            "# WebLens (HYBRID: Tavily provider enabled) vs Tavily — measured head-to-head (v11)"
+            if hybrid
+            else "# WebLens vs Tavily — measured head-to-head (v11)"
+        ),
         "",
         f"- Generated: {summary['generated_at']}",
         f"- Dataset: `{summary['dataset']}` (sha256 `{summary['dataset_sha256'][:16]}…`)",
@@ -724,12 +900,23 @@ def write_report(summary: dict[str, Any], out_dir: Path) -> None:
         f"- k = {summary['k']}; Tavily `search_depth={summary['config']['tavily']['search_depth']}`, "
         f"`max_results={summary['config']['tavily']['max_results']}`",
         f"- WebLens: `WebLens.search(query, max_results={summary['k']})`, providers "
-        f"`{summary['config']['weblens_providers']}`, mode `{summary['config']['weblens_search_mode']}`, "
-        "cache disabled, Tavily provider disabled",
+        f"`{summary['config']['weblens_providers']}`, supplements "
+        f"`{summary['config'].get('weblens_supplement_providers') or 'none'}`, "
+        f"mode `{summary['config']['weblens_search_mode']}`, cache disabled, Tavily provider "
+        f"{'**ENABLED (hybrid arm)**' if hybrid else 'disabled'}",
         f"- Per-query timeout {summary['config']['per_query_timeout_s']:.0f}s, no retries, "
         f"concurrency {summary['config']['concurrency']}, sleep {summary['config']['sleep_between_queries_s']}s",
         f"- Wall clock: {summary['wall_clock_s']}s",
         "",
+    ]
+    if hybrid:
+        lines += [
+            "> **Hybrid arm.** The WebLens run used Tavily as one of its providers, so this compares",
+            "> the fused product against the same Tavily API called directly. It is **not** an",
+            "> independence claim, and each WebLens query also spent one Tavily credit.",
+            "",
+        ]
+    lines += [
         "## Results",
         "",
         "| Metric | WebLens | Tavily | Better |",
@@ -868,8 +1055,15 @@ def write_report(summary: dict[str, Any], out_dir: Path) -> None:
         "Tavily's full payload (answer/images/request_id) is reported separately, not compared.",
         "- **One run, one machine, one network path.** Latency is indicative only; no caching on either side "
         "(WebLens `cache_enabled=false`; Tavily has no client cache).",
-        "- **WebLens used keyless providers only** (`{p}`) with the Tavily provider explicitly disabled, so this is "
-        "WebLens-independent vs Tavily-hosted.".format(p=summary["config"]["weblens_providers"]),
+        (
+            "- **Hybrid arm:** WebLens used Tavily as a provider "
+            f"(`{summary['config']['weblens_providers']}`), so this is a fused-product comparison, "
+            "not an independence claim."
+            if hybrid
+            else "- **WebLens used keyless providers only** "
+            f"(`{summary['config']['weblens_providers']}`) with the Tavily provider explicitly disabled, "
+            "so this is WebLens-independent vs Tavily-hosted."
+        ),
         "- **Contamination guard:** WebLens's author-curated `official_source_urls` hints are "
         f"{'ENABLED (this run is label-contaminated — do not quote it as retrieval quality)' if summary['config']['weblens_official_source_hints'] else 'disabled'}. "
         "`router.py` itself states they must be off for an honest head-to-head, because the dataset labels and "
@@ -894,6 +1088,16 @@ def main(argv: list[str] | None = None) -> int:
         action="store_true",
         help="ENABLE WebLens author-curated official-source hints (label-leaking; off by default)",
     )
+    ap.add_argument(
+        "--weblens-only",
+        action="store_true",
+        help="measure the WebLens arm alone (no Tavily key needed, no credits spent; no paired comparison)",
+    )
+    ap.add_argument(
+        "--hybrid",
+        action="store_true",
+        help="let WebLens use Tavily as one provider (hybrid product arm; costs one extra Tavily credit per query)",
+    )
     args = ap.parse_args(argv)
 
     summary = asyncio.run(
@@ -904,23 +1108,34 @@ def main(argv: list[str] | None = None) -> int:
             concurrency=args.concurrency,
             timeout_s=args.timeout,
             hints=args.hints,
+            weblens_only=args.weblens_only,
+            hybrid=args.hybrid,
         )
     )
     write_report(summary, Path(args.out))
 
     wl, tv, paired = summary["weblens"], summary["tavily"], summary["paired"]
+    mode = "hybrid" if summary.get("weblens_arm") == "hybrid" else "keyless"
     print(
-        f"\nWebLens P@5={wl['p_at_5']:.3f} nDCG@5={wl['ndcg_at_5']:.3f} MRR={wl['mrr']:.3f} "
-        f"p50={wl['p50_ms']:.0f}ms tok={wl['mean_tokens']:.0f}\n"
-        f"Tavily  P@5={tv['p_at_5']:.3f} nDCG@5={tv['ndcg_at_5']:.3f} MRR={tv['mrr']:.3f} "
-        f"p50={tv['p50_ms']:.0f}ms tok={tv['mean_tokens']:.0f}\n"
-        f"paired P@5 diff={paired['p_at_5_diff']:+.3f} "
-        f"[{paired['p_at_5_diff_ci95'][0]:+.3f}, {paired['p_at_5_diff_ci95'][1]:+.3f}] "
-        f"W/T/L={paired['wins']}/{paired['ties']}/{paired['losses']}"
+        f"\nWebLens[{mode}] P@5={wl['p_at_5']:.3f} nDCG@5={wl['ndcg_at_5']:.3f} MRR={wl['mrr']:.3f} "
+        f"p50={wl['p50_ms']:.0f}ms tok={wl['mean_tokens']:.0f}"
     )
+    if summary.get("weblens_only"):
+        print("Tavily  NOT RUN (no key used, no credits spent)")
+    else:
+        print(
+            f"Tavily  P@5={tv['p_at_5']:.3f} nDCG@5={tv['ndcg_at_5']:.3f} MRR={tv['mrr']:.3f} "
+            f"p50={tv['p50_ms']:.0f}ms tok={tv['mean_tokens']:.0f}\n"
+            f"paired P@5 diff={paired['p_at_5_diff']:+.3f} "
+            f"[{paired['p_at_5_diff_ci95'][0]:+.3f}, {paired['p_at_5_diff_ci95'][1]:+.3f}] "
+            f"W/T/L={paired['wins']}/{paired['ties']}/{paired['losses']}"
+        )
     if summary["data_quality"]["loud_warning"]:
         print(f"\n!! {summary['data_quality']['loud_warning']}", file=sys.stderr)
-        return 3
+        # A completed WebLens-only re-measure is a valid product measurement;
+        # only an actual head-to-head with a broken Tavily arm is a run failure.
+        if not summary.get("weblens_only"):
+            return 3
     return 0
 
 

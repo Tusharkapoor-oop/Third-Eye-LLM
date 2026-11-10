@@ -1,0 +1,7 @@
+preflight ok (WebLens reachable)
+
+[1/2] general_factual_q01 wl=5u/1328ms tv=NOT_RUN
+[2/2] general_factual_q04 wl=5u/1794ms tv=NOT_RUN
+
+WebLens P@5=0.800 nDCG@5=0.861 MRR=1.000 p50=1561ms tok=366
+Tavily  NOT RUN (no key used, no credits spent)
