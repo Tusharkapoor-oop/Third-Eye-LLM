@@ -4,6 +4,34 @@ Cloudflare only. The Render blueprint was removed.
 
 ---
 
+## Status: first CI deploy attempted, blocked by account entitlement
+
+A Workers Build ran and **built the container image successfully**, then failed at:
+
+```
+✘ [ERROR] A request to the Cloudflare API (/accounts/<id>/containers/me) failed.
+```
+
+`/containers/me` asks "are Containers enabled on this account?" — it is an
+entitlement probe, not a deploy step. The image was built and tagged before this
+call, so **no code change fixes it**. Full analysis:
+`reports/loop/CF-DEPLOY-DIAGNOSIS.md`.
+
+Check, in order:
+1. Dashboard → Compute → Containers. If unavailable / upgrade prompt → Containers
+   need a **paid Workers plan**.
+2. Workers Builds → Settings → the build token needs **Containers: Edit** (and
+   Workers Scripts: Edit, Durable Objects: Edit).
+3. Retry the build.
+
+**Worker name mismatch — fixed.** The build log warned that `wrangler.jsonc`
+said `weblens-edge` while the Cloudflare project is `third-eye-llm`, and Cloudflare
+overrode it. `wrangler.jsonc` `name` is now `third-eye-llm` so the deployed URL is
+predictable: **`third-eye-llm.<subdomain>.workers.dev`**. Rename the Cloudflare
+project instead if you prefer `weblens-edge`.
+
+---
+
 ## Read this first: two hard blockers
 
 Neither is a code problem, and neither can be fixed from inside this environment.

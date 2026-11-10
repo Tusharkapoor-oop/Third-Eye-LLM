@@ -1,6 +1,11 @@
 {
   "$schema": "./node_modules/wrangler/config-schema.json",
-  "name": "weblens-edge",
+  // Must match the Cloudflare Workers project name. Workers Builds overrides
+  // this value with the project name and warns loudly on a mismatch (then opens
+  // a "fix your config" pull request), so keeping them equal avoids drift and
+  // makes the deployed URL predictable: third-eye-llm.<subdomain>.workers.dev.
+  // Rename the Cloudflare project instead if you prefer "weblens-edge".
+  "name": "third-eye-llm",
   "main": "cloudflare/worker.ts",
   "upload_source_maps": true,
   // Keep this aligned with the date you deploy. Cloudflare Containers require
