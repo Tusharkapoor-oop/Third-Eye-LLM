@@ -1,41 +1,44 @@
-# Render blueprint for WebLens (Streamable HTTP MCP server).
+# Render Blueprint for the WebLens MCP server (Streamable HTTP on /mcp).
 #
-# Deploy: point Render at this repo and it reads this file. The service builds
-# from the repo Dockerfile, which already pins the non-root user, the health
-# check, and refuses to bind a public address without a token.
+# Deploy: Render Dashboard -> New -> Blueprint -> pick this repo.
+# Render sets PORT; the Dockerfile CMD binds it on 0.0.0.0.
 #
-# BEFORE DEPLOYING, set these in the Render dashboard (never in git):
-#   WEBLENS_HTTP_TOKEN   required. A long random value; the server exits with
-#                        status 2 if a public bind has no token.
-#   TAVILY_API_KEY       optional. Enables the hosted search provider.
-#   BRAVE_SEARCH_API_KEY optional.
+# WEBLENS_HTTP_TOKEN is intentionally `sync: false`: Render prompts for it at
+# deploy time and stores it as a secret. The server refuses to start on a
+# non-loopback bind without it, so an accidentally public MCP endpoint fails
+# closed instead of exposing every tool to the internet.
 #
-# The server treats /  and /healthz as public (liveness) and everything under
-# /mcp as authenticated. Render's health check below therefore needs no token.
+# The hostname below MUST match the service name (Render derives the URL as
+# https://<name>.onrender.com). The MCP transport's DNS-rebinding guard
+# validates the Host header; a stale or missing entry makes every /mcp request
+# return 421 while /healthz still reports healthy.
 services:
   - type: web
     name: weblens-mcp
     runtime: docker
-    dockerfilePath: ./Dockerfile
-    plan: starter
+    plan: free
     region: oregon
+    dockerfilePath: ./Dockerfile
+    dockerContext: .
     healthCheckPath: /healthz
     autoDeploy: true
     envVars:
-      # Render injects PORT; the image already reads it.
-      - key: WEBLENS_HTTP_HOST
-        value: 0.0.0.0
-      - key: WEBLENS_MCP_PROFILE
-        value: core
-      - key: WEBLENS_LOG_LEVEL
-        value: INFO
-      # Render's filesystem is ephemeral; keep the cache inside the container.
-      - key: WEBLENS_CACHE_DIR
-        value: /tmp/weblens
-      # Prompt for the secret at deploy time rather than storing it in the repo.
       - key: WEBLENS_HTTP_TOKEN
         sync: false
+      - key: WEBLENS_ALLOWED_HOSTS
+        value: weblens-mcp.onrender.com
+      - key: WEBLENS_ALLOWED_ORIGINS
+        value: https://weblens-mcp.onrender.com
+      - key: WEBLENS_MCP_PROFILE
+        value: full
+      # Render's filesystem is ephemeral; /tmp is the only writable path the
+      # unprivileged container user is guaranteed to own.
+      - key: WEBLENS_CACHE_DIR
+        value: /tmp/weblens
+      - key: WEBLENS_SEARCH_PROVIDERS
+        value: mwmbl,wikipedia,bing,yahoo
+      # Optional: adds the hosted fast path. Leave blank to stay keyless.
       - key: TAVILY_API_KEY
         sync: false
-      - key: BRAVE_SEARCH_API_KEY
+      - key: GEMINI_API_KEY
         sync: false

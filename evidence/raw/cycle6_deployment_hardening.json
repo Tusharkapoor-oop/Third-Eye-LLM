@@ -1,0 +1,76 @@
+﻿{
+  "cycle": 6,
+  "title": "deployment hardening for Render / Cloudflare",
+  "trigger": "owner intends to host on Render or Cloudflare; asked for quality tested against that target",
+  "fixed": [
+    {
+      "id": "F1-redirect-credential-forwarding",
+      "severity": "MEDIUM",
+      "file": "weblens/src/weblens/net/client.py",
+      "defect": "the hand-rolled redirect loop rebuilt req_headers from the ORIGINAL headers on every hop, so caller credentials (Tavily Authorization, Brave X-Subscription-Token, Cookie) were forwarded across cross-origin redirects",
+      "note": "a helper-level test passed while the real bug persisted; only an end-to-end respx two-hop test exposed it, because the loop body overwrote the stripped headers",
+      "fix": "hop_headers thread: narrowed via _strip_credentials on any origin change, and the loop body rebuilds from hop_headers not from headers",
+      "tests": ["test_fetch_strips_credentials_on_cross_host_redirect", "test_same_origin_only_for_identical_scheme_host_port", "test_cross_origin_redirect_strips_credentials_but_keeps_benign_headers"],
+      "gate1": "CAUGHT - end-to-end test fails with 'Authorization leaked across origins' when the strip is disabled"
+    },
+    {
+      "id": "F2-secrets-in-cache-and-errors",
+      "severity": "MEDIUM",
+      "file": "weblens/src/weblens/net/client.py",
+      "defect": "API keys carried in a URL query string (Stack Exchange uses ?key=) were persisted into cache metadata and interpolated into FetchError text",
+      "fix": "redact_url() applied to final_url in cache meta, response object, and error messages; 10 secret parameter names covered case-insensitively",
+      "tests": ["test_secret_query_parameters_are_redacted", "test_urls_without_secrets_are_unchanged", "test_redaction_is_case_insensitive"]
+    },
+    {
+      "id": "F3-allowed-hosts-port-wildcard",
+      "severity": "LOW (availability, but pushed users toward disabling protection)",
+      "file": "weblens/src/weblens/cli.py",
+      "defect": "MCP matches Host exactly or against host:*; the default entries had no port form, so a real client sending Host: 127.0.0.1:8765 got 421. The documented workaround '*' disables DNS-rebinding protection entirely.",
+      "fix": "each configured host is expanded to also allow any port; protection stays ON",
+      "tests": ["test_default_allowed_hosts_accepts_a_port_qualified_client", "test_wildcard_allowed_hosts_still_disables_protection_explicitly"],
+      "gate1": "CAUGHT"
+    },
+    {
+      "id": "PORT-env-ignored",
+      "severity": "HIGH for deployment",
+      "file": "weblens/src/weblens/config.py",
+      "defect": "http_port defaulted to 8765 and never read $PORT, so on Render/Cloud Run/Heroku (which inject PORT and route only to it) the server bound the wrong port and every health check failed",
+      "fix": "http_port uses AliasChoices('WEBLENS_HTTP_PORT','PORT'); the prefixed name still wins",
+      "tests": ["test_port_env_is_honoured", "test_prefixed_port_name_wins_over_platform_port", "test_port_defaults_when_neither_is_set"],
+      "gate1": "CAUGHT"
+    }
+  ],
+  "deployment_verification": {
+    "method": "local process simulated exactly like a platform: PORT injected, no --port flag, bind 0.0.0.0, token from env",
+    "results": {
+      "bound_port": 8091,
+      "healthz_public": 200,
+      "mcp_with_valid_token": 200,
+      "mcp_without_token": 401,
+      "mcp_with_hostile_Host": 421,
+      "mcp_with_hostile_Origin": 403,
+      "mcp_with_wrong_token": 401,
+      "non_loopback_bind_without_token": "exit 2, refuses to start"
+    }
+  },
+  "artifacts_added": ["render.yaml"],
+  "gates_after": {
+    "weblens_tests": "821 tests, 0 fail, 1 skip",
+    "root_tests": "366 tests, 0 fail, 5 skip",
+    "coverage": "90.91%",
+    "mypy": "0 issues, 55 files",
+    "bandit": "exit 0",
+    "ruff_check": "clean",
+    "ruff_format": "128 files",
+    "mirror_drift": "NONE",
+    "ledger_chain": "PASS, 71 entries",
+    "lint_report": "PASS"
+  },
+  "not_verified": [
+    "no real Render deploy was performed (no account access, and the owner has not authorised it)",
+    "no Cloudflare deployment was performed; the worker wraps a Durable Object container and was not exercised",
+    "Docker image was not built in this environment",
+    "no load test against the deployed endpoint",
+    "Cloudflare Containers require a paid plan and a container-backed Durable Object; that path is untested here"
+  ]
+}

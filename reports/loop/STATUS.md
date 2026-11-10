@@ -139,6 +139,61 @@ byte-identical.
 
 ---
 
+
+---
+
+## Deployment hardening (this session)
+
+You said you will host on Render or Cloudflare, so I tested against that target.
+**Four deployment-relevant defects were found and fixed**, all with Gate-1-proven
+regression tests:
+
+| # | Defect | Impact |
+|---|---|---|
+| 1 | `$PORT` was ignored — `http_port` defaulted to 8765 | On Render/Cloud Run the process binds a port the platform does not route to, so **every health check fails** |
+| 2 | Dockerfile hardcoded `WEBLENS_HTTP_PORT=8080` | Would silently outrank `$PORT`; removed so the platform wins |
+| 3 | Cross-origin redirects forwarded `Authorization` / `X-Subscription-Token` | A 30x from an API host sent the operator's paid key to the redirect target |
+| 4 | Default `allowed_hosts` had no port form → **421 for every real client** | The documented workaround `*` disables DNS-rebinding protection entirely |
+
+Two more found and fixed earlier in the session: cloud-metadata IPs were reachable
+when `allow_private_networks=True`, and API keys in URL query strings reached the
+cache and error text.
+
+### Verified by running a real local server that mimics the platform
+
+| Check | Result |
+|---|---|
+| Binds injected `$PORT` | **yes** |
+| `GET /healthz` (Render's probe) | **200** |
+| `POST /mcp` + valid bearer | **200** |
+| `POST /mcp` no token | **401** |
+| `POST /mcp` wrong token | **401** |
+| `Host: attacker.example.com` | **421** |
+| `Origin: http://evil.example.com` | **403** |
+| `0.0.0.0` bind, no token | **refuses, exit 2** |
+
+Artifacts: `render.yaml` (blueprint), `DEPLOY.md` (both paths + caveats).
+
+### Not tested — do not assume these work
+
+**No real deploy was performed** to Render or Cloudflare (no account access, and
+you have not authorised it). The `docker build` was not run here. The Cloudflare
+Durable Object container path is **untested code** and needs a paid plan.
+`DEPLOY.md` says all of this explicitly.
+
+### Gates after this work
+
+weblens **822 tests, 0 fail, 1 skip** · root **366 tests, 0 fail, 5 skip** ·
+coverage **90.91%** · mypy **0** · bandit **0** · ruff **clean (128 files)** ·
+mirror drift **none** · chain **PASS (71)** · lint **PASS** · Gate 1 **3/3**.
+
+### Still true
+
+Nothing is committed (41 modified files). The Tavily head-to-head is stale. The
+held-out split is spent. Keyless p50 is **1497.5 ms** — barely under the gate.
+
+---
+
 ## Decisions still needed from you
 
 1. **Rotate the Tavily key** exposed in `.env` and git history (`1c11ac3`,

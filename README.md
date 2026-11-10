@@ -1,3 +1,15 @@
+---
+title: WebLens
+emoji: 🌖
+colorFrom: indigo
+colorTo: blue
+sdk: docker
+app_port: 7860
+pinned: false
+license: mit
+short_description: Web Intelligence and MCP Server
+---
+
 # WebLens: Web Intelligence Platform & Model Context Protocol (MCP)
 
 [![CI](https://github.com/Tusharkapoor-oop/Third-Eye-LLM/actions/workflows/ci.yml/badge.svg)](https://github.com/Tusharkapoor-oop/Third-Eye-LLM/actions/workflows/ci.yml)

@@ -145,9 +145,7 @@ def redact_url(url: str) -> str:
         return url
     if not any(k.lower() in _SECRET_QUERY_PARAMS for k, _ in pairs):
         return url
-    redacted = [
-        (k, "REDACTED" if k.lower() in _SECRET_QUERY_PARAMS else v) for k, v in pairs
-    ]
+    redacted = [(k, "REDACTED" if k.lower() in _SECRET_QUERY_PARAMS else v) for k, v in pairs]
     return urlunsplit((parsed.scheme, parsed.netloc, parsed.path, urlencode(redacted), parsed.fragment))
 
 
@@ -285,6 +283,10 @@ class SafeFetcher:
         budget = self.s.total_timeout_s if timeout_s is None else timeout_s
         deadline = time.monotonic() + budget if budget and budget > 0 else None
         auth_fp = _auth_fingerprint(headers)
+        # Header set for the hop currently being fetched. Starts as the caller's
+        # headers and is narrowed (credentials dropped) as soon as a redirect
+        # crosses an origin boundary.
+        hop_headers: dict[str, str] = dict(headers or {})
         for _hop in range(redirects + 1):
             self.policy.check_hostname(host_of(current))
             key = cache_key("http", method.upper(), current, auth_fp, (req_body or b"").decode("utf-8", "replace"))
@@ -318,7 +320,11 @@ class SafeFetcher:
                         stale_resp = cached_resp
                         stale_created = created
 
-            req_headers = dict(headers or {})
+            # Rebuild from the CURRENT hop's header set, not the original ones.
+            # Starting from ``headers`` every iteration silently resurrected
+            # credentials that the redirect logic had stripped, because the loop
+            # body overwrote req_headers after the strip had run.
+            req_headers = dict(hop_headers)
             if cached_resp is not None:
                 etag = cached_resp.headers.get("etag")
                 lm = cached_resp.headers.get("last-modified")
@@ -374,7 +380,7 @@ class SafeFetcher:
                 # an API host -- or one injected via a misconfigured base_url --
                 # would have forwarded the operator's paid key to the target.
                 if not _same_origin(current, nxt):
-                    req_headers = _strip_credentials(req_headers)
+                    hop_headers = _strip_credentials(hop_headers)
                 hops.append(current)
                 current = nxt
                 continue

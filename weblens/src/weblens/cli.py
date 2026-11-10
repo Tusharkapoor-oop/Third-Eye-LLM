@@ -382,6 +382,11 @@ def _serve_http(args: argparse.Namespace) -> int:
     )
 
     async def _health(request):
+        accept = request.headers.get("accept", "")
+        if "text/html" in accept and request.url.path == "/":
+            from .demo import handle_demo_request
+
+            return await handle_demo_request(request, service)
         return JSONResponse(
             {
                 "status": "ok",
@@ -715,7 +720,11 @@ def _transport_security_settings(settings: Settings):
 
     # De-duplicate while preserving order.
     seen: set[str] = set()
-    allowed_hosts = [h for h in expanded if not (h in seen or seen.add(h))]
+    allowed_hosts: list[str] = []
+    for host in expanded:
+        if host not in seen:
+            seen.add(host)
+            allowed_hosts.append(host)
 
     return TransportSecuritySettings(
         enable_dns_rebinding_protection=True,
