@@ -30,7 +30,7 @@ dependencies = [
 [project.optional-dependencies]
 pdf = ["pymupdf>=1.28,<2"]
 browser = ["playwright>=1.49,<2"]
-redis = ["redis>=5,<7"]
+redis = ["redis>=5,<9"]
 hybrid = [
   "numpy>=1.26,<3",
   "onnxruntime>=1.18,<2",
