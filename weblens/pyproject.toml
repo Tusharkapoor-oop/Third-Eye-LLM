@@ -19,7 +19,6 @@ dependencies = [
   "lxml>=6.1,<7",
   "cssselect>=1.6,<2",
   "trafilatura>=2.3,<3",
-  "pymupdf>=1.28,<2",
   "tiktoken>=0.14,<1",
   "pydantic>=2.13,<3",
   "pydantic-settings>=2.6,<3",
@@ -29,6 +28,7 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
+pdf = ["pymupdf>=1.28,<2"]
 browser = ["playwright>=1.49,<2"]
 redis = ["redis>=5,<7"]
 hybrid = [
