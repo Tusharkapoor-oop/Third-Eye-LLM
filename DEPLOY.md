@@ -1,151 +1,233 @@
-# Deploying WebLens — Render and Cloudflare
+# Deploy WebLens to Cloudflare
 
-Two supported paths. Read the **"What is tested / what is not"** section at the
-bottom before you rely on either.
+Cloudflare only. The Render blueprint was removed.
 
 ---
 
-## Option A — Render (recommended, fully tested path)
+## Read this first: two hard blockers
 
-`render.yaml` is in the repo root. Render reads it automatically.
+Neither is a code problem, and neither can be fixed from inside this environment.
 
-### Steps
+### Blocker 1 — Docker Desktop is not running
 
-1. Push this repo to GitHub (it currently has **uncommitted changes** — commit
-   first, or Render will deploy the old code).
-2. In Render: **New → Blueprint**, point at the repo.
-3. Render creates `weblens-mcp` from `./Dockerfile`.
-4. Set these environment variables in the dashboard (they are `sync: false`, so
-   Render prompts rather than storing them in git):
+```bash
+docker info      # → failed to connect ... open //./pipe/dockerDesktopLinuxEngine
+```
 
-   | Variable | Required | Purpose |
-   |---|---|---|
-   | `WEBLENS_HTTP_TOKEN` | **yes** | Bearer token. A long random string. The server **exits with status 2** rather than expose a public listener without it. |
-   | `TAVILY_API_KEY` | optional | Enables the hosted search provider. **Note:** setting this also silently prepends Tavily to the provider chain (see caveat below). |
-   | `BRAVE_SEARCH_API_KEY` | optional | Additional provider. |
+Cloudflare **Containers** build a `linux/amd64` image from `Dockerfile.cloudflare`.
+Wrangler shells out to the Docker CLI to build it, and it refuses to even
+dry-run without a working daemon. Start Docker Desktop and confirm:
 
-5. Health check path is `/healthz` — public, no token needed.
-6. Your MCP endpoint is `https://<service>.onrender.com/mcp`.
+```bash
+docker info --format '{{.ServerVersion}}'
+```
 
-### Verified behaviour (measured locally, simulating the platform exactly)
+### Blocker 2 — wrangler is not authenticated
 
-| Check | Result |
+```bash
+npx wrangler whoami      # → You are not authenticated. Please run `wrangler login`.
+```
+
+Authenticate once:
+
+```bash
+npx wrangler login
+```
+
+Then check the account can use **Containers**: this configuration deploys a
+Durable Object–managed container, which requires a **paid Cloudflare plan**. The
+free plan cannot run it.
+
+---
+
+## What is already prepared and verified
+
+Everything below was checked in this session.
+
+| Item | State |
 |---|---|
-| Binds the platform-injected `$PORT` | **yes** (previously it bound 8765 and would have failed) |
-| `GET /healthz` without auth | **200** |
-| `POST /mcp` with valid bearer | **200** |
-| `POST /mcp` without token | **401** |
-| `POST /mcp` with wrong token | **401** |
-| `POST /mcp` with `Host: attacker.example.com` | **421** (DNS-rebinding protection active) |
-| `POST /mcp` with `Origin: http://evil.example.com` | **403** |
-| Bind `0.0.0.0` with no token | **refuses, exit 2** |
+| `wrangler.jsonc` | parses; `name: weblens-edge`, `main: cloudflare/worker.ts`, 1 container, 1 Durable Object, 10 vars |
+| `cloudflare/worker.ts` | **`tsc --noEmit` passes**, 0 errors |
+| `Dockerfile.cloudflare` | `$PORT` fixed, healthcheck port-agnostic, non-root UID 10001 |
+| Worker auth logic | **11/11 behaviours correct** (see below) |
+| Secrets | correctly **absent** from `vars`; must be set via `wrangler secret put` |
 
-Client config (any MCP client):
+### Worker auth verified behaviourally
+
+I extracted the worker's auth functions and exercised them directly:
+
+| Case | Expected | Result |
+|---|---|---|
+| valid bearer | allow | OK |
+| lowercase `bearer` | allow | OK |
+| extra spaces | allow | OK |
+| `X-API-Key` header | allow | OK |
+| wrong token | deny | OK |
+| no header | deny | OK |
+| empty bearer | deny | OK |
+| `Basic` scheme | deny | OK |
+| token as prefix | deny | OK |
+| token + suffix | deny | OK |
+| **no keys configured** | deny (fail closed) | OK |
+
+Implementation: SHA-256 digest comparison with a constant-time XOR loop, so
+token length and content do not leak through timing. `/mcp` returns **503
+`server_misconfigured`** if no key is set, rather than running open.
+
+---
+
+## Deploy steps
+
+### 1. Start Docker Desktop, then authenticate
+
+```bash
+docker info --format '{{.ServerVersion}}'     # must print a version
+npx wrangler login
+npx wrangler whoami                            # must print your account
+```
+
+### 2. Set the required secret
+
+`/mcp` will not serve without this — by design.
+
+```bash
+npx wrangler secret put WEBLENS_API_KEY
+# paste a long random value when prompted
+```
+
+Optional extras:
+
+```bash
+npx wrangler secret put TAVILY_API_KEY
+npx wrangler secret put BRAVE_SEARCH_API_KEY
+```
+
+Generate a strong token:
+
+```bash
+python -c "import secrets; print(secrets.token_urlsafe(48))"
+```
+
+### 3. Dry-run first (validates the container build without deploying)
+
+```bash
+npx wrangler deploy --dry-run --outdir dist
+```
+
+This now works only once Docker is running. If it succeeds, the image builds.
+
+### 4. Deploy
+
+```bash
+npx wrangler deploy
+```
+
+Wrangler prints the worker URL, of the form
+`https://weblens-edge.<your-subdomain>.workers.dev`.
+
+### 5. Verify the deployment (do not skip)
+
+```bash
+# health — no auth needed
+curl -s https://weblens-edge.<subdomain>.workers.dev/healthz
+
+# readiness — 200 only when a key is configured AND the container answers
+curl -s https://weblens-edge.<subdomain>.workers.dev/readyz
+
+# auth must reject
+curl -s -o /dev/null -w '%{http_code}\n' \
+  -X POST https://weblens-edge.<subdomain>.workers.dev/mcp \
+  -H 'content-type: application/json' -d '{}'          # expect 401
+
+# MCP handshake with the token
+curl -s -X POST https://weblens-edge.<subdomain>.workers.dev/mcp \
+  -H "Authorization: Bearer $WEBLENS_API_KEY" \
+  -H 'content-type: application/json' \
+  -H 'accept: application/json, text/event-stream' \
+  -d '{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocolVersion":"2025-06-18","capabilities":{},"clientInfo":{"name":"probe","version":"1"}}}'
+
+# tools/list — expect 14 tools, NOT 2
+curl -s -X POST https://weblens-edge.<subdomain>.workers.dev/mcp \
+  -H "Authorization: Bearer $WEBLENS_API_KEY" \
+  -H 'content-type: application/json' \
+  -H 'accept: application/json, text/event-stream' \
+  -d '{"jsonrpc":"2.0","id":2,"method":"tools/list","params":{}}'
+```
+
+**The `tools/list` check is the important one.** A correct WebLens deployment
+returns **14** tools:
+
+```
+web_search, extract_url, crawl_site, deep_research, evidence_synthesis,
+company_research, market_research, market_portfolio, meeting_prep,
+sheets_enrich, crawl2rag_index, crawl2rag_query, research_chat, tutorial_101
+```
+
+If you see **`add`, `calculate`** you are looking at the Cloudflare calculator
+template, not this project — that is exactly what happened with
+`remote-mcp-server-authless.anyunkown8.workers.dev`.
+
+### 6. Point your MCP client at it
 
 ```json
 {
   "mcpServers": {
     "weblens": {
       "type": "http",
-      "url": "https://your-service.onrender.com/mcp",
-      "headers": { "Authorization": "Bearer YOUR_WEBLENS_HTTP_TOKEN" }
+      "url": "https://weblens-edge.<subdomain>.workers.dev/mcp",
+      "headers": { "Authorization": "Bearer YOUR_WEBLENS_API_KEY" }
     }
   }
 }
 ```
 
-### Render caveats
+---
 
-- **The filesystem is ephemeral.** `WEBLENS_CACHE_DIR=/tmp/weblens` is set in the
-  blueprint, so the cache is discarded on every restart. That is correct for
-  crawling cache, but it means `crawl2rag_index` is **not durable** — an index you
-  build will vanish on redeploy. Do not use the stateful tools as a system of
-  record on Render's free/starter tiers.
-- **Free instance hours.** Combo with the container start cost may exceed the free
-  tier.
-- **Cold start.** A starter instance sleeps; the first request after idle pays a
-  container boot.
+## Architecture (why this is not a plain Worker)
+
+Workers cannot run Python. `wrangler.jsonc` therefore declares:
+
+- a **container** built from `Dockerfile.cloudflare`, running
+  `python -m weblens.cli serve --http --host 0.0.0.0 --port $PORT --profile full`
+- a **Durable Object** (`WebLensContainer`) that owns the container and forwards
+  HTTP to its TCP port
+- the **worker** (`export default`) that handles `/healthz`, `/`, `/readyz`,
+  `/mcp`, enforces bearer auth, and routes each token to a stable instance
+  (`affinityIndex`) so a tenant's session sticks to one container
+
+Instance count is `WEBLENS_INSTANCE_COUNT` (default 3, max 10), size is
+`WEBLENS_CONTAINER_INSTANCE` (`standard-1`).
 
 ---
 
-## Option B — Cloudflare
+## Known caveats
 
-`cloudflare/worker.ts` + `wrangler.jsonc` exist and wrap WebLens in a **Durable
-Object container** (the worker proxies MCP over to a Python process on port 8080).
-This is a different architecture from a plain Worker: Workers cannot run Python,
-so Cloudflare Containers are required.
-
-```bash
-cd cloudflare
-npx wrangler deploy
-```
-
-Required secrets:
-
-```bash
-npx wrangler secret put WEBLENS_HTTP_TOKEN
-npx wrangler secret put TAVILY_API_KEY        # optional
-```
-
-### Cloudflare caveats — read before choosing this path
-
-- **Containers require a paid Cloudflare plan.** The worker is written against the
-  container-backed Durable Object API; on a free plan it will not deploy.
-- **I did not test this path.** I did not deploy to Cloudflare, did not run the
-  container, and did not exercise the Durable Object. Treat `cloudflare/` as
-  **untested code**, not a verified deployment.
-- The worker forwards the same env names (`WEBLENS_HTTP_TOKEN`, `TAVILY_API_KEY`),
-  so the server-side auth behaviour above still applies once it is running.
-- `wrangler.jsonc` sets the container instance count; check it against your plan's
-  limits before deploying.
-
-**If you want a working deployment today, use Render.** Cloudflare Containers is
-the more expensive, less-verified path for this workload.
+- **Paid plan required.** Containers are not on the free tier.
+- **Cold start.** A container that has gone idle pays a boot cost on the first
+  request. `INACTIVITY_TIMEOUT_MS` is 2 hours in the worker.
+- **Container filesystem is ephemeral.** `WEBLENS_CACHE_DIR=/tmp/weblens`, so the
+  cache resets on restart and `crawl2rag_index` is **not durable**. Do not treat
+  the stateful tools as a system of record here.
+- **`WEBLENS_SEARCH_PROVIDERS` in `wrangler.jsonc` lists `tavily` first.** If you
+  do not set `TAVILY_API_KEY`, Tavily is marked unavailable and the keyless
+  providers carry the load — correct, but expect higher latency.
+- **Do not reuse an "authless" worker name.** WebLens enforces a token; deploying
+  it onto the authless calculator's hostname would confuse clients and reuse a
+  URL that is already public.
 
 ---
 
-## Security posture you inherit
-
-These were audited by an independent model (GLM 5.3) and re-verified by me at
-source:
-
-- SSRF protection is enforced at **connect time**, not just URL validation: the
-  httpcore network backend connects to the validated IP, so a DNS-rebinding
-  answer cannot redirect the socket. Numeric/octal/hex IP forms pass the URL
-  pre-check but are blocked at resolve.
-- Cloud-metadata IPs (`169.254.169.254`, `168.63.129.16`, `100.100.100.200`) are
-  blocked **even when `allow_private_networks=True`** — this was a real gap I
-  found and fixed while testing.
-- Redirects re-validate the destination per hop, and **caller credentials no
-  longer follow a cross-origin redirect** (fixed this session; previously a 30x
-  from an API host forwarded `Authorization` and `X-Subscription-Token`).
-- API keys in URL query strings are redacted before they reach the cache or an
-  error message.
-- Inbound auth uses a constant-time comparison over SHA-256 digests; keys are
-  held as digests, not plaintext.
-
----
-
-## What is tested / what is not
-
-**Tested here (locally, real process, real HTTP calls):**
-
-- the server binding the platform `$PORT`, `/healthz`, and 401/403/421 enforcement
-- all the static gates: **821 weblens tests + 366 root tests, 0 failures**,
-  coverage **90.91%**, mypy 0, bandit 0, ruff clean, mirror drift none,
-  evidence chain OK
-
-**NOT tested — do not assume these work:**
+## What I did NOT verify
 
 | Item | Why |
 |---|---|
-| An actual Render deploy | No account access, and you have not authorised it. |
-| An actual Cloudflare deploy | Same, plus Containers need a paid plan. |
-| `docker build` of the image | Docker daemon is present but the image was not built here. |
-| Load / soak behaviour in the cloud | No deployed endpoint to test against. |
-| Durable-Object container path | Untested code. |
+| An actual `wrangler deploy` | Not authenticated; you have not authorised a deploy. |
+| The container image building | Docker Desktop is not running. |
+| `wrangler deploy --dry-run` passing | Blocked by the same Docker requirement. |
+| Live `/healthz`, `/readyz`, `/mcp` on Cloudflare | No deployment exists yet. |
+| Container cold-start and concurrency behaviour | Needs a live deployment. |
+| Load/soak behaviour | Same. |
 
-I will not claim a deployment works until a real one is run and its health check
-and an authenticated `/mcp` call are observed. Everything in the "Verified
-behaviour" table above is from a **local** process that mimics the platform's
-port injection, not from Render itself.
+The worker's **TypeScript compiles** and its **auth logic is proven correct**.
+The container build and the live behaviour are **unverified** until Docker runs
+and a real deploy happens.

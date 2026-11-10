@@ -12,9 +12,13 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONPATH=/app/weblens/src \
     PORT=8080 \
     WEBLENS_HTTP_HOST=0.0.0.0 \
-    WEBLENS_HTTP_PORT=8080 \
     WEBLENS_MCP_PROFILE=full \
     WEBLENS_CACHE_DIR=/tmp/weblens
+
+# NOTE: deliberately NO WEBLENS_HTTP_PORT. Cloudflare Containers route to $PORT,
+# and a hardcoded WEBLENS_HTTP_PORT is the more specific settings key, so it would
+# silently outrank $PORT and the container would listen on a port the platform
+# does not forward to. The CMD passes --port explicitly, which outranks both.
 
 WORKDIR /app
 
@@ -37,6 +41,7 @@ USER weblens
 EXPOSE 8080
 
 HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
-    CMD python -c "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8080/healthz', timeout=3).read()"
+    CMD python -c "import os,urllib.request; urllib.request.urlopen('http://127.0.0.1:'+os.environ.get('PORT','8080')+'/healthz', timeout=3).read()"
 
-CMD ["python", "-m", "weblens.cli", "serve", "--http", "--host", "0.0.0.0", "--port", "8080", "--profile", "full"]
+# --port is explicit so it outranks both $PORT and WEBLENS_HTTP_PORT.
+CMD ["sh", "-c", "exec python -m weblens.cli serve --http --host 0.0.0.0 --port ${PORT:-8080} --profile full"]

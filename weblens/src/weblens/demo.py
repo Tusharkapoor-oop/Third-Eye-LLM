@@ -443,3 +443,4 @@ async def handle_demo_request(request: Request, service: Any) -> HTMLResponse:
         host=host,
     )
     return HTMLResponse(html_output)
+
